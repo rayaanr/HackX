@@ -2,6 +2,7 @@ import { IconBell, IconSearch } from "@tabler/icons-react";
 import { NavUser } from "@/components/layout/nav-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ThemeToggle } from "./theme-toggle";
 
 export function SiteHeader() {
   const userData = {
@@ -21,6 +22,7 @@ export function SiteHeader() {
 
         {/* Right side icons and user */}
         <div className="ml-auto flex items-center gap-2">
+          <ThemeToggle />
           <Button variant="ghost" size="icon" className="rounded-full">
             <IconBell className="size-4" />
           </Button>
