@@ -25,6 +25,7 @@ This is a Next.js 15 hackathon management application built with modern React pa
 - **Theming**: next-themes for dark/light mode
 - **Form Handling**: react-hook-form for form state management
 - **Validation**: Zod for schema validation
+- **Icons**: Lucide React and Tabler Icons
 
 ### Key Architectural Patterns
 
