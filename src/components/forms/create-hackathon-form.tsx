@@ -6,6 +6,7 @@ import { CreateHackathonStepper } from "@/components/forms/create-hackathon-step
 import { hackathonSchema, HackathonFormData, validateDateConsistency } from "@/lib/schemas/hackathon-schema";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { toast } from "sonner"
 
 export function CreateHackathonForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,10 +54,10 @@ export function CreateHackathonForm() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       console.log("Form submitted:", data);
       // Here you would typically send the data to your API
-      alert("Hackathon created successfully!");
+      toast.success("Hackathon created successfully!");
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("Error creating hackathon. Please try again.");
+      toast.error("Error creating hackathon. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

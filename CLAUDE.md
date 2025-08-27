@@ -23,6 +23,8 @@ This is a Next.js 15 hackathon management application built with modern React pa
 - **Linting/Formatting**: Biome (replaces ESLint + Prettier)
 - **State Management**: React hooks with context providers
 - **Theming**: next-themes for dark/light mode
+- **Form Handling**: react-hook-form for form state management
+- **Validation**: Zod for schema validation
 
 ### Key Architectural Patterns
 
@@ -38,6 +40,9 @@ This is a Next.js 15 hackathon management application built with modern React pa
 - `src/hooks/` - Custom React hooks
 - `src/lib/` - Utility functions
 - `src/providers/` - React context providers
+- `src/types/` - TypeScript type definitions
+- `src/data/` - Static data
+- `src/lib/schemas/` - Schemas for validation
 
 **Data Layer**: 
 - Static data in `src/data/hackathons.ts` with TypeScript interfaces

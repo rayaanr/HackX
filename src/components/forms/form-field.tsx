@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
-import * as React from "react";
+import { Children, cloneElement, forwardRef, HTMLAttributes, isValidElement, useId } from "react";
 
-interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
+interface FormFieldProps extends HTMLAttributes<HTMLDivElement> {
   label?: string;
   description?: string;
   required?: boolean;
@@ -10,9 +10,9 @@ interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
   htmlFor?: string;
 }
 
-const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
+const FormField = forwardRef<HTMLDivElement, FormFieldProps>(
   ({ label, description, required, error, htmlFor, className, children, ...props }, ref) => {
-    const fieldId = htmlFor || React.useId();
+    const fieldId = htmlFor || useId();
 
     return (
       <div ref={ref} className={cn("space-y-2", className)} {...props}>
@@ -26,10 +26,10 @@ const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
         <div className="space-y-1">
-          {React.Children.map(children, (child) => {
-            if (React.isValidElement(child)) {
+          {Children.map(children, (child) => {
+            if (isValidElement(child)) {
               const childProps = child.props as any;
-              return React.cloneElement(child, {
+              return cloneElement(child, {
                 id: fieldId,
                 'aria-describedby': description ? `${fieldId}-description` : undefined,
                 'aria-invalid': error ? 'true' : 'false',

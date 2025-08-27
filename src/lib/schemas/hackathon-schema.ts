@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Define shared schemas
-const urlSchema = z.string().url("Invalid URL").or(z.literal(""));
+const urlSchema = z.url("Invalid URL").or(z.literal(""));
 
 // Define the evaluation criteria schema
 const evaluationCriteriaSchema = z.object({
@@ -27,7 +27,7 @@ const prizeCohortSchema = z.object({
 // Define the judge schema
 const judgeSchema = z.object({
   id: z.string().optional(),
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   status: z.enum(["invited", "accepted", "declined"]),
 });
 

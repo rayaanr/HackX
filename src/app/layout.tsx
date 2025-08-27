@@ -3,7 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner"
 import Providers from "./providers";
+import { ReactNode } from "react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -44,6 +46,7 @@ export default function RootLayout({
               </div>
             </SidebarInset>
           </SidebarProvider>
+          <Toaster position="top-right" richColors />
         </Providers>
       </body>
     </html>

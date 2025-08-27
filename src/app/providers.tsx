@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@/providers/theme-provider";
-import React from "react";
+import { ReactNode } from "react";
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"

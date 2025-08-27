@@ -186,7 +186,7 @@ export function OverviewStep() {
                 onSelect={(date) =>
                   setValue("registrationEndDate", date as Date)
                 }
-                initialFocus
+                autoFocus
               />
             </PopoverContent>
           </Popover>
@@ -228,7 +228,7 @@ export function OverviewStep() {
                 onSelect={(date) =>
                   setValue("hackathonStartDate", date as Date)
                 }
-                initialFocus
+                autoFocus
               />
             </PopoverContent>
           </Popover>
@@ -266,7 +266,7 @@ export function OverviewStep() {
                 mode="single"
                 selected={watchedFields.hackathonEndDate}
                 onSelect={(date) => setValue("hackathonEndDate", date as Date)}
-                initialFocus
+                autoFocus
               />
             </PopoverContent>
           </Popover>
@@ -344,7 +344,7 @@ export function OverviewStep() {
                 mode="single"
                 selected={watchedFields.votingEndDate}
                 onSelect={(date) => setValue("votingEndDate", date as Date)}
-                initialFocus
+                autoFocus
               />
             </PopoverContent>
           </Popover>

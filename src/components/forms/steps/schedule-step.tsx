@@ -130,7 +130,7 @@ export function ScheduleStep() {
                           mode="single"
                           selected={watchedFields.dateTime}
                           onSelect={(date) => setValue(`schedule.${index}.dateTime`, date as Date)}
-                          initialFocus
+                          autoFocus
                         />
                       </PopoverContent>
                     </Popover>
