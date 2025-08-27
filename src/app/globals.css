@@ -122,8 +122,9 @@
 }
 
 
+/* Lexical Editor Styles */
 .editor-placeholder {
-  color: #9ca3af;
+  color: hsl(var(--muted-foreground));
   overflow: hidden;
   position: absolute;
   text-overflow: ellipsis;
@@ -146,27 +147,33 @@
 }
 
 .editor-heading-h1 {
-  font-size: 24px;
+  font-size: 1.875rem;
   font-weight: 700;
   margin: 0;
   margin-bottom: 12px;
   padding: 0;
+  line-height: 1.2;
+  color: hsl(var(--foreground));
 }
 
 .editor-heading-h2 {
-  font-size: 20px;
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
   margin-bottom: 10px;
   padding: 0;
+  line-height: 1.3;
+  color: hsl(var(--foreground));
 }
 
 .editor-heading-h3 {
-  font-size: 18px;
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
   margin-bottom: 8px;
   padding: 0;
+  line-height: 1.4;
+  color: hsl(var(--foreground));
 }
 
 .editor-text-bold {
@@ -187,4 +194,85 @@
 
 .editor-text-underlineStrikethrough {
   text-decoration: underline line-through;
+}
+
+.editor-list-ol {
+  list-style: decimal;
+  margin-left: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.editor-list-ul {
+  list-style: disc;
+  margin-left: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.editor-listitem {
+  margin-bottom: 4px;
+}
+
+.editor-nested-listitem {
+  list-style: none;
+}
+
+/* Form styles for better consistency */
+.form-section {
+  @apply space-y-6 p-6 bg-background border rounded-lg;
+}
+
+.form-group {
+  @apply space-y-4;
+}
+
+.form-grid {
+  @apply grid gap-6;
+}
+
+.form-grid-2 {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+/* Animation improvements */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus improvements */
+.focus-within\:ring-2:focus-within {
+  @apply ring-2 ring-ring ring-offset-2;
+}
+
+/* Custom scrollbar for better UX */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground)) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground));
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--foreground));
 }

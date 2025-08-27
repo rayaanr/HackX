@@ -1,27 +1,44 @@
 import { z } from "zod";
 
+// Define shared schemas
+const urlSchema = z.string().url("Invalid URL").or(z.literal(""));
+
+// Define the evaluation criteria schema
+const evaluationCriteriaSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Evaluation criteria name is required"),
+  points: z.number().min(1, "Points must be at least 1"),
+  description: z.string().min(1, "Description is required"),
+});
+
 // Define the prize cohort schema
 const prizeCohortSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Prize cohort name is required"),
   numberOfWinners: z.number().min(1, "Number of winners must be at least 1"),
-  prizeAmount: z.number().min(0, "Prize amount must be positive"),
+  prizeAmount: z.string().min(1, "Prize amount is required"), // Changed to string for currency formatting
   description: z.string().min(1, "Description is required"),
-  evaluationCriteria: z.array(
-    z.object({
-      id: z.string().optional(),
-      name: z.string().min(1, "Evaluation criteria name is required"),
-      points: z.number().min(1, "Points must be at least 1"),
-      description: z.string().min(1, "Description is required"),
-    })
-  ).min(1, "At least one evaluation criteria is required"),
+  evaluationCriteria: z.array(evaluationCriteriaSchema).min(1, "At least one evaluation criteria is required"),
+  judgingMode: z.enum(["manual", "automated", "hybrid"]),
+  votingMode: z.enum(["public", "private", "judges_only"]),
+  maxVotesPerJudge: z.number().min(1, "Max votes per judge must be at least 1"),
 });
 
 // Define the judge schema
 const judgeSchema = z.object({
   id: z.string().optional(),
   email: z.string().email("Invalid email address"),
-  status: z.enum(["invited", "accepted", "declined"]).default("invited"),
+  status: z.enum(["invited", "accepted", "declined"]),
+});
+
+// Define the speaker schema
+const speakerSchema = z.object({
+  name: z.string().min(1, "Speaker name is required"),
+  realName: z.string().optional(),
+  workplace: z.string().optional(),
+  position: z.string().optional(),
+  xHandle: z.string().optional(),
+  picture: urlSchema,
 });
 
 // Define the schedule slot schema
@@ -29,17 +46,8 @@ const scheduleSlotSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Schedule slot name is required"),
   description: z.string().min(1, "Description is required"),
-  speaker: z.object({
-    name: z.string().min(1, "Speaker name is required"),
-    realName: z.string().min(1, "Speaker real name is required"),
-    workplace: z.string().min(1, "Workplace is required"),
-    position: z.string().min(1, "Position is required"),
-    xHandle: z.string().optional(),
-    picture: z.string().optional(),
-  }),
-  dateTime: z.date({
-    message: "Date and time are required",
-  }),
+  speaker: speakerSchema.optional(),
+  dateTime: z.date(),
 });
 
 // Define the main hackathon schema
@@ -69,14 +77,17 @@ export const hackathonSchema = z.object({
   techStack: z.array(z.string()).min(1, "At least one tech stack is required"),
   experienceLevel: z.enum(["beginner", "intermediate", "advanced", "all"]),
   location: z.string().min(1, "Location is required"),
-  socialLinks: z.array(z.string().url("Invalid URL")).optional(),
+  socialLinks: z.object({
+    website: urlSchema,
+    discord: urlSchema,
+    twitter: urlSchema,
+    telegram: urlSchema,
+    github: urlSchema,
+  }).optional(),
   fullDescription: z.string().min(1, "Full description is required"),
   
   // Prizes step
   prizeCohorts: z.array(prizeCohortSchema).min(1, "At least one prize cohort is required"),
-  judgingMode: z.enum(["manual", "automated", "hybrid"]),
-  votingMode: z.enum(["public", "private", "judges_only"]),
-  maxVotesPerJudge: z.number().min(1, "Max votes per judge must be at least 1"),
   
   // Judges step
   judges: z.array(judgeSchema).min(1, "At least one judge is required"),
@@ -124,7 +135,43 @@ export const validateDateConsistency = (data: any) => {
   return errors;
 };
 
+// Export types
 export type HackathonFormData = z.infer<typeof hackathonSchema>;
 export type PrizeCohort = z.infer<typeof prizeCohortSchema>;
+export type EvaluationCriteria = z.infer<typeof evaluationCriteriaSchema>;
 export type Judge = z.infer<typeof judgeSchema>;
+export type Speaker = z.infer<typeof speakerSchema>;
 export type ScheduleSlot = z.infer<typeof scheduleSlotSchema>;
+
+// Export individual schemas for step-by-step validation
+export const overviewStepSchema = hackathonSchema.pick({
+  name: true,
+  logo: true,
+  shortDescription: true,
+  registrationStartDate: true,
+  registrationEndDate: true,
+  hackathonStartDate: true,
+  hackathonEndDate: true,
+  votingStartDate: true,
+  votingEndDate: true,
+  techStack: true,
+  experienceLevel: true,
+  location: true,
+  socialLinks: true,
+  fullDescription: true,
+});
+
+export const prizesStepSchema = hackathonSchema.pick({
+  prizeCohorts: true,
+});
+
+export const judgesStepSchema = hackathonSchema.pick({
+  judges: true,
+});
+
+export const scheduleStepSchema = hackathonSchema.pick({
+  schedule: true,
+});
+
+// Export sub-schemas
+export { prizeCohortSchema, evaluationCriteriaSchema, judgeSchema, speakerSchema, scheduleSlotSchema };

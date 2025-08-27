@@ -23,8 +23,11 @@ export function PrizesStep() {
     appendPrizeCohort({
       name: "",
       numberOfWinners: 1,
-      prizeAmount: 0,
+      prizeAmount: "",
       description: "",
+      judgingMode: "manual" as const,
+      votingMode: "public" as const,
+      maxVotesPerJudge: 1,
       evaluationCriteria: [
         {
           name: "",
@@ -130,67 +133,67 @@ export function PrizesStep() {
             )}
           </FormField>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              label="Judging Mode"
+              required
+            >
+              <select
+                {...register(`prizeCohorts.${index}.judgingMode`)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="manual">Manual</option>
+                <option value="automated">Automated</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
+              {errors.prizeCohorts?.[index]?.judgingMode && (
+                <p className="text-sm text-destructive">
+                  {errors.prizeCohorts?.[index]?.judgingMode?.message}
+                </p>
+              )}
+            </FormField>
+
+            <FormField
+              label="Voting Mode"
+              required
+            >
+              <select
+                {...register(`prizeCohorts.${index}.votingMode`)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+                <option value="judges_only">Judges Only</option>
+              </select>
+              {errors.prizeCohorts?.[index]?.votingMode && (
+                <p className="text-sm text-destructive">
+                  {errors.prizeCohorts?.[index]?.votingMode?.message}
+                </p>
+              )}
+            </FormField>
+          </div>
+
+          <FormField
+            label="Max Votes Per Judge"
+            required
+          >
+            <Input
+              type="number"
+              {...register(`prizeCohorts.${index}.maxVotesPerJudge`, { valueAsNumber: true })}
+              placeholder="5"
+              min="1"
+              className={errors.prizeCohorts?.[index]?.maxVotesPerJudge ? "border-destructive" : ""}
+            />
+            {errors.prizeCohorts?.[index]?.maxVotesPerJudge && (
+              <p className="text-sm text-destructive">
+                {errors.prizeCohorts?.[index]?.maxVotesPerJudge?.message}
+              </p>
+            )}
+          </FormField>
+
           <EvaluationCriteriaField index={index} />
         </div>
       ))}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          label="Judging Mode"
-          required
-        >
-          <select
-            {...register("judgingMode")}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="manual">Manual</option>
-            <option value="automated">Automated</option>
-            <option value="hybrid">Hybrid</option>
-          </select>
-          {errors.judgingMode && (
-            <p className="text-sm text-destructive">
-              {errors.judgingMode.message}
-            </p>
-          )}
-        </FormField>
-
-        <FormField
-          label="Voting Mode"
-          required
-        >
-          <select
-            {...register("votingMode")}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-            <option value="judges_only">Judges Only</option>
-          </select>
-          {errors.votingMode && (
-            <p className="text-sm text-destructive">
-              {errors.votingMode.message}
-            </p>
-          )}
-        </FormField>
-      </div>
-
-      <FormField
-        label="Max Votes Per Judge"
-        required
-      >
-        <Input
-          type="number"
-          {...register("maxVotesPerJudge", { valueAsNumber: true })}
-          placeholder="5"
-          min="1"
-          className={errors.maxVotesPerJudge ? "border-destructive" : ""}
-        />
-        {errors.maxVotesPerJudge && (
-          <p className="text-sm text-destructive">
-            {errors.maxVotesPerJudge.message}
-          </p>
-        )}
-      </FormField>
     </div>
   );
 }
