@@ -1,7 +1,7 @@
+import { IconBell, IconSearch } from "@tabler/icons-react";
+import { NavUser } from "@/components/layout/nav-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { NavUser } from "@/components/layout/nav-user";
-import { IconBell, IconSearch } from "@tabler/icons-react";
 
 export function SiteHeader() {
   const userData = {

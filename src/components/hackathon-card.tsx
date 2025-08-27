@@ -1,7 +1,7 @@
-import { Hackathon } from "@/data/hackathons";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Image from "next/image";
+import type { Hackathon } from "@/data/hackathons";
 
 interface HackathonCardProps {
   hackathon: Hackathon;

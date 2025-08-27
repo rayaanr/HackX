@@ -1,5 +1,5 @@
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { HackathonCard } from "@/components/hackathon-card";
-import { hackathons } from "@/data/hackathons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { hackathons } from "@/data/hackathons";
 
 export default function ExplorePage() {
   const liveHackathons = hackathons.filter(
