@@ -12,10 +12,10 @@ import { hackathons } from "@/data/hackathons";
 
 export default function ExplorePage() {
   const liveHackathons = hackathons.filter(
-    (hackathon) => hackathon.status === "Live" || hackathon.status === "Voting"
+    (hackathon) => hackathon.status === "Live" || hackathon.status === "Voting",
   );
   const pastHackathons = hackathons.filter(
-    (hackathon) => hackathon.status === "Ended"
+    (hackathon) => hackathon.status === "Ended",
   );
 
   return (

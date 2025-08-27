@@ -74,94 +74,98 @@ export const hackathons: Hackathon[] = [
         id: "tech-fairness",
         title: "Tech Fairness Exploration Awards",
         prize: "18,000 USD",
-        description: "This track focuses on developing technologies that promote fairness and equity in digital spaces, particularly addressing bias in algorithms and data sets.",
+        description:
+          "This track focuses on developing technologies that promote fairness and equity in digital spaces, particularly addressing bias in algorithms and data sets.",
         suggestedDirections: [
           "Developing bias detection tools for AI models",
           "Creating inclusive design frameworks for digital products",
           "Building platforms for underrepresented communities",
-          "Designing transparent algorithms for public services"
+          "Designing transparent algorithms for public services",
         ],
         evaluationCriteria: [
           {
             name: "Innovation",
             description: "How novel and creative is the solution?",
-            maxScore: 25
+            maxScore: 25,
           },
           {
             name: "Impact",
-            description: "How significant is the potential positive impact on tech fairness?",
-            maxScore: 25
+            description:
+              "How significant is the potential positive impact on tech fairness?",
+            maxScore: 25,
           },
           {
             name: "Implementation",
             description: "How well is the solution executed technically?",
-            maxScore: 25
+            maxScore: 25,
           },
           {
             name: "Presentation",
             description: "How clearly is the solution communicated?",
-            maxScore: 25
-          }
-        ]
+            maxScore: 25,
+          },
+        ],
       },
       {
         id: "public-infrastructure",
         title: "Public Infrastructure Awards",
         prize: "25,000 USD",
-        description: "This track encourages building open-source tools and platforms that serve the public good, focusing on digital infrastructure for communities.",
+        description:
+          "This track encourages building open-source tools and platforms that serve the public good, focusing on digital infrastructure for communities.",
         suggestedDirections: [
           "Developing open-source civic engagement platforms",
           "Creating tools for transparent governance",
           "Building digital public goods for education or healthcare",
-          "Designing resilient community networks"
+          "Designing resilient community networks",
         ],
         evaluationCriteria: [
           {
             name: "Innovation",
             description: "How novel and creative is the solution?",
-            maxScore: 25
+            maxScore: 25,
           },
           {
             name: "Impact",
-            description: "How significant is the potential positive impact on public infrastructure?",
-            maxScore: 25
+            description:
+              "How significant is the potential positive impact on public infrastructure?",
+            maxScore: 25,
           },
           {
             name: "Implementation",
             description: "How well is the solution executed technically?",
-            maxScore: 25
+            maxScore: 25,
           },
           {
             name: "Presentation",
             description: "How clearly is the solution communicated?",
-            maxScore: 25
-          }
-        ]
-      }
+            maxScore: 25,
+          },
+        ],
+      },
     ],
     judges: [
       {
         id: "1",
         name: "Alex Johnson",
         handle: "@alexj",
-        avatar: "/placeholder-user.jpg"
+        avatar: "/placeholder-user.jpg",
       },
       {
         id: "2",
         name: "Maria Garcia",
         handle: "@mariag",
-        avatar: "/placeholder-user.jpg"
+        avatar: "/placeholder-user.jpg",
       },
       {
         id: "3",
         name: "David Chen",
         handle: "@davidc",
-        avatar: "/placeholder-user.jpg"
-      }
+        avatar: "/placeholder-user.jpg",
+      },
     ],
     votingRules: {
-      maxVotesPerJudge: 100
-    }
+      maxVotesPerJudge: 100,
+    },
   },
   {
     id: 2,

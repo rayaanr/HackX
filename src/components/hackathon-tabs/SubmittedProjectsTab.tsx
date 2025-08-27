@@ -12,7 +12,9 @@ export function SubmittedProjectsTab({ hackathon }: SubmittedProjectsTabProps) {
         <CardTitle>Submitted Projects</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground">No submitted projects available for this hackathon yet.</p>
+        <p className="text-muted-foreground">
+          No submitted projects available for this hackathon yet.
+        </p>
       </CardContent>
     </Card>
   );

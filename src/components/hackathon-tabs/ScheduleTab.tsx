@@ -24,7 +24,9 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground">No schedule information available for this hackathon.</p>
+          <p className="text-muted-foreground">
+            No schedule information available for this hackathon.
+          </p>
         )}
       </CardContent>
     </Card>
