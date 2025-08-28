@@ -69,31 +69,54 @@ const TECH_STACK_OPTIONS = [
 interface TechStackSelectorProps {
   name?: string;
   className?: string;
+  selectedTags?: string[];
+  onTagsChange?: (tags: string[]) => void;
 }
 
-export function TechStackSelector({ name = "techStack", className }: TechStackSelectorProps) {
+export function TechStackSelector({ 
+  name = "techStack", 
+  className,
+  selectedTags,
+  onTagsChange
+}: TechStackSelectorProps) {
   const { setValue, watch } = useFormContext();
   const [customTech, setCustomTech] = useState("");
-  const selectedTechStack = watch(name) || [];
+  
+  // Determine source of truth for selected tags
+  const formSelectedTags = watch(name) || [];
+  const currentSelectedTags = selectedTags !== undefined ? selectedTags : formSelectedTags;
 
   const toggleTech = (tech: string) => {
-    const currentTechStack = selectedTechStack || [];
-    if (currentTechStack.includes(tech)) {
-      setValue(name, currentTechStack.filter((t: string) => t !== tech));
+    const newTags = currentSelectedTags.includes(tech)
+      ? currentSelectedTags.filter((t: string) => t !== tech)
+      : [...currentSelectedTags, tech];
+      
+    if (onTagsChange) {
+      onTagsChange(newTags);
     } else {
-      setValue(name, [...currentTechStack, tech]);
+      setValue(name, newTags);
     }
   };
 
   const addCustomTech = () => {
-    if (customTech.trim() && !selectedTechStack.includes(customTech.trim())) {
-      setValue(name, [...selectedTechStack, customTech.trim()]);
+    if (customTech.trim() && !currentSelectedTags.includes(customTech.trim())) {
+      const newTags = [...currentSelectedTags, customTech.trim()];
+      if (onTagsChange) {
+        onTagsChange(newTags);
+      } else {
+        setValue(name, newTags);
+      }
       setCustomTech("");
     }
   };
 
   const removeTech = (tech: string) => {
-    setValue(name, selectedTechStack.filter((t: string) => t !== tech));
+    const newTags = currentSelectedTags.filter((t: string) => t !== tech);
+    if (onTagsChange) {
+      onTagsChange(newTags);
+    } else {
+      setValue(name, newTags);
+    }
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -106,11 +129,11 @@ export function TechStackSelector({ name = "techStack", className }: TechStackSe
   return (
     <div className={cn("space-y-4", className)}>
       {/* Selected tech stack */}
-      {selectedTechStack.length > 0 && (
+      {currentSelectedTags.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Selected Technologies:</h4>
           <div className="flex flex-wrap gap-2">
-            {selectedTechStack.map((tech: string) => (
+            {currentSelectedTags.map((tech: string) => (
               <Badge
                 key={tech}
                 variant="secondary"
@@ -163,7 +186,7 @@ export function TechStackSelector({ name = "techStack", className }: TechStackSe
             <Button
               key={tech}
               type="button"
-              variant={selectedTechStack.includes(tech) ? "default" : "outline"}
+              variant={currentSelectedTags.includes(tech) ? "default" : "outline"}
               size="sm"
               onClick={() => toggleTech(tech)}
               className="text-xs h-7"
