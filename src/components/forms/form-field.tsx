@@ -43,7 +43,7 @@ const FormField = forwardRef<HTMLDivElement, FormFieldProps>(
             return child;
           })}
           {error && (
-            <p className="text-sm text-destructive" role="alert">
+            <p id={`${fieldId}-error`} className="text-sm text-destructive" role="alert">
               {error}
             </p>
           )}
