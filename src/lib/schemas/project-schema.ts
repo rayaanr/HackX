@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Define shared schemas
-const urlSchema = z.url("Invalid URL").or(z.literal("")).optional();
+const urlSchema = z.string().url("Invalid URL").or(z.literal("")).optional();
 
 // Define the project schema
 export const projectSchema = z.object({
@@ -10,13 +10,9 @@ export const projectSchema = z.object({
   name: z.string().min(1, "Project name is required"),
   intro: z.string().min(1, "Project intro is required"),
   itchVideo: urlSchema,
-  sector: z.string().min(1, "Sector is required"),
-  progress: z.enum(["idea", "prototype", "mvp", "beta", "launched"], {
-    message: "Progress status is required",
-  }),
-  fundraisingStatus: z.enum(["not-seeking", "bootstrapping", "pre-seed", "seed", "series-a", "series-b", "series-c", "public"], {
-    message: "Fundraising status is required",
-  }),
+  sector: z.array(z.string()).min(1, "At least one sector is required"),
+  progress: z.string().min(1, "Progress description is required"),
+  fundraisingStatus: z.string().min(1, "Fundraising status is required"),
   description: z.string().min(1, "Full description is required"),
   
   // Tech stack step

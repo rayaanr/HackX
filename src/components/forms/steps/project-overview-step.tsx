@@ -4,19 +4,14 @@ import { FormField } from "@/components/forms/form-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { projectSchema } from "@/lib/schemas/project-schema";
 import { ImageIcon, Upload } from "lucide-react";
 import { useState, useRef } from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { LexicalEditor } from "@/components/forms/lexical-editor";
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
@@ -32,25 +27,6 @@ const SECTORS = [
   "Cybersecurity",
   "Web3",
   "Other",
-];
-
-const PROGRESS_OPTIONS = [
-  { value: "idea", label: "Idea" },
-  { value: "prototype", label: "Prototype" },
-  { value: "mvp", label: "MVP" },
-  { value: "beta", label: "Beta" },
-  { value: "launched", label: "Launched" },
-];
-
-const FUNDRAISING_STATUS = [
-  { value: "not-seeking", label: "Not Seeking Funding" },
-  { value: "bootstrapping", label: "Bootstrapping" },
-  { value: "pre-seed", label: "Pre-Seed" },
-  { value: "seed", label: "Seed" },
-  { value: "series-a", label: "Series A" },
-  { value: "series-b", label: "Series B" },
-  { value: "series-c", label: "Series C" },
-  { value: "public", label: "Public" },
 ];
 
 export function OverviewStep() {
@@ -140,9 +116,10 @@ export function OverviewStep() {
             required
             error={errors.intro?.message}
           >
-            <Input
+            <Textarea
               {...register("intro")}
               placeholder="Enter a short intro"
+              rows={3}
             />
           </FormField>
 
@@ -157,53 +134,43 @@ export function OverviewStep() {
             />
           </FormField>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              label="Sector"
-              description="What sector does your project belong to?"
-              required
-              error={errors.sector?.message}
+          <FormField
+            label="Sector"
+            description="What sector does your project belong to?"
+            required
+            error={errors.sector?.message}
+          >
+            <ToggleGroup 
+              type="multiple" 
+              value={Array.isArray(watchedFields.sector) ? watchedFields.sector : watchedFields.sector ? [watchedFields.sector] : []}
+              onValueChange={(value) => setValue("sector", value)}
+              className="flex flex-wrap gap-2"
             >
-              <Select 
-                onValueChange={(value) => setValue("sector", value)}
-                value={watchedFields.sector}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select sector" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SECTORS.map((sector) => (
-                    <SelectItem key={sector} value={sector}>
-                      {sector}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
+              {SECTORS.map((sector) => (
+                <ToggleGroupItem
+                  key={sector}
+                  value={sector}
+                  aria-label={`Toggle ${sector}`}
+                  className="px-3 py-2 h-auto rounded-md text-sm"
+                >
+                  {sector}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </FormField>
 
-            <FormField
-              label="Progress"
-              description="What stage is your project at?"
-              required
-              error={errors.progress?.message}
-            >
-              <Select 
-                onValueChange={(value) => setValue("progress", value as any)}
-                value={watchedFields.progress}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select progress" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PROGRESS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
-          </div>
+          <FormField
+            label="Progress"
+            description="What stage is your project at?"
+            required
+            error={errors.progress?.message}
+          >
+            <Textarea
+              {...register("progress")}
+              placeholder="Describe your project's progress..."
+              rows={4}
+            />
+          </FormField>
 
           <FormField
             label="Fundraising Status"
@@ -211,21 +178,11 @@ export function OverviewStep() {
             required
             error={errors.fundraisingStatus?.message}
           >
-            <Select 
-              onValueChange={(value) => setValue("fundraisingStatus", value as any)}
-              value={watchedFields.fundraisingStatus}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select fundraising status" />
-              </SelectTrigger>
-              <SelectContent>
-                {FUNDRAISING_STATUS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Textarea
+              {...register("fundraisingStatus")}
+              placeholder="Describe your fundraising status..."
+              rows={4}
+            />
           </FormField>
 
           <FormField
@@ -234,10 +191,10 @@ export function OverviewStep() {
             required
             error={errors.description?.message}
           >
-            <Textarea
-              {...register("description")}
+            <LexicalEditor
+              onChange={(content) => setValue("description", content)}
               placeholder="Enter a detailed description of your project..."
-              rows={6}
+              className="min-h-[200px]"
             />
           </FormField>
         </CardContent>
