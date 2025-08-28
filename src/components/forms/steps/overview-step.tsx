@@ -99,22 +99,7 @@ export function OverviewStep() {
         </CardContent>
       </Card>
 
-      <FormField
-        label="Short Description"
-        description="A brief description of your hackathon"
-        required
-      >
-        <Textarea
-          {...register("shortDescription")}
-          placeholder="Enter a short description"
-          className={cn(errors.shortDescription && "border-destructive")}
-        />
-        {errors.shortDescription && (
-          <p className="text-sm text-destructive">
-            {errors.shortDescription.message}
-          </p>
-        )}
-      </FormField>
+      {/* Removed duplicate Short Description block to avoid conflicting bindings */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
