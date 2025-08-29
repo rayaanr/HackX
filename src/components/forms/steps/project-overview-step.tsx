@@ -1,63 +1,44 @@
 "use client";
 
-import { FormField } from "@/components/forms/form-field";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { projectSchema } from "@/lib/schemas/project-schema";
-import { ImageIcon, Upload } from "lucide-react";
-import { useState, useRef } from "react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { LexicalEditor } from "@/components/forms/lexical-editor";
+import { LexicalEditor } from "@/components/ui/rich-text-editor";
+import { FileUploadField } from "@/components/ui/file-upload";
+import MultipleSelector, { Option } from "@/components/ui/multiselect";
+
+const SECTOR_OPTIONS: Option[] = [
+  { value: "ai-ml", label: "AI/ML" },
+  { value: "defi", label: "DeFi" },
+  { value: "gaming", label: "Gaming" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "education", label: "Education" },
+  { value: "e-commerce", label: "E-commerce" },
+  { value: "social-impact", label: "Social Impact" },
+  { value: "iot", label: "IoT" },
+  { value: "fintech", label: "FinTech" },
+  { value: "cybersecurity", label: "Cybersecurity" },
+  { value: "sustainability", label: "Sustainability" },
+  { value: "productivity", label: "Productivity" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "developer-tools", label: "Developer Tools" },
+];
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
-const SECTORS = [
-  "AI/ML",
-  "DeFi",
-  "Gaming",
-  "Healthcare",
-  "Education",
-  "E-commerce",
-  "Social Impact",
-  "IoT",
-  "Cybersecurity",
-  "Web3",
-  "Other",
-];
-
 export function OverviewStep() {
-  const {
-    register,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useFormContext<ProjectFormValues>();
-  
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setLogoPreview(result);
-        setValue("logo", result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
-  const watchedFields = watch();
+  const { control, setValue, watch } = useFormContext<ProjectFormValues>();
 
   return (
     <div className="space-y-8">
@@ -68,135 +49,173 @@ export function OverviewStep() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
-              label="Project Logo"
-              description="Upload a logo for your project"
-            >
-              <div className="flex items-center gap-4">
-                <div className="border-2 border-dashed rounded-lg w-16 h-16 flex items-center justify-center bg-muted/30">
-                  {logoPreview || watchedFields.logo ? (
-                    <img
-                      src={logoPreview || watchedFields.logo}
-                      alt="Logo preview"
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  ) : (
-                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                  )}
-                </div>
-                <Button variant="outline" type="button" onClick={triggerFileInput}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Logo
-                </Button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                />
-              </div>
-            </FormField>
+              control={control}
+              name="logo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Logo</FormLabel>
+                  <FileUploadField
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Drop your project logo here"
+                  />
+                  <FormDescription>
+                    Upload a logo for your project
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
-              label="Project Name"
-              description="The name of your project"
-              required
-              error={errors.name?.message}
-            >
-              <Input
-                {...register("name")}
-                placeholder="Enter project name"
-              />
-            </FormField>
+              control={control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Name *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter project name" {...field} />
+                  </FormControl>
+                  <FormDescription>The name of your project</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           <FormField
-            label="Project Intro"
-            description="A brief one-liner about your project"
-            required
-            error={errors.intro?.message}
-          >
-            <Textarea
-              {...register("intro")}
-              placeholder="Enter a short intro"
-              rows={3}
-            />
-          </FormField>
+            control={control}
+            name="intro"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Project Intro *</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter a short intro"
+                    rows={3}
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  A brief one-liner about your project
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
-            label="Itch Video"
-            description="Link to your project video (optional)"
-            error={errors.itchVideo?.message}
-          >
-            <Input
-              {...register("itchVideo")}
-              placeholder="https://example.com/video"
-            />
-          </FormField>
+            control={control}
+            name="itchVideo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Itch Video</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://example.com/video" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Link to your project video (optional)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
-            label="Sector"
-            description="What sector does your project belong to?"
-            required
-            error={errors.sector?.message}
-          >
-            <ToggleGroup 
-              type="multiple" 
-              value={Array.isArray(watchedFields.sector) ? watchedFields.sector : watchedFields.sector ? [watchedFields.sector] : []}
-              onValueChange={(value) => setValue("sector", value)}
-              className="flex flex-wrap gap-2"
-            >
-              {SECTORS.map((sector) => (
-                <ToggleGroupItem
-                  key={sector}
-                  value={sector}
-                  aria-label={`Toggle ${sector}`}
-                  className="px-3 py-2 h-auto rounded-md text-sm"
-                >
-                  {sector}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </FormField>
+            control={control}
+            name="sector"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sector *</FormLabel>
+                <FormControl>
+                  <MultipleSelector
+                    value={field.value.map((val) => ({
+                      label: val,
+                      value: val,
+                    }))}
+                    onChange={(options) =>
+                      field.onChange(options.map((option) => option.value))
+                    }
+                    defaultOptions={SECTOR_OPTIONS}
+                    placeholder="Select sectors..."
+                    creatable
+                    emptyIndicator={
+                      <p className="text-center text-lg leading-10 text-muted-foreground">
+                        No sectors found
+                      </p>
+                    }
+                  />
+                </FormControl>
+                <FormDescription>
+                  What sector does your project belong to?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
-            label="Progress"
-            description="What stage is your project at?"
-            required
-            error={errors.progress?.message}
-          >
-            <Textarea
-              {...register("progress")}
-              placeholder="Describe your project's progress..."
-              rows={4}
-            />
-          </FormField>
+            control={control}
+            name="progress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Progress *</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Describe your project's progress..."
+                    rows={4}
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  What stage is your project at?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
-            label="Fundraising Status"
-            description="What is your project's fundraising status?"
-            required
-            error={errors.fundraisingStatus?.message}
-          >
-            <Textarea
-              {...register("fundraisingStatus")}
-              placeholder="Describe your fundraising status..."
-              rows={4}
-            />
-          </FormField>
+            control={control}
+            name="fundraisingStatus"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fundraising Status *</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Describe your fundraising status..."
+                    rows={4}
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  What is your project's fundraising status?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
-            label="Full Description"
-            description="Provide a comprehensive description of your project"
-            required
-            error={errors.description?.message}
-          >
-            <LexicalEditor
-              onChange={(content) => setValue("description", content)}
-              placeholder="Enter a detailed description of your project..."
-              className="min-h-[200px]"
-            />
-          </FormField>
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Description *</FormLabel>
+                <FormControl>
+                  <LexicalEditor
+                    onChange={(content) => setValue("description", content)}
+                    placeholder="Enter a detailed description of your project..."
+                    className="min-h-[200px]"
+                  />
+                </FormControl>
+                <FormDescription>
+                  Provide a comprehensive description of your project
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
     </div>
