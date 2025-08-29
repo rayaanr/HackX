@@ -1,6 +1,12 @@
 "use client";
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -17,14 +23,18 @@ import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
 import { cn } from "@/lib/utils";
 import { Trash2, Plus } from "lucide-react";
-import { FileUploadField } from "@/components/forms/file-upload-field";
+import { FileUploadField } from "@/components/ui/file-upload";
 
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
 export function ScheduleStep() {
   const { control, watch, setValue } = useFormContext<HackathonFormValues>();
-  
-  const { fields: scheduleSlots, append: appendScheduleSlot, remove: removeScheduleSlot } = useFieldArray({
+
+  const {
+    fields: scheduleSlots,
+    append: appendScheduleSlot,
+    remove: removeScheduleSlot,
+  } = useFieldArray({
     control,
     name: "schedule",
   });
@@ -39,9 +49,9 @@ export function ScheduleStep() {
         workplace: "",
         position: "",
         xHandle: "",
-        picture: ""
+        picture: "",
       },
-      dateTime: new Date()
+      dateTime: new Date(),
     });
   };
 
@@ -60,9 +70,9 @@ export function ScheduleStep() {
           <p className="mt-2 text-sm text-muted-foreground">
             No schedule slots added yet
           </p>
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             className="mt-4"
             onClick={appendNewScheduleSlot}
           >
@@ -73,14 +83,16 @@ export function ScheduleStep() {
         <div className="space-y-6">
           {scheduleSlots.map((slot, index) => {
             const watchedFields = watch(`schedule.${index}`);
-            
+
             return (
               <div key={slot.id} className="border rounded-lg p-6 space-y-6">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-md font-medium">Schedule Slot #{index + 1}</h4>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
+                  <h4 className="text-md font-medium">
+                    Schedule Slot #{index + 1}
+                  </h4>
+                  <Button
+                    type="button"
+                    variant="ghost"
                     size="icon"
                     onClick={() => removeScheduleSlot(index)}
                   >
@@ -96,10 +108,7 @@ export function ScheduleStep() {
                       <FormItem>
                         <FormLabel>Event Name *</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Opening Ceremony"
-                            {...field}
-                          />
+                          <Input placeholder="Opening Ceremony" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -164,8 +173,10 @@ export function ScheduleStep() {
                 />
 
                 <div className="border-t pt-6">
-                  <h5 className="text-md font-medium mb-4">Speaker Information</h5>
-                  
+                  <h5 className="text-md font-medium mb-4">
+                    Speaker Information
+                  </h5>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={control}
@@ -174,10 +185,7 @@ export function ScheduleStep() {
                         <FormItem>
                           <FormLabel>Speaker Name *</FormLabel>
                           <FormControl>
-                            <Input
-                              placeholder="Speaker Name"
-                              {...field}
-                            />
+                            <Input placeholder="Speaker Name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -191,10 +199,7 @@ export function ScheduleStep() {
                         <FormItem>
                           <FormLabel>Speaker Real Name *</FormLabel>
                           <FormControl>
-                            <Input
-                              placeholder="John Doe"
-                              {...field}
-                            />
+                            <Input placeholder="John Doe" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -225,10 +230,7 @@ export function ScheduleStep() {
                         <FormItem>
                           <FormLabel>Position *</FormLabel>
                           <FormControl>
-                            <Input
-                              placeholder="Job Title"
-                              {...field}
-                            />
+                            <Input placeholder="Job Title" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -242,10 +244,7 @@ export function ScheduleStep() {
                         <FormItem>
                           <FormLabel>X.com Handle</FormLabel>
                           <FormControl>
-                            <Input
-                              placeholder="@username"
-                              {...field}
-                            />
+                            <Input placeholder="@username" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -258,10 +257,10 @@ export function ScheduleStep() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Speaker Picture</FormLabel>
-                          <FileUploadField 
-                            value={field.value} 
-                            onChange={field.onChange} 
-                            placeholder="Drop speaker picture here" 
+                          <FileUploadField
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Drop speaker picture here"
                           />
                           <FormMessage />
                         </FormItem>

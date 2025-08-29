@@ -28,7 +28,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { FileUploadField } from "@/components/forms/file-upload-field";
+import { FileUploadField } from "@/components/ui/file-upload";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";

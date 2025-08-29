@@ -15,7 +15,7 @@ import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { projectSchema } from "@/lib/schemas/project-schema";
 import { LexicalEditor } from "@/components/forms/lexical-editor";
-import { FileUploadField } from "@/components/forms/file-upload-field";
+import { FileUploadField } from "@/components/ui/file-upload";
 import MultipleSelector, { Option } from "@/components/ui/multiselect";
 
 const SECTOR_OPTIONS: Option[] = [
