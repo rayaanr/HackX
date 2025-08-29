@@ -5,6 +5,7 @@ import Providers from "./providers";
 import { ReactNode } from "react";
 import { ConditionalLayout } from "@/components/layout/conditional-layout";
 import "./globals.css";
+import "@/styles/styles.css"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

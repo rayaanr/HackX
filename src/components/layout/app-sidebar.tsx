@@ -11,6 +11,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -22,6 +23,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { ComponentProps } from "react";
+import { NavUser } from "./nav-user";
 
 const nav = {
   main: {
@@ -143,6 +145,9 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           ),
         )}
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser />
+      </SidebarFooter>
     </Sidebar>
   );
 }

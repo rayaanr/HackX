@@ -5,6 +5,8 @@ import { ReactNode } from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useAuth } from "@/providers/auth-provider";
+import { WaveLoader } from "../ui/loader";
 
 interface ConditionalLayoutProps {
   children: ReactNode;
@@ -12,15 +14,27 @@ interface ConditionalLayoutProps {
 
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
+  const { loading } = useAuth();
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
+  const isHomePage = pathname === "/";
 
-  if (isAuthPage) {
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <WaveLoader />
+      </div>
+    );
+  }
+
+  // Auth pages and home page don't use sidebar layout
+  if (isAuthPage || isHomePage) {
     return <>{children}</>;
   }
 
   return (
     <SidebarProvider>
-      <AppSidebar variant="sidebar" />
+      <AppSidebar />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
