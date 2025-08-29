@@ -206,14 +206,13 @@ const MultipleSelector = ({
   const debouncedSearchTerm = useDebounce(inputValue, delay || 500)
 
   const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node) &&
-      inputRef.current &&
-      !inputRef.current.contains(event.target as Node)
-    ) {
+    const target = event.target
+    if (!target || !(target instanceof Node)) return
+    const inDropdown = dropdownRef.current?.contains(target)
+    const inInput = inputRef.current?.contains(target)
+    if (!inDropdown && !inInput) {
       setOpen(false)
-      inputRef.current.blur()
+      inputRef.current?.blur()
     }
   }
 
