@@ -50,30 +50,40 @@ const scheduleSlotSchema = z.object({
   dateTime: z.date(),
 });
 
+// Define period schemas
+const periodSchema = z.object({
+  registrationStartDate: z.date().optional(),
+  registrationEndDate: z.date().optional(),
+}).refine(
+  (data) => !data.registrationStartDate || !data.registrationEndDate || data.registrationStartDate < data.registrationEndDate,
+  { message: "End date must be after start date", path: ["registrationEndDate"] }
+);
+
+const hackathonPeriodSchema = z.object({
+  hackathonStartDate: z.date().optional(),
+  hackathonEndDate: z.date().optional(),
+}).refine(
+  (data) => !data.hackathonStartDate || !data.hackathonEndDate || data.hackathonStartDate < data.hackathonEndDate,
+  { message: "End date must be after start date", path: ["hackathonEndDate"] }
+);
+
+const votingPeriodSchema = z.object({
+  votingStartDate: z.date().optional(),
+  votingEndDate: z.date().optional(),
+}).refine(
+  (data) => !data.votingStartDate || !data.votingEndDate || data.votingStartDate < data.votingEndDate,
+  { message: "End date must be after start date", path: ["votingEndDate"] }
+);
+
 // Define the main hackathon schema
 export const hackathonSchema = z.object({
   // Overview step
   name: z.string().min(1, "Hackathon name is required"),
   visual: z.string().optional(),
   shortDescription: z.string().min(1, "Short description is required"),
-  registrationStartDate: z.date({
-    message: "Registration start date is required",
-  }),
-  registrationEndDate: z.date({
-    message: "Registration end date is required",
-  }),
-  hackathonStartDate: z.date({
-    message: "Hackathon start date is required",
-  }),
-  hackathonEndDate: z.date({
-    message: "Hackathon end date is required",
-  }),
-  votingStartDate: z.date({
-    message: "Voting start date is required",
-  }),
-  votingEndDate: z.date({
-    message: "Voting end date is required",
-  }),
+  registrationPeriod: periodSchema,
+  hackathonPeriod: hackathonPeriodSchema,
+  votingPeriod: votingPeriodSchema,
   techStack: z.array(z.string()).min(1, "At least one tech stack is required"),
   experienceLevel: z.enum(["beginner", "intermediate", "advanced", "all"]),
   location: z.string().min(1, "Location is required"),
@@ -100,35 +110,24 @@ export const hackathonSchema = z.object({
 export const validateDateConsistency = (data: any) => {
   const errors: Record<string, string> = {};
   
-  if (data.registrationStartDate && data.registrationEndDate) {
-    if (data.registrationStartDate >= data.registrationEndDate) {
-      errors.registrationEndDate = "Registration end date must be after start date";
-    }
-  }
-  
-  if (data.hackathonStartDate && data.hackathonEndDate) {
-    if (data.hackathonStartDate >= data.hackathonEndDate) {
-      errors.hackathonEndDate = "Hackathon end date must be after start date";
-    }
-  }
-  
-  if (data.votingStartDate && data.votingEndDate) {
-    if (data.votingStartDate >= data.votingEndDate) {
-      errors.votingEndDate = "Voting end date must be after start date";
-    }
-  }
+  const regStart = data.registrationPeriod?.registrationStartDate;
+  const regEnd = data.registrationPeriod?.registrationEndDate;
+  const hackStart = data.hackathonPeriod?.hackathonStartDate;
+  const hackEnd = data.hackathonPeriod?.hackathonEndDate;
+  const voteStart = data.votingPeriod?.votingStartDate;
+  const voteEnd = data.votingPeriod?.votingEndDate;
   
   // Check that registration ends before hackathon starts
-  if (data.registrationEndDate && data.hackathonStartDate) {
-    if (data.registrationEndDate >= data.hackathonStartDate) {
-      errors.hackathonStartDate = "Hackathon must start after registration ends";
+  if (regEnd && hackStart) {
+    if (regEnd >= hackStart) {
+      errors["hackathonPeriod.hackathonStartDate"] = "Hackathon must start after registration ends";
     }
   }
   
   // Check that hackathon ends before voting starts
-  if (data.hackathonEndDate && data.votingStartDate) {
-    if (data.hackathonEndDate >= data.votingStartDate) {
-      errors.votingStartDate = "Voting must start after hackathon ends";
+  if (hackEnd && voteStart) {
+    if (hackEnd >= voteStart) {
+      errors["votingPeriod.votingStartDate"] = "Voting must start after hackathon ends";
     }
   }
   

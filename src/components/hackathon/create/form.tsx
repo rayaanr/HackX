@@ -16,6 +16,18 @@ export function CreateHackathonForm() {
     defaultValues: {
       name: "",
       shortDescription: "",
+      registrationPeriod: {
+        registrationStartDate: undefined,
+        registrationEndDate: undefined,
+      },
+      hackathonPeriod: {
+        hackathonStartDate: undefined,
+        hackathonEndDate: undefined,
+      },
+      votingPeriod: {
+        votingStartDate: undefined,
+        votingEndDate: undefined,
+      },
       techStack: [],
       experienceLevel: "all",
       location: "",

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Trophy } from "lucide-react";
 
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
@@ -40,55 +40,179 @@ export function PrizesStep() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex justify-end">
         <Button type="button" onClick={appendNewPrizeCohort} variant="outline">
           <Plus className="mr-2 h-4 w-4" /> Add Prize Cohort
         </Button>
       </div>
 
-      {prizeCohorts.map((prizeCohort, index) => (
-        <div key={prizeCohort.id} className="border rounded-lg p-6 space-y-6">
-          <div className="flex justify-end">
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="icon"
-              onClick={() => removePrizeCohort(index)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
+      {prizeCohorts.length === 0 ? (
+        <div className="text-center py-8 border border-dashed rounded-lg">
+          <Trophy className="mx-auto h-12 w-12 text-muted-foreground" />
+          <p className="mt-2 text-sm text-muted-foreground">
+            No prizes added yet
+          </p>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="mt-4"
+            onClick={appendNewPrizeCohort}
+          >
+            Add your first prize
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {prizeCohorts.map((prizeCohort, index) => (
+            <div key={prizeCohort.id} className="border rounded-lg p-6 space-y-6">
+              <div className="flex justify-end">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => removePrizeCohort(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={control}
-              name={`prizeCohorts.${index}.name`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prize Cohort Name *</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Overall Winner, Best Design, etc."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={control}
+                  name={`prizeCohorts.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Prize Cohort Name *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Overall Winner, Best Design, etc."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={control}
+                    name={`prizeCohorts.${index}.numberOfWinners`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Number of Winners *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="1"
+                            min="1"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name={`prizeCohorts.${index}.prizeAmount`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Prize Amount ($) *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="1000"
+                            min="0"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
               <FormField
                 control={control}
-                name={`prizeCohorts.${index}.numberOfWinners`}
+                name={`prizeCohorts.${index}.description`}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Number of Winners *</FormLabel>
+                    <FormLabel>Description *</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe this prize cohort"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={control}
+                  name={`prizeCohorts.${index}.judgingMode`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Judging Mode *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select judging mode" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="manual">Manual</SelectItem>
+                          <SelectItem value="automated">Automated</SelectItem>
+                          <SelectItem value="hybrid">Hybrid</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={control}
+                  name={`prizeCohorts.${index}.votingMode`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Voting Mode *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select voting mode" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="public">Public</SelectItem>
+                          <SelectItem value="private">Private</SelectItem>
+                          <SelectItem value="judges_only">Judges Only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={control}
+                name={`prizeCohorts.${index}.maxVotesPerJudge`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Max Votes Per Judge *</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="1"
+                        placeholder="5"
                         min="1"
                         {...field}
                         onChange={(e) => field.onChange(Number(e.target.value))}
@@ -99,116 +223,11 @@ export function PrizesStep() {
                 )}
               />
 
-              <FormField
-                control={control}
-                name={`prizeCohorts.${index}.prizeAmount`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Prize Amount ($) *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="1000"
-                        min="0"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <EvaluationCriteriaField index={index} />
             </div>
-          </div>
-
-          <FormField
-            control={control}
-            name={`prizeCohorts.${index}.description`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description *</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Describe this prize cohort"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={control}
-              name={`prizeCohorts.${index}.judgingMode`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Judging Mode *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select judging mode" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="manual">Manual</SelectItem>
-                      <SelectItem value="automated">Automated</SelectItem>
-                      <SelectItem value="hybrid">Hybrid</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name={`prizeCohorts.${index}.votingMode`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Voting Mode *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select voting mode" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="private">Private</SelectItem>
-                      <SelectItem value="judges_only">Judges Only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={control}
-            name={`prizeCohorts.${index}.maxVotesPerJudge`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Max Votes Per Judge *</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="5"
-                    min="1"
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <EvaluationCriteriaField index={index} />
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
