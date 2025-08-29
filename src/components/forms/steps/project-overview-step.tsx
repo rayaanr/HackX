@@ -1,41 +1,44 @@
 "use client";
 
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { projectSchema } from "@/lib/schemas/project-schema";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LexicalEditor } from "@/components/forms/lexical-editor";
 import { FileUploadField } from "@/components/forms/file-upload-field";
+import MultipleSelector, { Option } from "@/components/ui/multiselect";
+
+const SECTOR_OPTIONS: Option[] = [
+  { value: "ai-ml", label: "AI/ML" },
+  { value: "defi", label: "DeFi" },
+  { value: "gaming", label: "Gaming" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "education", label: "Education" },
+  { value: "e-commerce", label: "E-commerce" },
+  { value: "social-impact", label: "Social Impact" },
+  { value: "iot", label: "IoT" },
+  { value: "fintech", label: "FinTech" },
+  { value: "cybersecurity", label: "Cybersecurity" },
+  { value: "sustainability", label: "Sustainability" },
+  { value: "productivity", label: "Productivity" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "developer-tools", label: "Developer Tools" },
+];
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
-const SECTORS = [
-  "AI/ML",
-  "DeFi",
-  "Gaming",
-  "Healthcare",
-  "Education",
-  "E-commerce",
-  "Social Impact",
-  "IoT",
-  "Cybersecurity",
-  "Web3",
-  "Other",
-];
-
 export function OverviewStep() {
-  const {
-    control,
-    setValue,
-    watch,
-  } = useFormContext<ProjectFormValues>();
-
-  const watchedFields = watch();
+  const { control, setValue, watch } = useFormContext<ProjectFormValues>();
 
   return (
     <div className="space-y-8">
@@ -51,12 +54,14 @@ export function OverviewStep() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Project Logo</FormLabel>
-                  <FileUploadField 
-                    value={field.value} 
-                    onChange={field.onChange} 
-                    placeholder="Drop your project logo here" 
+                  <FileUploadField
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Drop your project logo here"
                   />
-                  <FormDescription>Upload a logo for your project</FormDescription>
+                  <FormDescription>
+                    Upload a logo for your project
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -69,10 +74,7 @@ export function OverviewStep() {
                 <FormItem>
                   <FormLabel>Project Name *</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter project name"
-                      {...field}
-                    />
+                    <Input placeholder="Enter project name" {...field} />
                   </FormControl>
                   <FormDescription>The name of your project</FormDescription>
                   <FormMessage />
@@ -94,7 +96,9 @@ export function OverviewStep() {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>A brief one-liner about your project</FormDescription>
+                <FormDescription>
+                  A brief one-liner about your project
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -107,12 +111,11 @@ export function OverviewStep() {
               <FormItem>
                 <FormLabel>Itch Video</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="https://example.com/video"
-                    {...field}
-                  />
+                  <Input placeholder="https://example.com/video" {...field} />
                 </FormControl>
-                <FormDescription>Link to your project video (optional)</FormDescription>
+                <FormDescription>
+                  Link to your project video (optional)
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -125,25 +128,27 @@ export function OverviewStep() {
               <FormItem>
                 <FormLabel>Sector *</FormLabel>
                 <FormControl>
-                  <ToggleGroup 
-                    type="multiple" 
-                    value={Array.isArray(watchedFields.sector) ? watchedFields.sector : watchedFields.sector ? [watchedFields.sector] : []}
-                    onValueChange={(value) => setValue("sector", value)}
-                    className="flex flex-wrap gap-2"
-                  >
-                    {SECTORS.map((sector) => (
-                      <ToggleGroupItem
-                        key={sector}
-                        value={sector}
-                        aria-label={`Toggle ${sector}`}
-                        className="px-3 py-2 h-auto rounded-md text-sm"
-                      >
-                        {sector}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
+                  <MultipleSelector
+                    value={field.value.map((val) => ({
+                      label: val,
+                      value: val,
+                    }))}
+                    onChange={(options) =>
+                      field.onChange(options.map((option) => option.value))
+                    }
+                    defaultOptions={SECTOR_OPTIONS}
+                    placeholder="Select sectors..."
+                    creatable
+                    emptyIndicator={
+                      <p className="text-center text-lg leading-10 text-muted-foreground">
+                        No sectors found
+                      </p>
+                    }
+                  />
                 </FormControl>
-                <FormDescription>What sector does your project belong to?</FormDescription>
+                <FormDescription>
+                  What sector does your project belong to?
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -162,7 +167,9 @@ export function OverviewStep() {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>What stage is your project at?</FormDescription>
+                <FormDescription>
+                  What stage is your project at?
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -181,7 +188,9 @@ export function OverviewStep() {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>What is your project's fundraising status?</FormDescription>
+                <FormDescription>
+                  What is your project's fundraising status?
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -200,7 +209,9 @@ export function OverviewStep() {
                     className="min-h-[200px]"
                   />
                 </FormControl>
-                <FormDescription>Provide a comprehensive description of your project</FormDescription>
+                <FormDescription>
+                  Provide a comprehensive description of your project
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

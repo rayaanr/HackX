@@ -1,6 +1,13 @@
 "use client";
 
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -26,8 +33,9 @@ import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
 import { LexicalEditor } from "@/components/forms/lexical-editor";
-import { TechStackSelector } from "@/components/forms/tech-stack-selector";
 import { SocialLinksInput } from "@/components/forms/social-links-input";
+import { TECH_STACK_OPTIONS } from "./project-tech-stack-step";
+import MultipleSelector from "@/components/ui/multiselect";
 
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
@@ -70,7 +78,9 @@ export function OverviewStep() {
                     onChange={field.onChange}
                     placeholder="Drop your hackathon logo here"
                   />
-                  <FormDescription>Upload a logo for your hackathon</FormDescription>
+                  <FormDescription>
+                    Upload a logo for your hackathon
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -90,7 +100,9 @@ export function OverviewStep() {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>A brief description of your hackathon</FormDescription>
+                <FormDescription>
+                  A brief description of your hackathon
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -358,7 +370,10 @@ export function OverviewStep() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Experience Level *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select experience level" />
@@ -371,7 +386,9 @@ export function OverviewStep() {
                       <SelectItem value="all">All Levels</SelectItem>
                     </SelectContent>
                   </Select>
-                  <FormDescription>Target experience level for participants</FormDescription>
+                  <FormDescription>
+                    Target experience level for participants
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -389,7 +406,9 @@ export function OverviewStep() {
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>Where the hackathon will take place</FormDescription>
+                  <FormDescription>
+                    Where the hackathon will take place
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -403,9 +422,27 @@ export function OverviewStep() {
               <FormItem>
                 <FormLabel>Tech Stack *</FormLabel>
                 <FormControl>
-                  <TechStackSelector />
+                  <MultipleSelector
+                    value={field.value.map((val) => ({
+                      label: val,
+                      value: val,
+                    }))}
+                    onChange={(options) =>
+                      field.onChange(options.map((option) => option.value))
+                    }
+                    defaultOptions={TECH_STACK_OPTIONS}
+                    placeholder="Select technologies..."
+                    creatable
+                    emptyIndicator={
+                      <p className="text-center text-lg leading-10 text-muted-foreground">
+                        No technologies found
+                      </p>
+                    }
+                  />
                 </FormControl>
-                <FormDescription>Technologies and themes for your hackathon</FormDescription>
+                <FormDescription>
+                  Technologies and themes for your hackathon
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -427,7 +464,9 @@ export function OverviewStep() {
                 <FormControl>
                   <SocialLinksInput />
                 </FormControl>
-                <FormDescription>Add links to help participants connect with you</FormDescription>
+                <FormDescription>
+                  Add links to help participants connect with you
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -453,7 +492,9 @@ export function OverviewStep() {
                     className="min-h-[200px]"
                   />
                 </FormControl>
-                <FormDescription>Provide a comprehensive description of your hackathon</FormDescription>
+                <FormDescription>
+                  Provide a comprehensive description of your hackathon
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
