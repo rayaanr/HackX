@@ -49,18 +49,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
-      
-      // Update query cache when auth state changes
       queryClient.setQueryData(['session'], session)
-      
-      // Only show toast for explicit auth actions, not for token refresh or initial load
       if (event === 'SIGNED_OUT') {
         toast.success('Successfully signed out!')
         queryClient.clear()
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription?.unsubscribe?.()
+    }
   }, [supabase.auth, queryClient])
 
   // Sign in mutation
