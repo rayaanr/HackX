@@ -9,11 +9,16 @@ import { IconBrandGoogle } from "@tabler/icons-react";
 import Link from "next/link";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { signupSchema, type SignupFormValues } from "@/lib/schemas/auth-schema";
+import { useAuth } from "@/providers/auth-provider";
+import { useRouter } from "next/navigation";
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const { signUp, signInWithGoogle, loading } = useAuth();
+  const router = useRouter();
+  
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -25,8 +30,24 @@ export function SignupForm({
     },
   });
 
-  function onSubmit(data: SignupFormValues) {
-    console.log(data);
+  async function onSubmit(data: SignupFormValues) {
+    try {
+      await signUp(data.email, data.password, {
+        firstName: data.firstName,
+        lastName: data.lastName,
+      });
+      // Stay on signup page to show success message
+    } catch (error) {
+      // Error handling is done in the auth provider
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      // Error handling is done in the auth provider
+    }
   }
 
   return (
@@ -110,17 +131,23 @@ export function SignupForm({
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
-            Create account
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Creating account..." : "Create account"}
           </Button>
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
             <span className="bg-background text-muted-foreground relative z-10 px-2">
               Or continue with
             </span>
           </div>
-          <Button variant="outline" className="w-full" type="button">
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+          >
             <IconBrandGoogle className="mr-2 h-4 w-4" />
-            Sign up with Google
+            {loading ? "Signing up..." : "Sign up with Google"}
           </Button>
         </div>
         <div className="text-center text-sm">

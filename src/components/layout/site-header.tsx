@@ -3,13 +3,11 @@ import { NavUser } from "@/components/layout/nav-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "./theme-toggle";
+import { useAuth } from "@/providers/auth-provider";
+import Link from "next/link";
 
 export function SiteHeader() {
-  const userData = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: "/avatars/john.jpg",
-  };
+  const { user } = useAuth();
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height) sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -23,10 +21,23 @@ export function SiteHeader() {
         {/* Right side icons and user */}
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <IconBell className="size-4" />
-          </Button>
-          <NavUser user={userData} variant="header" />
+          {user ? (
+            <>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <IconBell className="size-4" />
+              </Button>
+              <NavUser variant="header" />
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" asChild>
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">Sign Up</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>
