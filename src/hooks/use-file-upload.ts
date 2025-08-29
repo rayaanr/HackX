@@ -362,9 +362,9 @@ export const useFileUpload = (
   )
 
   const openFileDialog = useCallback(() => {
-    if (inputRef.current) {
-      inputRef.current.click()
-    }
+    const input = inputRef.current
+    if (!input || input.disabled) return
+    input.click()
   }, [])
 
   const getInputProps = useCallback(
