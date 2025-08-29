@@ -31,7 +31,7 @@ import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
 import { LexicalEditor } from "@/components/ui/rich-text-editor";
-import { SocialLinksInput } from "@/components/forms/social-links-input";
+import { SocialLinksInput } from "@/components/hackathon/create/steps/social-links-input";
 import { TECH_STACK_OPTIONS } from "@/components/forms/steps/project-tech-stack-step";
 import MultipleSelector from "@/components/ui/multiselect";
 
@@ -338,19 +338,7 @@ export function OverviewStep() {
         )}
       />
 
-      <FormField
-        control={control}
-        name="socialLinks"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Social Media & Communication</FormLabel>
-            <FormControl>
-              <SocialLinksInput />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <SocialLinksInput className="pb-4"/>
 
       <FormField
         control={control}
