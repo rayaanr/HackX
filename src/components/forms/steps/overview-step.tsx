@@ -1,6 +1,6 @@
 "use client";
 
-import { FormField } from "@/components/forms/form-field";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -31,12 +31,7 @@ import { SocialLinksInput } from "@/components/forms/social-links-input";
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
 export function OverviewStep() {
-  const {
-    register,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useFormContext<HackathonFormValues>();
+  const { control, setValue, watch } = useFormContext<HackathonFormValues>();
 
   const watchedFields = watch();
 
@@ -49,53 +44,70 @@ export function OverviewStep() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
-              label="Hackathon Name"
-              description="The name of your hackathon"
-              required
-              error={errors.name?.message}
-            >
-              <Input
-                {...register("name")}
-                placeholder="Enter hackathon name"
-              />
-            </FormField>
+              control={control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Hackathon Name *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter hackathon name" {...field} />
+                  </FormControl>
+                  <FormDescription>The name of your hackathon</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
-              label="Logo"
-              description="Upload a logo for your hackathon"
-            >
-              <div className="flex items-center gap-4">
-                <div className="border-2 border-dashed rounded-lg w-16 h-16 flex items-center justify-center bg-muted/30">
-                  {watchedFields.logo ? (
-                    <img
-                      src={watchedFields.logo}
-                      alt="Logo preview"
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  ) : (
-                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                  )}
-                </div>
-                <Button variant="outline" type="button">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Logo
-                </Button>
-              </div>
-            </FormField>
+              control={control}
+              name="logo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Logo</FormLabel>
+                  <FormControl>
+                    <div className="flex items-center gap-4">
+                      <div className="border-2 border-dashed rounded-lg w-16 h-16 flex items-center justify-center bg-muted/30">
+                        {watchedFields.logo ? (
+                          <img
+                            src={watchedFields.logo}
+                            alt="Logo preview"
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : (
+                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <Button variant="outline" type="button">
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Logo
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormDescription>Upload a logo for your hackathon</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           <FormField
-            label="Short Description"
-            description="A brief description of your hackathon"
-            required
-            error={errors.shortDescription?.message}
-          >
-            <Textarea
-              {...register("shortDescription")}
-              placeholder="Enter a short description"
-              rows={3}
-            />
-          </FormField>
+            control={control}
+            name="shortDescription"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Short Description *</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter a short description"
+                    rows={3}
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>A brief description of your hackathon</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
 
@@ -103,242 +115,248 @@ export function OverviewStep() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          label="Registration Start Date"
-          description="When registration opens"
-          required
-        >
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !watchedFields.registrationStartDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {watchedFields.registrationStartDate ? (
-                  format(watchedFields.registrationStartDate, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={watchedFields.registrationStartDate}
-                onSelect={(date) =>
-                  setValue("registrationStartDate", date as Date)
-                }
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          {errors.registrationStartDate && (
-            <p className="text-sm text-destructive">
-              {errors.registrationStartDate.message}
-            </p>
+          control={control}
+          name="registrationStartDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Registration Start Date *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormDescription>When registration opens</FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
-        </FormField>
+        />
 
         <FormField
-          label="Registration End Date"
-          description="When registration closes"
-          required
-        >
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !watchedFields.registrationEndDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {watchedFields.registrationEndDate ? (
-                  format(watchedFields.registrationEndDate, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={watchedFields.registrationEndDate}
-                onSelect={(date) =>
-                  setValue("registrationEndDate", date as Date)
-                }
-                autoFocus
-              />
-            </PopoverContent>
-          </Popover>
-          {errors.registrationEndDate && (
-            <p className="text-sm text-destructive">
-              {errors.registrationEndDate.message}
-            </p>
+          control={control}
+          name="registrationEndDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Registration End Date *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    autoFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormDescription>When registration closes</FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
-        </FormField>
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          label="Hackathon Start Date"
-          description="When the hackathon begins"
-          required
-        >
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !watchedFields.hackathonStartDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {watchedFields.hackathonStartDate ? (
-                  format(watchedFields.hackathonStartDate, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={watchedFields.hackathonStartDate}
-                onSelect={(date) =>
-                  setValue("hackathonStartDate", date as Date)
-                }
-                autoFocus
-              />
-            </PopoverContent>
-          </Popover>
-          {errors.hackathonStartDate && (
-            <p className="text-sm text-destructive">
-              {errors.hackathonStartDate.message}
-            </p>
+          control={control}
+          name="hackathonStartDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Hackathon Start Date *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    autoFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormDescription>When the hackathon begins</FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
-        </FormField>
+        />
 
         <FormField
-          label="Hackathon End Date"
-          description="When the hackathon ends"
-          required
-        >
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !watchedFields.hackathonEndDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {watchedFields.hackathonEndDate ? (
-                  format(watchedFields.hackathonEndDate, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={watchedFields.hackathonEndDate}
-                onSelect={(date) => setValue("hackathonEndDate", date as Date)}
-                autoFocus
-              />
-            </PopoverContent>
-          </Popover>
-          {errors.hackathonEndDate && (
-            <p className="text-sm text-destructive">
-              {errors.hackathonEndDate.message}
-            </p>
+          control={control}
+          name="hackathonEndDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Hackathon End Date *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    autoFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormDescription>When the hackathon ends</FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
-        </FormField>
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          label="Voting Start Date"
-          description="When voting begins"
-          required
-        >
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !watchedFields.votingStartDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {watchedFields.votingStartDate ? (
-                  format(watchedFields.votingStartDate, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={watchedFields.votingStartDate}
-                onSelect={(date) => setValue("votingStartDate", date as Date)}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          {errors.votingStartDate && (
-            <p className="text-sm text-destructive">
-              {errors.votingStartDate.message}
-            </p>
+          control={control}
+          name="votingStartDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Voting Start Date *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormDescription>When voting begins</FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
-        </FormField>
+        />
 
         <FormField
-          label="Voting End Date"
-          description="When voting ends"
-          required
-        >
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !watchedFields.votingEndDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {watchedFields.votingEndDate ? (
-                  format(watchedFields.votingEndDate, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={watchedFields.votingEndDate}
-                onSelect={(date) => setValue("votingEndDate", date as Date)}
-                autoFocus
-              />
-            </PopoverContent>
-          </Popover>
-          {errors.votingEndDate && (
-            <p className="text-sm text-destructive">
-              {errors.votingEndDate.message}
-            </p>
+          control={control}
+          name="votingEndDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Voting End Date *</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    autoFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormDescription>When voting ends</FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
-        </FormField>
+        />
       </div>
 
       <Card>
@@ -348,45 +366,63 @@ export function OverviewStep() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
-              label="Experience Level"
-              description="Target experience level for participants"
-              required
-              error={errors.experienceLevel?.message}
-            >
-              <Select onValueChange={(value) => setValue("experienceLevel", value as any)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select experience level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                  <SelectItem value="all">All Levels</SelectItem>
-                </SelectContent>
-              </Select>
-            </FormField>
+              control={control}
+              name="experienceLevel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Experience Level *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select experience level" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="beginner">Beginner</SelectItem>
+                      <SelectItem value="intermediate">Intermediate</SelectItem>
+                      <SelectItem value="advanced">Advanced</SelectItem>
+                      <SelectItem value="all">All Levels</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>Target experience level for participants</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
-              label="Location"
-              description="Where the hackathon will take place"
-              required
-              error={errors.location?.message}
-            >
-              <Input
-                {...register("location")}
-                placeholder="e.g., Online, San Francisco, CA"
-              />
-            </FormField>
+              control={control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., Online, San Francisco, CA"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>Where the hackathon will take place</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           <FormField
-            label="Tech Stack"
-            description="Technologies and themes for your hackathon"
-            required
-            error={errors.techStack?.message}
-          >
-            <TechStackSelector />
-          </FormField>
+            control={control}
+            name="techStack"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tech Stack *</FormLabel>
+                <FormControl>
+                  <TechStackSelector />
+                </FormControl>
+                <FormDescription>Technologies and themes for your hackathon</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
 
@@ -396,11 +432,19 @@ export function OverviewStep() {
         </CardHeader>
         <CardContent>
           <FormField
-            label="Social Media & Communication"
-            description="Add links to help participants connect with you"
-          >
-            <SocialLinksInput />
-          </FormField>
+            control={control}
+            name="socialLinks"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Social Media & Communication</FormLabel>
+                <FormControl>
+                  <SocialLinksInput />
+                </FormControl>
+                <FormDescription>Add links to help participants connect with you</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
 
@@ -410,17 +454,23 @@ export function OverviewStep() {
         </CardHeader>
         <CardContent>
           <FormField
-            label="Detailed Description"
-            description="Provide a comprehensive description of your hackathon"
-            required
-            error={errors.fullDescription?.message}
-          >
-            <LexicalEditor
-              onChange={(content) => setValue("fullDescription", content)}
-              placeholder="Enter a detailed description of your hackathon, including goals, themes, prizes, and what participants can expect..."
-              className="min-h-[200px]"
-            />
-          </FormField>
+            control={control}
+            name="fullDescription"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Detailed Description *</FormLabel>
+                <FormControl>
+                  <LexicalEditor
+                    onChange={(content) => setValue("fullDescription", content)}
+                    placeholder="Enter a detailed description of your hackathon, including goals, themes, prizes, and what participants can expect..."
+                    className="min-h-[200px]"
+                  />
+                </FormControl>
+                <FormDescription>Provide a comprehensive description of your hackathon</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
     </div>

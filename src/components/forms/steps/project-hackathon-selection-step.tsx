@@ -1,6 +1,6 @@
 "use client";
 
-import { FormField } from "@/components/forms/form-field";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useFormContext } from "react-hook-form";
@@ -57,9 +57,9 @@ type ProjectFormValues = z.infer<typeof projectSchema>;
 
 export function HackathonSelectionStep() {
   const {
+    control,
     setValue,
     watch,
-    formState: { errors },
   } = useFormContext<ProjectFormValues>();
   
   const [hackathons] = useState(MOCK_HACKATHONS);
@@ -92,65 +92,71 @@ export function HackathonSelectionStep() {
         </CardHeader>
         <CardContent className="space-y-6">
           <FormField
-            label="Hackathon Selection"
-            description="Select the hackathons you want to submit your project to"
-            required
-            error={errors.hackathonIds?.message}
-          >
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Button
-                  variant={filter === "all" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilter("all")}
-                >
-                  All Hackathons
-                </Button>
-                <Button
-                  variant={filter === "live" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilter("live")}
-                >
-                  Live
-                </Button>
-                <Button
-                  variant={filter === "upcoming" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilter("upcoming")}
-                >
-                  Upcoming
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredHackathons.map((hackathon) => (
-                  <div 
-                    key={hackathon.id} 
-                    className="relative"
-                  >
-                    <div 
-                      className="cursor-pointer"
-                      onClick={() => toggleHackathonSelection(hackathon.id)}
-                    >
-                      <ProjectHackathonCard {...hackathon} />
+            control={control}
+            name="hackathonIds"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Hackathon Selection *</FormLabel>
+                <FormControl>
+                  <div className="space-y-4">
+                    <div className="flex gap-2">
+                      <Button
+                        variant={filter === "all" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilter("all")}
+                      >
+                        All Hackathons
+                      </Button>
+                      <Button
+                        variant={filter === "live" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilter("live")}
+                      >
+                        Live
+                      </Button>
+                      <Button
+                        variant={filter === "upcoming" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilter("upcoming")}
+                      >
+                        Upcoming
+                      </Button>
                     </div>
-                    <div className="absolute top-2 right-2">
-                      <Checkbox
-                        checked={selectedHackathonIds.includes(hackathon.id)}
-                        onCheckedChange={() => toggleHackathonSelection(hackathon.id)}
-                      />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filteredHackathons.map((hackathon) => (
+                        <div 
+                          key={hackathon.id} 
+                          className="relative"
+                        >
+                          <div 
+                            className="cursor-pointer"
+                            onClick={() => toggleHackathonSelection(hackathon.id)}
+                          >
+                            <ProjectHackathonCard {...hackathon} />
+                          </div>
+                          <div className="absolute top-2 right-2">
+                            <Checkbox
+                              checked={selectedHackathonIds.includes(hackathon.id)}
+                              onCheckedChange={() => toggleHackathonSelection(hackathon.id)}
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                    
+                    {filteredHackathons.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No hackathons found for the selected filter.
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-              
-              {filteredHackathons.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No hackathons found for the selected filter.
-                </div>
-              )}
-            </div>
-          </FormField>
+                </FormControl>
+                <FormDescription>Select the hackathons you want to submit your project to</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
     </div>

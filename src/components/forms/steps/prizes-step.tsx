@@ -1,9 +1,10 @@
 "use client";
 
-import { FormField } from "@/components/forms/form-field";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
@@ -12,7 +13,7 @@ import { Trash2, Plus } from "lucide-react";
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
 export function PrizesStep() {
-  const { register, control, formState: { errors } } = useFormContext<HackathonFormValues>();
+  const { control } = useFormContext<HackathonFormValues>();
   
   const { fields: prizeCohorts, append: appendPrizeCohort, remove: removePrizeCohort } = useFieldArray({
     control,
@@ -63,133 +64,149 @@ export function PrizesStep() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
-              label="Prize Cohort Name"
-              required
-            >
-              <Input
-                {...register(`prizeCohorts.${index}.name`)}
-                placeholder="Overall Winner, Best Design, etc."
-                className={errors.prizeCohorts?.[index]?.name ? "border-destructive" : ""}
-              />
-              {errors.prizeCohorts?.[index]?.name && (
-                <p className="text-sm text-destructive">
-                  {errors.prizeCohorts?.[index]?.name?.message}
-                </p>
+              control={control}
+              name={`prizeCohorts.${index}.name`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prize Cohort Name *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Overall Winner, Best Design, etc."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </FormField>
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
-                label="Number of Winners"
-                required
-              >
-                <Input
-                  type="number"
-                  {...register(`prizeCohorts.${index}.numberOfWinners`, { valueAsNumber: true })}
-                  placeholder="1"
-                  min="1"
-                  className={errors.prizeCohorts?.[index]?.numberOfWinners ? "border-destructive" : ""}
-                />
-                {errors.prizeCohorts?.[index]?.numberOfWinners && (
-                  <p className="text-sm text-destructive">
-                    {errors.prizeCohorts?.[index]?.numberOfWinners?.message}
-                  </p>
+                control={control}
+                name={`prizeCohorts.${index}.numberOfWinners`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Number of Winners *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        min="1"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </FormField>
+              />
 
               <FormField
-                label="Prize Amount ($)"
-                required
-              >
-                <Input
-                  type="number"
-                  {...register(`prizeCohorts.${index}.prizeAmount`, { valueAsNumber: true })}
-                  placeholder="1000"
-                  min="0"
-                  className={errors.prizeCohorts?.[index]?.prizeAmount ? "border-destructive" : ""}
-                />
-                {errors.prizeCohorts?.[index]?.prizeAmount && (
-                  <p className="text-sm text-destructive">
-                    {errors.prizeCohorts?.[index]?.prizeAmount?.message}
-                  </p>
+                control={control}
+                name={`prizeCohorts.${index}.prizeAmount`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Prize Amount ($) *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1000"
+                        min="0"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </FormField>
+              />
             </div>
           </div>
 
           <FormField
-            label="Description"
-            required
-          >
-            <Textarea
-              {...register(`prizeCohorts.${index}.description`)}
-              placeholder="Describe this prize cohort"
-              className={errors.prizeCohorts?.[index]?.description ? "border-destructive" : ""}
-            />
-            {errors.prizeCohorts?.[index]?.description && (
-              <p className="text-sm text-destructive">
-                {errors.prizeCohorts?.[index]?.description?.message}
-              </p>
+            control={control}
+            name={`prizeCohorts.${index}.description`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description *</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Describe this prize cohort"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </FormField>
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
-              label="Judging Mode"
-              required
-            >
-              <select
-                {...register(`prizeCohorts.${index}.judgingMode`)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="manual">Manual</option>
-                <option value="automated">Automated</option>
-                <option value="hybrid">Hybrid</option>
-              </select>
-              {errors.prizeCohorts?.[index]?.judgingMode && (
-                <p className="text-sm text-destructive">
-                  {errors.prizeCohorts?.[index]?.judgingMode?.message}
-                </p>
+              control={control}
+              name={`prizeCohorts.${index}.judgingMode`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Judging Mode *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select judging mode" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="manual">Manual</SelectItem>
+                      <SelectItem value="automated">Automated</SelectItem>
+                      <SelectItem value="hybrid">Hybrid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
-            </FormField>
+            />
 
             <FormField
-              label="Voting Mode"
-              required
-            >
-              <select
-                {...register(`prizeCohorts.${index}.votingMode`)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="public">Public</option>
-                <option value="private">Private</option>
-                <option value="judges_only">Judges Only</option>
-              </select>
-              {errors.prizeCohorts?.[index]?.votingMode && (
-                <p className="text-sm text-destructive">
-                  {errors.prizeCohorts?.[index]?.votingMode?.message}
-                </p>
+              control={control}
+              name={`prizeCohorts.${index}.votingMode`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Voting Mode *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select voting mode" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="public">Public</SelectItem>
+                      <SelectItem value="private">Private</SelectItem>
+                      <SelectItem value="judges_only">Judges Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
-            </FormField>
+            />
           </div>
 
           <FormField
-            label="Max Votes Per Judge"
-            required
-          >
-            <Input
-              type="number"
-              {...register(`prizeCohorts.${index}.maxVotesPerJudge`, { valueAsNumber: true })}
-              placeholder="5"
-              min="1"
-              className={errors.prizeCohorts?.[index]?.maxVotesPerJudge ? "border-destructive" : ""}
-            />
-            {errors.prizeCohorts?.[index]?.maxVotesPerJudge && (
-              <p className="text-sm text-destructive">
-                {errors.prizeCohorts?.[index]?.maxVotesPerJudge?.message}
-              </p>
+            control={control}
+            name={`prizeCohorts.${index}.maxVotesPerJudge`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Max Votes Per Judge *</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="5"
+                    min="1"
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </FormField>
+          />
 
           <EvaluationCriteriaField index={index} />
         </div>
@@ -199,7 +216,7 @@ export function PrizesStep() {
 }
 
 function EvaluationCriteriaField({ index }: { index: number }) {
-  const { register, control, formState: { errors } } = useFormContext<HackathonFormValues>();
+  const { control } = useFormContext<HackathonFormValues>();
   
   const { fields: criteria, append: appendCriteria, remove: removeCriteria } = useFieldArray({
     control,
@@ -227,50 +244,63 @@ function EvaluationCriteriaField({ index }: { index: number }) {
       {criteria.map((criterion, criterionIndex) => (
         <div key={criterion.id} className="border rounded-lg p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
           <div className="md:col-span-4">
-            <FormField label="Criteria Name" required>
-              <Input
-                {...register(`prizeCohorts.${index}.evaluationCriteria.${criterionIndex}.name`)}
-                placeholder="Innovation"
-                className={errors.prizeCohorts?.[index]?.evaluationCriteria?.[criterionIndex]?.name ? "border-destructive" : ""}
-              />
-              {errors.prizeCohorts?.[index]?.evaluationCriteria?.[criterionIndex]?.name && (
-                <p className="text-sm text-destructive">
-                  {errors.prizeCohorts?.[index]?.evaluationCriteria?.[criterionIndex]?.name?.message}
-                </p>
+            <FormField
+              control={control}
+              name={`prizeCohorts.${index}.evaluationCriteria.${criterionIndex}.name`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Criteria Name *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Innovation"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </FormField>
+            />
           </div>
 
           <div className="md:col-span-2">
-            <FormField label="Points" required>
-              <Input
-                type="number"
-                {...register(`prizeCohorts.${index}.evaluationCriteria.${criterionIndex}.points`, { valueAsNumber: true })}
-                placeholder="10"
-                min="1"
-                className={errors.prizeCohorts?.[index]?.evaluationCriteria?.[criterionIndex]?.points ? "border-destructive" : ""}
-              />
-              {errors.prizeCohorts?.[index]?.evaluationCriteria?.[criterionIndex]?.points && (
-                <p className="text-sm text-destructive">
-                  {errors.prizeCohorts?.[index]?.evaluationCriteria?.[criterionIndex]?.points?.message}
-                </p>
+            <FormField
+              control={control}
+              name={`prizeCohorts.${index}.evaluationCriteria.${criterionIndex}.points`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Points *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="10"
+                      min="1"
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </FormField>
+            />
           </div>
 
           <div className="md:col-span-5">
-            <FormField label="Description" required>
-              <Input
-                {...register(`prizeCohorts.${index}.evaluationCriteria.${criterionIndex}.description`)}
-                placeholder="How innovative is the solution?"
-                className={errors.prizeCohorts?.[index]?.evaluationCriteria?.[criterionIndex]?.description ? "border-destructive" : ""}
-              />
-              {errors.prizeCohorts?.[index]?.evaluationCriteria?.[criterionIndex]?.description && (
-                <p className="text-sm text-destructive">
-                  {errors.prizeCohorts?.[index]?.evaluationCriteria?.[criterionIndex]?.description?.message}
-                </p>
+            <FormField
+              control={control}
+              name={`prizeCohorts.${index}.evaluationCriteria.${criterionIndex}.description`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="How innovative is the solution?"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </FormField>
+            />
           </div>
 
           <div className="md:col-span-1">

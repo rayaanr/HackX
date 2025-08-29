@@ -1,6 +1,6 @@
 "use client";
 
-import { FormField } from "@/components/forms/form-field";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
@@ -12,10 +12,9 @@ type ProjectFormValues = z.infer<typeof projectSchema>;
 
 export function TechStackStep() {
   const {
-    register,
+    control,
     setValue,
     watch,
-    formState: { errors },
   } = useFormContext<ProjectFormValues>();
 
   const watchedFields = watch();
@@ -28,38 +27,58 @@ export function TechStackStep() {
         </CardHeader>
         <CardContent className="space-y-6">
           <FormField
-            label="GitHub Link"
-            description="Link to your project's GitHub repository"
-            error={errors.githubLink?.message}
-          >
-            <Input
-              {...register("githubLink")}
-              placeholder="https://github.com/username/project"
-            />
-          </FormField>
+            control={control}
+            name="githubLink"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>GitHub Link</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://github.com/username/project"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>Link to your project's GitHub repository</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
-            label="Demo Video"
-            description="Link to your project's demo video (optional)"
-            error={errors.demoVideo?.message}
-          >
-            <Input
-              {...register("demoVideo")}
-              placeholder="https://example.com/demo"
-            />
-          </FormField>
+            control={control}
+            name="demoVideo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Demo Video</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://example.com/demo"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>Link to your project's demo video (optional)</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
-            label="Tech Stack"
-            description="Technologies used in your project"
-            required
-            error={errors.techStack?.message}
-          >
-            <TechStackSelector 
-              selectedTags={watchedFields.techStack || []}
-              onTagsChange={(tags) => setValue("techStack", tags)}
-            />
-          </FormField>
+            control={control}
+            name="techStack"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tech Stack *</FormLabel>
+                <FormControl>
+                  <TechStackSelector 
+                    selectedTags={watchedFields.techStack || []}
+                    onTagsChange={(tags) => setValue("techStack", tags)}
+                  />
+                </FormControl>
+                <FormDescription>Technologies used in your project</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
     </div>

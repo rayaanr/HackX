@@ -1,6 +1,6 @@
 "use client";
 
-import { FormField } from "@/components/forms/form-field";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import { Trash2, Plus } from "lucide-react";
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
 export function ScheduleStep() {
-  const { register, control, watch, setValue, formState: { errors } } = useFormContext<HackathonFormValues>();
+  const { control, watch, setValue } = useFormContext<HackathonFormValues>();
   
   const { fields: scheduleSlots, append: appendScheduleSlot, remove: removeScheduleSlot } = useFieldArray({
     control,
@@ -89,172 +89,196 @@ export function ScheduleStep() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
-                    label="Event Name"
-                    required
-                  >
-                    <Input
-                      {...register(`schedule.${index}.name`)}
-                      placeholder="Opening Ceremony"
-                      className={errors.schedule?.[index]?.name ? "border-destructive" : ""}
-                    />
-                    {errors.schedule?.[index]?.name && (
-                      <p className="text-sm text-destructive">
-                        {errors.schedule?.[index]?.name?.message}
-                      </p>
+                    control={control}
+                    name={`schedule.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Event Name *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Opening Ceremony"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </FormField>
+                  />
 
                   <FormField
-                    label="Date & Time"
-                    required
-                  >
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !watchedFields.dateTime && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {watchedFields.dateTime ? (
-                            format(watchedFields.dateTime, "PPP HH:mm")
-                          ) : (
-                            <span>Pick a date and time</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={watchedFields.dateTime}
-                          onSelect={(date) => setValue(`schedule.${index}.dateTime`, date as Date)}
-                          autoFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {errors.schedule?.[index]?.dateTime && (
-                      <p className="text-sm text-destructive">
-                        {errors.schedule?.[index]?.dateTime?.message}
-                      </p>
+                    control={control}
+                    name={`schedule.${index}.dateTime`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date & Time *</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value ? (
+                                  format(field.value, "PPP HH:mm")
+                                ) : (
+                                  <span>Pick a date and time</span>
+                                )}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              autoFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </FormField>
+                  />
                 </div>
 
                 <FormField
-                  label="Description"
-                  required
-                >
-                  <Textarea
-                    {...register(`schedule.${index}.description`)}
-                    placeholder="Describe this event"
-                    className={errors.schedule?.[index]?.description ? "border-destructive" : ""}
-                  />
-                  {errors.schedule?.[index]?.description && (
-                    <p className="text-sm text-destructive">
-                      {errors.schedule?.[index]?.description?.message}
-                    </p>
+                  control={control}
+                  name={`schedule.${index}.description`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Describe this event"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </FormField>
+                />
 
                 <div className="border-t pt-6">
                   <h5 className="text-md font-medium mb-4">Speaker Information</h5>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
-                      label="Speaker Name"
-                      required
-                    >
-                      <Input
-                        {...register(`schedule.${index}.speaker.name`)}
-                        placeholder="Speaker Name"
-                        className={errors.schedule?.[index]?.speaker?.name ? "border-destructive" : ""}
-                      />
-                      {errors.schedule?.[index]?.speaker?.name && (
-                        <p className="text-sm text-destructive">
-                          {errors.schedule?.[index]?.speaker?.name?.message}
-                        </p>
-                      )}
-                    </FormField>
-
-                    <FormField
-                      label="Speaker Real Name"
-                      required
-                    >
-                      <Input
-                        {...register(`schedule.${index}.speaker.realName`)}
-                        placeholder="John Doe"
-                        className={errors.schedule?.[index]?.speaker?.realName ? "border-destructive" : ""}
-                      />
-                      {errors.schedule?.[index]?.speaker?.realName && (
-                        <p className="text-sm text-destructive">
-                          {errors.schedule?.[index]?.speaker?.realName?.message}
-                        </p>
-                      )}
-                    </FormField>
-
-                    <FormField
-                      label="Workplace"
-                      required
-                    >
-                      <Input
-                        {...register(`schedule.${index}.speaker.workplace`)}
-                        placeholder="Company or Organization"
-                        className={errors.schedule?.[index]?.speaker?.workplace ? "border-destructive" : ""}
-                      />
-                      {errors.schedule?.[index]?.speaker?.workplace && (
-                        <p className="text-sm text-destructive">
-                          {errors.schedule?.[index]?.speaker?.workplace?.message}
-                        </p>
-                      )}
-                    </FormField>
-
-                    <FormField
-                      label="Position"
-                      required
-                    >
-                      <Input
-                        {...register(`schedule.${index}.speaker.position`)}
-                        placeholder="Job Title"
-                        className={errors.schedule?.[index]?.speaker?.position ? "border-destructive" : ""}
-                      />
-                      {errors.schedule?.[index]?.speaker?.position && (
-                        <p className="text-sm text-destructive">
-                          {errors.schedule?.[index]?.speaker?.position?.message}
-                        </p>
-                      )}
-                    </FormField>
-
-                    <FormField
-                      label="X.com Handle"
-                    >
-                      <Input
-                        {...register(`schedule.${index}.speaker.xHandle`)}
-                        placeholder="@username"
-                      />
-                    </FormField>
-
-                    <FormField
-                      label="Speaker Picture"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="border-2 border-dashed rounded-lg w-16 h-16 flex items-center justify-center">
-                          {watchedFields.speaker?.picture ? (
-                            <img
-                              src={watchedFields.speaker.picture}
-                              alt="Speaker preview"
-                              className="w-full h-full object-cover rounded-lg"
+                      control={control}
+                      name={`schedule.${index}.speaker.name`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Speaker Name *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Speaker Name"
+                              {...field}
                             />
-                          ) : (
-                            <span className="text-xs text-muted-foreground">Preview</span>
-                          )}
-                        </div>
-                        <Button variant="outline" type="button" size="sm">
-                          Upload
-                        </Button>
-                      </div>
-                    </FormField>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`schedule.${index}.speaker.realName`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Speaker Real Name *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="John Doe"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`schedule.${index}.speaker.workplace`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Workplace *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Company or Organization"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`schedule.${index}.speaker.position`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Position *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Job Title"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`schedule.${index}.speaker.xHandle`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>X.com Handle</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="@username"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`schedule.${index}.speaker.picture`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Speaker Picture</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center gap-4">
+                              <div className="border-2 border-dashed rounded-lg w-16 h-16 flex items-center justify-center">
+                                {watchedFields.speaker?.picture ? (
+                                  <img
+                                    src={watchedFields.speaker.picture}
+                                    alt="Speaker preview"
+                                    className="w-full h-full object-cover rounded-lg"
+                                  />
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">Preview</span>
+                                )}
+                              </div>
+                              <Button variant="outline" type="button" size="sm">
+                                Upload
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
               </div>

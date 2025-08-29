@@ -1,6 +1,6 @@
 "use client";
 
-import { FormField } from "@/components/forms/form-field";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useFormContext, useFieldArray } from "react-hook-form";
@@ -11,7 +11,7 @@ import { Trash2, Plus, Mail } from "lucide-react";
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
 export function JudgesStep() {
-  const { register, control, formState: { errors } } = useFormContext<HackathonFormValues>();
+  const { control } = useFormContext<HackathonFormValues>();
   
   const { fields: judges, append: appendJudge, remove: removeJudge } = useFieldArray({
     control,
@@ -55,29 +55,31 @@ export function JudgesStep() {
             <div key={judge.id} className="flex items-end gap-4">
               <div className="flex-1">
                 <FormField
-                  label="Judge Email"
-                  required
-                >
-                  <Input
-                    type="email"
-                    {...register(`judges.${index}.email`)}
-                    placeholder="judge@example.com"
-                    className={errors.judges?.[index]?.email ? "border-destructive" : ""}
-                  />
-                  {errors.judges?.[index]?.email && (
-                    <p className="text-sm text-destructive">
-                      {errors.judges?.[index]?.email?.message}
-                    </p>
+                  control={control}
+                  name={`judges.${index}.email`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Judge Email *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="judge@example.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </FormField>
+                />
               </div>
               
               <div className="w-32">
-                <FormField label="Status">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Status</label>
                   <div className="px-3 py-2 text-sm rounded-md border bg-muted">
                     {judge.status}
                   </div>
-                </FormField>
+                </div>
               </div>
               
               <Button 
