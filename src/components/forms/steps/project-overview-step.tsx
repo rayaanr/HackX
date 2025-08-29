@@ -8,10 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { projectSchema } from "@/lib/schemas/project-schema";
-import { ImageIcon, Upload } from "lucide-react";
-import { useState, useRef } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LexicalEditor } from "@/components/forms/lexical-editor";
+import { FileUploadField } from "@/components/forms/file-upload-field";
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
@@ -35,26 +34,6 @@ export function OverviewStep() {
     setValue,
     watch,
   } = useFormContext<ProjectFormValues>();
-  
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setLogoPreview(result);
-        setValue("logo", result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
 
   const watchedFields = watch();
 
@@ -72,32 +51,11 @@ export function OverviewStep() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Project Logo</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center gap-4">
-                      <div className="border-2 border-dashed rounded-lg w-16 h-16 flex items-center justify-center bg-muted/30">
-                        {logoPreview || watchedFields.logo ? (
-                          <img
-                            src={logoPreview || watchedFields.logo}
-                            alt="Logo preview"
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                        )}
-                      </div>
-                      <Button variant="outline" type="button" onClick={triggerFileInput}>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Logo
-                      </Button>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                      />
-                    </div>
-                  </FormControl>
+                  <FileUploadField 
+                    value={field.value} 
+                    onChange={field.onChange} 
+                    placeholder="Drop your project logo here" 
+                  />
                   <FormDescription>Upload a logo for your project</FormDescription>
                   <FormMessage />
                 </FormItem>

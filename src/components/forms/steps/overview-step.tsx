@@ -20,7 +20,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, Upload, Image as ImageIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
+import { FileUploadField } from "@/components/forms/file-upload-field";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
@@ -64,25 +65,11 @@ export function OverviewStep() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Logo</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center gap-4">
-                      <div className="border-2 border-dashed rounded-lg w-16 h-16 flex items-center justify-center bg-muted/30">
-                        {watchedFields.logo ? (
-                          <img
-                            src={watchedFields.logo}
-                            alt="Logo preview"
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                        )}
-                      </div>
-                      <Button variant="outline" type="button">
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Logo
-                      </Button>
-                    </div>
-                  </FormControl>
+                  <FileUploadField
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Drop your hackathon logo here"
+                  />
                   <FormDescription>Upload a logo for your hackathon</FormDescription>
                   <FormMessage />
                 </FormItem>

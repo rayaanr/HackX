@@ -17,6 +17,7 @@ import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
 import { cn } from "@/lib/utils";
 import { Trash2, Plus } from "lucide-react";
+import { FileUploadField } from "@/components/forms/file-upload-field";
 
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
@@ -257,24 +258,11 @@ export function ScheduleStep() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Speaker Picture</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center gap-4">
-                              <div className="border-2 border-dashed rounded-lg w-16 h-16 flex items-center justify-center">
-                                {watchedFields.speaker?.picture ? (
-                                  <img
-                                    src={watchedFields.speaker.picture}
-                                    alt="Speaker preview"
-                                    className="w-full h-full object-cover rounded-lg"
-                                  />
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">Preview</span>
-                                )}
-                              </div>
-                              <Button variant="outline" type="button" size="sm">
-                                Upload
-                              </Button>
-                            </div>
-                          </FormControl>
+                          <FileUploadField 
+                            value={field.value} 
+                            onChange={field.onChange} 
+                            placeholder="Drop speaker picture here" 
+                          />
                           <FormMessage />
                         </FormItem>
                       )}
