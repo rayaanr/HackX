@@ -130,10 +130,10 @@ export function TechStackStep() {
                 <FormLabel>Tech Stack *</FormLabel>
                 <FormControl>
                   <MultipleSelector
-                    value={field.value.map((val) => ({
+                    value={Array.isArray(field.value) ? field.value.map((val) => ({
                       label: val,
                       value: val,
-                    }))}
+                    })) : []}
                     onChange={(options) =>
                       field.onChange(options.map((option) => option.value))
                     }
