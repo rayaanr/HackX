@@ -101,6 +101,7 @@ export function HackathonSelectionStep() {
                   <div className="space-y-4">
                     <div className="flex gap-2">
                       <Button
+                        type="button"
                         variant={filter === "all" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setFilter("all")}
@@ -108,6 +109,7 @@ export function HackathonSelectionStep() {
                         All Hackathons
                       </Button>
                       <Button
+                        type="button"
                         variant={filter === "live" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setFilter("live")}
@@ -115,6 +117,7 @@ export function HackathonSelectionStep() {
                         Live
                       </Button>
                       <Button
+                        type="button"
                         variant={filter === "upcoming" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setFilter("upcoming")}
