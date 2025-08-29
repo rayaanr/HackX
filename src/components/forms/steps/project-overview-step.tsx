@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { projectSchema } from "@/lib/schemas/project-schema";
-import { LexicalEditor } from "@/components/forms/lexical-editor";
+import { LexicalEditor } from "@/components/ui/rich-text-editor";
 import { FileUploadField } from "@/components/ui/file-upload";
 import MultipleSelector, { Option } from "@/components/ui/multiselect";
 
