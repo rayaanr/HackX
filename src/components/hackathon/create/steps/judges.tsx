@@ -27,8 +27,7 @@ export function JudgesStep() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Judges</h3>
+      <div className="flex justify-end">
         <Button type="button" onClick={appendNewJudge} variant="outline">
           <Plus className="mr-2 h-4 w-4" /> Add Judge
         </Button>
@@ -63,7 +62,7 @@ export function JudgesStep() {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="judge@example.com"
+                          placeholder="Email address of the judge"
                           {...field}
                         />
                       </FormControl>
@@ -94,12 +93,6 @@ export function JudgesStep() {
           ))}
         </div>
       )}
-
-      <div className="pt-4">
-        <p className="text-sm text-muted-foreground">
-          Judges will receive an email invitation to join your hackathon. They can accept or decline the invitation.
-        </p>
-      </div>
     </div>
   );
 }

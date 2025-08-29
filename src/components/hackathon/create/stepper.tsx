@@ -3,10 +3,10 @@
 import { defineStepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
 import { Fragment } from "react";
-import { OverviewStep } from "@/components/forms/steps/overview-step";
-import { PrizesStep } from "@/components/forms/steps/prizes-step";
-import { JudgesStep } from "@/components/forms/steps/judges-step";
-import { ScheduleStep } from "@/components/forms/steps/schedule-step";
+import { OverviewStep } from "./steps/overview";
+import { PrizesStep } from "./steps/prizes";
+import { JudgesStep } from "./steps/judges";
+import { ScheduleStep } from "./steps/schedule";
 
 const { Stepper } = defineStepper(
   {

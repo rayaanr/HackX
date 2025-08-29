@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateHackathonForm } from "@/components/forms/create-hackathon-form";
+import { CreateHackathonForm } from "@/components/hackathon/create/form";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { Button } from "@/components/ui/button";
 

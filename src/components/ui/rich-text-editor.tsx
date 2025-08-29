@@ -592,7 +592,7 @@ const initialConfig = {
 // Placeholder component
 function Placeholder({ placeholder }: { placeholder: string }) {
   return (
-    <div className="editor-placeholder absolute top-4 left-4 text-gray-300 pointer-events-none">
+    <div className="editor-placeholder absolute top-4 left-4 text-muted-foreground text-sm pointer-events-none">
       {placeholder}
     </div>
   );

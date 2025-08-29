@@ -57,8 +57,7 @@ export function ScheduleStep() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Schedule</h3>
+      <div className="flex justify-end">
         <Button type="button" onClick={appendNewScheduleSlot} variant="outline">
           <Plus className="mr-2 h-4 w-4" /> Add Schedule Slot
         </Button>
@@ -86,10 +85,7 @@ export function ScheduleStep() {
 
             return (
               <div key={slot.id} className="border rounded-lg p-6 space-y-6">
-                <div className="flex justify-between items-center">
-                  <h4 className="text-md font-medium">
-                    Schedule Slot #{index + 1}
-                  </h4>
+                <div className="flex justify-end">
                   <Button
                     type="button"
                     variant="ghost"

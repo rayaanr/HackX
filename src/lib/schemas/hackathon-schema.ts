@@ -54,7 +54,7 @@ const scheduleSlotSchema = z.object({
 export const hackathonSchema = z.object({
   // Overview step
   name: z.string().min(1, "Hackathon name is required"),
-  logo: z.string().optional(),
+  visual: z.string().optional(),
   shortDescription: z.string().min(1, "Short description is required"),
   registrationStartDate: z.date({
     message: "Registration start date is required",

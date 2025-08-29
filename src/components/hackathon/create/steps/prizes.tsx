@@ -41,8 +41,7 @@ export function PrizesStep() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Prize Cohorts</h3>
+      <div className="flex justify-end">
         <Button type="button" onClick={appendNewPrizeCohort} variant="outline">
           <Plus className="mr-2 h-4 w-4" /> Add Prize Cohort
         </Button>
@@ -50,8 +49,7 @@ export function PrizesStep() {
 
       {prizeCohorts.map((prizeCohort, index) => (
         <div key={prizeCohort.id} className="border rounded-lg p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h4 className="text-md font-medium">Prize Cohort #{index + 1}</h4>
+          <div className="flex justify-end">
             <Button 
               type="button" 
               variant="ghost" 

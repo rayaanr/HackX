@@ -2,7 +2,7 @@
 
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreateHackathonStepper } from "@/components/forms/create-hackathon-stepper";
+import { CreateHackathonStepper } from "./stepper";
 import { hackathonSchema, HackathonFormData, validateDateConsistency } from "@/lib/schemas/hackathon-schema";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
