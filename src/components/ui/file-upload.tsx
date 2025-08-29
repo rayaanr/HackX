@@ -2,7 +2,6 @@
 
 import { AlertCircleIcon, ImageIcon, XIcon } from "lucide-react";
 import { useFileUpload, type FileUploadOptions } from "@/hooks/use-file-upload";
-import { Button } from "@/components/ui/button";
 import { FormControl } from "@/components/ui/form";
 
 interface FileUploadFieldProps extends FileUploadOptions {
@@ -72,7 +71,7 @@ export function FileUploadField({
                 />
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center px-4 py-3 text-center">
+              <div className="flex flex-col items-center justify-center px-4 py-3 text-center cursor-pointer" onClick={openFileDialog}>
                 <div
                   className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
                   aria-hidden="true"
@@ -83,14 +82,6 @@ export function FileUploadField({
                 <p className="text-muted-foreground text-xs">
                   SVG, PNG, JPG or GIF (max. {maxSizeMB}MB)
                 </p>
-                <Button
-                  variant="outline"
-                  className="mt-2"
-                  onClick={openFileDialog}
-                  type="button"
-                >
-                  Select image
-                </Button>
               </div>
             )}
           </div>

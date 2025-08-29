@@ -73,6 +73,7 @@ export function CreateHackathonStepper() {
             <Stepper.Controls>
               {!methods.isFirst && (
                 <Button
+                  type="button"
                   variant="secondary"
                   onClick={methods.prev}
                   disabled={methods.isFirst}
@@ -80,7 +81,10 @@ export function CreateHackathonStepper() {
                   Previous
                 </Button>
               )}
-              <Button onClick={methods.isLast ? methods.reset : methods.next}>
+              <Button 
+                type="button"
+                onClick={methods.isLast ? methods.reset : methods.next}
+              >
                 {methods.isLast ? "Reset" : "Next"}
               </Button>
             </Stepper.Controls>
