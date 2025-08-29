@@ -65,17 +65,8 @@ export function CreateHackathonForm() {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <form id="create-hackathon-form" onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <CreateHackathonStepper />
-        
-        <div className="flex justify-end gap-4 pt-8">
-          <Button type="button" variant="outline">
-            Save Draft
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Hackathon"}
-          </Button>
-        </div>
       </form>
     </FormProvider>
   );

@@ -31,6 +31,7 @@ const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
+const HEADER_HEIGHT = "3.5rem";
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed";
@@ -135,6 +136,7 @@ function SidebarProvider({
             {
               "--sidebar-width": SIDEBAR_WIDTH,
               "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+              "--header-height": HEADER_HEIGHT,
               ...style,
             } as React.CSSProperties
           }
