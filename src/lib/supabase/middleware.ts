@@ -35,12 +35,23 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const path = request.nextUrl.pathname
-  const isAuthPage = path.startsWith('/login') || path.startsWith('/signup') || path === '/'
-  const isAuthCallback = path.startsWith('/auth') || path.startsWith('/api/auth') || path.startsWith('/oauth')
-
-  if (!user && !isAuthPage && !isAuthCallback) {
-    const url = request.nextUrl.clone()
+  const path = request.nextUrl.pathname;
+  const isAuthPage = path.startsWith('/login') || path.startsWith('/signup') || path === '/';
+  const isAuthCallback = path.startsWith('/auth') || path.includes('/callback');
+  
+  // Allow OAuth callbacks to proceed without auth check
+  if (isAuthCallback) {
+    return supabaseResponse;
+  }
+  
+  if (!user && !isAuthPage) {
+    // Handle API routes differently from page routes
+    if (request.nextUrl.pathname.startsWith('/api')) {
+      return new NextResponse(
+        JSON.stringify({ message: 'Unauthorized' }), 
+        { 
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
         }
       )
     }

@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/providers/auth-provider";
+import { WaveLoader } from "../ui/loader";
 
 interface ConditionalLayoutProps {
   children: ReactNode;
@@ -21,7 +22,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <WaveLoader />
       </div>
     );
   }
