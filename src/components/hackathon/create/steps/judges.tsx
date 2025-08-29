@@ -27,11 +27,13 @@ export function JudgesStep() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button type="button" onClick={appendNewJudge} variant="outline">
-          <Plus className="mr-2 h-4 w-4" /> Add Judge
-        </Button>
-      </div>
+      {judges.length > 0 && (
+        <div className="flex justify-end">
+          <Button type="button" onClick={appendNewJudge} variant="outline">
+            <Plus className="mr-2 h-4 w-4" /> Add Judge
+          </Button>
+        </div>
+      )}
 
       {judges.length === 0 ? (
         <div className="text-center py-8 border border-dashed rounded-lg">

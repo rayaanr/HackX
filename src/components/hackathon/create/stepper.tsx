@@ -31,7 +31,7 @@ export function CreateHackathonStepper() {
   return (
     <div className="flex w-full flex-col gap-8">
       <Stepper.Provider
-        className="space-y-4"
+        className="space-y-8"
         variant="horizontal"
         labelOrientation="horizontal"
       >

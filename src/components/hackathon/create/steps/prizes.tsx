@@ -41,11 +41,13 @@ export function PrizesStep() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button type="button" onClick={appendNewPrizeCohort} variant="outline">
-          <Plus className="mr-2 h-4 w-4" /> Add Prize Cohort
-        </Button>
-      </div>
+      {prizeCohorts.length > 0 && (
+        <div className="flex justify-end">
+          <Button type="button" onClick={appendNewPrizeCohort} variant="outline">
+            <Plus className="mr-2 h-4 w-4" /> Add Prize Cohort
+          </Button>
+        </div>
+      )}
 
       {prizeCohorts.length === 0 ? (
         <div className="text-center py-8 border border-dashed rounded-lg">
@@ -101,7 +103,7 @@ export function PrizesStep() {
                     name={`prizeCohorts.${index}.numberOfWinners`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Number of Winners *</FormLabel>
+                        <FormLabel required>Number of Winners</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -121,7 +123,7 @@ export function PrizesStep() {
                     name={`prizeCohorts.${index}.prizeAmount`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Prize Amount ($) *</FormLabel>
+                        <FormLabel required>Prize Amount ($)</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
