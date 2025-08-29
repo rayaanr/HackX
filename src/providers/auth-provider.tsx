@@ -144,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = {
     user,
     session,
-    loading: loading || signInMutation.isPending || signUpMutation.isPending || signOutMutation.isPending,
+    loading: loading || signInMutation.isPending || signUpMutation.isPending || signOutMutation.isPending || googleSignInMutation.isPending,
     signIn: async (email: string, password: string) => {
       await signInMutation.mutateAsync({ email, password })
     },
