@@ -35,14 +35,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/signup') && request.nextUrl.pathname !== '/') {
-    // Handle API routes differently from page routes
-    if (request.nextUrl.pathname.startsWith('/api')) {
-      return new NextResponse(
-        JSON.stringify({ message: 'Unauthorized' }), 
-        { 
-          status: 401,
-          headers: { 'Content-Type': 'application/json' }
+  const path = request.nextUrl.pathname
+  const isAuthPage = path.startsWith('/login') || path.startsWith('/signup') || path === '/'
+  const isAuthCallback = path.startsWith('/auth') || path.startsWith('/api/auth') || path.startsWith('/oauth')
+
+  if (!user && !isAuthPage && !isAuthCallback) {
+    const url = request.nextUrl.clone()
         }
       )
     }
