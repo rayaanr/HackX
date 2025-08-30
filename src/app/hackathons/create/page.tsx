@@ -16,9 +16,9 @@ export default function CreateHackathonPage() {
             <Button type="button" variant="outline" form="create-hackathon-form">
               Save Draft
             </Button>
-            {/* <Button type="submit" form="create-hackathon-form">
+            <Button type="submit" form="create-hackathon-form">
               Create Hackathon
-            </Button> */}
+            </Button>
           </>
         }
       />

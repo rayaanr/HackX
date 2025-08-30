@@ -1,4 +1,4 @@
-export const mockHackathons = [
+const hackathons = [
   {
     id: "hackathon-1",
     name: "AI Revolution 2025",
@@ -1015,9 +1015,13 @@ export const mockHackathons = [
   },
 ];
 
+// Export the hackathons array and utility functions
+export { hackathons };
+export const mockHackathons = hackathons; // Keep for backward compatibility
+
 // Helper function to get a random subset for testing
 export function getRandomHackathons(count: number = 5) {
-  const shuffled = [...mockHackathons].sort(() => 0.5 - Math.random());
+  const shuffled = [...hackathons].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
 
@@ -1025,7 +1029,10 @@ export function getRandomHackathons(count: number = 5) {
 export function getHackathonsByLevel(
   level: "beginner" | "intermediate" | "advanced" | "all"
 ) {
-  return mockHackathons.filter(
+  return hackathons.filter(
     (h) => h.experienceLevel === level || h.experienceLevel === "all"
   );
 }
+
+// Export type
+export type Hackathon = typeof hackathons[0];
