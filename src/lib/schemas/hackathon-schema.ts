@@ -34,9 +34,8 @@ const judgeSchema = z.object({
 // Define the speaker schema
 const speakerSchema = z.object({
   name: z.string().min(1, "Speaker name is required"),
-  realName: z.string().optional(),
-  workplace: z.string().optional(),
   position: z.string().optional(),
+  xName: z.string().optional(),
   xHandle: z.string().optional(),
   picture: urlSchema,
 });
@@ -47,7 +46,9 @@ const scheduleSlotSchema = z.object({
   name: z.string().min(1, "Schedule slot name is required"),
   description: z.string().min(1, "Description is required"),
   speaker: speakerSchema.optional(),
-  dateTime: z.date(),
+  startDateTime: z.date(),
+  endDateTime: z.date(),
+  hasSpeaker: z.boolean().optional(),
 });
 
 // Define period schemas

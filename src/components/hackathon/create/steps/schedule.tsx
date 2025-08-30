@@ -10,20 +10,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
-import { cn } from "@/lib/utils";
 import { Trash2, Plus } from "lucide-react";
-import { FileUploadField } from "@/components/ui/file-upload";
+import { ImageUploader } from "@/components/ui/file-upload";
 
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
@@ -40,18 +34,22 @@ export function ScheduleStep() {
   });
 
   const appendNewScheduleSlot = () => {
+    const now = new Date();
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour later
+
     appendScheduleSlot({
       name: "",
       description: "",
       speaker: {
         name: "",
-        realName: "",
-        workplace: "",
+        xName: "",
         position: "",
         xHandle: "",
         picture: "",
       },
-      dateTime: new Date(),
+      startDateTime: now,
+      endDateTime: endTime,
+      hasSpeaker: false,
     });
   };
 
@@ -59,7 +57,11 @@ export function ScheduleStep() {
     <div className="space-y-6">
       {scheduleSlots.length > 0 && (
         <div className="flex justify-end">
-          <Button type="button" onClick={appendNewScheduleSlot} variant="outline">
+          <Button
+            type="button"
+            onClick={appendNewScheduleSlot}
+            variant="outline"
+          >
             <Plus className="mr-2 h-4 w-4" /> Add Schedule Slot
           </Button>
         </div>
@@ -98,13 +100,13 @@ export function ScheduleStep() {
                   </Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   <FormField
                     control={control}
                     name={`schedule.${index}.name`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Event Name *</FormLabel>
+                        <FormLabel required>Event Name</FormLabel>
                         <FormControl>
                           <Input placeholder="Opening Ceremony" {...field} />
                         </FormControl>
@@ -113,44 +115,43 @@ export function ScheduleStep() {
                     )}
                   />
 
-                  <FormField
-                    control={control}
-                    name={`schedule.${index}.dateTime`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Date & Time *</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {field.value ? (
-                                  format(field.value, "PPP HH:mm")
-                                ) : (
-                                  <span>Pick a date and time</span>
-                                )}
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              autoFocus
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={control}
+                      name={`schedule.${index}.startDateTime`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>Start Date & Time</FormLabel>
+                          <FormControl>
+                            <DateTimePicker
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Select start date"
                             />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name={`schedule.${index}.endDateTime`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>End Date & Time</FormLabel>
+                          <FormControl>
+                            <DateTimePicker
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Select end date"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
                 <FormField
@@ -158,7 +159,7 @@ export function ScheduleStep() {
                   name={`schedule.${index}.description`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description *</FormLabel>
+                      <FormLabel required>Description</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Describe this event"
@@ -171,100 +172,120 @@ export function ScheduleStep() {
                 />
 
                 <div className="border-t pt-6">
-                  <h5 className="text-md font-medium mb-4">
-                    Speaker Information
-                  </h5>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={control}
-                      name={`schedule.${index}.speaker.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Speaker Name *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Speaker Name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name={`schedule.${index}.speaker.realName`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Speaker Real Name *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name={`schedule.${index}.speaker.workplace`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Workplace *</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Company or Organization"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name={`schedule.${index}.speaker.position`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Position *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Job Title" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name={`schedule.${index}.speaker.xHandle`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>X.com Handle</FormLabel>
-                          <FormControl>
-                            <Input placeholder="@username" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name={`schedule.${index}.speaker.picture`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Speaker Picture</FormLabel>
-                          <FileUploadField
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Drop speaker picture here"
+                  <FormField
+                    control={control}
+                    name={`schedule.${index}.hasSpeaker`}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
                           />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="font-medium">
+                            Add a speaker
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {watchedFields?.hasSpeaker && (
+                    <div className="mt-6 space-y-6">
+                      <h5 className="text-md font-medium">
+                        Speaker Information
+                      </h5>
+
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <FormField
+                            control={control}
+                            name={`schedule.${index}.speaker.name`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel required>Speaker Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Speaker Name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={control}
+                            name={`schedule.${index}.speaker.position`}
+                            render={({ field }) => {
+                              return (
+                                <FormItem>
+                                  <FormLabel required>
+                                    Position & Workplace
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Job Title, Company"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <FormField
+                            control={control}
+                            name={`schedule.${index}.speaker.xName`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel required>Speaker X Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="John Doe" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={control}
+                            name={`schedule.${index}.speaker.xHandle`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>x.com Handle</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="@username" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={control}
+                            name={`schedule.${index}.speaker.picture`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Speaker Avatar</FormLabel>
+                                <FormControl>
+                                  <ImageUploader
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder="Upload Avatar"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );

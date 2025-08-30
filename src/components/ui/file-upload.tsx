@@ -1,8 +1,10 @@
 "use client";
 
-import { AlertCircleIcon, ImageIcon, XIcon } from "lucide-react";
+import { AlertCircleIcon, ImageIcon, XIcon, CircleUserRoundIcon } from "lucide-react";
 import { useFileUpload, type FileUploadOptions } from "@/hooks/use-file-upload";
 import { FormControl } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { useCallback, useEffect } from "react";
 
 interface FileUploadFieldProps extends FileUploadOptions {
   value?: string;
@@ -18,6 +20,14 @@ export function FileUploadField({
   accept = "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
   ...options
 }: FileUploadFieldProps) {
+  const handleFilesChange = useCallback((files: any[]) => {
+    if (files.length > 0) {
+      onChange?.(files[0].preview || "");
+    } else {
+      onChange?.("");
+    }
+  }, [onChange]);
+
   const [
     { files, isDragging, errors },
     {
@@ -32,18 +42,19 @@ export function FileUploadField({
   ] = useFileUpload({
     accept,
     maxSize,
-    onFilesChange: (files) => {
-      if (files.length > 0) {
-        onChange?.(files[0].preview || "");
-      } else {
-        onChange?.("");
-      }
-    },
+    onFilesChange: handleFilesChange,
     ...options,
   });
 
   const previewUrl = value || files[0]?.preview || null;
   const maxSizeMB = Math.round(maxSize / (1024 * 1024));
+
+  const handleRemove = useCallback(() => {
+    if (files[0]?.id) {
+      removeFile(files[0].id);
+    }
+    onChange?.("");
+  }, [files, removeFile, onChange]);
 
   return (
     <FormControl>
@@ -91,12 +102,7 @@ export function FileUploadField({
               <button
                 type="button"
                 className="focus-visible:border-ring focus-visible:ring-ring/50 z-50 flex size-6 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:ring-[3px]"
-                onClick={() => {
-                  if (files[0]?.id) {
-                    removeFile(files[0].id);
-                  }
-                  onChange?.("");
-                }}
+                onClick={handleRemove}
                 aria-label="Remove image"
               >
                 <XIcon className="size-3" aria-hidden="true" />
@@ -116,5 +122,122 @@ export function FileUploadField({
         )}
       </div>
     </FormControl>
+  );
+}
+
+// Image Uploader Variant Component
+interface ImageUploaderProps extends FileUploadOptions {
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+}
+
+export function ImageUploader({
+  value,
+  onChange,
+  placeholder = "Upload image",
+  maxSize = 2 * 1024 * 1024, // 2MB default
+  accept = "image/*",
+  ...options
+}: ImageUploaderProps) {
+  const handleFilesChange = useCallback((files: any[]) => {
+    if (files.length > 0) {
+      onChange?.(files[0].preview || "");
+    } else {
+      onChange?.("");
+    }
+  }, [onChange]);
+
+  const [
+    { files, errors },
+    {
+      removeFile,
+      openFileDialog,
+      getInputProps,
+    },
+  ] = useFileUpload({
+    accept,
+    maxSize,
+    onFilesChange: handleFilesChange,
+    ...options,
+  });
+
+  const previewUrl = value || files[0]?.preview || null;
+  const fileName = files[0]?.file.name || null;
+
+  const handleRemove = useCallback(() => {
+    if (files[0]?.id) {
+      removeFile(files[0].id);
+    }
+    onChange?.("");
+  }, [files, removeFile, onChange]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="inline-flex items-center gap-2 align-top">
+        <div
+          className="border-input relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border"
+          aria-label={
+            previewUrl ? "Preview of uploaded image" : "Default user avatar"
+          }
+        >
+          {previewUrl ? (
+            <img
+              className="size-full object-cover"
+              src={previewUrl}
+              alt="Preview of uploaded image"
+              width={32}
+              height={32}
+            />
+          ) : (
+            <div aria-hidden="true">
+              <CircleUserRoundIcon className="opacity-60" size={16} />
+            </div>
+          )}
+        </div>
+        <div className="relative inline-block">
+          <Button 
+            type="button"
+            onClick={openFileDialog} 
+            variant="outline" 
+            size="sm"
+          >
+            {fileName ? "Change image" : placeholder}
+          </Button>
+          <input
+            {...getInputProps()}
+            className="sr-only"
+            aria-label="Upload image file"
+            tabIndex={-1}
+          />
+        </div>
+      </div>
+      
+      {fileName && (
+        <div className="inline-flex gap-2 text-xs">
+          <p className="text-muted-foreground truncate" aria-live="polite">
+            {fileName}
+          </p>
+          <button
+            type="button"
+            onClick={handleRemove}
+            className="text-destructive font-medium hover:underline"
+            aria-label={`Remove ${fileName}`}
+          >
+            Remove
+          </button>
+        </div>
+      )}
+      
+      {errors.length > 0 && (
+        <div
+          className="text-destructive flex items-center gap-1 text-xs"
+          role="alert"
+        >
+          <AlertCircleIcon className="size-3 shrink-0" />
+          <span>{errors[0]}</span>
+        </div>
+      )}
+    </div>
   );
 }
