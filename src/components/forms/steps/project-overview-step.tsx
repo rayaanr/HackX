@@ -204,7 +204,8 @@ export function OverviewStep() {
                 <FormLabel>Full Description *</FormLabel>
                 <FormControl>
                   <LexicalEditor
-                    onChange={(content) => setValue("description", content)}
+                    initialContent={field.value || ""}
+                    onChange={(content) => field.onChange(content)}
                     placeholder="Enter a detailed description of your project..."
                     className="min-h-[200px]"
                   />

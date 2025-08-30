@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -101,7 +100,7 @@ export function OverviewStep() {
           <Separator orientation="vertical" className="h-6 w-px" />
           <h3 className="font-medium text-center">Voting Period</h3>
         </div>
-        
+
         {/* Start Date Row */}
         <div className="grid grid-cols-[1fr_1px_1fr_1px_1fr] gap-6 items-end">
           <FormField
@@ -109,7 +108,9 @@ export function OverviewStep() {
             name="registrationPeriod.registrationStartDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required className="text-xs">Start Date & Time</FormLabel>
+                <FormLabel required className="text-xs">
+                  Start Date & Time
+                </FormLabel>
                 <FormControl>
                   <DateTimePicker
                     value={field.value}
@@ -127,7 +128,9 @@ export function OverviewStep() {
             name="hackathonPeriod.hackathonStartDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required className="text-xs">Start Date & Time</FormLabel>
+                <FormLabel required className="text-xs">
+                  Start Date & Time
+                </FormLabel>
                 <FormControl>
                   <DateTimePicker
                     value={field.value}
@@ -145,7 +148,9 @@ export function OverviewStep() {
             name="votingPeriod.votingStartDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required className="text-xs">Start Date & Time</FormLabel>
+                <FormLabel required className="text-xs">
+                  Start Date & Time
+                </FormLabel>
                 <FormControl>
                   <DateTimePicker
                     value={field.value}
@@ -158,7 +163,7 @@ export function OverviewStep() {
             )}
           />
         </div>
-        
+
         {/* End Date Row */}
         <div className="grid grid-cols-[1fr_1px_1fr_1px_1fr] gap-6 items-end">
           <FormField
@@ -166,7 +171,9 @@ export function OverviewStep() {
             name="registrationPeriod.registrationEndDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required className="text-xs">End Date & Time</FormLabel>
+                <FormLabel required className="text-xs">
+                  End Date & Time
+                </FormLabel>
                 <FormControl>
                   <DateTimePicker
                     value={field.value}
@@ -184,7 +191,9 @@ export function OverviewStep() {
             name="hackathonPeriod.hackathonEndDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required className="text-xs">End Date & Time</FormLabel>
+                <FormLabel required className="text-xs">
+                  End Date & Time
+                </FormLabel>
                 <FormControl>
                   <DateTimePicker
                     value={field.value}
@@ -202,7 +211,9 @@ export function OverviewStep() {
             name="votingPeriod.votingEndDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel required className="text-xs">End Date & Time</FormLabel>
+                <FormLabel required className="text-xs">
+                  End Date & Time
+                </FormLabel>
                 <FormControl>
                   <DateTimePicker
                     value={field.value}
@@ -242,10 +253,7 @@ export function OverviewStep() {
         render={({ field }) => (
           <FormItem>
             <FormLabel required>Experience Level</FormLabel>
-            <Select
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-            >
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl className="w-full">
                 <SelectTrigger>
                   <SelectValue placeholder="Target experience level for participants" />
@@ -293,7 +301,7 @@ export function OverviewStep() {
         )}
       />
 
-      <SocialLinksInput className="pb-4"/>
+      <SocialLinksInput className="pb-4" />
 
       <FormField
         control={control}
@@ -303,7 +311,8 @@ export function OverviewStep() {
             <FormLabel required>Detailed Description</FormLabel>
             <FormControl>
               <LexicalEditor
-                onChange={(content) => setValue("fullDescription", content)}
+                initialContent={field.value || ""}
+                onChange={(content) => field.onChange(content)}
                 placeholder="Provide a comprehensive description of your hackathon, including goals, themes, prizes, and what participants can expect..."
                 className="min-h-[200px]"
               />
