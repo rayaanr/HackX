@@ -33,6 +33,12 @@ export function ScheduleStep() {
     name: "schedule",
   });
 
+  // Watch all hasSpeaker values at once to avoid Rules of Hooks violation
+  const watchedHasSpeakerValues = useWatch({
+    control,
+    name: "schedule",
+  });
+
   const appendNewScheduleSlot = () => {
     const now = new Date();
     const endTime = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour later
@@ -85,10 +91,8 @@ export function ScheduleStep() {
       ) : (
         <div className="space-y-6">
           {scheduleSlots.map((slot, index) => {
-            const watchedHasSpeaker = useWatch({
-              control,
-              name: `schedule.${index}.hasSpeaker`,
-            });
+            // Get the watched hasSpeaker value for this specific index
+            const watchedHasSpeaker = watchedHasSpeakerValues?.[index]?.hasSpeaker;
 
             return (
               <div key={slot.id} className="border rounded-lg p-6 space-y-6">

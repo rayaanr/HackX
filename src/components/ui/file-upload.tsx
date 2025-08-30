@@ -21,12 +21,8 @@ export function FileUploadField({
   ...options
 }: FileUploadFieldProps) {
   const handleFilesChange = useCallback((files: any[]) => {
-    if (files.length > 0) {
-      onChange?.(files[0].preview || "");
-    } else {
-      onChange?.("");
-    }
-  }, [onChange]);
+    // Don't call onChange here - let useEffect handle it
+  }, []);
 
   const [
     { files, isDragging, errors },
@@ -46,6 +42,16 @@ export function FileUploadField({
     ...options,
   });
 
+  // Handle onChange in useEffect to avoid render-phase state updates
+  useEffect(() => {
+    if (files.length > 0) {
+      onChange?.(files[0].preview || "");
+    } else if (files.length === 0 && value) {
+      // Only clear if we had a value before
+      onChange?.("");
+    }
+  }, [files, onChange, value]);
+
   const previewUrl = value || files[0]?.preview || null;
   const maxSizeMB = Math.round(maxSize / (1024 * 1024));
 
@@ -53,8 +59,8 @@ export function FileUploadField({
     if (files[0]?.id) {
       removeFile(files[0].id);
     }
-    onChange?.("");
-  }, [files, removeFile, onChange]);
+    // onChange will be called via useEffect when files change
+  }, [files, removeFile]);
 
   return (
     <FormControl>
@@ -141,12 +147,8 @@ export function ImageUploader({
   ...options
 }: ImageUploaderProps) {
   const handleFilesChange = useCallback((files: any[]) => {
-    if (files.length > 0) {
-      onChange?.(files[0].preview || "");
-    } else {
-      onChange?.("");
-    }
-  }, [onChange]);
+    // Don't call onChange here - let useEffect handle it
+  }, []);
 
   const [
     { files, errors },
@@ -162,6 +164,16 @@ export function ImageUploader({
     ...options,
   });
 
+  // Handle onChange in useEffect to avoid render-phase state updates
+  useEffect(() => {
+    if (files.length > 0) {
+      onChange?.(files[0].preview || "");
+    } else if (files.length === 0 && value) {
+      // Only clear if we had a value before
+      onChange?.("");
+    }
+  }, [files, onChange, value]);
+
   const previewUrl = value || files[0]?.preview || null;
   const fileName = files[0]?.file.name || null;
 
@@ -169,8 +181,8 @@ export function ImageUploader({
     if (files[0]?.id) {
       removeFile(files[0].id);
     }
-    onChange?.("");
-  }, [files, removeFile, onChange]);
+    // onChange will be called via useEffect when files change
+  }, [files, removeFile]);
 
   return (
     <div className="flex flex-col gap-2">
