@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useFormContext, useFieldArray, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
 import { Trash2, Plus } from "lucide-react";
@@ -85,7 +85,10 @@ export function ScheduleStep() {
       ) : (
         <div className="space-y-6">
           {scheduleSlots.map((slot, index) => {
-            const watchedFields = watch(`schedule.${index}`);
+            const watchedHasSpeaker = useWatch({
+              control,
+              name: `schedule.${index}.hasSpeaker`,
+            });
 
             return (
               <div key={slot.id} className="border rounded-lg p-6 space-y-6">
@@ -192,7 +195,7 @@ export function ScheduleStep() {
                     )}
                   />
 
-                  {watchedFields?.hasSpeaker && (
+                  {watchedHasSpeaker && (
                     <div className="mt-6 space-y-6">
                       <h5 className="text-md font-medium">
                         Speaker Information

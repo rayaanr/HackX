@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -74,21 +74,27 @@ export function SocialLinksInput({
     new Set(Object.keys(socialLinks).filter((key) => socialLinks[key]))
   );
 
-  const addLink = (linkName: string) => {
+  const addLink = useCallback((linkName: string) => {
     setEnabledLinks((prev) => new Set([...prev, linkName]));
-  };
+  }, []);
 
-  const removeLink = (linkName: string) => {
+  const removeLink = useCallback((linkName: string) => {
     setEnabledLinks((prev) => {
       const newSet = new Set(prev);
       newSet.delete(linkName);
       return newSet;
     });
     setValue(`${name}.${linkName}`, "");
-  };
+  }, [name, setValue]);
 
-  const availableLinks = SOCIAL_LINKS.filter(
-    (link) => !enabledLinks.has(link.name)
+  const availableLinks = useMemo(() =>
+    SOCIAL_LINKS.filter((link) => !enabledLinks.has(link.name)),
+    [enabledLinks]
+  );
+
+  const enabledLinksArray = useMemo(() => 
+    Array.from(enabledLinks),
+    [enabledLinks]
   );
 
   return (
