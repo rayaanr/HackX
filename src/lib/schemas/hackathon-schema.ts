@@ -146,14 +146,11 @@ export type ScheduleSlot = z.infer<typeof scheduleSlotSchema>;
 // Export individual schemas for step-by-step validation
 export const overviewStepSchema = hackathonSchema.pick({
   name: true,
-  logo: true,
+  visual: true,
   shortDescription: true,
-  registrationStartDate: true,
-  registrationEndDate: true,
-  hackathonStartDate: true,
-  hackathonEndDate: true,
-  votingStartDate: true,
-  votingEndDate: true,
+  registrationPeriod: true,
+  hackathonPeriod: true,
+  votingPeriod: true,
   techStack: true,
   experienceLevel: true,
   location: true,

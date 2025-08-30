@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { hackathonSchema, HackathonFormData } from '@/lib/schemas/hackathon-schema'
+import { hackathonSchema } from '@/lib/schemas/hackathon-schema'
 import { createHackathon, getUserHackathons } from '@/lib/server/database/hackathons'
 
 // POST /api/hackathons - Create a new hackathon
@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
         votingStartDate: body.votingPeriod.votingStartDate ? new Date(body.votingPeriod.votingStartDate) : undefined,
         votingEndDate: body.votingPeriod.votingEndDate ? new Date(body.votingPeriod.votingEndDate) : undefined,
       } : undefined,
-      schedule: body.schedule ? body.schedule.map((slot: any) => ({
+      schedule: body.schedule ? body.schedule.map((slot: Record<string, unknown>) => ({
         ...slot,
-        startDateTime: slot.startDateTime ? new Date(slot.startDateTime) : undefined,
-        endDateTime: slot.endDateTime ? new Date(slot.endDateTime) : undefined,
+        startDateTime: slot.startDateTime ? new Date(slot.startDateTime as string) : undefined,
+        endDateTime: slot.endDateTime ? new Date(slot.endDateTime as string) : undefined,
       })) : undefined,
     }
 

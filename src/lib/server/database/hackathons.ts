@@ -1,5 +1,107 @@
 import { createClient } from "@/lib/supabase/server";
 import { HackathonFormData } from "@/lib/schemas/hackathon-schema";
+import { EXPERIENCE_LEVEL_MAP } from "@/lib/constants/hackathon";
+
+// Helper function to insert related data for a hackathon
+async function insertHackathonRelatedData(
+  supabase: any,
+  hackathonId: string,
+  formData: HackathonFormData
+) {
+  // Insert prize cohorts
+  for (const cohort of formData.prizeCohorts) {
+    const { data: cohortData, error: cohortError } = await supabase
+      .from("prize_cohorts")
+      .insert({
+        hackathon_id: hackathonId,
+        name: cohort.name,
+        number_of_winners: cohort.numberOfWinners,
+        prize_amount: cohort.prizeAmount,
+        description: cohort.description,
+        judging_mode: cohort.judgingMode.toUpperCase(),
+        voting_mode: cohort.votingMode.toUpperCase(),
+        max_votes_per_judge: cohort.maxVotesPerJudge,
+      })
+      .select()
+      .single();
+
+    if (cohortError) {
+      throw cohortError;
+    }
+
+    // Insert evaluation criteria
+    for (const criteria of cohort.evaluationCriteria) {
+      const { error: criteriaError } = await supabase
+        .from("evaluation_criteria")
+        .insert({
+          prize_cohort_id: cohortData.id,
+          name: criteria.name,
+          points: criteria.points,
+          description: criteria.description,
+        });
+
+      if (criteriaError) {
+        throw criteriaError;
+      }
+    }
+  }
+
+  // Insert judges
+  for (const judge of formData.judges) {
+    const { error: judgeError } = await supabase.from("judges").insert({
+      hackathon_id: hackathonId,
+      email: judge.email,
+      status: judge.status.toUpperCase(),
+    });
+
+    if (judgeError) {
+      throw judgeError;
+    }
+  }
+
+  // Insert schedule slots with speakers
+  for (const slot of formData.schedule) {
+    let speakerId = null;
+
+    // Create speaker if has speaker
+    if (slot.hasSpeaker && slot.speaker) {
+      const { data: speakerData, error: speakerError } = await supabase
+        .from("speakers")
+        .insert({
+          name: slot.speaker.name,
+          position: slot.speaker.position || null,
+          x_name: slot.speaker.xName || null,
+          x_handle: slot.speaker.xHandle || null,
+          picture: slot.speaker.picture || null,
+        })
+        .select()
+        .single();
+
+      if (speakerError) {
+        throw speakerError;
+      }
+
+      speakerId = speakerData.id;
+    }
+
+    // Create schedule slot
+    const { error: slotError } = await supabase
+      .from("schedule_slots")
+      .insert({
+        hackathon_id: hackathonId,
+        name: slot.name,
+        description: slot.description,
+        start_date_time: slot.startDateTime.toISOString(),
+        end_date_time: slot.endDateTime.toISOString(),
+        has_speaker: slot.hasSpeaker || false,
+        speaker_id: speakerId,
+      });
+
+    if (slotError) {
+      throw slotError;
+    }
+  }
+}
 
 export async function createHackathon(
   formData: HackathonFormData,
@@ -7,14 +109,6 @@ export async function createHackathon(
 ) {
   try {
     const supabase = await createClient();
-
-    // Convert experience level to match enum
-    const experienceLevelMap: Record<string, string> = {
-      beginner: "BEGINNER",
-      intermediate: "INTERMEDIATE",
-      advanced: "ADVANCED",
-      all: "ALL",
-    };
 
     // Insert hackathon
     const { data: hackathonData, error: hackathonError } = await supabase
@@ -26,7 +120,7 @@ export async function createHackathon(
         full_description: formData.fullDescription,
         location: formData.location,
         tech_stack: formData.techStack,
-        experience_level: experienceLevelMap[formData.experienceLevel],
+        experience_level: EXPERIENCE_LEVEL_MAP[formData.experienceLevel],
         registration_start_date:
           formData.registrationPeriod?.registrationStartDate?.toISOString() ||
           null,
@@ -53,99 +147,8 @@ export async function createHackathon(
 
     const hackathonId = hackathonData.id;
 
-    // Insert prize cohorts
-    for (const cohort of formData.prizeCohorts) {
-      const { data: cohortData, error: cohortError } = await supabase
-        .from("prize_cohorts")
-        .insert({
-          hackathon_id: hackathonId,
-          name: cohort.name,
-          number_of_winners: cohort.numberOfWinners,
-          prize_amount: cohort.prizeAmount,
-          description: cohort.description,
-          judging_mode: cohort.judgingMode.toUpperCase(),
-          voting_mode: cohort.votingMode.toUpperCase(),
-          max_votes_per_judge: cohort.maxVotesPerJudge,
-        })
-        .select()
-        .single();
-
-      if (cohortError) {
-        throw cohortError;
-      }
-
-      // Insert evaluation criteria
-      for (const criteria of cohort.evaluationCriteria) {
-        const { error: criteriaError } = await supabase
-          .from("evaluation_criteria")
-          .insert({
-            prize_cohort_id: cohortData.id,
-            name: criteria.name,
-            points: criteria.points,
-            description: criteria.description,
-          });
-
-        if (criteriaError) {
-          throw criteriaError;
-        }
-      }
-    }
-
-    // Insert judges
-    for (const judge of formData.judges) {
-      const { error: judgeError } = await supabase.from("judges").insert({
-        hackathon_id: hackathonId,
-        email: judge.email,
-        status: judge.status.toUpperCase(),
-      });
-
-      if (judgeError) {
-        throw judgeError;
-      }
-    }
-
-    // Insert schedule slots with speakers
-    for (const slot of formData.schedule) {
-      let speakerId = null;
-
-      // Create speaker if has speaker
-      if (slot.hasSpeaker && slot.speaker) {
-        const { data: speakerData, error: speakerError } = await supabase
-          .from("speakers")
-          .insert({
-            name: slot.speaker.name,
-            position: slot.speaker.position || null,
-            x_name: slot.speaker.xName || null,
-            x_handle: slot.speaker.xHandle || null,
-            picture: slot.speaker.picture || null,
-          })
-          .select()
-          .single();
-
-        if (speakerError) {
-          throw speakerError;
-        }
-
-        speakerId = speakerData.id;
-      }
-
-      // Create schedule slot
-      const { error: slotError } = await supabase
-        .from("schedule_slots")
-        .insert({
-          hackathon_id: hackathonId,
-          name: slot.name,
-          description: slot.description,
-          start_date_time: slot.startDateTime.toISOString(),
-          end_date_time: slot.endDateTime.toISOString(),
-          has_speaker: slot.hasSpeaker || false,
-          speaker_id: speakerId,
-        });
-
-      if (slotError) {
-        throw slotError;
-      }
-    }
+    // Insert related data using helper function
+    await insertHackathonRelatedData(supabase, hackathonId, formData);
 
     return { success: true, data: hackathonData };
   } catch (error) {
@@ -276,7 +279,7 @@ export async function updateHackathon(
         full_description: formData.fullDescription,
         location: formData.location,
         tech_stack: formData.techStack,
-        experience_level: experienceLevelMap[formData.experienceLevel],
+        experience_level: EXPERIENCE_LEVEL_MAP[formData.experienceLevel],
         registration_start_date:
           formData.registrationPeriod?.registrationStartDate?.toISOString() ||
           null,
@@ -329,8 +332,8 @@ export async function updateHackathon(
       .delete()
       .eq("hackathon_id", hackathonId);
 
-    // Recreate prize cohorts, judges, and schedule slots
-    // (This is the same logic as in createHackathon - you could extract this to a helper function)
+    // Recreate prize cohorts, judges, and schedule slots using helper function
+    await insertHackathonRelatedData(supabase, hackathonId, formData);
 
     return { success: true, data: updatedHackathon };
   } catch (error) {
