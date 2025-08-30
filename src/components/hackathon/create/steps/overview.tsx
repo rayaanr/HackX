@@ -10,12 +10,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -23,9 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { Separator } from "@/components/ui/separator";
 import { FileUploadField } from "@/components/ui/file-upload";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
@@ -98,176 +91,156 @@ export function OverviewStep() {
 
       {/* Removed duplicate Short Description block to avoid conflicting bindings */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <FormField
-          control={control}
-          name="registrationPeriod"
-          render={({ field }) => {
-            const { registrationStartDate, registrationEndDate } = field.value || {};
-            
-            return (
+      {/* Period Selection - 3 columns (periods) x 2 rows (start/end) with separators */}
+      <div className="space-y-4 border p-2 py-4 rounded-md border-dashed">
+        {/* Column Headers */}
+        <div className="grid grid-cols-[1fr_1px_1fr_1px_1fr] gap-6 items-center">
+          <h3 className="font-medium text-center">Registration Period</h3>
+          <Separator orientation="vertical" className="h-6 w-px" />
+          <h3 className="font-medium text-center">Hackathon Period</h3>
+          <Separator orientation="vertical" className="h-6 w-px" />
+          <h3 className="font-medium text-center">Voting Period</h3>
+        </div>
+        
+        {/* Start Date Row */}
+        <div className="grid grid-cols-[1fr_1px_1fr_1px_1fr] gap-6 items-end">
+          <FormField
+            control={control}
+            name="registrationPeriod.registrationStartDate"
+            render={({ field }) => (
               <FormItem>
-                <FormLabel required>Registration Period</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          (!registrationStartDate || !registrationEndDate) && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {registrationStartDate && registrationEndDate ? (
-                          <span>
-                            {format(registrationStartDate, "MMM dd")} - {format(registrationEndDate, "MMM dd, yyyy")}
-                          </span>
-                        ) : (
-                          <span>Select registration period</span>
-                        )}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="range"
-                      selected={{
-                        from: registrationStartDate,
-                        to: registrationEndDate
-                      }}
-                      onSelect={(range) => {
-                        field.onChange({
-                          registrationStartDate: range?.from,
-                          registrationEndDate: range?.to
-                        });
-                      }}
-                      numberOfMonths={2}
-                      autoFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormLabel required className="text-xs">Start Date & Time</FormLabel>
+                <FormControl>
+                  <DateTimePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select start date"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
-            );
-          }}
-        />
-
-        <FormField
-          control={control}
-          name="hackathonPeriod"
-          render={({ field }) => {
-            const { hackathonStartDate, hackathonEndDate } = field.value || {};
-            
-            return (
+            )}
+          />
+          <Separator orientation="vertical" className="h-16 w-px" />
+          <FormField
+            control={control}
+            name="hackathonPeriod.hackathonStartDate"
+            render={({ field }) => (
               <FormItem>
-                <FormLabel required>Hackathon Period</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          (!hackathonStartDate || !hackathonEndDate) && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {hackathonStartDate && hackathonEndDate ? (
-                          <span>
-                            {format(hackathonStartDate, "MMM dd")} - {format(hackathonEndDate, "MMM dd, yyyy")}
-                          </span>
-                        ) : (
-                          <span>Select hackathon period</span>
-                        )}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="range"
-                      selected={{
-                        from: hackathonStartDate,
-                        to: hackathonEndDate
-                      }}
-                      onSelect={(range) => {
-                        field.onChange({
-                          hackathonStartDate: range?.from,
-                          hackathonEndDate: range?.to
-                        });
-                      }}
-                      numberOfMonths={2}
-                      autoFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormLabel required className="text-xs">Start Date & Time</FormLabel>
+                <FormControl>
+                  <DateTimePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select start date"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
-            );
-          }}
-        />
-
-        <FormField
-          control={control}
-          name="votingPeriod"
-          render={({ field }) => {
-            const { votingStartDate, votingEndDate } = field.value || {};
-            
-            return (
+            )}
+          />
+          <Separator orientation="vertical" className="h-16 w-px" />
+          <FormField
+            control={control}
+            name="votingPeriod.votingStartDate"
+            render={({ field }) => (
               <FormItem>
-                <FormLabel required>Voting Period</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          (!votingStartDate || !votingEndDate) && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {votingStartDate && votingEndDate ? (
-                          <span>
-                            {format(votingStartDate, "MMM dd")} - {format(votingEndDate, "MMM dd, yyyy")}
-                          </span>
-                        ) : (
-                          <span>Select voting period</span>
-                        )}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="range"
-                      selected={{
-                        from: votingStartDate,
-                        to: votingEndDate
-                      }}
-                      onSelect={(range) => {
-                        field.onChange({
-                          votingStartDate: range?.from,
-                          votingEndDate: range?.to
-                        });
-                      }}
-                      numberOfMonths={2}
-                      autoFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <FormLabel required className="text-xs">Start Date & Time</FormLabel>
+                <FormControl>
+                  <DateTimePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select start date"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
-            );
-          }}
-        />
+            )}
+          />
+        </div>
+        
+        {/* End Date Row */}
+        <div className="grid grid-cols-[1fr_1px_1fr_1px_1fr] gap-6 items-end">
+          <FormField
+            control={control}
+            name="registrationPeriod.registrationEndDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel required className="text-xs">End Date & Time</FormLabel>
+                <FormControl>
+                  <DateTimePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select end date"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Separator orientation="vertical" className="h-16 w-px" />
+          <FormField
+            control={control}
+            name="hackathonPeriod.hackathonEndDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel required className="text-xs">End Date & Time</FormLabel>
+                <FormControl>
+                  <DateTimePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select end date"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Separator orientation="vertical" className="h-16 w-px" />
+          <FormField
+            control={control}
+            name="votingPeriod.votingEndDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel required className="text-xs">End Date & Time</FormLabel>
+                <FormControl>
+                  <DateTimePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select end date"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <FormField
           control={control}
-          name="experienceLevel"
+          name="location"
           render={({ field }) => (
             <FormItem>
+              <FormLabel required>Location</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Where the hackathon will take place"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <FormField
+        control={control}
+        name="experienceLevel"
+        render={({ field }) => (
+          <FormItem>
             <FormLabel required>Experience Level</FormLabel>
             <Select
               onValueChange={field.onChange}
@@ -289,24 +262,6 @@ export function OverviewStep() {
           </FormItem>
         )}
       />
-
-      <FormField
-        control={control}
-        name="location"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel required>Location</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Where the hackathon will take place"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      </div>
 
       <FormField
         control={control}
