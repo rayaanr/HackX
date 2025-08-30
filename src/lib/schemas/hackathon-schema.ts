@@ -28,7 +28,7 @@ const prizeCohortSchema = z.object({
 const judgeSchema = z.object({
   id: z.string().optional(),
   email: z.email("Invalid email address"),
-  status: z.enum(["invited", "accepted", "declined"]),
+  status: z.enum(["waiting", "invited", "pending", "accepted", "declined"]),
 });
 
 // Define the speaker schema
