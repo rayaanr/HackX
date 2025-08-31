@@ -2,7 +2,10 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { UIHackathon } from "@/types/hackathon";
-import { getHackathonStatus, getStatusVariant } from "@/lib/utils/hackathon-transforms";
+import {
+  getHackathonStatus,
+  getStatusVariant,
+} from "@/lib/helpers/hackathon-transforms";
 
 interface HackathonCardProps {
   hackathon: UIHackathon;
@@ -20,9 +23,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
           <CardHeader className="p-0 mb-4">
             <div className="flex items-center gap-4">
               <CardTitle className="text-2xl">{hackathon.name}</CardTitle>
-              <Badge variant={statusVariant}>
-                {status}
-              </Badge>
+              <Badge variant={statusVariant}>{status}</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -49,7 +50,10 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
             </div>
             <div className="flex items-center gap-4 mt-4">
               <Badge variant="secondary">{hackathon.location}</Badge>
-              <Badge variant="secondary">{hackathon.prizeCohorts.length} Prize{hackathon.prizeCohorts.length !== 1 ? 's' : ''}</Badge>
+              <Badge variant="secondary">
+                {hackathon.prizeCohorts.length} Prize
+                {hackathon.prizeCohorts.length !== 1 ? "s" : ""}
+              </Badge>
             </div>
           </CardContent>
         </div>

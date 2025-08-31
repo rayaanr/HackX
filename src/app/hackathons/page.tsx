@@ -11,24 +11,37 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUserHackathons } from "@/hooks/queries/use-hackathons";
-import { transformDatabaseToUI, getHackathonStatus } from "@/lib/utils/hackathon-transforms";
+import {
+  transformDatabaseToUI,
+  getHackathonStatus,
+} from "@/lib/helpers/hackathon-transforms";
 import { hackathons as mockHackathons } from "@/data/hackathons";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
 export default function ExplorePage() {
-  const { data: dbHackathons = [], isLoading: loading, error } = useUserHackathons();
+  const {
+    data: dbHackathons = [],
+    isLoading: loading,
+    error,
+  } = useUserHackathons();
 
   // Transform database hackathons to UI format, fallback to mock data if no database data
-  const allHackathons = dbHackathons.length > 0 
-    ? dbHackathons.map(transformDatabaseToUI)
-    : mockHackathons;
+  const allHackathons =
+    dbHackathons.length > 0
+      ? dbHackathons.map(transformDatabaseToUI)
+      : mockHackathons;
 
   const liveHackathons = allHackathons.filter((hackathon) => {
     const status = getHackathonStatus(hackathon);
-    return status === "Registration Open" || status === "Registration Closed" || status === "Live" || status === "Voting";
+    return (
+      status === "Registration Open" ||
+      status === "Registration Closed" ||
+      status === "Live" ||
+      status === "Voting"
+    );
   });
-  
+
   const pastHackathons = allHackathons.filter((hackathon) => {
     const status = getHackathonStatus(hackathon);
     return status === "Ended";
@@ -37,7 +50,7 @@ export default function ExplorePage() {
   useEffect(() => {
     if (error) {
       toast.error("Failed to load hackathons", {
-        description: "Showing sample data instead"
+        description: "Showing sample data instead",
       });
     }
   }, [error]);
@@ -175,10 +188,9 @@ export default function ExplorePage() {
           <div className="text-center py-12">
             <h3 className="text-lg font-semibold mb-2">No active hackathons</h3>
             <p className="text-muted-foreground">
-              {dbHackathons.length === 0 
-                ? "No hackathons have been created yet." 
-                : "All hackathons have ended or haven't started yet."
-              }
+              {dbHackathons.length === 0
+                ? "No hackathons have been created yet."
+                : "All hackathons have ended or haven't started yet."}
             </p>
           </div>
         ) : (
@@ -209,7 +221,9 @@ export default function ExplorePage() {
             ))
           ) : pastHackathons.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No past hackathons to display</p>
+              <p className="text-muted-foreground">
+                No past hackathons to display
+              </p>
             </div>
           ) : (
             pastHackathons.map((hackathon) => (

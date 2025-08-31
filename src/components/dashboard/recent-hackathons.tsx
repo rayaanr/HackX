@@ -4,19 +4,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type { HackathonWithRelations } from "@/types/hackathon";
-import { 
-  getHackathonStatus, 
-  getStatusVariant, 
+import {
+  getHackathonStatus,
+  getStatusVariant,
   formatDateForDisplay,
-  calculateTotalPrizeAmount 
-} from "@/lib/utils/hackathon-transforms";
+  calculateTotalPrizeAmount,
+} from "@/lib/helpers/hackathon-transforms";
 
 interface RecentHackathonsProps {
   hackathons: HackathonWithRelations[];
   loading?: boolean;
 }
 
-export function RecentHackathons({ hackathons, loading = false }: RecentHackathonsProps) {
+export function RecentHackathons({
+  hackathons,
+  loading = false,
+}: RecentHackathonsProps) {
   if (loading) {
     return (
       <Card>
@@ -46,7 +49,11 @@ export function RecentHackathons({ hackathons, loading = false }: RecentHackatho
 
   // Show most recent hackathons (up to 5)
   const recentHackathons = hackathons
-    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.created_at || 0).getTime() -
+        new Date(a.created_at || 0).getTime()
+    )
     .slice(0, 5);
 
   return (
@@ -81,7 +88,7 @@ export function RecentHackathons({ hackathons, loading = false }: RecentHackatho
               const status = getHackathonStatus(hackathon);
               const variant = getStatusVariant(status);
               const totalPrize = calculateTotalPrizeAmount(hackathon);
-              
+
               return (
                 <Link key={hackathon.id} href={`/hackathons/${hackathon.id}`}>
                   <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
@@ -92,7 +99,9 @@ export function RecentHackathons({ hackathons, loading = false }: RecentHackatho
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium truncate">{hackathon.name}</h3>
+                        <h3 className="font-medium truncate">
+                          {hackathon.name}
+                        </h3>
                         <Badge variant={variant} className="text-xs">
                           {status}
                         </Badge>
@@ -109,7 +118,7 @@ export function RecentHackathons({ hackathons, loading = false }: RecentHackatho
                 </Link>
               );
             })}
-            
+
             {hackathons.length > 5 && (
               <div className="text-center pt-2">
                 <Link href="/hackathons">
