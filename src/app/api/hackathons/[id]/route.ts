@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { hackathonSchema } from '@/lib/schemas/hackathon-schema'
+import { hackathonSchema, validateDateConsistency } from '@/lib/schemas/hackathon-schema'
 import { getHackathonById, updateHackathon, deleteHackathon } from '@/lib/server/database/hackathons'
 
 interface RouteParams {
@@ -109,6 +109,18 @@ export async function PUT(
         { 
           error: 'Validation failed', 
           details: validation.error.flatten().fieldErrors 
+        },
+        { status: 400 }
+      )
+    }
+
+    // Cross-period consistency (e.g., regEnd < hackStart, hackEnd < voteStart)
+    const crossFieldErrors = validateDateConsistency(validation.data)
+    if (Object.keys(crossFieldErrors).length > 0) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: crossFieldErrors,
         },
         { status: 400 }
       )

@@ -1029,6 +1029,7 @@ export function getRandomHackathons(count: number = 5) {
 export function getHackathonsByLevel(
   level: "beginner" | "intermediate" | "advanced" | "all"
 ) {
+  if (level === "all") return hackathons;
   return hackathons.filter(
     (h) => h.experienceLevel === level || h.experienceLevel === "all"
   );
