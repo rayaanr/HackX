@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { dashboardKeys } from "@/lib/constants/query-keys";
 import { useUserHackathons } from "./use-hackathons";
 import type { DashboardStats, HackathonWithRelations } from "@/types/hackathon";
 
@@ -44,7 +43,7 @@ export function useDashboardStats() {
   const { data: hackathons = [], isLoading: hackathonsLoading, error: hackathonsError } = useUserHackathons();
   
   return useQuery({
-    queryKey: dashboardKeys.stats(),
+    queryKey: ['dashboard', 'stats'],
     queryFn: () => calculateDashboardStats(hackathons),
     enabled: !hackathonsLoading && !!hackathons,
     staleTime: 2 * 60 * 1000, // 2 minutes

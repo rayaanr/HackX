@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { hackathonKeys } from "@/lib/constants/query-keys";
 import type { 
   HackathonWithRelations, 
   HackathonsResponse
@@ -22,7 +21,7 @@ async function fetchUserHackathons(): Promise<HackathonWithRelations[]> {
 // Get user's hackathons
 export function useUserHackathons() {
   return useQuery({
-    queryKey: hackathonKeys.user(),
+    queryKey: ['hackathons', 'user'],
     queryFn: fetchUserHackathons,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
