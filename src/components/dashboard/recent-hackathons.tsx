@@ -7,9 +7,9 @@ import type { HackathonWithRelations } from "@/types/hackathon";
 import {
   getHackathonStatus,
   getStatusVariant,
-  formatDateForDisplay,
   calculateTotalPrizeAmount,
 } from "@/lib/helpers/hackathon-transforms";
+import { format } from "date-fns";
 
 interface RecentHackathonsProps {
   hackathons: HackathonWithRelations[];
@@ -106,7 +106,9 @@ export function RecentHackathons({
                         <span>{hackathon.location}</span>
                         <span>{totalPrize}</span>
                         <span>
-                          {formatDateForDisplay(hackathon.hackathon_start_date)}
+                          {hackathon.hackathon_start_date 
+                            ? format(new Date(hackathon.hackathon_start_date), "dd MMM yyyy") 
+                            : "TBD"}
                         </span>
                       </div>
                     </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { HackathonCard } from "@/components/hackathon-card";
-import { Badge } from "@/components/ui/badge";
+import { FeaturedCarousel } from "@/components/hackathon/featured-carousel";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -57,41 +57,8 @@ export default function ExplorePage() {
 
   return (
     <div>
-      {/* Featured Hackathon Banner */}
-      <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-8 md:p-12 mb-12">
-        <div className="absolute top-4 left-4">
-          <Badge variant="secondary">Featured</Badge>
-        </div>
-        <div className="relative z-10">
-          <h1 className="text-3xl md:text-5xl font-bold mb-2">
-            Open Source Frontier – AI x WEB3 x Transparency
-          </h1>
-          <p className="text-lg md:text-xl mb-6">
-            A new paradigm for open source development.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center">
-            <div>
-              <p className="font-semibold text-sm">Registration Deadline</p>
-              <p className="text-lg">2025-09-15</p>
-            </div>
-            <div>
-              <p className="font-semibold text-sm">Tech Stack</p>
-              <p className="text-lg">AI, Web3</p>
-            </div>
-            <div>
-              <p className="font-semibold text-sm">Level</p>
-              <p className="text-lg">All</p>
-            </div>
-            <div>
-              <p className="font-semibold text-sm">Total Prize</p>
-              <p className="text-lg">$50,000</p>
-            </div>
-          </div>
-          <Button size="lg">
-            Start Register <ArrowRight className="ml-2" />
-          </Button>
-        </div>
-      </div>
+      {/* Featured Hackathon Carousel */}
+      <FeaturedCarousel hackathons={allHackathons} />
 
       {/* Explore Section */}
       <div className="flex justify-between items-center mb-6">

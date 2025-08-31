@@ -6,6 +6,7 @@ import {
   getHackathonStatus,
   getStatusVariant,
 } from "@/lib/helpers/hackathon-transforms";
+import { format } from "date-fns";
 
 interface HackathonCardProps {
   hackathon: UIHackathon;
@@ -33,7 +34,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
               <div>
                 <p className="font-semibold">Deadline</p>
-                <p>{deadline ? deadline.toLocaleDateString() : "TBD"}</p>
+                <p>{deadline ? format(new Date(deadline), "dd MMM yyyy") : "TBD"}</p>
               </div>
               <div>
                 <p className="font-semibold">Tech Stack</p>
