@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AvatarList } from "@/components/ui/avatar-list";
 import { Plus } from "lucide-react";
 import type { HackathonWithRelations } from "@/types/hackathon";
 import {
@@ -112,6 +113,16 @@ export function RecentHackathons({
                         </span>
                       </div>
                     </div>
+                    <AvatarList 
+                      images={[
+                        { src: "/placeholder-user.jpg", alt: "Participant 1" },
+                        { src: "/placeholder-user.jpg", alt: "Participant 2" },
+                        { src: "/placeholder-user.jpg", alt: "Participant 3" },
+                      ]} 
+                      totalCount={50}
+                      additionalCount={0}
+                      className="border-0 shadow-none"
+                    />
                   </div>
                 </Link>
               );

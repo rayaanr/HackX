@@ -141,7 +141,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
             return (
               <CarouselItem key={hackathon.id}>
                 <div 
-                  className="relative rounded-xl overflow-hidden text-white h-[350px] sm:h-[400px] flex items-center"
+                  className="relative rounded-xl overflow-hidden text-white h-[250px] sm:h-[300px] flex items-center"
                   style={{
                     background: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${hackathon.visual || '/placeholder-hackathon.jpg'})`,
                     backgroundSize: 'cover',
@@ -206,7 +206,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
           <button
             key={index}
             onClick={() => api?.scrollTo(index)}
-            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors ${
+            className={`size-2 rounded-full transition-colors ${
               current === index ? "bg-white" : "bg-white/50"
             }`}
             aria-label={`Go to slide ${index + 1}`}
