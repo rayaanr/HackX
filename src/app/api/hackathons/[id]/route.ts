@@ -77,8 +77,33 @@ export async function PUT(
     // Parse request body
     const body = await request.json()
 
+    // Convert date strings to Date objects for validation
+    const processedBody = {
+      ...body,
+      registrationPeriod: body.registrationPeriod ? {
+        ...body.registrationPeriod,
+        registrationStartDate: body.registrationPeriod.registrationStartDate ? new Date(body.registrationPeriod.registrationStartDate) : undefined,
+        registrationEndDate: body.registrationPeriod.registrationEndDate ? new Date(body.registrationPeriod.registrationEndDate) : undefined,
+      } : undefined,
+      hackathonPeriod: body.hackathonPeriod ? {
+        ...body.hackathonPeriod,
+        hackathonStartDate: body.hackathonPeriod.hackathonStartDate ? new Date(body.hackathonPeriod.hackathonStartDate) : undefined,
+        hackathonEndDate: body.hackathonPeriod.hackathonEndDate ? new Date(body.hackathonPeriod.hackathonEndDate) : undefined,
+      } : undefined,
+      votingPeriod: body.votingPeriod ? {
+        ...body.votingPeriod,
+        votingStartDate: body.votingPeriod.votingStartDate ? new Date(body.votingPeriod.votingStartDate) : undefined,
+        votingEndDate: body.votingPeriod.votingEndDate ? new Date(body.votingPeriod.votingEndDate) : undefined,
+      } : undefined,
+      schedule: body.schedule ? body.schedule.map((slot: Record<string, unknown>) => ({
+        ...slot,
+        startDateTime: slot.startDateTime ? new Date(slot.startDateTime as string) : undefined,
+        endDateTime: slot.endDateTime ? new Date(slot.endDateTime as string) : undefined,
+      })) : undefined,
+    }
+
     // Validate request data
-    const validation = hackathonSchema.safeParse(body)
+    const validation = hackathonSchema.safeParse(processedBody)
     if (!validation.success) {
       return NextResponse.json(
         { 
