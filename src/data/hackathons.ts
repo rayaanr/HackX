@@ -353,7 +353,7 @@ const hackathons = [
       hackathonStartDate: new Date("2025-10-20T08:00:00Z"),
       hackathonEndDate: new Date("2025-10-22T17:00:00Z"),
     },
-    votingPeriod: null,
+    votingPeriod: {},
     socialLinks: {
       website: "https://healthtechheroes.org",
       linkedin: "https://linkedin.com/company/healthtechheroes",

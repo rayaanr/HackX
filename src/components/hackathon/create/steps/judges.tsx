@@ -12,6 +12,7 @@ import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
 import { Trash2, Mail, Send, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useClipboard } from "@/hooks/use-clipboard";
+import { nanoid } from "nanoid";
 
 type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
@@ -47,7 +48,7 @@ export function JudgesStep() {
   const copyInviteLink = () => {
     const inviteLink = `${
       window.location.origin
-    }/hackathons/invite?token=judge-invite-${Date.now()}`;
+    }/hackathons/invite?token=${nanoid()}`;
     copy(inviteLink, { successMessage: "Invite link copied to clipboard" });
   };
 
