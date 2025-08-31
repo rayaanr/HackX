@@ -690,30 +690,26 @@ export function LexicalEditor({
     editorState: initialContent
       ? (editor: LxEditor) => {
           editor.update(() => {
-            // Try to parse as HTML first, fallback to plain text
-            if (initialContent.includes("<")) {
+            const root = $getRoot();
+            root.clear();
+
+            const setPlainText = (text: string) => {
+              const paragraph = $createParagraphNode();
+              paragraph.append($createTextNode(text));
+              root.append(paragraph);
+            };
+
+            if (typeof window !== "undefined" && initialContent.includes("<")) {
               try {
                 const parser = new DOMParser();
                 const dom = parser.parseFromString(initialContent, "text/html");
-                const root = $getRoot();
-                root.clear();
                 const nodes = $generateNodesFromDOM(editor, dom);
                 root.append(...nodes);
-              } catch (error) {
-                // Fallback to plain text
-                const root = $getRoot();
-                root.clear();
-                const paragraph = $createParagraphNode();
-                paragraph.append($createTextNode(initialContent));
-                root.append(paragraph);
+              } catch {
+                setPlainText(initialContent);
               }
             } else {
-              // Plain text
-              const root = $getRoot();
-              root.clear();
-              const paragraph = $createParagraphNode();
-              paragraph.append($createTextNode(initialContent));
-              root.append(paragraph);
+              setPlainText(initialContent);
             }
           });
 
