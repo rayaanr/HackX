@@ -49,7 +49,10 @@ const scheduleSlotSchema = z.object({
   startDateTime: z.date(),
   endDateTime: z.date(),
   hasSpeaker: z.boolean().optional(),
-});
+}).refine(
+  (s) => s.startDateTime < s.endDateTime,
+  { message: "End time must be after start time", path: ["endDateTime"] }
+);
 
 // Define period schemas
 const periodSchema = z.object({
