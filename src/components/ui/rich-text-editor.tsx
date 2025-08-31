@@ -402,16 +402,25 @@ function ToolbarPlugin() {
     editor.update(() => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
-        const nodes = selection.getNodes();
-        nodes.forEach((node) => {
+        selection.getNodes().forEach((node) => {
           if ($isTextNode(node)) {
+            const anchorOffset = selection.anchor.offset;
+            const focusOffset = selection.focus.offset;
+            const isBackward = selection.isBackward();
+            const start = node.is(selection.anchor.getNode())
+              ? (isBackward ? focusOffset : anchorOffset)
+              : 0;
+            const end = node.is(selection.focus.getNode())
+              ? (isBackward ? anchorOffset : focusOffset)
+              : node.getTextContentSize();
+
+            if (start !== 0 || end !== node.getTextContentSize()) {
+              node = node.splitText(start, end);
+            }
+
             const prev = node.getStyle();
-            const cleaned = prev
-              .replace(/background-color:\s*[^;]+;?/g, "")
-              .trim();
-            node.setStyle(
-              `${cleaned ? cleaned + "; " : ""}background-color: ${color}`
-            );
+            const cleaned = prev.replace(/background-color:\s*[^;]+;?/g, "").trim();
+            node.setStyle(`${cleaned ? cleaned + "; " : ""}background-color: ${color}`);
           }
         });
       }
