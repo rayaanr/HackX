@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useUserHackathons } from "./use-hackathons";
+import { useUserHackathons } from "@/hooks/queries/use-hackathons";
 import type { DashboardStats, HackathonWithRelations } from "@/types/hackathon";
 
 // Calculate dashboard statistics from hackathons data

@@ -1,4 +1,4 @@
-import type { Database } from "./supabase";
+import type { Database } from "@/types/supabase";
 import type { HackathonFormData, PrizeCohort, Judge, ScheduleSlot } from "@/lib/schemas/hackathon-schema";
 
 // Database types from Supabase
