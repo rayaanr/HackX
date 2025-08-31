@@ -141,6 +141,12 @@ export async function DELETE(
     const result = await deleteHackathon(id, user.id)
 
     if (!result.success) {
+      if (result.error === 'Hackathon not found or access denied' || result.error === 'Hackathon not found') {
+        return NextResponse.json(
+          { error: 'Hackathon not found or access denied' },
+          { status: 404 }
+        )
+      }
       return NextResponse.json(
         { error: result.error },
         { status: 500 }
