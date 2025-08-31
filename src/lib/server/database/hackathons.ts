@@ -107,9 +107,10 @@ export async function createHackathon(
   formData: HackathonFormData,
   userId: string
 ) {
+  const supabase = await createClient();
+  let hackathonId: string | null = null;
+
   try {
-    const supabase = await createClient();
-    let hackathonId: string | null = null;
 
     // Insert hackathon
     const { data: hackathonData, error: hackathonError } = await supabase
@@ -149,7 +150,7 @@ export async function createHackathon(
     hackathonId = hackathonData.id;
 
     // Insert related data using helper function
-    await insertHackathonRelatedData(supabase, hackathonId, formData);
+    await insertHackathonRelatedData(supabase, hackathonData.id, formData);
 
     return { success: true, data: hackathonData };
   } catch (error) {
@@ -157,7 +158,8 @@ export async function createHackathon(
     // Best-effort rollback
     try {
       if (hackathonId) {
-        await (await createClient())
+        const rollbackSupabase = await createClient();
+        await rollbackSupabase
           .from("hackathons")
           .delete()
           .eq("id", hackathonId);

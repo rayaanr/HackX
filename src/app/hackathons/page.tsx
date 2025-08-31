@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { HackathonCard } from "@/components/hackathon-card";
 import { Badge } from "@/components/ui/badge";
@@ -8,19 +10,37 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { hackathons, type Hackathon } from "@/data/hackathons";
-import { getHackathonStatus } from "@/lib/hackathon/status";
+import { useUserHackathons } from "@/hooks/queries/use-hackathons";
+import { transformDatabaseToUI, getHackathonStatus } from "@/lib/utils/hackathon-transforms";
+import { hackathons as mockHackathons } from "@/data/hackathons";
+import { toast } from "sonner";
+import { useEffect } from "react";
 
 export default function ExplorePage() {
-  const liveHackathons = hackathons.filter(
-    (hackathon) => {
-      const status = getHackathonStatus(hackathon);
-      return status === "Registration Open" || status === "Registration Closed" || status === "Live" || status === "Voting";
+  const { data: dbHackathons = [], isLoading: loading, error } = useUserHackathons();
+
+  // Transform database hackathons to UI format, fallback to mock data if no database data
+  const allHackathons = dbHackathons.length > 0 
+    ? dbHackathons.map(transformDatabaseToUI)
+    : mockHackathons;
+
+  const liveHackathons = allHackathons.filter((hackathon) => {
+    const status = getHackathonStatus(hackathon);
+    return status === "Registration Open" || status === "Registration Closed" || status === "Live" || status === "Voting";
+  });
+  
+  const pastHackathons = allHackathons.filter((hackathon) => {
+    const status = getHackathonStatus(hackathon);
+    return status === "Ended";
+  });
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Failed to load hackathons", {
+        description: "Showing sample data instead"
+      });
     }
-  );
-  const pastHackathons = hackathons.filter(
-    (hackathon) => getHackathonStatus(hackathon) === "Ended",
-  );
+  }, [error]);
 
   return (
     <div>
@@ -127,18 +147,75 @@ export default function ExplorePage() {
 
       {/* Hackathon Grid */}
       <div className="grid gap-8">
-        {liveHackathons.map((hackathon) => (
-          <HackathonCard key={hackathon.name} hackathon={hackathon} />
-        ))}
+        {loading ? (
+          // Loading skeleton
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="border rounded-lg p-6">
+              <div className="flex">
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+                    <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                  <div className="grid grid-cols-4 gap-4">
+                    {Array.from({ length: 4 }).map((_, j) => (
+                      <div key={j}>
+                        <div className="h-4 w-16 bg-muted animate-pulse rounded mb-1" />
+                        <div className="h-4 w-12 bg-muted animate-pulse rounded" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="w-1/3 h-48 bg-muted animate-pulse rounded-lg" />
+              </div>
+            </div>
+          ))
+        ) : liveHackathons.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-semibold mb-2">No active hackathons</h3>
+            <p className="text-muted-foreground">
+              {dbHackathons.length === 0 
+                ? "No hackathons have been created yet." 
+                : "All hackathons have ended or haven't started yet."
+              }
+            </p>
+          </div>
+        ) : (
+          liveHackathons.map((hackathon) => (
+            <HackathonCard key={hackathon.id} hackathon={hackathon} />
+          ))
+        )}
       </div>
 
       {/* Past Hackathons */}
       <div className="mt-16">
         <h2 className="text-2xl font-bold mb-6">Past Hackathons</h2>
         <div className="grid gap-8">
-          {pastHackathons.map((hackathon) => (
-            <HackathonCard key={hackathon.name} hackathon={hackathon} />
-          ))}
+          {loading ? (
+            Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="border rounded-lg p-6">
+                <div className="flex">
+                  <div className="flex-1 space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+                      <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                    </div>
+                    <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="w-1/3 h-32 bg-muted animate-pulse rounded-lg" />
+                </div>
+              </div>
+            ))
+          ) : pastHackathons.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No past hackathons to display</p>
+            </div>
+          ) : (
+            pastHackathons.map((hackathon) => (
+              <HackathonCard key={hackathon.id} hackathon={hackathon} />
+            ))
+          )}
         </div>
       </div>
     </div>

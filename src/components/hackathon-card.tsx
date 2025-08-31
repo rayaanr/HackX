@@ -1,30 +1,16 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Hackathon } from "@/data/hackathons";
+import type { UIHackathon } from "@/types/hackathon";
+import { getHackathonStatus, getStatusVariant } from "@/lib/utils/hackathon-transforms";
 
 interface HackathonCardProps {
-  hackathon: Hackathon;
+  hackathon: UIHackathon;
 }
-
-const getHackathonStatus = (hackathon: Hackathon) => {
-  if (hackathon.registrationPeriod?.registrationEndDate && Date.now() < hackathon.registrationPeriod.registrationEndDate.getTime()) {
-    return "Registration Open";
-  }
-  if (hackathon.hackathonPeriod?.hackathonStartDate && Date.now() < hackathon.hackathonPeriod.hackathonStartDate.getTime()) {
-    return "Registration Closed";
-  }
-  if (hackathon.hackathonPeriod?.hackathonEndDate && Date.now() < hackathon.hackathonPeriod.hackathonEndDate.getTime()) {
-    return "Live";
-  }
-  if (hackathon.votingPeriod?.votingEndDate && Date.now() < hackathon.votingPeriod.votingEndDate.getTime()) {
-    return "Voting";
-  }
-  return "Ended";
-};
 
 export function HackathonCard({ hackathon }: HackathonCardProps) {
   const status = getHackathonStatus(hackathon);
+  const statusVariant = getStatusVariant(status);
   const deadline = hackathon.registrationPeriod?.registrationEndDate;
 
   return (
@@ -34,9 +20,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
           <CardHeader className="p-0 mb-4">
             <div className="flex items-center gap-4">
               <CardTitle className="text-2xl">{hackathon.name}</CardTitle>
-              <Badge
-                variant={status === "Live" || status === "Registration Open" ? "default" : "secondary"}
-              >
+              <Badge variant={statusVariant}>
                 {status}
               </Badge>
             </div>

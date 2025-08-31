@@ -415,12 +415,12 @@ function ToolbarPlugin() {
               : node.getTextContentSize();
 
             if (start !== 0 || end !== node.getTextContentSize()) {
-              node = node.splitText(start, end);
+              node = (node as any).splitText(start, end);
             }
 
-            const prev = node.getStyle();
+            const prev = (node as any).getStyle?.() || '';
             const cleaned = prev.replace(/background-color:\s*[^;]+;?/g, "").trim();
-            node.setStyle(`${cleaned ? cleaned + "; " : ""}background-color: ${color}`);
+            (node as any).setStyle?.(`${cleaned ? cleaned + "; " : ""}background-color: ${color}`);
           }
         });
       }
