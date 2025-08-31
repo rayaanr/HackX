@@ -150,8 +150,11 @@ export async function createHackathon(
     hackathonId = hackathonData.id;
 
     // Insert related data using helper function
-    await insertHackathonRelatedData(supabase, hackathonData.id, formData);
+    if (!hackathonId) {
+      throw new Error("Failed to get hackathon ID");
+    }
 
+    await insertHackathonRelatedData(supabase, hackathonId, formData);
     return { success: true, data: hackathonData };
   } catch (error) {
     console.error("Error creating hackathon:", error);
