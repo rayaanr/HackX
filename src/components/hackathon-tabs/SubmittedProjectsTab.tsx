@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Hackathon } from "@/data/hackathons";
+import { type Hackathon } from "@/data/hackathons";
 
 interface SubmittedProjectsTabProps {
   hackathon: Hackathon;

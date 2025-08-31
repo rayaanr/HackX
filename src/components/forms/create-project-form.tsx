@@ -37,7 +37,6 @@ export function CreateProjectForm() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log("Project form submitted:", data);
       // Here you would typically send the data to your API
       toast.success("Project created successfully!");
     } catch (error) {

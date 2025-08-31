@@ -3,10 +3,10 @@
 import { defineStepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
 import { Fragment } from "react";
-import { OverviewStep } from "@/components/forms/steps/overview-step";
-import { PrizesStep } from "@/components/forms/steps/prizes-step";
-import { JudgesStep } from "@/components/forms/steps/judges-step";
-import { ScheduleStep } from "@/components/forms/steps/schedule-step";
+import { OverviewStep } from "./steps/overview";
+import { PrizesStep } from "./steps/prizes";
+import { JudgesStep } from "./steps/judges";
+import { ScheduleStep } from "./steps/schedule";
 
 const { Stepper } = defineStepper(
   {
@@ -27,11 +27,15 @@ const { Stepper } = defineStepper(
   }
 );
 
-export function CreateHackathonStepper() {
+interface CreateHackathonStepperProps {
+  isSubmitting?: boolean;
+}
+
+export function CreateHackathonStepper({ isSubmitting = false }: CreateHackathonStepperProps) {
   return (
     <div className="flex w-full flex-col gap-8">
       <Stepper.Provider
-        className="space-y-4"
+        className="space-y-8"
         variant="horizontal"
         labelOrientation="horizontal"
       >
@@ -73,16 +77,30 @@ export function CreateHackathonStepper() {
             <Stepper.Controls>
               {!methods.isFirst && (
                 <Button
+                  type="button"
                   variant="secondary"
                   onClick={methods.prev}
-                  disabled={methods.isFirst}
+                  disabled={methods.isFirst || isSubmitting}
                 >
                   Previous
                 </Button>
               )}
-              <Button onClick={methods.isLast ? methods.reset : methods.next}>
-                {methods.isLast ? "Reset" : "Next"}
-              </Button>
+              {methods.isLast ? (
+                <Button 
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Creating Hackathon..." : "Create Hackathon"}
+                </Button>
+              ) : (
+                <Button 
+                  type="button"
+                  onClick={methods.next}
+                  disabled={isSubmitting}
+                >
+                  Next
+                </Button>
+              )}
             </Stepper.Controls>
           </Fragment>
         )}

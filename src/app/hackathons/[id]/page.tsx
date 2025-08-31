@@ -5,20 +5,29 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { hackathons } from "@/data/hackathons";
+import { getHackathonStatus } from "@/lib/hackathon/status";
 import { PrizeAndJudgeTab } from "../../../components/hackathon-tabs/PrizeAndJudgeTab";
 import { ScheduleTab } from "../../../components/hackathon-tabs/ScheduleTab";
 import { SubmittedProjectsTab } from "../../../components/hackathon-tabs/SubmittedProjectsTab";
 
-export default function HackathonPage({ params }: { params: { id: string } }) {
-  const hackathon = hackathons.find((h) => h.id.toString() === params.id);
+export default async function HackathonPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const hackathon = hackathons.find((h) => h.id.toString() === id);
 
   if (!hackathon) {
     notFound();
   }
 
-  const registrationDaysLeft = Math.ceil(
-    (hackathon.deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  );
+  const registrationDaysLeft = hackathon.registrationPeriod?.registrationEndDate
+    ? Math.max(
+        0,
+        Math.ceil(
+          (hackathon.registrationPeriod.registrationEndDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        )
+      )
+    : 0;
+
+  const status = getHackathonStatus(hackathon);
 
   return (
     <div className="bg-background text-foreground">
@@ -38,7 +47,7 @@ export default function HackathonPage({ params }: { params: { id: string } }) {
         </div>
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold">{hackathon.name}</h1>
-          <p className="text-muted-foreground text-lg">{hackathon.tagline}</p>
+          <p className="text-muted-foreground text-lg">{hackathon.shortDescription}</p>
         </div>
         <div className="text-center mb-8">
           <Button size="lg">
@@ -68,20 +77,20 @@ export default function HackathonPage({ params }: { params: { id: string } }) {
                     <div>
                       <p className="font-semibold text-sm">Status</p>
                       <p className="text-lg">
-                        {hackathon.status}, {registrationDaysLeft} days left
+                        {status}{status === "Registration Open" ? `, ${registrationDaysLeft} days left` : ""}
                       </p>
                     </div>
                     <div>
                       <p className="font-semibold text-sm">Host</p>
-                      <p className="text-lg">{hackathon.host}</p>
+                      <p className="text-lg">HackX Platform</p>
                     </div>
                     <div>
                       <p className="font-semibold text-sm">Mode</p>
-                      <p className="text-lg">{hackathon.participants}</p>
+                      <p className="text-lg">In-person</p>
                     </div>
                     <div>
-                      <p className="font-semibold text-sm">Ecosystem</p>
-                      <p className="text-lg">{hackathon.ecosystem}</p>
+                      <p className="font-semibold text-sm">Location</p>
+                      <p className="text-lg">{hackathon.location}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-center">
@@ -100,7 +109,7 @@ export default function HackathonPage({ params }: { params: { id: string } }) {
                       </Avatar>
                     </div>
                     <p className="ml-2 text-sm text-muted-foreground">
-                      {hackathon.participantCount}+ participants
+                      500+ participants
                     </p>
                   </div>
                 </div>
@@ -109,11 +118,13 @@ export default function HackathonPage({ params }: { params: { id: string } }) {
                 <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 mb-8">
                   <h2 className="text-2xl font-bold mb-4">Description</h2>
                   <p className="text-muted-foreground mb-4">
-                    {hackathon.description}
+                    {hackathon.fullDescription}
                   </p>
                   <ul className="list-disc list-inside">
-                    {hackathon.prizeBreakdown.map((item) => (
-                      <li key={item.category}>{item.category}</li>
+                    {hackathon.prizeCohorts.map((cohort, index) => (
+                      <li key={index}>
+                        {cohort.name}: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(cohort.prizeAmount) || 0)}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -177,20 +188,22 @@ export default function HackathonPage({ params }: { params: { id: string } }) {
                   </Link>
                 </div>
 
-                {/* To Do List */}
+                {/* Quick Actions */}
                 <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                  <h2 className="text-lg font-semibold mb-4">To Do List</h2>
+                  <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
                   <ul className="space-y-2">
-                    {hackathon.todos.map((todo) => (
-                      <li key={todo.text} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={todo.done}
-                          className="mr-2"
-                        />
-                        <span>{todo.text}</span>
-                      </li>
-                    ))}
+                    <li className="flex items-center">
+                      <input type="checkbox" className="mr-2" />
+                      <span>Review hackathon details</span>
+                    </li>
+                    <li className="flex items-center">
+                      <input type="checkbox" className="mr-2" />
+                      <span>Complete registration</span>
+                    </li>
+                    <li className="flex items-center">
+                      <input type="checkbox" className="mr-2" />
+                      <span>Join Discord community</span>
+                    </li>
                   </ul>
                 </div>
               </div>

@@ -8,14 +8,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { hackathons } from "@/data/hackathons";
+import { hackathons, type Hackathon } from "@/data/hackathons";
+import { getHackathonStatus } from "@/lib/hackathon/status";
 
 export default function ExplorePage() {
   const liveHackathons = hackathons.filter(
-    (hackathon) => hackathon.status === "Live" || hackathon.status === "Voting",
+    (hackathon) => {
+      const status = getHackathonStatus(hackathon);
+      return status === "Registration Open" || status === "Registration Closed" || status === "Live" || status === "Voting";
+    }
   );
   const pastHackathons = hackathons.filter(
-    (hackathon) => hackathon.status === "Ended",
+    (hackathon) => getHackathonStatus(hackathon) === "Ended",
   );
 
   return (

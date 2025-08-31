@@ -1,5 +1,5 @@
 /* Lexical Editor Styles */
-.editor-placeholder {
+/* .editor-placeholder {
   color: hsl(var(--muted-foreground));
   overflow: hidden;
   position: absolute;
@@ -10,7 +10,7 @@
   user-select: none;
   display: inline-block;
   pointer-events: none;
-}
+} */
 
 .editor-paragraph {
   margin: 0;
@@ -70,6 +70,10 @@
 
 .editor-text-underlineStrikethrough {
   text-decoration: underline line-through;
+}
+
+.editor-text-highlight {
+  background-color: yellow;
 }
 
 .editor-list-ol {
