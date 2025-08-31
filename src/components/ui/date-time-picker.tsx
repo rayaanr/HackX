@@ -37,8 +37,9 @@ export function DateTimePicker({
   );
 
   // Generate unique IDs for this component instance
-  const datePickerId = useId() + "-date";
-  const timePickerId = useId() + "-time";
+  const baseId = useId();
+  const datePickerId = `${baseId}-date`;
+  const timePickerId = `${baseId}-time`;
 
   useEffect(() => {
     setSelectedDate(value);
