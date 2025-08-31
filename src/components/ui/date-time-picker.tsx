@@ -1,9 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { format } from "date-fns";
-
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -13,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useEffect, useId, useState } from "react";
 
 interface DateTimePickerProps {
   label?: string;
@@ -31,13 +30,17 @@ export function DateTimePicker({
   disabled = false,
   className = "",
 }: DateTimePickerProps) {
-  const [open, setOpen] = React.useState(false);
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
-  const [timeValue, setTimeValue] = React.useState<string>(
+  const [open, setOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(value);
+  const [timeValue, setTimeValue] = useState<string>(
     value ? format(value, "HH:mm") : "09:00"
   );
 
-  React.useEffect(() => {
+  // Generate unique IDs for this component instance
+  const datePickerId = useId() + "-date";
+  const timePickerId = useId() + "-time";
+
+  useEffect(() => {
     setSelectedDate(value);
     if (value) {
       setTimeValue(format(value, "HH:mm"));
@@ -73,7 +76,7 @@ export function DateTimePicker({
     <div className={`grid grid-cols-[2fr_1fr] gap-2 ${className}`}>
       <div className="flex flex-col gap-3">
         {label && (
-          <Label htmlFor="date-picker" className="px-1">
+          <Label htmlFor={datePickerId} className="px-1">
             {label}
           </Label>
         )}
@@ -81,7 +84,7 @@ export function DateTimePicker({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              id="date-picker"
+              id={datePickerId}
               disabled={disabled}
               className="w-full justify-between font-normal"
             >
@@ -101,13 +104,13 @@ export function DateTimePicker({
       </div>
       <div className="flex flex-col gap-3">
         {label && (
-          <Label htmlFor="time-picker" className="px-1">
+          <Label htmlFor={timePickerId} className="px-1">
             Time
           </Label>
         )}
         <Input
           type="time"
-          id="time-picker"
+          id={timePickerId}
           value={timeValue}
           onChange={(e) => handleTimeChange(e.target.value)}
           disabled={disabled}
