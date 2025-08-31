@@ -48,12 +48,8 @@ export function RecentHackathons({
   }
 
   // Show most recent hackathons (up to 5)
-  const recentHackathons = hackathons
-    .sort(
-      (a, b) =>
-        new Date(b.created_at || 0).getTime() -
-        new Date(a.created_at || 0).getTime()
-    )
+  const recentHackathons = [...hackathons]
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
     .slice(0, 5);
 
   return (
