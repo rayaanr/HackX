@@ -193,7 +193,7 @@ export function PrizesStep() {
                       <FormLabel required>Judging Mode</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl className="w-full">
                           <SelectTrigger>
@@ -219,7 +219,7 @@ export function PrizesStep() {
                       <FormLabel required>Voting Mode</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl className="w-full">
                           <SelectTrigger>
