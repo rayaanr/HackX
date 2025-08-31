@@ -4,7 +4,70 @@ import { AlertCircleIcon, ImageIcon, XIcon, CircleUserRoundIcon } from "lucide-r
 import { useFileUpload, type FileUploadOptions } from "@/hooks/use-file-upload";
 import { FormControl } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
+
+// Shared hook for file upload logic
+function useFileUploadLogic({
+  value,
+  onChange,
+  maxSize,
+  accept,
+  ...options
+}: {
+  value?: string;
+  onChange?: (value: string) => void;
+  maxSize: number;
+  accept: string;
+} & FileUploadOptions) {
+  const prevFilesLengthRef = useRef(0);
+  
+  const handleFilesChange = useCallback((files: any[]) => {
+    // Don't call onChange here - let useEffect handle it
+  }, []);
+
+  const fileUploadReturn = useFileUpload({
+    accept,
+    maxSize,
+    onFilesChange: handleFilesChange,
+    ...options,
+  });
+
+  const [{ files }] = fileUploadReturn;
+
+  // Handle onChange in useEffect to avoid render-phase state updates
+  useEffect(() => {
+    if (files.length > 0) {
+      onChange?.(files[0].preview || "");
+    } else if (prevFilesLengthRef.current > 0 && files.length === 0) {
+      // Only clear when files transition from >0 to 0 (user explicitly removed)
+      onChange?.("");
+    }
+    prevFilesLengthRef.current = files.length;
+  }, [files, onChange]);
+
+  const previewUrl = value || files[0]?.preview || null;
+  const fileName = files[0]?.file.name || null;
+  const maxSizeMB = Math.round(maxSize / (1024 * 1024));
+
+  const handleRemove = useCallback(() => {
+    if (files[0]?.id) {
+      fileUploadReturn[1].removeFile(files[0].id);
+    }
+    // Explicitly clear the selection immediately
+    onChange?.("");
+  }, [files, fileUploadReturn, onChange]);
+
+  return [
+    fileUploadReturn[0],
+    fileUploadReturn[1],
+    {
+      previewUrl,
+      fileName,
+      maxSizeMB,
+      handleRemove,
+    },
+  ] as const;
+}
 
 interface FileUploadFieldProps extends FileUploadOptions {
   value?: string;
@@ -20,10 +83,6 @@ export function FileUploadField({
   accept = "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
   ...options
 }: FileUploadFieldProps) {
-  const handleFilesChange = useCallback((files: any[]) => {
-    // Don't call onChange here - let useEffect handle it
-  }, []);
-
   const [
     { files, isDragging, errors },
     {
@@ -32,35 +91,16 @@ export function FileUploadField({
       handleDragOver,
       handleDrop,
       openFileDialog,
-      removeFile,
       getInputProps,
     },
-  ] = useFileUpload({
-    accept,
+    { previewUrl, maxSizeMB, handleRemove },
+  ] = useFileUploadLogic({
+    value,
+    onChange,
     maxSize,
-    onFilesChange: handleFilesChange,
+    accept,
     ...options,
   });
-
-  // Handle onChange in useEffect to avoid render-phase state updates
-  useEffect(() => {
-    if (files.length > 0) {
-      onChange?.(files[0].preview || "");
-    } else if (files.length === 0 && value) {
-      // Only clear if we had a value before
-      onChange?.("");
-    }
-  }, [files, onChange, value]);
-
-  const previewUrl = value || files[0]?.preview || null;
-  const maxSizeMB = Math.round(maxSize / (1024 * 1024));
-
-  const handleRemove = useCallback(() => {
-    if (files[0]?.id) {
-      removeFile(files[0].id);
-    }
-    // onChange will be called via useEffect when files change
-  }, [files, removeFile]);
 
   return (
     <FormControl>
@@ -146,43 +186,20 @@ export function ImageUploader({
   accept = "image/*",
   ...options
 }: ImageUploaderProps) {
-  const handleFilesChange = useCallback((files: any[]) => {
-    // Don't call onChange here - let useEffect handle it
-  }, []);
-
   const [
-    { files, errors },
+    { errors },
     {
-      removeFile,
       openFileDialog,
       getInputProps,
     },
-  ] = useFileUpload({
-    accept,
+    { previewUrl, fileName, handleRemove },
+  ] = useFileUploadLogic({
+    value,
+    onChange,
     maxSize,
-    onFilesChange: handleFilesChange,
+    accept,
     ...options,
   });
-
-  // Handle onChange in useEffect to avoid render-phase state updates
-  useEffect(() => {
-    if (files.length > 0) {
-      onChange?.(files[0].preview || "");
-    } else if (files.length === 0 && value) {
-      // Only clear if we had a value before
-      onChange?.("");
-    }
-  }, [files, onChange, value]);
-
-  const previewUrl = value || files[0]?.preview || null;
-  const fileName = files[0]?.file.name || null;
-
-  const handleRemove = useCallback(() => {
-    if (files[0]?.id) {
-      removeFile(files[0].id);
-    }
-    // onChange will be called via useEffect when files change
-  }, [files, removeFile]);
 
   return (
     <div className="flex flex-col gap-2">
