@@ -241,7 +241,7 @@ export function ImageUploader({
             variant="outline"
             size="sm"
           >
-            {fileName ? "Change image" : placeholder}
+            {previewUrl ? "Change image" : placeholder}
           </Button>
           <input
             {...getInputProps()}
@@ -255,13 +255,13 @@ export function ImageUploader({
       {fileName && (
         <div className="inline-flex gap-2 text-xs">
           <p className="text-muted-foreground truncate" aria-live="polite">
-            {fileName}
+            {fileName ?? "No file selected"}
           </p>
           <button
             type="button"
             onClick={handleRemove}
             className="text-destructive font-medium hover:underline"
-            aria-label={`Remove ${fileName}`}
+            aria-label={fileName ? `Remove ${fileName}` : "Remove image"}
           >
             Remove
           </button>
