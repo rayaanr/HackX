@@ -109,6 +109,7 @@ export async function createHackathon(
 ) {
   try {
     const supabase = await createClient();
+    let hackathonId: string | null = null;
 
     // Insert hackathon
     const { data: hackathonData, error: hackathonError } = await supabase
@@ -145,7 +146,7 @@ export async function createHackathon(
       throw hackathonError;
     }
 
-    const hackathonId = hackathonData.id;
+    hackathonId = hackathonData.id;
 
     // Insert related data using helper function
     await insertHackathonRelatedData(supabase, hackathonId, formData);
@@ -153,6 +154,15 @@ export async function createHackathon(
     return { success: true, data: hackathonData };
   } catch (error) {
     console.error("Error creating hackathon:", error);
+    // Best-effort rollback
+    try {
+      if (hackathonId) {
+        await (await createClient())
+          .from("hackathons")
+          .delete()
+          .eq("id", hackathonId);
+      }
+    } catch (_) {}
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",
