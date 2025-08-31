@@ -8,29 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { hackathons } from "@/data/hackathons";
-
-const getHackathonStatus = (hackathon: any) => {
-  if (hackathon.registrationPeriod?.registrationEndDate && Date.now() < hackathon.registrationPeriod.registrationEndDate.getTime()) {
-    return "Live";
-  }
-  if (hackathon.hackathonPeriod?.hackathonStartDate && Date.now() < hackathon.hackathonPeriod.hackathonStartDate.getTime()) {
-    return "Registration Closed";
-  }
-  if (hackathon.hackathonPeriod?.hackathonEndDate && Date.now() < hackathon.hackathonPeriod.hackathonEndDate.getTime()) {
-    return "Live";
-  }
-  if (hackathon.votingPeriod?.votingEndDate && Date.now() < hackathon.votingPeriod.votingEndDate.getTime()) {
-    return "Voting";
-  }
-  return "Ended";
-};
+import { hackathons, type Hackathon } from "@/data/hackathons";
+import { getHackathonStatus } from "@/lib/hackathon/status";
 
 export default function ExplorePage() {
   const liveHackathons = hackathons.filter(
     (hackathon) => {
       const status = getHackathonStatus(hackathon);
-      return status === "Live" || status === "Voting";
+      return status === "Registration Open" || status === "Registration Closed" || status === "Live" || status === "Voting";
     }
   );
   const pastHackathons = hackathons.filter(

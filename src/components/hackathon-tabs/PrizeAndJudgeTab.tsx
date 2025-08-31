@@ -28,14 +28,14 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
 
   return (
     <div className="space-y-8">
-      {hackathon.prizeCohorts.map((cohort) => (
-        <Card key={cohort.name} className="overflow-hidden">
+      {hackathon.prizeCohorts.map((cohort, index) => (
+        <Card key={index} className="overflow-hidden">
           <CardHeader className="bg-muted">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <CardTitle className="text-2xl">{cohort.name}</CardTitle>
                 <p className="text-lg font-semibold text-yellow-500">
-                  {cohort.prizeAmount}
+                  {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(cohort.prizeAmount) || 0)}
                 </p>
               </div>
               <Button variant="default">Submit to Track</Button>
@@ -53,25 +53,29 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
                 <div>
                   <h4 className="font-semibold mb-2">Prize Details</h4>
                   <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Winners:</span> {cohort.numberOfWinners}</p>
-                    <p><span className="font-medium">Judging Mode:</span> {cohort.judgingMode}</p>
-                    <p><span className="font-medium">Voting Mode:</span> {cohort.votingMode}</p>
-                    <p><span className="font-medium">Max Votes per Judge:</span> {cohort.maxVotesPerJudge}</p>
+                    <p><span className="font-medium">Winners:</span> {cohort.numberOfWinners ?? "N/A"}</p>
+                    <p><span className="font-medium">Judging Mode:</span> {cohort.judgingMode ?? "N/A"}</p>
+                    <p><span className="font-medium">Voting Mode:</span> {cohort.votingMode ?? "N/A"}</p>
+                    <p><span className="font-medium">Max Votes per Judge:</span> {cohort.maxVotesPerJudge ?? "N/A"}</p>
                   </div>
                 </div>
 
                 <div>
                   <h4 className="font-semibold mb-2">Evaluation Criteria</h4>
                   <div className="space-y-2">
-                    {cohort.evaluationCriteria.map((criteria) => (
-                      <div key={criteria.name} className="flex items-center justify-between p-2 bg-muted rounded">
-                        <div>
-                          <p className="font-medium">{criteria.name}</p>
-                          <p className="text-xs text-muted-foreground">{criteria.description}</p>
+                    {cohort.evaluationCriteria && cohort.evaluationCriteria.length > 0 ? (
+                      cohort.evaluationCriteria.map((criteria) => (
+                        <div key={criteria.name} className="flex items-center justify-between p-2 bg-muted rounded">
+                          <div>
+                            <p className="font-medium">{criteria.name}</p>
+                            <p className="text-xs text-muted-foreground">{criteria.description}</p>
+                          </div>
+                          <span className="font-bold text-primary">{criteria.points}pts</span>
                         </div>
-                        <span className="font-bold text-primary">{criteria.points}pts</span>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No evaluation criteria defined</p>
+                    )}
                   </div>
                 </div>
               </div>
