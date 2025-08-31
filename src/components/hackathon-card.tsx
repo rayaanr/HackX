@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { UIHackathon } from "@/types/hackathon";
@@ -18,57 +19,59 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
   const deadline = hackathon.registrationPeriod?.registrationEndDate;
 
   return (
-    <Card className="p-6">
-      <div className="flex">
-        <div className="flex-1">
-          <CardHeader className="p-0 mb-4">
-            <div className="flex items-center gap-4">
-              <CardTitle className="text-2xl">{hackathon.name}</CardTitle>
-              <Badge variant={statusVariant}>{status}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <p className="text-muted-foreground mb-4">
-              {hackathon.shortDescription}
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
-              <div>
-                <p className="font-semibold">Deadline</p>
-                <p>{deadline ? format(new Date(deadline), "dd MMM yyyy") : "TBD"}</p>
+    <Link href={`/hackathons/${hackathon.id}`}>
+      <Card className="p-6 hover:shadow-md transition-shadow cursor-pointer">
+        <div className="flex">
+          <div className="flex-1">
+            <CardHeader className="p-0 mb-4">
+              <div className="flex items-center gap-4">
+                <CardTitle className="text-2xl">{hackathon.name}</CardTitle>
+                <Badge variant={statusVariant}>{status}</Badge>
               </div>
-              <div>
-                <p className="font-semibold">Tech Stack</p>
-                <p>{hackathon.techStack.slice(0, 2).join(", ")}...</p>
+            </CardHeader>
+            <CardContent className="p-0">
+              <p className="text-muted-foreground mb-4">
+                {hackathon.shortDescription}
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
+                <div>
+                  <p className="font-semibold">Deadline</p>
+                  <p>{deadline ? format(new Date(deadline), "dd MMM yyyy") : "TBD"}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Tech Stack</p>
+                  <p>{hackathon.techStack.slice(0, 2).join(", ")}...</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Level</p>
+                  <p className="capitalize">{hackathon.experienceLevel}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Prize</p>
+                  <p>{hackathon.prizeCohorts[0]?.prizeAmount || "TBD"}</p>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold">Level</p>
-                <p className="capitalize">{hackathon.experienceLevel}</p>
+              <div className="flex items-center gap-4 mt-4">
+                <Badge variant="secondary">{hackathon.location}</Badge>
+                <Badge variant="secondary">
+                  {hackathon.prizeCohorts.length} Prize
+                  {hackathon.prizeCohorts.length !== 1 ? "s" : ""}
+                </Badge>
               </div>
-              <div>
-                <p className="font-semibold">Prize</p>
-                <p>{hackathon.prizeCohorts[0]?.prizeAmount || "TBD"}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 mt-4">
-              <Badge variant="secondary">{hackathon.location}</Badge>
-              <Badge variant="secondary">
-                {hackathon.prizeCohorts.length} Prize
-                {hackathon.prizeCohorts.length !== 1 ? "s" : ""}
-              </Badge>
-            </div>
-          </CardContent>
+            </CardContent>
+          </div>
+          <div className="relative w-1/3">
+            <Image
+              height={200}
+              width={300}
+              src={hackathon.visual || "/placeholder.svg"}
+              alt={hackathon.name}
+              className="h-full w-full object-cover rounded-lg"
+              unoptimized
+            />
+          </div>
         </div>
-        <div className="relative w-1/3">
-          <Image
-            height={200}
-            width={300}
-            src={hackathon.visual || "/placeholder.svg"}
-            alt={hackathon.name}
-            className="h-full w-full object-cover rounded-lg"
-            unoptimized
-          />
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </Link>
   );
 }
