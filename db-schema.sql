@@ -32,6 +32,15 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+-- Create function to automatically update updated_at timestamp
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Create hackathons table
 CREATE TABLE IF NOT EXISTS hackathons (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -54,27 +63,95 @@ CREATE TABLE IF NOT EXISTS hackathons (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Create trigger for hackathons updated_at
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.triggers 
+        WHERE trigger_name = 'hackathons_updated_at_trigger'
+    ) THEN
+        CREATE TRIGGER hackathons_updated_at_trigger
+            BEFORE UPDATE ON hackathons
+            FOR EACH ROW
+            EXECUTE FUNCTION set_updated_at();
+    END IF;
+END $$;
+
+-- Add CHECK constraints for hackathons date validation
+DO $$
+BEGIN
+    -- Check if constraints already exist before adding
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE table_name = 'hackathons' AND constraint_name = 'hackathon_date_order'
+    ) THEN
+        ALTER TABLE hackathons ADD CONSTRAINT hackathon_date_order 
+            CHECK (hackathon_start_date IS NULL OR hackathon_end_date IS NULL OR hackathon_start_date <= hackathon_end_date);
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE table_name = 'hackathons' AND constraint_name = 'registration_date_order'
+    ) THEN
+        ALTER TABLE hackathons ADD CONSTRAINT registration_date_order 
+            CHECK (
+                (registration_start_date IS NULL AND registration_end_date IS NULL) OR
+                (registration_start_date IS NOT NULL AND registration_end_date IS NOT NULL AND 
+                 registration_start_date <= registration_end_date AND 
+                 (hackathon_start_date IS NULL OR registration_end_date <= hackathon_start_date))
+            );
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE table_name = 'hackathons' AND constraint_name = 'voting_date_order'
+    ) THEN
+        ALTER TABLE hackathons ADD CONSTRAINT voting_date_order 
+            CHECK (
+                (voting_start_date IS NULL AND voting_end_date IS NULL) OR
+                (voting_start_date IS NOT NULL AND voting_end_date IS NOT NULL AND 
+                 voting_start_date <= voting_end_date AND 
+                 (hackathon_start_date IS NULL OR voting_start_date >= hackathon_start_date) AND
+                 (hackathon_end_date IS NULL OR voting_end_date <= hackathon_end_date))
+            );
+    END IF;
+END $$;
+
 -- Create prize_cohorts table
 CREATE TABLE IF NOT EXISTS prize_cohorts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     hackathon_id UUID NOT NULL REFERENCES hackathons(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    number_of_winners INTEGER NOT NULL DEFAULT 1,
+    number_of_winners INTEGER NOT NULL DEFAULT 1 CHECK (number_of_winners > 0),
     prize_amount TEXT NOT NULL,
     description TEXT NOT NULL,
     judging_mode judging_mode NOT NULL DEFAULT 'manual',
     voting_mode voting_mode NOT NULL DEFAULT 'public',
-    max_votes_per_judge INTEGER NOT NULL DEFAULT 1,
+    max_votes_per_judge INTEGER NOT NULL DEFAULT 1 CHECK (max_votes_per_judge > 0),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Create trigger for prize_cohorts updated_at
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.triggers 
+        WHERE trigger_name = 'prize_cohorts_updated_at_trigger'
+    ) THEN
+        CREATE TRIGGER prize_cohorts_updated_at_trigger
+            BEFORE UPDATE ON prize_cohorts
+            FOR EACH ROW
+            EXECUTE FUNCTION set_updated_at();
+    END IF;
+END $$;
 
 -- Create evaluation_criteria table
 CREATE TABLE IF NOT EXISTS evaluation_criteria (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     prize_cohort_id UUID NOT NULL REFERENCES prize_cohorts(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    points INTEGER NOT NULL,
+    points INTEGER NOT NULL CHECK (points > 0),
     description TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -90,6 +167,20 @@ CREATE TABLE IF NOT EXISTS judges (
     UNIQUE(hackathon_id, email)
 );
 
+-- Create trigger for judges updated_at
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.triggers 
+        WHERE trigger_name = 'judges_updated_at_trigger'
+    ) THEN
+        CREATE TRIGGER judges_updated_at_trigger
+            BEFORE UPDATE ON judges
+            FOR EACH ROW
+            EXECUTE FUNCTION set_updated_at();
+    END IF;
+END $$;
+
 -- Create speakers table
 CREATE TABLE IF NOT EXISTS speakers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -99,34 +190,62 @@ CREATE TABLE IF NOT EXISTS speakers (
     x_handle TEXT,
     picture TEXT,
     hackathon_id UUID REFERENCES hackathons(id) ON DELETE CASCADE,
-    created_by UUID REFERENCES users(id) ON DELETE CASCADE,
+    created_by UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Add created_by column if it doesn't exist (for existing installations)
+-- Migrate existing speakers table if needed
 DO $$
 BEGIN
-    IF NOT EXISTS (
+    -- Check if created_by column exists and has wrong reference
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'speakers' AND column_name = 'created_by'
+    ) AND EXISTS (
+        SELECT 1 FROM information_schema.referential_constraints rc
+        JOIN information_schema.key_column_usage kcu ON rc.constraint_name = kcu.constraint_name
+        WHERE kcu.table_name = 'speakers' AND kcu.column_name = 'created_by' 
+        AND rc.unique_constraint_name LIKE '%users%' AND rc.unique_constraint_name NOT LIKE '%auth_users%'
+    ) THEN
+        -- Drop the old constraint first
+        EXECUTE (
+            SELECT 'ALTER TABLE speakers DROP CONSTRAINT ' || constraint_name
+            FROM information_schema.referential_constraints rc
+            JOIN information_schema.key_column_usage kcu ON rc.constraint_name = kcu.constraint_name
+            WHERE kcu.table_name = 'speakers' AND kcu.column_name = 'created_by'
+            AND rc.unique_constraint_name LIKE '%users%' AND rc.unique_constraint_name NOT LIKE '%auth_users%'
+            LIMIT 1
+        );
+        
+        -- Add the column as nullable with correct reference
+        ALTER TABLE speakers ALTER COLUMN created_by DROP DEFAULT;
+        ALTER TABLE speakers ALTER COLUMN created_by DROP NOT NULL;
+        ALTER TABLE speakers ADD CONSTRAINT speakers_created_by_fkey 
+            FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE CASCADE;
+    ELSIF NOT EXISTS (
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'speakers' AND column_name = 'created_by'
     ) THEN
         -- Add the column as nullable first
-        ALTER TABLE speakers ADD COLUMN created_by UUID REFERENCES users(id) ON DELETE CASCADE;
-        
-        -- Set a default user for existing rows (you may need to adjust this)
-        -- This assumes there's at least one user in the system
-        UPDATE speakers SET created_by = (SELECT id FROM users LIMIT 1) WHERE created_by IS NULL;
-        
-        -- Now make it NOT NULL
-        ALTER TABLE speakers ALTER COLUMN created_by SET NOT NULL;
+        ALTER TABLE speakers ADD COLUMN created_by UUID REFERENCES auth.users(id) ON DELETE CASCADE;
     END IF;
     
+    -- Ensure hackathon_id exists first before backfill
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'speakers' AND column_name = 'hackathon_id'
     ) THEN
         ALTER TABLE speakers ADD COLUMN hackathon_id UUID REFERENCES hackathons(id) ON DELETE CASCADE;
     END IF;
+    
+    -- Backfill created_by from hackathon owner for speakers without created_by
+    UPDATE speakers 
+    SET created_by = h.created_by 
+    FROM hackathons h 
+    WHERE speakers.hackathon_id = h.id 
+    AND speakers.created_by IS NULL;
+    
+    -- Note: NOT NULL constraint should be added in a separate migration after validation
 END $$;
 
 -- Create schedule_slots table
@@ -136,12 +255,58 @@ CREATE TABLE IF NOT EXISTS schedule_slots (
     name TEXT NOT NULL,
     description TEXT NOT NULL,
     start_date_time TIMESTAMPTZ NOT NULL,
-    end_date_time TIMESTAMPTZ NOT NULL,
+    end_date_time TIMESTAMPTZ NOT NULL CHECK (end_date_time > start_date_time),
     has_speaker BOOLEAN DEFAULT FALSE,
     speaker_id UUID REFERENCES speakers(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    CHECK (NOT has_speaker OR speaker_id IS NOT NULL)
 );
+
+-- Create trigger for schedule_slots updated_at
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.triggers 
+        WHERE trigger_name = 'schedule_slots_updated_at_trigger'
+    ) THEN
+        CREATE TRIGGER schedule_slots_updated_at_trigger
+            BEFORE UPDATE ON schedule_slots
+            FOR EACH ROW
+            EXECUTE FUNCTION set_updated_at();
+    END IF;
+END $$;
+
+-- Create function to validate speaker belongs to same hackathon
+CREATE OR REPLACE FUNCTION validate_schedule_slot_speaker()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.speaker_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM speakers 
+            WHERE id = NEW.speaker_id 
+            AND hackathon_id = NEW.hackathon_id
+        ) THEN
+            RAISE EXCEPTION 'Speaker must belong to the same hackathon as the schedule slot';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for speaker validation
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.triggers 
+        WHERE trigger_name = 'schedule_slots_speaker_validation_trigger'
+    ) THEN
+        CREATE TRIGGER schedule_slots_speaker_validation_trigger
+            BEFORE INSERT OR UPDATE ON schedule_slots
+            FOR EACH ROW
+            EXECUTE FUNCTION validate_schedule_slot_speaker();
+    END IF;
+END $$;
 
 -- Enable Row Level Security
 ALTER TABLE hackathons ENABLE ROW LEVEL SECURITY;
@@ -262,8 +427,8 @@ CREATE POLICY "Users can update speakers" ON speakers
         ))
     )
     WITH CHECK (
-        created_by = auth.uid() AND
-        (hackathon_id IS NULL OR EXISTS (
+        created_by = auth.uid() OR
+        (hackathon_id IS NOT NULL AND EXISTS (
             SELECT 1 FROM hackathons 
             WHERE hackathons.id = speakers.hackathon_id 
             AND hackathons.created_by = auth.uid()
