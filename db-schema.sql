@@ -98,8 +98,36 @@ CREATE TABLE IF NOT EXISTS speakers (
     x_name TEXT,
     x_handle TEXT,
     picture TEXT,
+    hackathon_id UUID REFERENCES hackathons(id) ON DELETE CASCADE,
+    created_by UUID REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add created_by column if it doesn't exist (for existing installations)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'speakers' AND column_name = 'created_by'
+    ) THEN
+        -- Add the column as nullable first
+        ALTER TABLE speakers ADD COLUMN created_by UUID REFERENCES users(id) ON DELETE CASCADE;
+        
+        -- Set a default user for existing rows (you may need to adjust this)
+        -- This assumes there's at least one user in the system
+        UPDATE speakers SET created_by = (SELECT id FROM users LIMIT 1) WHERE created_by IS NULL;
+        
+        -- Now make it NOT NULL
+        ALTER TABLE speakers ALTER COLUMN created_by SET NOT NULL;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'speakers' AND column_name = 'hackathon_id'
+    ) THEN
+        ALTER TABLE speakers ADD COLUMN hackathon_id UUID REFERENCES hackathons(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 -- Create schedule_slots table
 CREATE TABLE IF NOT EXISTS schedule_slots (
@@ -156,11 +184,26 @@ CREATE POLICY "Users can manage prize cohorts for their hackathons" ON prize_coh
             WHERE hackathons.id = prize_cohorts.hackathon_id 
             AND hackathons.created_by = auth.uid()
         )
+    )
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM hackathons 
+            WHERE hackathons.id = prize_cohorts.hackathon_id 
+            AND hackathons.created_by = auth.uid()
+        )
     );
 
 -- Evaluation criteria policies
 CREATE POLICY "Users can manage evaluation criteria for their prize cohorts" ON evaluation_criteria
     FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM prize_cohorts 
+            JOIN hackathons ON hackathons.id = prize_cohorts.hackathon_id
+            WHERE prize_cohorts.id = evaluation_criteria.prize_cohort_id 
+            AND hackathons.created_by = auth.uid()
+        )
+    )
+    WITH CHECK (
         EXISTS (
             SELECT 1 FROM prize_cohorts 
             JOIN hackathons ON hackathons.id = prize_cohorts.hackathon_id
@@ -177,14 +220,76 @@ CREATE POLICY "Users can manage judges for their hackathons" ON judges
             WHERE hackathons.id = judges.hackathon_id 
             AND hackathons.created_by = auth.uid()
         )
+    )
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM hackathons 
+            WHERE hackathons.id = judges.hackathon_id 
+            AND hackathons.created_by = auth.uid()
+        )
     );
 
--- Speakers policies (global access for now, can be restricted later)
-CREATE POLICY "Users can manage speakers" ON speakers FOR ALL USING (true);
+-- Speakers policies - users can only manage speakers they created or for hackathons they own
+DROP POLICY IF EXISTS "Users can manage speakers" ON speakers;
+
+CREATE POLICY "Users can view speakers" ON speakers
+    FOR SELECT USING (
+        created_by = auth.uid() OR
+        (hackathon_id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM hackathons 
+            WHERE hackathons.id = speakers.hackathon_id 
+            AND hackathons.created_by = auth.uid()
+        ))
+    );
+
+CREATE POLICY "Users can insert speakers" ON speakers
+    FOR INSERT WITH CHECK (
+        created_by = auth.uid() AND
+        (hackathon_id IS NULL OR EXISTS (
+            SELECT 1 FROM hackathons 
+            WHERE hackathons.id = speakers.hackathon_id 
+            AND hackathons.created_by = auth.uid()
+        ))
+    );
+
+CREATE POLICY "Users can update speakers" ON speakers
+    FOR UPDATE USING (
+        created_by = auth.uid() OR
+        (hackathon_id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM hackathons 
+            WHERE hackathons.id = speakers.hackathon_id 
+            AND hackathons.created_by = auth.uid()
+        ))
+    )
+    WITH CHECK (
+        created_by = auth.uid() AND
+        (hackathon_id IS NULL OR EXISTS (
+            SELECT 1 FROM hackathons 
+            WHERE hackathons.id = speakers.hackathon_id 
+            AND hackathons.created_by = auth.uid()
+        ))
+    );
+
+CREATE POLICY "Users can delete speakers" ON speakers
+    FOR DELETE USING (
+        created_by = auth.uid() OR
+        (hackathon_id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM hackathons 
+            WHERE hackathons.id = speakers.hackathon_id 
+            AND hackathons.created_by = auth.uid()
+        ))
+    );
 
 -- Schedule slots policies
 CREATE POLICY "Users can manage schedule slots for their hackathons" ON schedule_slots
     FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM hackathons 
+            WHERE hackathons.id = schedule_slots.hackathon_id 
+            AND hackathons.created_by = auth.uid()
+        )
+    )
+    WITH CHECK (
         EXISTS (
             SELECT 1 FROM hackathons 
             WHERE hackathons.id = schedule_slots.hackathon_id 
