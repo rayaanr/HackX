@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
-    "db:types": "supabase gen types typescript --project-id lpfymxgcildeqrlngaac > src/types/supabase.ts"
+    "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > src/types/supabase.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
