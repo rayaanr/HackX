@@ -17,9 +17,12 @@ export default async function HackathonPage({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  const registrationDaysLeft = hackathon.registrationPeriod?.registrationEndDate 
-    ? Math.ceil(
-        (hackathon.registrationPeriod.registrationEndDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  const registrationDaysLeft = hackathon.registrationPeriod?.registrationEndDate
+    ? Math.max(
+        0,
+        Math.ceil(
+          (hackathon.registrationPeriod.registrationEndDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        )
       )
     : 0;
 
