@@ -72,6 +72,10 @@
   text-decoration: underline line-through;
 }
 
+.editor-text-highlight {
+  background-color: yellow;
+}
+
 .editor-list-ol {
   list-style: decimal;
   margin-left: 1.5rem;

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Define shared schemas
-const urlSchema = z.url("Invalid URL").or(z.literal(""));
+export const urlSchema = z.url("Invalid URL").or(z.literal(""));
 
 // Define the evaluation criteria schema
 const evaluationCriteriaSchema = z.object({

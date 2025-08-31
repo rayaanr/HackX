@@ -16,6 +16,7 @@ import {
   $createTextNode,
   $isElementNode,
   $getRoot,
+  $isTextNode,
   type LexicalEditor as LxEditor,
 } from "lexical";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
@@ -35,11 +36,13 @@ import {
 } from "@lexical/rich-text";
 import { $createCodeNode, $isCodeNode, CodeNode } from "@lexical/code";
 import { mergeRegister } from "@lexical/utils";
+import { $setBlocksType } from "@lexical/selection";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { TRANSFORMERS } from "@lexical/markdown";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { LinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
 import { useCallback, useEffect, useState } from "react";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -68,6 +71,7 @@ import {
   Type,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { urlSchema } from "@/lib/schemas/hackathon-schema";
 
 // Color Highlighter Component
 function ColorHighlighter({
@@ -143,12 +147,27 @@ function LinkPopover({
 }) {
   const [url, setUrl] = useState("");
   const [open, setOpen] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleInsert = () => {
-    if (url.trim()) {
-      onInsertLink(url.trim());
-      setUrl("");
-      setOpen(false);
+    if (!url.trim()) return;
+
+    const validation = urlSchema.safeParse(url.trim());
+    if (!validation.success) {
+      setValidationError(validation.error.issues[0]?.message || "Invalid URL");
+      return;
+    }
+
+    setValidationError(null);
+    onInsertLink(url.trim());
+    setUrl("");
+    setOpen(false);
+  };
+
+  const handleUrlChange = (value: string) => {
+    setUrl(value);
+    if (validationError) {
+      setValidationError(null);
     }
   };
 
@@ -184,12 +203,16 @@ function LinkPopover({
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Insert Link</h4>
           <Input
+            type="url"
             placeholder="Enter URL..."
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => handleUrlChange(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
           />
+          {validationError && (
+            <p className="text-sm text-destructive">{validationError}</p>
+          )}
           <div className="flex justify-end gap-2">
             <Button
               size="sm"
@@ -244,6 +267,7 @@ const theme = {
     strikethrough: "editor-text-strikethrough",
     underlineStrikethrough: "editor-text-underlineStrikethrough",
     code: "editor-text-code",
+    highlight: "editor-text-highlight",
   },
   code: "editor-code",
   codeHighlight: {
@@ -348,41 +372,23 @@ function ToolbarPlugin() {
     editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, alignment);
   };
 
-  const formatBlock = (blockType: string) => {
+  const formatBlock = (blockType: "paragraph" | "h3" | "quote" | "code") => {
     editor.update(() => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
-        const anchorNode = selection.anchor.getNode();
-        const element =
-          anchorNode.getKey() === "root"
-            ? anchorNode
-            : anchorNode.getTopLevelElementOrThrow();
-
-        // Get existing content
-        const textContent = element.getTextContent();
-        let newElement;
-
-        if (blockType === "paragraph") {
-          newElement = $createParagraphNode();
-        } else if (blockType === "h3") {
-          newElement = $createHeadingNode("h3");
-        } else if (blockType === "quote") {
-          newElement = $createQuoteNode();
-        } else if (blockType === "code") {
-          newElement = $createCodeNode();
-        }
-
-        if (newElement) {
-          element.replace(newElement);
-
-          // Transfer content to new element
-          if (textContent) {
-            const textNode = $createTextNode(textContent);
-            newElement.append(textNode);
-          }
-
-          // Set selection to the new element
-          newElement.selectEnd();
+        switch (blockType) {
+          case "paragraph":
+            $setBlocksType(selection, () => $createParagraphNode());
+            break;
+          case "h3":
+            $setBlocksType(selection, () => $createHeadingNode("h3"));
+            break;
+          case "quote":
+            $setBlocksType(selection, () => $createQuoteNode());
+            break;
+          case "code":
+            $setBlocksType(selection, () => $createCodeNode());
+            break;
         }
       }
     });
@@ -393,33 +399,30 @@ function ToolbarPlugin() {
   };
 
   const handleHighlight = (color: string) => {
-    // For now, just apply regular highlight formatting
-    // In a full implementation, you'd use color-specific formatting
-    formatText("highlight");
+    editor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        const nodes = selection.getNodes();
+        nodes.forEach((node) => {
+          if ($isTextNode(node)) {
+            const prev = node.getStyle();
+            const cleaned = prev
+              .replace(/background-color:\s*[^;]+;?/g, "")
+              .trim();
+            node.setStyle(
+              `${cleaned ? cleaned + "; " : ""}background-color: ${color}`
+            );
+          }
+        });
+      }
+    });
   };
 
   const formatHeading = (headingSize: "h1" | "h2" | "h3") => {
     editor.update(() => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
-        const anchorNode = selection.anchor.getNode();
-        const element =
-          anchorNode.getKey() === "root"
-            ? anchorNode
-            : anchorNode.getTopLevelElementOrThrow();
-        const newHeading = $createHeadingNode(headingSize);
-
-        // Transfer existing content to the new heading
-        const textContent = element.getTextContent();
-        element.replace(newHeading);
-
-        if (textContent) {
-          const textNode = $createTextNode(textContent);
-          newHeading.append(textNode);
-        }
-
-        // Set selection to the new heading
-        newHeading.selectEnd();
+        $setBlocksType(selection, () => $createHeadingNode(headingSize));
       }
     });
   };
@@ -730,7 +733,12 @@ export function LexicalEditor({
           <OnChangePluginWithHTML onChange={onChange} />
           <HistoryPlugin />
           <ListPlugin />
-          <LinkPlugin />
+          <LinkPlugin
+            validateUrl={(url) => {
+              const result = urlSchema.safeParse(url);
+              return result.success;
+            }}
+          />
           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         </div>
       </div>
