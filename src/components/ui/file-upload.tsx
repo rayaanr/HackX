@@ -1,10 +1,20 @@
 "use client";
 
-import { AlertCircleIcon, ImageIcon, XIcon, CircleUserRoundIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  ImageIcon,
+  XIcon,
+  CircleUserRoundIcon,
+} from "lucide-react";
 import { useFileUpload, type FileUploadOptions } from "@/hooks/use-file-upload";
 import { FormControl } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useCallback, useEffect, useRef } from "react";
+
+type OmitFileUploadOptions = Omit<
+  FileUploadOptions,
+  "multiple" | "maxFiles" | "onFilesChange" | "onFilesAdded" | "initialFiles"
+>;
 
 // Shared hook for file upload logic
 function useFileUploadLogic({
@@ -18,9 +28,9 @@ function useFileUploadLogic({
   onChange?: (value: string) => void;
   maxSize: number;
   accept: string;
-} & FileUploadOptions) {
+} & OmitFileUploadOptions) {
   const prevFilesLengthRef = useRef(0);
-  
+
   const handleFilesChange = useCallback((files: any[]) => {
     // Don't call onChange here - let useEffect handle it
   }, []);
@@ -28,7 +38,7 @@ function useFileUploadLogic({
   const fileUploadReturn = useFileUpload({
     accept,
     maxSize,
-    onFilesChange: handleFilesChange,
+    multiple: false,
     ...options,
   });
 
@@ -69,7 +79,7 @@ function useFileUploadLogic({
   ] as const;
 }
 
-interface FileUploadFieldProps extends FileUploadOptions {
+interface FileUploadFieldProps extends OmitFileUploadOptions {
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
@@ -128,7 +138,10 @@ export function FileUploadField({
                 />
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center px-4 py-3 text-center cursor-pointer" onClick={openFileDialog}>
+              <div
+                className="flex flex-col items-center justify-center px-4 py-3 text-center cursor-pointer"
+                onClick={openFileDialog}
+              >
                 <div
                   className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
                   aria-hidden="true"
@@ -172,7 +185,7 @@ export function FileUploadField({
 }
 
 // Image Uploader Variant Component
-interface ImageUploaderProps extends FileUploadOptions {
+interface ImageUploaderProps extends OmitFileUploadOptions {
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
@@ -188,10 +201,7 @@ export function ImageUploader({
 }: ImageUploaderProps) {
   const [
     { errors },
-    {
-      openFileDialog,
-      getInputProps,
-    },
+    { openFileDialog, getInputProps },
     { previewUrl, fileName, handleRemove },
   ] = useFileUploadLogic({
     value,
@@ -225,10 +235,10 @@ export function ImageUploader({
           )}
         </div>
         <div className="relative inline-block">
-          <Button 
+          <Button
             type="button"
-            onClick={openFileDialog} 
-            variant="outline" 
+            onClick={openFileDialog}
+            variant="outline"
             size="sm"
           >
             {fileName ? "Change image" : placeholder}
@@ -241,7 +251,7 @@ export function ImageUploader({
           />
         </div>
       </div>
-      
+
       {fileName && (
         <div className="inline-flex gap-2 text-xs">
           <p className="text-muted-foreground truncate" aria-live="polite">
@@ -257,7 +267,7 @@ export function ImageUploader({
           </button>
         </div>
       )}
-      
+
       {errors.length > 0 && (
         <div
           className="text-destructive flex items-center gap-1 text-xs"
