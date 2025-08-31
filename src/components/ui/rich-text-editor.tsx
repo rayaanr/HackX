@@ -16,7 +16,7 @@ import {
   $createTextNode,
   $isElementNode,
   $getRoot,
-  createEditor,
+  type LexicalEditor as LxEditor,
 } from "lexical";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import {
@@ -676,20 +676,7 @@ export function LexicalEditor({
     },
     nodes: [HeadingNode, ListNode, ListItemNode, QuoteNode, CodeNode, LinkNode],
     editorState: initialContent
-      ? () => {
-          const editor = createEditor({
-            namespace: "HackathonDescriptionEditor",
-            nodes: [
-              HeadingNode,
-              ListNode,
-              ListItemNode,
-              QuoteNode,
-              CodeNode,
-              LinkNode,
-            ],
-            onError: (error: Error) => console.error(error),
-          });
-
+      ? (editor: LxEditor) => {
           editor.update(() => {
             // Try to parse as HTML first, fallback to plain text
             if (initialContent.includes("<")) {
