@@ -31,9 +31,8 @@ bun install
 ### **3. Setup Database Schema**
 
 - Open your Supabase Dashboard → SQL Editor
-- Copy the entire content of [`database-schema.sql`](../database-schema.sql)
+- Copy the entire content of [`db-schema.sql`](./db-schema.sql)
 - Paste and run it in the SQL Editor ✅
-
 ### **4. Configure Environment**
 
 ```bash
