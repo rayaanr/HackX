@@ -35,3 +35,28 @@ export function useUserHackathons() {
   });
 }
 
+// Fetch all hackathons (for explore page)
+async function fetchAllHackathons(): Promise<HackathonWithRelations[]> {
+  const response = await fetch("/api/hackathons/all");
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch all hackathons: ${response.status} ${response.statusText}`);
+  }
+  
+  const data: HackathonsResponse = await response.json();
+  return data.data;
+}
+
+// Get all hackathons
+export function useAllHackathons() {
+  return useQuery({
+    queryKey: ['hackathons', 'all'],
+    queryFn: fetchAllHackathons,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      return failureCount < 3;
+    },
+  });
+}
+

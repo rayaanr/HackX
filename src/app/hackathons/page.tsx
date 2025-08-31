@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useUserHackathons } from "@/hooks/queries/use-hackathons";
+import { useAllHackathons } from "@/hooks/queries/use-hackathons";
 import {
   transformDatabaseToUI,
   getHackathonStatus,
@@ -24,7 +24,7 @@ export default function ExplorePage() {
     data: dbHackathons = [],
     isLoading: loading,
     error,
-  } = useUserHackathons();
+  } = useAllHackathons();
 
   // Transform database hackathons to UI format, fallback to mock data if no database data
   const allHackathons =

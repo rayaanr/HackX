@@ -213,6 +213,43 @@ export async function getUserHackathons(userId: string) {
   }
 }
 
+// Get all hackathons (for explore page)
+export async function getAllHackathons() {
+  try {
+    const supabase = await createClient();
+
+    const { data: hackathons, error } = await supabase
+      .from("hackathons")
+      .select(
+        `
+        *,
+        prize_cohorts:prize_cohorts!hackathon_id (
+          *,
+          evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
+        ),
+        judges:judges!hackathon_id (*),
+        schedule_slots:schedule_slots!hackathon_id (
+          *,
+          speaker:speakers (*)
+        )
+      `
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true, data: hackathons };
+  } catch (error) {
+    console.error("Error fetching all hackathons:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+
 // Get a specific hackathon by ID
 export async function getHackathonById(hackathonId: string, userId: string) {
   try {
