@@ -107,9 +107,15 @@ export async function createHackathon(
   formData: HackathonFormData,
   userId: string
 ) {
-  const supabase = await createClient();
+export async function createHackathon(
+  formData: HackathonFormData,
+  userId: string
+) {
   let hackathonId: string | null = null;
 
+  try {
+    const supabase = await createClient();
+    // …rest of your implementation…
   try {
 
     // Insert hackathon
