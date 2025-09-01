@@ -27,12 +27,10 @@ export default function ExplorePage() {
     error,
   } = useAllHackathons();
 
-  // Transform database hackathons to UI format, fallback to mock data if no database data
-  const allHackathons =
-    dbHackathons.length > 0
-      ? dbHackathons.map(transformDatabaseToUI)
-      : mockHackathons;
-
+  // Transform DB hackathons; only fall back to mock on error
+  const allHackathons = error
+    ? mockHackathons
+    : dbHackathons.map(transformDatabaseToUI);
   const liveHackathons = allHackathons.filter((hackathon) => {
     const status = getHackathonStatus(hackathon);
     return (
