@@ -36,9 +36,13 @@ export function AvatarList({
         ))}
       </div>
       {remainingCount > 0 && (
-        <button className="text-muted-foreground hover:text-foreground flex items-center justify-center rounded-full bg-transparent px-2 py-1 text-xs shadow-none hover:bg-transparent">
-          +{remainingCount}
-        </button>
+        <span
+          className="text-muted-foreground flex items-center justify-center rounded-full px-2 py-1 text-xs"
+          aria-label={`${remainingCount} more`}
+          title={`${remainingCount} more`}
+        >
+          {remainingCount}
+        </span>
       )}
     </div>
   );
