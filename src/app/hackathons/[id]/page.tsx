@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { hackathons } from "@/data/hackathons";
-import { getHackathonStatus } from "@/lib/helpers/status";
+import { getHackathonById } from "@/lib/server/database/hackathons";
+import { transformDatabaseToUI, getHackathonStatus } from "@/lib/helpers/hackathon-transforms";
 import { PrizeAndJudgeTab } from "../../../components/hackathon-tabs/PrizeAndJudgeTab";
 import { ScheduleTab } from "../../../components/hackathon-tabs/ScheduleTab";
 import { SubmittedProjectsTab } from "../../../components/hackathon-tabs/SubmittedProjectsTab";
@@ -16,11 +16,14 @@ export default async function HackathonPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const hackathon = hackathons.find((h) => h.id.toString() === id);
-
-  if (!hackathon) {
+  
+  const result = await getHackathonById(id);
+  
+  if (!result.success || !result.data) {
     notFound();
   }
+  
+  const hackathon = transformDatabaseToUI(result.data);
 
   const registrationDaysLeft = hackathon.registrationPeriod?.registrationEndDate
     ? Math.max(

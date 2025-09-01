@@ -8,10 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { type Hackathon } from "@/data/hackathons";
+import { type UIHackathon } from "@/types/hackathon";
 
 interface PrizeAndJudgeTabProps {
-  hackathon: Hackathon;
+  hackathon: UIHackathon;
 }
 
 export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {

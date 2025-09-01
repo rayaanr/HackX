@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { type Hackathon } from "@/data/hackathons";
+import { type UIHackathon } from "@/types/hackathon";
 
 interface ScheduleTabProps {
-  hackathon: Hackathon;
+  hackathon: UIHackathon;
 }
 
 export function ScheduleTab({ hackathon }: ScheduleTabProps) {
