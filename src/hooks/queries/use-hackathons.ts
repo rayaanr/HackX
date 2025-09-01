@@ -11,7 +11,10 @@ async function fetchUserHackathons(): Promise<HackathonWithRelations[]> {
   const response = await fetch("/api/hackathons");
   
   if (!response.ok) {
-    throw new Error(`Failed to fetch hackathons: ${response.status} ${response.statusText}`);
+    throw Object.assign(
+      new Error(`Failed to fetch hackathons: ${response.status} ${response.statusText}`),
+      { status: response.status }
+    );
   }
   
   const data: HackathonsResponse = await response.json();
