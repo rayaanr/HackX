@@ -1,13 +1,21 @@
 "use client";
 
 import {
-  IconChartBar,
-  IconDashboard,
-  IconHelp,
-  IconListDetails,
-  IconSettings,
-  IconUser,
-} from "@tabler/icons-react";
+  Home,
+  Code,
+  Trophy,
+  FolderOpen,
+  Calendar,
+  Plus,
+  BookOpen,
+  Award,
+  Users,
+  GraduationCap,
+  MessageCircle,
+  UserCheck,
+  MoreHorizontal,
+  ListTodo,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -23,7 +31,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { ComponentProps } from "react";
-import { NavUser } from "./nav-user";
+import { usePathname } from "next/navigation";
 
 const nav = {
   main: {
@@ -31,69 +39,71 @@ const nav = {
       {
         title: "Quest",
         url: "/quest",
-        Icon: IconListDetails,
+        Icon: ListTodo,
       },
     ],
     section2: [
       {
         title: "My Certification",
         url: "/certification",
-        Icon: IconDashboard,
+        Icon: Award,
       },
       {
         title: "Explore Course",
         url: "/course",
-        Icon: IconChartBar,
+        Icon: BookOpen,
       },
     ],
     section3: [
       {
         title: "Dashboard",
-        url: "/profile",
-        Icon: IconUser,
+        url: "/dashboard",
+        Icon: Home,
       },
       {
         title: "Explore Hackathons",
         url: "/hackathons",
-        Icon: IconSettings,
+        Icon: Code,
       },
       {
         title: "Project Archive",
         url: "/projects",
-        Icon: IconHelp,
+        Icon: FolderOpen,
       },
     ],
     section4: [
       {
         title: "Community Events",
-        url: "/profile",
-        Icon: IconUser,
+        url: "/community",
+        Icon: Users,
       },
       {
         title: "Learning Camps",
-        url: "/hackathons",
-        Icon: IconSettings,
+        url: "/camps",
+        Icon: GraduationCap,
       },
       {
         title: "Discussion and Support",
-        url: "/projects",
-        Icon: IconHelp,
+        url: "/support",
+        Icon: MessageCircle,
       },
       {
         title: "Advocate Program",
-        url: "/projects",
-        Icon: IconHelp,
+        url: "/advocate",
+        Icon: UserCheck,
       },
       {
         title: "More",
-        url: "/projects",
-        Icon: IconHelp,
+        url: "/more",
+        Icon: MoreHorizontal,
       },
     ],
   },
 };
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -124,16 +134,21 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
               <SidebarGroup>
                 <SidebarGroupContent className="flex flex-col gap-2">
                   <SidebarMenu>
-                    {sectionItems.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild tooltip={item.title}>
-                          <Link href={item.url}>
-                            <item.Icon className="!size-4" />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
+                    {sectionItems.map((item) => {
+                      const isActive = pathname === item.url || 
+                        (item.url !== "/dashboard" && pathname.startsWith(item.url));
+                      
+                      return (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                            <Link href={item.url}>
+                              <item.Icon className="!size-4" />
+                              <span>{item.title}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
@@ -145,9 +160,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           ),
         )}
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser />
-      </SidebarFooter>
     </Sidebar>
   );
 }
