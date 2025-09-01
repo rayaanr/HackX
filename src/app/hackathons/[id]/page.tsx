@@ -1,14 +1,19 @@
 import { ArrowLeft, ArrowRight, Share2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getHackathonById } from "@/lib/server/database/hackathons";
-import { transformDatabaseToUI, getHackathonStatus } from "@/lib/helpers/hackathon-transforms";
+import {
+  transformDatabaseToUI,
+  getHackathonStatus,
+} from "@/lib/helpers/hackathon-transforms";
 import { PrizeAndJudgeTab } from "../../../components/hackathon-tabs/PrizeAndJudgeTab";
 import { ScheduleTab } from "../../../components/hackathon-tabs/ScheduleTab";
 import { SubmittedProjectsTab } from "../../../components/hackathon-tabs/SubmittedProjectsTab";
+import { SubmissionCountdown } from "@/components/hackathon/submission-countdown";
+import { ToDoList } from "@/components/hackathon/todo-list";
 
 export default async function HackathonPage({
   params,
@@ -16,25 +21,14 @@ export default async function HackathonPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  
+
   const result = await getHackathonById(id);
-  
+
   if (!result.success || !result.data) {
     notFound();
   }
-  
-  const hackathon = transformDatabaseToUI(result.data);
 
-  const registrationDaysLeft = hackathon.registrationPeriod?.registrationEndDate
-    ? Math.max(
-        0,
-        Math.ceil(
-          (hackathon.registrationPeriod.registrationEndDate.getTime() -
-            Date.now()) /
-            (1000 * 60 * 60 * 24)
-        )
-      )
-    : 0;
+  const hackathon = transformDatabaseToUI(result.data);
 
   const status = getHackathonStatus(hackathon);
 
@@ -61,169 +55,53 @@ export default async function HackathonPage({
           </p>
         </div>
         <div className="text-center mb-8">
-          <Button size="lg">
-            Start Register <ArrowRight className="ml-2 h-4 w-4" />
+          <Button
+            size="lg"
+            className="bg-yellow-400 hover:bg-yellow-500 text-black"
+          >
+            Start Submit <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
 
         {/* Navigation Tabs */}
-        <Tabs defaultValue="prize" className="mb-8">
+        <Tabs defaultValue="overview" className="mb-8">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="prize">Prize & Judge</TabsTrigger>
             <TabsTrigger value="schedule">Schedule</TabsTrigger>
-            <TabsTrigger value="projects">Submitted Projects</TabsTrigger>
+            <TabsTrigger value="projects">Project Gallery</TabsTrigger>
           </TabsList>
 
           {/* Main Content */}
           <TabsContent value="overview">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column */}
+              {/* Left Column - Hero Image */}
               <div className="lg:col-span-2">
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 mb-8">
-                  {/* Banner */}
-                  <div className="aspect-video bg-muted rounded-lg mb-6"></div>
-                  {/* Event Metadata */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-6">
-                    <div>
-                      <p className="font-semibold text-sm">Status</p>
-                      <p className="text-lg">
-                        {status}
-                        {status === "Registration Open"
-                          ? `, ${registrationDaysLeft} days left`
-                          : ""}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm">Host</p>
-                      <p className="text-lg">HackX Platform</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm">Mode</p>
-                      <p className="text-lg">In-person</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm">Location</p>
-                      <p className="text-lg">{hackathon.location}</p>
+                <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+                  <div className="relative aspect-video">
+                    <Image
+                      src={hackathon.visual || "/placeholder.svg"}
+                      alt={hackathon.name}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                    {/* Overlay with hackathon name */}
+                    <div className="absolute inset-0 bg-black/20 flex items-end">
+                      <div className="p-6 text-white">
+                        <h2 className="text-2xl font-bold drop-shadow-lg">
+                          {hackathon.name}
+                        </h2>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-center">
-                    <div className="flex -space-x-2 overflow-hidden">
-                      <Avatar>
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>P</AvatarFallback>
-                      </Avatar>
-                      <Avatar>
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>P</AvatarFallback>
-                      </Avatar>
-                      <Avatar>
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>P</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <p className="ml-2 text-sm text-muted-foreground">
-                      500+ participants
-                    </p>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 mb-8">
-                  <h2 className="text-2xl font-bold mb-4">Description</h2>
-                  <p className="text-muted-foreground mb-4">
-                    {hackathon.fullDescription}
-                  </p>
-                  <ul className="list-disc list-inside">
-                    {hackathon.prizeCohorts.map((cohort, index) => (
-                      <li key={index}>
-                        {cohort.name}:{" "}
-                        {new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                        }).format(Number(cohort.prizeAmount) || 0)}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* About Host */}
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 mb-8">
-                  <h2 className="text-2xl font-bold mb-4">About Host</h2>
-                  <p className="text-muted-foreground">U2U Network is...</p>
-                </div>
-
-                {/* Qualification Requirements */}
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                  <h2 className="text-2xl font-bold mb-4">
-                    Qualification Requirements
-                  </h2>
-                  <p className="text-muted-foreground">
-                    [Placeholder for qualification requirements]
-                  </p>
                 </div>
               </div>
 
               {/* Right Column */}
-              <div className="space-y-8">
-                {/* Countdown */}
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                  <h2 className="text-lg font-semibold mb-4">
-                    Registration ends in
-                  </h2>
-                  <div className="flex justify-between text-center">
-                    <div>
-                      <p className="text-2xl font-bold">
-                        {registrationDaysLeft}
-                      </p>
-                      <p className="text-sm text-muted-foreground">Days</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">23</p>
-                      <p className="text-sm text-muted-foreground">Hours</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">59</p>
-                      <p className="text-sm text-muted-foreground">Minutes</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">59</p>
-                      <p className="text-sm text-muted-foreground">Seconds</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Schedule */}
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                  <h2 className="text-lg font-semibold mb-4">
-                    Schedule Detail
-                  </h2>
-                  <Link
-                    href="#"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    View full schedule
-                  </Link>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                  <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-                  <ul className="space-y-2">
-                    <li className="flex items-center">
-                      <input type="checkbox" className="mr-2" />
-                      <span>Review hackathon details</span>
-                    </li>
-                    <li className="flex items-center">
-                      <input type="checkbox" className="mr-2" />
-                      <span>Complete registration</span>
-                    </li>
-                    <li className="flex items-center">
-                      <input type="checkbox" className="mr-2" />
-                      <span>Join Discord community</span>
-                    </li>
-                  </ul>
-                </div>
+              <div className="space-y-6">
+                <SubmissionCountdown hackathon={hackathon} />
+                <ToDoList hackathon={hackathon} />
               </div>
             </div>
           </TabsContent>
