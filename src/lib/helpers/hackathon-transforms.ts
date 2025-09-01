@@ -133,19 +133,19 @@ export function getHackathonStatus(
 // Get status variant for badge styling
 export function getStatusVariant(
   status: HackathonStatus
-): "default" | "secondary" | "destructive" | "outline" {
+): "default" | "secondary" | "destructive" | "outline" | "green" | "red" | "blue" | "purple" | "orange" | "yellow" {
   switch (status) {
     case "Live":
     case "Registration Open":
-      return "default";
+      return "green";
     case "Voting":
-      return "default";
+      return "blue";
     case "Registration Closed":
-      return "secondary";
+      return "yellow";
     case "Ended":
-      return "outline";
+      return "red";
     default:
-      return "secondary";
+      return "default";
   }
 }
 
