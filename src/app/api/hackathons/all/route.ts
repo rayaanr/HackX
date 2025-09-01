@@ -8,8 +8,9 @@ export async function GET(_request: NextRequest) {
     const result = await getAllHackathons()
 
     if (!result.success) {
+      console.error('getAllHackathons failed:', result.error)
       return NextResponse.json(
-        { error: result.error },
+        { error: 'Failed to fetch hackathons' },
         { status: 500 }
       )
     }
