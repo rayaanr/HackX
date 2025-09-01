@@ -10,10 +10,14 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AvatarList } from "@/components/ui/avatar-list";
+import { ArrowRight, Calendar, Code, Trophy, Award, MapPin, Users } from "lucide-react";
 import { UIHackathon } from "@/types/hackathon";
-import { getHackathonStatus } from "@/lib/helpers/hackathon-transforms";
+import { getHackathonStatus, getStatusVariant } from "@/lib/helpers/hackathon-transforms";
 import { format } from "date-fns";
+import Image from "next/image";
+import Link from "next/link";
 import React, { useEffect, useState, useRef } from "react";
 
 interface FeaturedCarouselProps {
@@ -115,6 +119,14 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
     });
   };
 
+  // Create sample avatar images for participants
+  const participantAvatars = [
+    { src: "https://originui.com/avatar-80-03.jpg", alt: "Participant 1" },
+    { src: "https://originui.com/avatar-80-04.jpg", alt: "Participant 2" },
+    { src: "https://originui.com/avatar-80-05.jpg", alt: "Participant 3" },
+    { src: "https://originui.com/avatar-80-06.jpg", alt: "Participant 4" },
+  ];
+
   return (
     <div 
       className="mb-12 relative"
@@ -123,7 +135,9 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
     >
       {/* Static Featured Badge */}
       <div className="absolute top-4 left-4 z-20">
-        <Badge variant="secondary">Featured</Badge>
+        <Badge variant="default" className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+          ⭐ Featured
+        </Badge>
       </div>
       
       <Carousel 
@@ -137,61 +151,103 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
           {liveHackathons.map((hackathon) => {
             const totalPrize = calculateTotalPrize(hackathon);
             const status = getHackathonStatus(hackathon);
+            const statusVariant = getStatusVariant(status);
+            const deadline = hackathon.registrationPeriod?.registrationEndDate;
+            
+            // Calculate days left until deadline
+            const daysLeft = deadline 
+              ? Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+              : 0;
             
             return (
               <CarouselItem key={hackathon.id}>
-                <div 
-                  className="relative rounded-xl overflow-hidden text-white h-[250px] sm:h-[300px] flex items-center"
-                  style={{
-                    background: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${hackathon.visual || '/placeholder-hackathon.jpg'})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                >
-                  <div className="container relative z-10 px-6 sm:px-8 md:px-12">
-                    <div className="max-w-2xl">
-                      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
-                        {hackathon.name}
-                      </h1>
-                      <p className="text-base sm:text-lg mb-4 sm:mb-5">
-                        {hackathon.shortDescription}
-                      </p>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-5 sm:mb-6 text-center">
-                        <div>
-                          <p className="font-semibold text-xs sm:text-sm">Registration Deadline</p>
-                          <p className="text-sm sm:text-base">
-                            {hackathon.registrationPeriod?.registrationEndDate 
-                              ? format(new Date(hackathon.registrationPeriod.registrationEndDate), "dd MMM yyyy")
-                              : "TBD"}
+                <Link href={`/hackathons/${hackathon.id}`}>
+                  <div 
+                    className="relative rounded-xl overflow-hidden text-white h-[250px] sm:h-[300px] flex items-end hover:scale-[1.02] transition-transform duration-300"
+                    style={{
+                      background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${hackathon.visual || '/placeholder.svg'})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  >
+                    {/* Status Badge */}
+                    <div className="absolute top-6 right-6 z-10">
+                      <Badge variant={statusVariant} className="text-white shadow-lg backdrop-blur-sm">
+                        {status}
+                      </Badge>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="relative z-10 p-8 w-full">
+                      {/* Main Content Row */}
+                      <div className="flex items-end justify-between gap-8">
+                        {/* Left Side - Title & Description */}
+                        <div className="flex-1 max-w-xl">
+                          <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
+                            {hackathon.name}
+                          </h1>
+                          <p className="text-lg text-white/90 mb-6 leading-relaxed">
+                            {hackathon.shortDescription}
                           </p>
+                          
+                          {/* Key Info Pills */}
+                          <div className="flex flex-wrap gap-3 mb-6">
+                            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                              <span className="text-sm font-medium">
+                                🏆 {totalPrize} Prize Pool
+                              </span>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                              <span className="text-sm font-medium">
+                                📍 {hackathon.location}
+                              </span>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                              <span className="text-sm font-medium">
+                                ⏱️ {deadline ? `${daysLeft} days left` : "Registration Open"}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Tech Stack */}
+                          <div className="flex flex-wrap gap-2 mb-6">
+                            {hackathon.techStack.slice(0, 4).map((tech, index) => (
+                              <span 
+                                key={index}
+                                className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 px-3 py-1 rounded-lg text-sm font-medium border border-white/20 backdrop-blur-sm"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                            {hackathon.techStack.length > 4 && (
+                              <span className="bg-white/10 px-3 py-1 rounded-lg text-sm font-medium border border-white/20 backdrop-blur-sm">
+                                +{hackathon.techStack.length - 4} more
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-xs sm:text-sm">Tech Stack</p>
-                          <p className="text-sm sm:text-base">
-                            {hackathon.techStack && hackathon.techStack.length > 0 
-                              ? hackathon.techStack.slice(0, 2).join(", ") 
-                              : "Various"}
-                          </p>
+                        
+                        {/* Right Side - CTA */}
+                        <div className="text-center">
+                          <div className="mb-4">
+                            <div className="text-2xl font-bold mb-1">{totalPrize}</div>
+                            <div className="text-sm text-white/80">Total Prize</div>
+                          </div>
+                          <Button 
+                            size="lg" 
+                            className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white border-0 shadow-xl px-8 py-3 text-lg font-semibold"
+                          >
+                            Join Now
+                            <ArrowRight className="ml-2 w-5 h-5" />
+                          </Button>
+                          <div className="mt-3 text-xs text-white/70">
+                            {hackathon.experienceLevel === "all" ? "All skill levels welcome" : `${hackathon.experienceLevel} level`}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-xs sm:text-sm">Level</p>
-                          <p className="text-sm sm:text-base capitalize">
-                            {hackathon.experienceLevel === "all" ? "All Levels" : hackathon.experienceLevel}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-xs sm:text-sm">Total Prize</p>
-                          <p className="text-sm sm:text-base">{totalPrize}</p>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2 sm:gap-3">
-                        <Button size="lg" className="text-sm sm:text-base">
-                          Start Register <ArrowRight className="ml-2 w-4 h-4" />
-                        </Button>
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               </CarouselItem>
             );
           })}

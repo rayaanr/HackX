@@ -18,6 +18,7 @@ import {
 import { hackathons as mockHackathons } from "@/data/hackathons";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function ExplorePage() {
   const {
@@ -70,7 +71,9 @@ export default function ExplorePage() {
             place.
           </p>
         </div>
-        <Button variant="outline">Host a Hackathon</Button>
+        <Button asChild>
+          <Link href="/hackathons/create">Host a Hackathon</Link>
+        </Button>
       </div>
 
       {/* Filter Bar */}
