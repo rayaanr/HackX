@@ -80,10 +80,13 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
     }
 
     setCurrent(api.selectedScrollSnap());
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
+    const onSelect = () => setCurrent(api.selectedScrollSnap());
+    api.on("select", onSelect);
+    return () => {
+      // Embla exposes `off`; guard in case of version differences
+      // @ts-expect-error - off may not be typed in older versions
+      api.off?.("select", onSelect);
+    };
   }, [api]);
 
   // Set up auto-scroll when api is available
