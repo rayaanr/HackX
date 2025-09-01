@@ -29,35 +29,49 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
                 {item.startDateTime.toLocaleDateString()}
               </p>
               <p className="text-xs text-muted-foreground">
-                {item.startDateTime.toLocaleTimeString([], { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })} - {item.endDateTime.toLocaleTimeString([], { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
+                {item.startDateTime.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}{" "}
+                -{" "}
+                {item.endDateTime.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </p>
             </div>
-            
+
             <div className="flex-1">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="font-semibold text-lg">{item.name}</h3>
                   <p className="text-muted-foreground">{item.description}</p>
                 </div>
-                
-                {item.hasSpeaker && 'speaker' in item && item.speaker && (
+
+                {item.hasSpeaker && "speaker" in item && item.speaker && (
                   <div className="flex items-center space-x-2 ml-4">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={'picture' in item.speaker ? item.speaker.picture : undefined} alt={item.speaker.name} />
+                      <AvatarImage
+                        src={
+                          "picture" in item.speaker
+                            ? item.speaker.picture
+                            : undefined
+                        }
+                        alt={item.speaker.name}
+                      />
                       <AvatarFallback>
-                        {item.speaker.name.split(' ').map(n => n[0]).join('')}
+                        {item.speaker.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-sm">
                       <p className="font-medium">{item.speaker.name}</p>
-                      {'position' in item.speaker && item.speaker.position && (
-                        <p className="text-muted-foreground">{item.speaker.position}</p>
+                      {"position" in item.speaker && item.speaker.position && (
+                        <p className="text-muted-foreground">
+                          {item.speaker.position}
+                        </p>
                       )}
                     </div>
                   </div>

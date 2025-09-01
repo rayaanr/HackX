@@ -35,13 +35,16 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
               <div>
                 <CardTitle className="text-2xl">{cohort.name}</CardTitle>
                 <p className="text-lg font-semibold text-yellow-500">
-                  {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(cohort.prizeAmount) || 0)}
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  }).format(Number(cohort.prizeAmount) || 0)}
                 </p>
               </div>
               <Button variant="default">Submit to Track</Button>
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-6">
             <div className="space-y-6">
               <div>
@@ -53,28 +56,50 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
                 <div>
                   <h4 className="font-semibold mb-2">Prize Details</h4>
                   <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Winners:</span> {cohort.numberOfWinners ?? "N/A"}</p>
-                    <p><span className="font-medium">Judging Mode:</span> {cohort.judgingMode ?? "N/A"}</p>
-                    <p><span className="font-medium">Voting Mode:</span> {cohort.votingMode ?? "N/A"}</p>
-                    <p><span className="font-medium">Max Votes per Judge:</span> {cohort.maxVotesPerJudge ?? "N/A"}</p>
+                    <p>
+                      <span className="font-medium">Winners:</span>{" "}
+                      {cohort.numberOfWinners ?? "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Judging Mode:</span>{" "}
+                      {cohort.judgingMode ?? "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Voting Mode:</span>{" "}
+                      {cohort.votingMode ?? "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-medium">Max Votes per Judge:</span>{" "}
+                      {cohort.maxVotesPerJudge ?? "N/A"}
+                    </p>
                   </div>
                 </div>
 
                 <div>
                   <h4 className="font-semibold mb-2">Evaluation Criteria</h4>
                   <div className="space-y-2">
-                    {cohort.evaluationCriteria && cohort.evaluationCriteria.length > 0 ? (
+                    {cohort.evaluationCriteria &&
+                    cohort.evaluationCriteria.length > 0 ? (
                       cohort.evaluationCriteria.map((criteria) => (
-                        <div key={criteria.name} className="flex items-center justify-between p-2 bg-muted rounded">
+                        <div
+                          key={criteria.name}
+                          className="flex items-center justify-between p-2 bg-muted rounded"
+                        >
                           <div>
                             <p className="font-medium">{criteria.name}</p>
-                            <p className="text-xs text-muted-foreground">{criteria.description}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {criteria.description}
+                            </p>
                           </div>
-                          <span className="font-bold text-primary">{criteria.points}pts</span>
+                          <span className="font-bold text-primary">
+                            {criteria.points}pts
+                          </span>
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-muted-foreground italic">No evaluation criteria defined</p>
+                      <p className="text-sm text-muted-foreground italic">
+                        No evaluation criteria defined
+                      </p>
                     )}
                   </div>
                 </div>
@@ -103,11 +128,15 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
                   <TableRow key={judge.email}>
                     <TableCell>{judge.email}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
-                        judge.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                        judge.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
+                          judge.status === "accepted"
+                            ? "bg-green-100 text-green-800"
+                            : judge.status === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
                         {judge.status}
                       </span>
                     </TableCell>

@@ -10,7 +10,7 @@ import {
   IconBrandDiscord,
   IconBrandX,
   IconBrandTelegram,
-  IconBrandLinkedin
+  IconBrandLinkedin,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
@@ -73,10 +73,13 @@ export function SocialLinksInput({
   const [enabledLinks, setEnabledLinks] = useState<Set<string>>(new Set());
 
   // Keep enabledLinks in sync with socialLinks form value
-  const allowedKeys = SOCIAL_LINKS.map(link => link.name);
+  const allowedKeys = SOCIAL_LINKS.map((link) => link.name);
   useEffect(() => {
-    const validEnabledKeys = Object.keys(socialLinks)
-      .filter(key => Boolean(socialLinks[key]) && allowedKeys.includes(key as typeof allowedKeys[number]));
+    const validEnabledKeys = Object.keys(socialLinks).filter(
+      (key) =>
+        Boolean(socialLinks[key]) &&
+        allowedKeys.includes(key as (typeof allowedKeys)[number]),
+    );
     setEnabledLinks(new Set(validEnabledKeys));
   }, [socialLinks]);
 
@@ -84,23 +87,26 @@ export function SocialLinksInput({
     setEnabledLinks((prev) => new Set([...prev, linkName]));
   }, []);
 
-  const removeLink = useCallback((linkName: string) => {
-    setEnabledLinks((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(linkName);
-      return newSet;
-    });
-    setValue(`${name}.${linkName}`, "");
-  }, [name, setValue]);
-
-  const availableLinks = useMemo(() =>
-    SOCIAL_LINKS.filter((link) => !enabledLinks.has(link.name)),
-    [enabledLinks]
+  const removeLink = useCallback(
+    (linkName: string) => {
+      setEnabledLinks((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(linkName);
+        return newSet;
+      });
+      setValue(`${name}.${linkName}`, "");
+    },
+    [name, setValue],
   );
 
-  const enabledLinksArray = useMemo(() => 
-    Array.from(enabledLinks),
-    [enabledLinks]
+  const availableLinks = useMemo(
+    () => SOCIAL_LINKS.filter((link) => !enabledLinks.has(link.name)),
+    [enabledLinks],
+  );
+
+  const enabledLinksArray = useMemo(
+    () => Array.from(enabledLinks),
+    [enabledLinks],
   );
 
   return (

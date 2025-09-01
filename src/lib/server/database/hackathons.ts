@@ -6,7 +6,7 @@ import { EXPERIENCE_LEVEL_MAP } from "@/lib/constants/hackathon";
 async function insertHackathonRelatedData(
   supabase: any,
   hackathonId: string,
-  formData: HackathonFormData
+  formData: HackathonFormData,
 ) {
   // Insert prize cohorts
   for (const cohort of formData.prizeCohorts) {
@@ -85,17 +85,15 @@ async function insertHackathonRelatedData(
     }
 
     // Create schedule slot
-    const { error: slotError } = await supabase
-      .from("schedule_slots")
-      .insert({
-        hackathon_id: hackathonId,
-        name: slot.name,
-        description: slot.description,
-        start_date_time: slot.startDateTime.toISOString(),
-        end_date_time: slot.endDateTime.toISOString(),
-        has_speaker: slot.hasSpeaker || false,
-        speaker_id: speakerId,
-      });
+    const { error: slotError } = await supabase.from("schedule_slots").insert({
+      hackathon_id: hackathonId,
+      name: slot.name,
+      description: slot.description,
+      start_date_time: slot.startDateTime.toISOString(),
+      end_date_time: slot.endDateTime.toISOString(),
+      has_speaker: slot.hasSpeaker || false,
+      speaker_id: speakerId,
+    });
 
     if (slotError) {
       throw slotError;
@@ -105,18 +103,12 @@ async function insertHackathonRelatedData(
 
 export async function createHackathon(
   formData: HackathonFormData,
-  userId: string
-) {
-export async function createHackathon(
-  formData: HackathonFormData,
-  userId: string
+  userId: string,
 ) {
   let hackathonId: string | null = null;
 
   try {
     const supabase = await createClient();
-    // …rest of your implementation…
-  try {
 
     // Insert hackathon
     const { data: hackathonData, error: hackathonError } = await supabase
@@ -200,7 +192,7 @@ export async function getUserHackathons(userId: string) {
           *,
           speaker:speakers (*)
         )
-      `
+      `,
       )
       .eq("created_by", userId)
       .order("created_at", { ascending: false });
@@ -219,28 +211,52 @@ export async function getUserHackathons(userId: string) {
   }
 }
 
-// Get all hackathons (for explore page)
-export async function getAllHackathons() {
+// Get all hackathons (for explore page) - public safe data only
+export async function getAllHackathons(page: number = 1, limit: number = 20) {
   try {
     const supabase = await createClient();
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
     const { data: hackathons, error } = await supabase
       .from("hackathons")
       .select(
         `
-        *,
+        id,
+        name,
+        short_description,
+        location,
+        experience_level,
+        tech_stack,
+        visual,
+        registration_start_date,
+        registration_end_date,
+        hackathon_start_date,
+        hackathon_end_date,
+        created_at,
         prize_cohorts:prize_cohorts!hackathon_id (
-          *,
-          evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
+          id,
+          name,
+          prize_amount,
+          description,
+          number_of_winners
         ),
-        judges:judges!hackathon_id (*),
         schedule_slots:schedule_slots!hackathon_id (
-          *,
-          speaker:speakers (*)
+          id,
+          name,
+          description,
+          start_date_time,
+          end_date_time,
+          speaker:speakers (
+            id,
+            name
+          )
         )
-      `
+      `,
       )
-      .order("created_at", { ascending: false });
+      .eq("is_public", true)
+      .order("created_at", { ascending: false })
+      .range(from, to);
 
     if (error) {
       throw error;
@@ -275,7 +291,7 @@ export async function getHackathonById(hackathonId: string, userId: string) {
           *,
           speaker:speakers (*)
         )
-      `
+      `,
       )
       .eq("id", hackathonId)
       .eq("created_by", userId)
@@ -302,7 +318,7 @@ export async function getHackathonById(hackathonId: string, userId: string) {
 export async function updateHackathon(
   hackathonId: string,
   formData: HackathonFormData,
-  userId: string
+  userId: string,
 ) {
   try {
     const supabase = await createClient();

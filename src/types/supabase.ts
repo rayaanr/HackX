@@ -77,7 +77,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       prize_cohorts: {
@@ -127,7 +127,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "hackathons";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       evaluation_criteria: {
@@ -162,7 +162,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "prize_cohorts";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       judges: {
@@ -197,7 +197,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "hackathons";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       speakers: {
@@ -281,7 +281,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "speakers";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
     };

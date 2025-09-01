@@ -7,7 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IconBrandGoogle } from "@tabler/icons-react";
 import Link from "next/link";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { signupSchema, type SignupFormValues } from "@/lib/schemas/auth-schema";
 import { useAuth } from "@/providers/auth-provider";
 import { useRouter } from "next/navigation";
@@ -18,7 +25,7 @@ export function SignupForm({
 }: React.ComponentProps<"form">) {
   const { signUp, signInWithGoogle, loading } = useAuth();
   const router = useRouter();
-  
+
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -52,9 +59,9 @@ export function SignupForm({
 
   return (
     <Form {...form}>
-      <form 
+      <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn("flex flex-col gap-6", className)} 
+        className={cn("flex flex-col gap-6", className)}
         {...props}
       >
         <div className="flex flex-col items-center gap-2 text-center">
@@ -139,9 +146,9 @@ export function SignupForm({
               Or continue with
             </span>
           </div>
-          <Button 
-            variant="outline" 
-            className="w-full" 
+          <Button
+            variant="outline"
+            className="w-full"
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}

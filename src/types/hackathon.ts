@@ -1,13 +1,22 @@
 import type { Database } from "@/types/supabase";
-import type { HackathonFormData, PrizeCohort, Judge, ScheduleSlot } from "@/lib/schemas/hackathon-schema";
+import type {
+  HackathonFormData,
+  PrizeCohort,
+  Judge,
+  ScheduleSlot,
+} from "@/lib/schemas/hackathon-schema";
 
 // Database types from Supabase
-export type DatabaseHackathon = Database["public"]["Tables"]["hackathons"]["Row"];
-export type DatabasePrizeCohort = Database["public"]["Tables"]["prize_cohorts"]["Row"];
+export type DatabaseHackathon =
+  Database["public"]["Tables"]["hackathons"]["Row"];
+export type DatabasePrizeCohort =
+  Database["public"]["Tables"]["prize_cohorts"]["Row"];
 export type DatabaseJudge = Database["public"]["Tables"]["judges"]["Row"];
-export type DatabaseScheduleSlot = Database["public"]["Tables"]["schedule_slots"]["Row"];
+export type DatabaseScheduleSlot =
+  Database["public"]["Tables"]["schedule_slots"]["Row"];
 export type DatabaseSpeaker = Database["public"]["Tables"]["speakers"]["Row"];
-export type DatabaseEvaluationCriteria = Database["public"]["Tables"]["evaluation_criteria"]["Row"];
+export type DatabaseEvaluationCriteria =
+  Database["public"]["Tables"]["evaluation_criteria"]["Row"];
 
 // Extended database hackathon with relations
 export interface HackathonWithRelations extends DatabaseHackathon {
@@ -86,9 +95,9 @@ export interface DashboardStats {
 }
 
 // Hackathon status type
-export type HackathonStatus = 
+export type HackathonStatus =
   | "Registration Open"
-  | "Registration Closed" 
+  | "Registration Closed"
   | "Live"
   | "Voting"
   | "Ended";
@@ -99,19 +108,19 @@ export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "all";
 // Judging mode type
 export type JudgingMode = "manual" | "automated" | "hybrid";
 
-// Voting mode type  
+// Voting mode type
 export type VotingMode = "public" | "private" | "judges_only";
 
 // Judge status type
-export type JudgeStatus = "waiting" | "invited" | "pending" | "accepted" | "declined";
+export type JudgeStatus =
+  | "waiting"
+  | "invited"
+  | "pending"
+  | "accepted"
+  | "declined";
 
 // Re-export schema types for convenience
-export type {
-  HackathonFormData,
-  PrizeCohort,
-  Judge,
-  ScheduleSlot
-};
+export type { HackathonFormData, PrizeCohort, Judge, ScheduleSlot };
 
 // API response types
 export interface HackathonsResponse {
@@ -131,4 +140,40 @@ export interface CreateHackathonResponse {
 export interface ApiError {
   error: string;
   details?: Record<string, string[]>;
+}
+
+// Safe public hackathon data for explore page
+export interface PublicHackathonListItem {
+  id: string;
+  name: string;
+  short_description: string;
+  location: string;
+  experience_level: "beginner" | "intermediate" | "advanced" | "all";
+  tech_stack: string[];
+  visual: string | null;
+  registration_start_date: string | null;
+  registration_end_date: string | null;
+  hackathon_start_date: string | null;
+  hackathon_end_date: string | null;
+  created_at: string;
+  // Only public-safe prize info
+  prize_cohorts: {
+    id: string;
+    name: string;
+    prize_amount: string;
+    description: string;
+    number_of_winners: number;
+  }[];
+  // Only non-sensitive schedule info
+  schedule_slots: {
+    id: string;
+    name: string;
+    description: string;
+    start_date_time: string;
+    end_date_time: string;
+    speaker: {
+      id: string;
+      name: string;
+    } | null;
+  }[];
 }

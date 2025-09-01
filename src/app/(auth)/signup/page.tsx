@@ -1,6 +1,6 @@
-import { SignupForm } from "@/components/forms/auth/signup-form"
-import Link from "next/link"
-import Image from "next/image"
+import { SignupForm } from "@/components/forms/auth/signup-form";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function SignupPage() {
   return (
@@ -31,5 +31,5 @@ export default function SignupPage() {
         />
       </div>
     </div>
-  )
+  );
 }

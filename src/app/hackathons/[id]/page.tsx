@@ -28,8 +28,8 @@ export default async function HackathonPage({
         Math.ceil(
           (hackathon.registrationPeriod.registrationEndDate.getTime() -
             Date.now()) /
-            (1000 * 60 * 60 * 24)
-        )
+            (1000 * 60 * 60 * 24),
+        ),
       )
     : 0;
 

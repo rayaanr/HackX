@@ -24,7 +24,7 @@ export function AvatarList({
     <div
       className={cn(
         "bg-background flex items-center rounded-full border p-1 shadow-sm",
-        className
+        className,
       )}
     >
       <div className="flex -space-x-3">

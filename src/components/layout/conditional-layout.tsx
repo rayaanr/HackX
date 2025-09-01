@@ -15,7 +15,8 @@ interface ConditionalLayoutProps {
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const { loading } = useAuth();
-  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
+  const isAuthPage =
+    pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isHomePage = pathname === "/";
 
   // Show loading state

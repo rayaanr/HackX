@@ -1,24 +1,41 @@
 "use client";
 
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselPrevious, 
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
   CarouselNext,
-  type CarouselApi
+  type CarouselApi,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AvatarList } from "@/components/ui/avatar-list";
-import { ArrowRight, Calendar, Code, Trophy, Award, MapPin, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { UIHackathon } from "@/types/hackathon";
-import { getHackathonStatus, getStatusVariant } from "@/lib/helpers/hackathon-transforms";
-import { format } from "date-fns";
-import Image from "next/image";
+import {
+  getHackathonStatus,
+  getStatusVariant,
+} from "@/lib/helpers/hackathon-transforms";
 import Link from "next/link";
 import React, { useEffect, useState, useRef } from "react";
+
+// Sanitize URL to prevent CSS injection
+function sanitizeUrl(url: string | null | undefined): string | null {
+  if (!url || typeof url !== "string") {
+    return null;
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+    // Only allow http and https protocols
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      return null;
+    }
+    return parsedUrl.toString();
+  } catch {
+    return null;
+  }
+}
 
 interface FeaturedCarouselProps {
   hackathons: UIHackathon[];
@@ -45,9 +62,9 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    
+
     if (!api) return;
-    
+
     intervalRef.current = setInterval(() => {
       api.scrollNext();
     }, 5000); // Change slide every 5 seconds
@@ -82,9 +99,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
     const onSelect = () => setCurrent(api.selectedScrollSnap());
     api.on("select", onSelect);
     return () => {
-      // Embla exposes `off`; guard in case of version differences
-      // @ts-expect-error - off may not be typed in older versions
-      api.off?.("select", onSelect);
+      api.off("select", onSelect);
     };
   }, [api]);
 
@@ -110,7 +125,8 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
     }
 
     const total = hackathon.prizeCohorts.reduce((sum, cohort) => {
-      const amount = parseFloat(cohort.prizeAmount.replace(/[^0-9.-]+/g, "")) || 0;
+      const amount =
+        parseFloat(cohort.prizeAmount.replace(/[^0-9.-]+/g, "")) || 0;
       return sum + amount;
     }, 0);
 
@@ -130,19 +146,22 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
   ];
 
   return (
-    <div 
+    <div
       className="mb-12 relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {/* Static Featured Badge */}
       <div className="absolute top-4 left-4 z-20">
-        <Badge variant="default" className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+        <Badge
+          variant="default"
+          className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white"
+        >
           ⭐ Featured
         </Badge>
       </div>
-      
-      <Carousel 
+
+      <Carousel
         className="w-full"
         setApi={setApi}
         opts={{
@@ -155,30 +174,41 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
             const status = getHackathonStatus(hackathon);
             const statusVariant = getStatusVariant(status);
             const deadline = hackathon.registrationPeriod?.registrationEndDate;
-            
+
             // Calculate days left until deadline
-            const daysLeft = deadline 
-              ? Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+            const daysLeft = deadline
+              ? Math.max(
+                  0,
+                  Math.ceil(
+                    (deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+                  ),
+                )
               : 0;
-            
+
+            const safeVisual =
+              sanitizeUrl(hackathon.visual) || "/placeholder.svg";
+
             return (
               <CarouselItem key={hackathon.id}>
                 <Link href={`/hackathons/${hackathon.id}`}>
-                  <div 
+                  <div
                     className="relative rounded-xl overflow-hidden text-white h-[250px] sm:h-[300px] flex items-end hover:scale-[1.02] transition-transform duration-300"
                     style={{
-                      background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${hackathon.visual || '/placeholder.svg'})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
+                      background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${safeVisual})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
                     }}
                   >
                     {/* Status Badge */}
                     <div className="absolute top-6 right-6 z-10">
-                      <Badge variant={statusVariant} className="text-white shadow-lg backdrop-blur-sm">
+                      <Badge
+                        variant={statusVariant}
+                        className="text-white shadow-lg backdrop-blur-sm"
+                      >
                         {status}
                       </Badge>
                     </div>
-                    
+
                     {/* Content */}
                     <div className="relative z-10 p-8 w-full">
                       {/* Main Content Row */}
@@ -191,7 +221,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
                           <p className="text-lg text-white/90 mb-6 leading-relaxed">
                             {hackathon.shortDescription}
                           </p>
-                          
+
                           {/* Key Info Pills */}
                           <div className="flex flex-wrap gap-3 mb-6">
                             <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
@@ -206,21 +236,26 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
                             </div>
                             <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                               <span className="text-sm font-medium">
-                                ⏱️ {deadline ? `${daysLeft} days left` : "Registration Open"}
+                                ⏱️{" "}
+                                {deadline
+                                  ? `${daysLeft} days left`
+                                  : "Registration Open"}
                               </span>
                             </div>
                           </div>
-                          
+
                           {/* Tech Stack */}
                           <div className="flex flex-wrap gap-2 mb-6">
-                            {hackathon.techStack.slice(0, 4).map((tech, index) => (
-                              <span 
-                                key={index}
-                                className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 px-3 py-1 rounded-lg text-sm font-medium border border-white/20 backdrop-blur-sm"
-                              >
-                                {tech}
-                              </span>
-                            ))}
+                            {hackathon.techStack
+                              .slice(0, 4)
+                              .map((tech, index) => (
+                                <span
+                                  key={index}
+                                  className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 px-3 py-1 rounded-lg text-sm font-medium border border-white/20 backdrop-blur-sm"
+                                >
+                                  {tech}
+                                </span>
+                              ))}
                             {hackathon.techStack.length > 4 && (
                               <span className="bg-white/10 px-3 py-1 rounded-lg text-sm font-medium border border-white/20 backdrop-blur-sm">
                                 +{hackathon.techStack.length - 4} more
@@ -228,22 +263,28 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
                             )}
                           </div>
                         </div>
-                        
+
                         {/* Right Side - CTA */}
                         <div className="text-center">
                           <div className="mb-4">
-                            <div className="text-2xl font-bold mb-1">{totalPrize}</div>
-                            <div className="text-sm text-white/80">Total Prize</div>
+                            <div className="text-2xl font-bold mb-1">
+                              {totalPrize}
+                            </div>
+                            <div className="text-sm text-white/80">
+                              Total Prize
+                            </div>
                           </div>
-                          <Button 
-                            size="lg" 
+                          <Button
+                            size="lg"
                             className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white border-0 shadow-xl px-8 py-3 text-lg font-semibold"
                           >
                             Join Now
                             <ArrowRight className="ml-2 w-5 h-5" />
                           </Button>
                           <div className="mt-3 text-xs text-white/70">
-                            {hackathon.experienceLevel === "all" ? "All skill levels welcome" : `${hackathon.experienceLevel} level`}
+                            {hackathon.experienceLevel === "all"
+                              ? "All skill levels welcome"
+                              : `${hackathon.experienceLevel} level`}
                           </div>
                         </div>
                       </div>
@@ -257,7 +298,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
         <CarouselPrevious className="left-2 sm:left-4 bg-black/30 hover:bg-black/50 text-white border-none" />
         <CarouselNext className="right-2 sm:right-4 bg-black/30 hover:bg-black/50 text-white border-none" />
       </Carousel>
-      
+
       {/* Static Dots Indicator */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex space-x-2">
         {liveHackathons.map((_, index) => (
