@@ -5,12 +5,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { hackathons } from "@/data/hackathons";
-import { getHackathonStatus } from "@/lib/hackathon/status";
+import { getHackathonStatus } from "@/lib/helpers/status";
 import { PrizeAndJudgeTab } from "../../../components/hackathon-tabs/PrizeAndJudgeTab";
 import { ScheduleTab } from "../../../components/hackathon-tabs/ScheduleTab";
 import { SubmittedProjectsTab } from "../../../components/hackathon-tabs/SubmittedProjectsTab";
 
-export default async function HackathonPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function HackathonPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const hackathon = hackathons.find((h) => h.id.toString() === id);
 
@@ -22,7 +26,9 @@ export default async function HackathonPage({ params }: { params: Promise<{ id: 
     ? Math.max(
         0,
         Math.ceil(
-          (hackathon.registrationPeriod.registrationEndDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+          (hackathon.registrationPeriod.registrationEndDate.getTime() -
+            Date.now()) /
+            (1000 * 60 * 60 * 24)
         )
       )
     : 0;
@@ -47,7 +53,9 @@ export default async function HackathonPage({ params }: { params: Promise<{ id: 
         </div>
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold">{hackathon.name}</h1>
-          <p className="text-muted-foreground text-lg">{hackathon.shortDescription}</p>
+          <p className="text-muted-foreground text-lg">
+            {hackathon.shortDescription}
+          </p>
         </div>
         <div className="text-center mb-8">
           <Button size="lg">
@@ -77,7 +85,10 @@ export default async function HackathonPage({ params }: { params: Promise<{ id: 
                     <div>
                       <p className="font-semibold text-sm">Status</p>
                       <p className="text-lg">
-                        {status}{status === "Registration Open" ? `, ${registrationDaysLeft} days left` : ""}
+                        {status}
+                        {status === "Registration Open"
+                          ? `, ${registrationDaysLeft} days left`
+                          : ""}
                       </p>
                     </div>
                     <div>
@@ -123,7 +134,11 @@ export default async function HackathonPage({ params }: { params: Promise<{ id: 
                   <ul className="list-disc list-inside">
                     {hackathon.prizeCohorts.map((cohort, index) => (
                       <li key={index}>
-                        {cohort.name}: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(cohort.prizeAmount) || 0)}
+                        {cohort.name}:{" "}
+                        {new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                        }).format(Number(cohort.prizeAmount) || 0)}
                       </li>
                     ))}
                   </ul>

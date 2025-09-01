@@ -107,9 +107,16 @@ export async function createHackathon(
   formData: HackathonFormData,
   userId: string
 ) {
+export async function createHackathon(
+  formData: HackathonFormData,
+  userId: string
+) {
+  let hackathonId: string | null = null;
+
   try {
     const supabase = await createClient();
-    let hackathonId: string | null = null;
+    // …rest of your implementation…
+  try {
 
     // Insert hackathon
     const { data: hackathonData, error: hackathonError } = await supabase
@@ -149,15 +156,19 @@ export async function createHackathon(
     hackathonId = hackathonData.id;
 
     // Insert related data using helper function
-    await insertHackathonRelatedData(supabase, hackathonId, formData);
+    if (!hackathonId) {
+      throw new Error("Failed to get hackathon ID");
+    }
 
+    await insertHackathonRelatedData(supabase, hackathonId, formData);
     return { success: true, data: hackathonData };
   } catch (error) {
     console.error("Error creating hackathon:", error);
     // Best-effort rollback
     try {
       if (hackathonId) {
-        await (await createClient())
+        const rollbackSupabase = await createClient();
+        await rollbackSupabase
           .from("hackathons")
           .delete()
           .eq("id", hackathonId);
@@ -201,6 +212,43 @@ export async function getUserHackathons(userId: string) {
     return { success: true, data: hackathons };
   } catch (error) {
     console.error("Error fetching user hackathons:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+
+// Get all hackathons (for explore page)
+export async function getAllHackathons() {
+  try {
+    const supabase = await createClient();
+
+    const { data: hackathons, error } = await supabase
+      .from("hackathons")
+      .select(
+        `
+        *,
+        prize_cohorts:prize_cohorts!hackathon_id (
+          *,
+          evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
+        ),
+        judges:judges!hackathon_id (*),
+        schedule_slots:schedule_slots!hackathon_id (
+          *,
+          speaker:speakers (*)
+        )
+      `
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true, data: hackathons };
+  } catch (error) {
+    console.error("Error fetching all hackathons:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",
