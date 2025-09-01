@@ -38,9 +38,8 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
 
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isHovered, setIsHovered] = useState(false);
-
   // Auto-scroll functionality
   const startAutoScroll = () => {
     if (intervalRef.current) {
