@@ -76,7 +76,7 @@ export function SubmissionCountdown({ hackathon }: SubmissionCountdownProps) {
 
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center flex-col mb-4">
         <h2 className="text-lg font-semibold">{getCountdownTitle()}</h2>
         <Link
           href="#schedule"
@@ -86,25 +86,25 @@ export function SubmissionCountdown({ hackathon }: SubmissionCountdownProps) {
         </Link>
       </div>
       <div className="grid grid-cols-4 gap-4 text-center">
-        <div className="bg-yellow-50 rounded-lg p-3">
+        <div className="rounded-lg p-3 bg-background">
           <p className="text-2xl font-bold">
             {timeLeft.days.toString().padStart(2, "0")}
           </p>
           <p className="text-xs text-muted-foreground">D</p>
         </div>
-        <div className="bg-yellow-50 rounded-lg p-3">
+        <div className="bg-background rounded-lg p-3">
           <p className="text-2xl font-bold">
             {timeLeft.hours.toString().padStart(2, "0")}
           </p>
           <p className="text-xs text-muted-foreground">H</p>
         </div>
-        <div className="bg-yellow-50 rounded-lg p-3">
+        <div className="bg-background rounded-lg p-3">
           <p className="text-2xl font-bold">
             {timeLeft.minutes.toString().padStart(2, "0")}
           </p>
           <p className="text-xs text-muted-foreground">M</p>
         </div>
-        <div className="bg-yellow-50 rounded-lg p-3">
+        <div className="bg-background rounded-lg p-3">
           <p className="text-2xl font-bold">
             {timeLeft.seconds.toString().padStart(2, "0")}
           </p>

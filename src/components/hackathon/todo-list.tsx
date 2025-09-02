@@ -110,8 +110,8 @@ export function ToDoList({ hackathon }: ToDoListProps) {
             key={todo.id}
             className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
               todo.completed
-                ? "bg-green-50 border-green-200"
-                : "border-gray-200 hover:bg-gray-50"
+                ? " border-green-500"
+                : "border-gray-200"
             }`}
             onClick={() => !todo.isDefault && toggleTodo(todo.id)}
           >
@@ -139,7 +139,7 @@ export function ToDoList({ hackathon }: ToDoListProps) {
             <span
               className={`text-sm ${
                 todo.completed
-                  ? "font-medium text-green-800"
+                  ? "font-medium text-green-500"
                   : "text-muted-foreground"
               }`}
             >

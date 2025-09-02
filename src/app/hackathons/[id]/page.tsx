@@ -66,7 +66,7 @@ export default async function HackathonPage({
         <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw]">
           <Separator className="absolute top-0 left-0 right-0" />
         </div>
-        <div className="sticky top-(--header-height) backdrop-blur-lg z-10">
+        <div className="sticky top-(--header-height) backdrop-blur-lg z-10 mb-3">
           <TabsList className="grid w-fit grid-cols-4 h-12 m-auto mt-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="prize">Prize & Judge</TabsTrigger>
