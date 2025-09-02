@@ -14,6 +14,8 @@ import { ScheduleTab } from "../../../components/hackathon-tabs/ScheduleTab";
 import { SubmittedProjectsTab } from "../../../components/hackathon-tabs/SubmittedProjectsTab";
 import { SubmissionCountdown } from "@/components/hackathon/submission-countdown";
 import { ToDoList } from "@/components/hackathon/todo-list";
+import parse from "html-react-parser";
+import DOMPurify from "isomorphic-dompurify";
 
 export default async function HackathonPage({
   params,
@@ -29,8 +31,6 @@ export default async function HackathonPage({
   }
 
   const hackathon = transformDatabaseToUI(result.data);
-
-  const status = getHackathonStatus(hackathon);
 
   return (
     <div className="bg-background text-foreground">
@@ -76,7 +76,7 @@ export default async function HackathonPage({
           <TabsContent value="overview">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Hero Image */}
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 space-y-6">
                 <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
                   <div className="relative aspect-video">
                     <Image
@@ -94,6 +94,25 @@ export default async function HackathonPage({
                         </h2>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Description Section */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold">
+                    About This Hackathon
+                  </h3>
+                  <div className="prose prose-sm prose-zinc dark:prose-invert max-w-none">
+                    {parse(
+                      DOMPurify.sanitize(
+                        hackathon.fullDescription ||
+                          hackathon.shortDescription ||
+                          "",
+                        {
+                          FORBID_ATTR: ["style"], // This removes all style attributes
+                        }
+                      )
+                    )}
                   </div>
                 </div>
               </div>
