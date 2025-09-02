@@ -1,4 +1,5 @@
-import { ArrowLeft, ArrowRight, Share2 } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { IconShare } from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -11,6 +12,7 @@ import { ScheduleTab } from "../../../components/hackathon-tabs/ScheduleTab";
 import { SubmittedProjectsTab } from "../../../components/hackathon-tabs/SubmittedProjectsTab";
 import { SubmissionCountdown } from "@/components/hackathon/submission-countdown";
 import { ToDoList } from "@/components/hackathon/todo-list";
+import { ShareDialog } from "@/components/share-dialog";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { Separator } from "@/components/ui/separator";
@@ -54,10 +56,12 @@ export default async function HackathonPage({
               </Button>
             </div>
           </div>
-          <Button variant="outline">
-            <Share2 className="mr-2 h-4 w-4" />
-            Share Link
-          </Button>
+          <ShareDialog url={`https://hackx.com/hackathons/${id}`}>
+            <Button variant="outline">
+              <IconShare className="mr-2 h-4 w-4" />
+              Share Link
+            </Button>
+          </ShareDialog>
         </div>
       </div>
 
