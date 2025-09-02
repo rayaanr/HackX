@@ -62,18 +62,20 @@ export default async function HackathonPage({
       </div>
 
       {/* Navigation Tabs with full-width separators */}
-      <Tabs defaultValue="overview" className="mb-8">
-        <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] mb-2">
+      <Tabs defaultValue="overview" className="gap-1">
+        <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw]">
           <Separator className="absolute top-0 left-0 right-0" />
         </div>
-        <TabsList className="grid w-fit grid-cols-4 h-12 m-auto">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="prize">Prize & Judge</TabsTrigger>
-          <TabsTrigger value="schedule">Schedule</TabsTrigger>
-          <TabsTrigger value="projects">Project Gallery</TabsTrigger>
-        </TabsList>
-        <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] my-2">
-          <Separator className="absolute bottom-0 left-0 right-0" />
+        <div className="sticky top-(--header-height) backdrop-blur-lg z-10">
+          <TabsList className="grid w-fit grid-cols-4 h-12 m-auto mt-2">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="prize">Prize & Judge</TabsTrigger>
+            <TabsTrigger value="schedule">Schedule</TabsTrigger>
+            <TabsTrigger value="projects">Project Gallery</TabsTrigger>
+          </TabsList>
+          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] my-2">
+            <Separator className="absolute bottom-0 left-0 right-0" />
+          </div>
         </div>
 
         {/* Main Content */}
