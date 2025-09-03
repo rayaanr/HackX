@@ -117,7 +117,9 @@ export default async function HackathonPage({
                         hackathon.shortDescription ||
                         "",
                       {
-                        FORBID_ATTR: ["style"], // This removes all style attributes
+                        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a'],
+                        ALLOWED_ATTR: ['href', 'target'],
+                        FORBID_ATTR: ["style"],
                       }
                     )
                   )}
