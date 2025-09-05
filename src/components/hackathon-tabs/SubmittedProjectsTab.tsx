@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { type Hackathon } from "@/data/hackathons";
+import { type UIHackathon } from "@/types/hackathon";
 
 interface SubmittedProjectsTabProps {
-  hackathon: Hackathon;
+  hackathon: UIHackathon;
 }
 
 export function SubmittedProjectsTab({ hackathon }: SubmittedProjectsTabProps) {

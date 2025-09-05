@@ -107,16 +107,10 @@ export async function createHackathon(
   formData: HackathonFormData,
   userId: string
 ) {
-export async function createHackathon(
-  formData: HackathonFormData,
-  userId: string
-) {
   let hackathonId: string | null = null;
 
   try {
     const supabase = await createClient();
-    // …rest of your implementation…
-  try {
 
     // Insert hackathon
     const { data: hackathonData, error: hackathonError } = await supabase
@@ -219,6 +213,44 @@ export async function getUserHackathons(userId: string) {
   }
 }
 
+// Get single hackathon by ID
+export async function getHackathonById(id: string) {
+  try {
+    const supabase = await createClient();
+
+    const { data: hackathon, error } = await supabase
+      .from("hackathons")
+      .select(
+        `
+        *,
+        prize_cohorts:prize_cohorts!hackathon_id (
+          *,
+          evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
+        ),
+        judges:judges!hackathon_id (*),
+        schedule_slots:schedule_slots!hackathon_id (
+          *,
+          speaker:speakers (*)
+        )
+      `
+      )
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true, data: hackathon };
+  } catch (error) {
+    console.error("Error fetching hackathon by ID:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+
 // Get all hackathons (for explore page)
 export async function getAllHackathons() {
   try {
@@ -256,8 +288,8 @@ export async function getAllHackathons() {
   }
 }
 
-// Get a specific hackathon by ID
-export async function getHackathonById(hackathonId: string, userId: string) {
+// Get a specific hackathon by ID (user must be the creator)
+export async function getUserHackathonById(hackathonId: string, userId: string) {
   try {
     const supabase = await createClient();
 

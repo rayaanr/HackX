@@ -10,13 +10,9 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AvatarList } from "@/components/ui/avatar-list";
-import { ArrowRight, Calendar, Code, Trophy, Award, MapPin, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { UIHackathon } from "@/types/hackathon";
 import { getHackathonStatus, getStatusVariant } from "@/lib/helpers/hackathon-transforms";
-import { format } from "date-fns";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState, useRef } from "react";
 
@@ -82,8 +78,6 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
     const onSelect = () => setCurrent(api.selectedScrollSnap());
     api.on("select", onSelect);
     return () => {
-      // Embla exposes `off`; guard in case of version differences
-      // @ts-expect-error - off may not be typed in older versions
       api.off?.("select", onSelect);
     };
   }, [api]);
@@ -120,14 +114,6 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
       maximumFractionDigits: 0,
     });
   };
-
-  // Create sample avatar images for participants
-  const participantAvatars = [
-    { src: "https://originui.com/avatar-80-03.jpg", alt: "Participant 1" },
-    { src: "https://originui.com/avatar-80-04.jpg", alt: "Participant 2" },
-    { src: "https://originui.com/avatar-80-05.jpg", alt: "Participant 3" },
-    { src: "https://originui.com/avatar-80-06.jpg", alt: "Participant 4" },
-  ];
 
   return (
     <div 

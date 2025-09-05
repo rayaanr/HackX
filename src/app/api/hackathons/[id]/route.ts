@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { hackathonSchema, validateDateConsistency } from '@/lib/schemas/hackathon-schema'
-import { getHackathonById, updateHackathon, deleteHackathon } from '@/lib/server/database/hackathons'
+import { getUserHackathonById, updateHackathon, deleteHackathon } from '@/lib/server/database/hackathons'
 
 interface RouteParams {
   params: Promise<{
@@ -28,7 +28,7 @@ export async function GET(
     }
 
     // Get hackathon
-    const result = await getHackathonById(id, user.id)
+    const result = await getUserHackathonById(id, user.id)
 
     if (!result.success) {
       if (result.error === 'Hackathon not found') {
