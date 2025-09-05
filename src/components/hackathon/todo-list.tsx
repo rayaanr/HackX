@@ -109,9 +109,7 @@ export function ToDoList({ hackathon }: ToDoListProps) {
           <div
             key={todo.id}
             className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-              todo.completed
-                ? " border-green-500"
-                : "border-gray-200"
+              todo.completed ? " border-green-500" : "border-gray-200"
             }`}
             onClick={() => !todo.isDefault && toggleTodo(todo.id)}
           >

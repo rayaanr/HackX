@@ -6,7 +6,7 @@ import { EXPERIENCE_LEVEL_MAP } from "@/lib/constants/hackathon";
 async function insertHackathonRelatedData(
   supabase: any,
   hackathonId: string,
-  formData: HackathonFormData
+  formData: HackathonFormData,
 ) {
   // Insert prize cohorts
   for (const cohort of formData.prizeCohorts) {
@@ -85,17 +85,15 @@ async function insertHackathonRelatedData(
     }
 
     // Create schedule slot
-    const { error: slotError } = await supabase
-      .from("schedule_slots")
-      .insert({
-        hackathon_id: hackathonId,
-        name: slot.name,
-        description: slot.description,
-        start_date_time: slot.startDateTime.toISOString(),
-        end_date_time: slot.endDateTime.toISOString(),
-        has_speaker: slot.hasSpeaker || false,
-        speaker_id: speakerId,
-      });
+    const { error: slotError } = await supabase.from("schedule_slots").insert({
+      hackathon_id: hackathonId,
+      name: slot.name,
+      description: slot.description,
+      start_date_time: slot.startDateTime.toISOString(),
+      end_date_time: slot.endDateTime.toISOString(),
+      has_speaker: slot.hasSpeaker || false,
+      speaker_id: speakerId,
+    });
 
     if (slotError) {
       throw slotError;
@@ -105,7 +103,7 @@ async function insertHackathonRelatedData(
 
 export async function createHackathon(
   formData: HackathonFormData,
-  userId: string
+  userId: string,
 ) {
   let hackathonId: string | null = null;
 
@@ -194,7 +192,7 @@ export async function getUserHackathons(userId: string) {
           *,
           speaker:speakers (*)
         )
-      `
+      `,
       )
       .eq("created_by", userId)
       .order("created_at", { ascending: false });
@@ -232,7 +230,7 @@ export async function getHackathonById(id: string) {
           *,
           speaker:speakers (*)
         )
-      `
+      `,
       )
       .eq("id", id)
       .single();
@@ -270,7 +268,7 @@ export async function getAllHackathons() {
           *,
           speaker:speakers (*)
         )
-      `
+      `,
       )
       .order("created_at", { ascending: false });
 
@@ -289,7 +287,10 @@ export async function getAllHackathons() {
 }
 
 // Get a specific hackathon by ID (user must be the creator)
-export async function getUserHackathonById(hackathonId: string, userId: string) {
+export async function getUserHackathonById(
+  hackathonId: string,
+  userId: string,
+) {
   try {
     const supabase = await createClient();
 
@@ -307,7 +308,7 @@ export async function getUserHackathonById(hackathonId: string, userId: string) 
           *,
           speaker:speakers (*)
         )
-      `
+      `,
       )
       .eq("id", hackathonId)
       .eq("created_by", userId)
@@ -334,7 +335,7 @@ export async function getUserHackathonById(hackathonId: string, userId: string) 
 export async function updateHackathon(
   hackathonId: string,
   formData: HackathonFormData,
-  userId: string
+  userId: string,
 ) {
   try {
     const supabase = await createClient();

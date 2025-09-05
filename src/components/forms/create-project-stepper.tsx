@@ -19,7 +19,7 @@ const { Stepper } = defineStepper(
   {
     id: "hackathon",
     title: "Select Hackathon",
-  }
+  },
 );
 
 export function CreateProjectStepper() {

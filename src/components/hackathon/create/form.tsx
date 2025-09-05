@@ -147,12 +147,12 @@ export function CreateHackathonForm() {
   });
 
   const onSubmit = async (data: HackathonFormData) => {
-    console.log('Form submitted with data:', data);
-    
+    console.log("Form submitted with data:", data);
+
     // Validate date consistency (client-side pre-validation)
     const dateErrors = validateDateConsistency(data);
     if (Object.keys(dateErrors).length > 0) {
-      console.log('Date validation errors:', dateErrors);
+      console.log("Date validation errors:", dateErrors);
       // Set errors for date consistency issues
       Object.entries(dateErrors).forEach(([field, message]) => {
         setError(field as any, { type: "manual", message });
@@ -162,7 +162,7 @@ export function CreateHackathonForm() {
     }
 
     clearErrors();
-    console.log('Creating hackathon...');
+    console.log("Creating hackathon...");
     createHackathonMutation.mutate(data);
   };
 
@@ -174,7 +174,11 @@ export function CreateHackathonForm() {
         className="space-y-8"
         onKeyDown={(e) => {
           // Prevent form submission on Enter key press (except in textareas)
-          if (e.key === 'Enter' && e.target instanceof HTMLElement && e.target.tagName !== 'TEXTAREA') {
+          if (
+            e.key === "Enter" &&
+            e.target instanceof HTMLElement &&
+            e.target.tagName !== "TEXTAREA"
+          ) {
             e.preventDefault();
           }
         }}

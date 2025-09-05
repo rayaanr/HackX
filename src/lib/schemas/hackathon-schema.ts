@@ -18,7 +18,9 @@ const prizeCohortSchema = z.object({
   numberOfWinners: z.number().min(1, "Number of winners must be at least 1"),
   prizeAmount: z.string().min(1, "Prize amount is required"), // Changed to string for currency formatting
   description: z.string().min(1, "Description is required"),
-  evaluationCriteria: z.array(evaluationCriteriaSchema).min(1, "At least one evaluation criteria is required"),
+  evaluationCriteria: z
+    .array(evaluationCriteriaSchema)
+    .min(1, "At least one evaluation criteria is required"),
   judgingMode: z.enum(["manual", "automated", "hybrid"]),
   votingMode: z.enum(["public", "private", "judges_only"]),
   maxVotesPerJudge: z.number().min(1, "Max votes per judge must be at least 1"),
@@ -41,43 +43,66 @@ const speakerSchema = z.object({
 });
 
 // Define the schedule slot schema
-const scheduleSlotSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(1, "Schedule slot name is required"),
-  description: z.string().min(1, "Description is required"),
-  speaker: speakerSchema.optional(),
-  startDateTime: z.date(),
-  endDateTime: z.date(),
-  hasSpeaker: z.boolean().optional(),
-}).refine(
-  (s) => s.startDateTime < s.endDateTime,
-  { message: "End time must be after start time", path: ["endDateTime"] }
-);
+const scheduleSlotSchema = z
+  .object({
+    id: z.string().optional(),
+    name: z.string().min(1, "Schedule slot name is required"),
+    description: z.string().min(1, "Description is required"),
+    speaker: speakerSchema.optional(),
+    startDateTime: z.date(),
+    endDateTime: z.date(),
+    hasSpeaker: z.boolean().optional(),
+  })
+  .refine((s) => s.startDateTime < s.endDateTime, {
+    message: "End time must be after start time",
+    path: ["endDateTime"],
+  });
 
 // Define period schemas
-const periodSchema = z.object({
-  registrationStartDate: z.date().optional(),
-  registrationEndDate: z.date().optional(),
-}).refine(
-  (data) => !data.registrationStartDate || !data.registrationEndDate || data.registrationStartDate < data.registrationEndDate,
-  { message: "End date must be after start date", path: ["registrationEndDate"] }
-);
+const periodSchema = z
+  .object({
+    registrationStartDate: z.date().optional(),
+    registrationEndDate: z.date().optional(),
+  })
+  .refine(
+    (data) =>
+      !data.registrationStartDate ||
+      !data.registrationEndDate ||
+      data.registrationStartDate < data.registrationEndDate,
+    {
+      message: "End date must be after start date",
+      path: ["registrationEndDate"],
+    },
+  );
 
-const hackathonPeriodSchema = z.object({
-  hackathonStartDate: z.date().optional(),
-  hackathonEndDate: z.date().optional(),
-}).refine(
-  (data) => !data.hackathonStartDate || !data.hackathonEndDate || data.hackathonStartDate < data.hackathonEndDate,
-  { message: "End date must be after start date", path: ["hackathonEndDate"] }
-);
+const hackathonPeriodSchema = z
+  .object({
+    hackathonStartDate: z.date().optional(),
+    hackathonEndDate: z.date().optional(),
+  })
+  .refine(
+    (data) =>
+      !data.hackathonStartDate ||
+      !data.hackathonEndDate ||
+      data.hackathonStartDate < data.hackathonEndDate,
+    {
+      message: "End date must be after start date",
+      path: ["hackathonEndDate"],
+    },
+  );
 
-const votingPeriodSchema = z.object({
-  votingStartDate: z.date().optional(),
-  votingEndDate: z.date().optional(),
-}).refine(
-  (data) => !data.votingStartDate || !data.votingEndDate || data.votingStartDate < data.votingEndDate,
-  { message: "End date must be after start date", path: ["votingEndDate"] }
-);
+const votingPeriodSchema = z
+  .object({
+    votingStartDate: z.date().optional(),
+    votingEndDate: z.date().optional(),
+  })
+  .refine(
+    (data) =>
+      !data.votingStartDate ||
+      !data.votingEndDate ||
+      data.votingStartDate < data.votingEndDate,
+    { message: "End date must be after start date", path: ["votingEndDate"] },
+  );
 
 // Define the main hackathon schema
 export const hackathonSchema = z.object({
@@ -91,50 +116,58 @@ export const hackathonSchema = z.object({
   techStack: z.array(z.string()).min(1, "At least one tech stack is required"),
   experienceLevel: z.enum(["beginner", "intermediate", "advanced", "all"]),
   location: z.string().min(1, "Location is required"),
-  socialLinks: z.object({
-    website: urlSchema,
-    discord: urlSchema,
-    twitter: urlSchema,
-    telegram: urlSchema,
-    github: urlSchema,
-  }).optional(),
+  socialLinks: z
+    .object({
+      website: urlSchema,
+      discord: urlSchema,
+      twitter: urlSchema,
+      telegram: urlSchema,
+      github: urlSchema,
+    })
+    .optional(),
   fullDescription: z.string().min(1, "Full description is required"),
-  
+
   // Prizes step
-  prizeCohorts: z.array(prizeCohortSchema).min(1, "At least one prize cohort is required"),
-  
+  prizeCohorts: z
+    .array(prizeCohortSchema)
+    .min(1, "At least one prize cohort is required"),
+
   // Judges step
   judges: z.array(judgeSchema).min(1, "At least one judge is required"),
-  
+
   // Schedule step
-  schedule: z.array(scheduleSlotSchema).min(1, "At least one schedule slot is required"),
+  schedule: z
+    .array(scheduleSlotSchema)
+    .min(1, "At least one schedule slot is required"),
 });
 
 // Validate date consistency
 export const validateDateConsistency = (data: any) => {
   const errors: Record<string, string> = {};
-  
+
   const regStart = data.registrationPeriod?.registrationStartDate;
   const regEnd = data.registrationPeriod?.registrationEndDate;
   const hackStart = data.hackathonPeriod?.hackathonStartDate;
   const hackEnd = data.hackathonPeriod?.hackathonEndDate;
   const voteStart = data.votingPeriod?.votingStartDate;
   const voteEnd = data.votingPeriod?.votingEndDate;
-  
+
   // Check that registration ends before hackathon starts
   if (regEnd && hackStart) {
     if (regEnd >= hackStart) {
-      errors["hackathonPeriod.hackathonStartDate"] = "Hackathon must start after registration ends";
+      errors["hackathonPeriod.hackathonStartDate"] =
+        "Hackathon must start after registration ends";
     }
   }
-  
+
   // Check that hackathon ends before voting starts
   if (hackEnd && voteStart) {
     if (hackEnd >= voteStart) {
-      errors["votingPeriod.votingStartDate"] = "Voting must start after hackathon ends";
+      errors["votingPeriod.votingStartDate"] =
+        "Voting must start after hackathon ends";
     }
   }
-  
+
   return errors;
 };
 
@@ -174,4 +207,10 @@ export const scheduleStepSchema = hackathonSchema.pick({
 });
 
 // Export sub-schemas
-export { prizeCohortSchema, evaluationCriteriaSchema, judgeSchema, speakerSchema, scheduleSlotSchema };
+export {
+  prizeCohortSchema,
+  evaluationCriteriaSchema,
+  judgeSchema,
+  speakerSchema,
+  scheduleSlotSchema,
+};
