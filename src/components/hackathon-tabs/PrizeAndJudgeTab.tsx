@@ -43,7 +43,10 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
 
   const formatCurrency = (amount: string) => {
     const numericAmount = parseFloat(amount.replace(/[^\d.]/g, '')) || 0;
-    return `${numericAmount.toLocaleString()} USDC`;
+    // Extract currency from original amount or use a default
+    const currencyMatch = amount.match(/[A-Z]{3,4}/);
+    const currency = currencyMatch ? currencyMatch[0] : 'USD';
+    return `${numericAmount.toLocaleString()} ${currency}`;
   };
 
   const getRankLabel = (index: number) => {
