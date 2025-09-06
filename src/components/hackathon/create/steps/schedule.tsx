@@ -189,7 +189,7 @@ export function ScheduleStep() {
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={(checked) =>
-                              field.onChange(Boolean(checked))
+                              field.onChange(checked === true)
                             }
                           />
                         </FormControl>
