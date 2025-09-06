@@ -33,7 +33,7 @@ export function StickyPageHeader({
   return (
     <div
       className={cn(
-        "sticky top-(--header-height) z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-4 md:px-6",
+        "sticky top-[--header-height] z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-4 md:px-6",
         className,
       )}
     >
