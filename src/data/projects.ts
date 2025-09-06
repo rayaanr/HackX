@@ -1,7 +1,24 @@
+export interface HackathonSubmission {
+  hackathonId: string;
+  hackathonName: string;
+  hackathonImage?: string;
+  status: "ended" | "live" | "voting" | "upcoming";
+  submissionDate: Date;
+  votingEndDate?: Date;
+  prizePool: string;
+  participants: number;
+  techStack: string[];
+  level: string;
+  isWinner?: boolean;
+  placement?: string;
+  prizeWon?: string;
+}
+
 export interface Project {
   id: string;
   name: string;
   description: string;
+  fullDescription?: string;
   hackathonId: string;
   logo?: string;
   lastEdited: Date;
@@ -12,10 +29,18 @@ export interface Project {
   demoUrl?: string;
   githubUrl?: string;
   videoUrl?: string;
+  pitchVideoUrl?: string;
   team: {
     name: string;
+    leader: string;
     members: string[];
   };
+  githubLink?: string;
+  sector?: string;
+  defiProtocol?: string;
+  progressDuringHackathon?: string;
+  fundraisingStatus?: string;
+  hackathonSubmissions?: HackathonSubmission[];
   scores?: {
     judgeId: string;
     judgeName: string;
@@ -36,19 +61,53 @@ export const mockProjects: Project[] = [
     id: "project-1",
     name: "Init Club Pro",
     description: "Init Club Pro was born from a simple but radical belief: true innovation shouldn't be slowed by legacy processes or outdated infrastructure. Built for the next generation of developers.",
+    fullDescription: "Dunk Verse is an innovative blockchain-based sports engagement platform designed to revolutionize the fan experience. Leveraging Mantle's Layer 2 infrastructure, the platform combines GameFi, SocialFi, and NFT to offer unique features like AI-generated quizzes, live NFT auctions tied to Top Shots NBA sports events, and leaderboard competitions. Fans can upload videos that are automatically minted into NFTs, participate in AI quizzes.",
     hackathonId: "hackathon-1", // AI Revolution 2025
     logo: "/project-logos/init-club-pro.png",
     lastEdited: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
     builder: "John McKenzie",
-    techStack: ["DeFi", "Infra"],
+    techStack: ["SocialFi", "Infra", "GameFi", "NFT", "AI"],
     status: "submitted",
     submissionDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
     demoUrl: "https://init-club-pro.vercel.app",
     githubUrl: "https://github.com/johnmckenzie/init-club-pro",
+    pitchVideoUrl: "https://youtube.com/watch?v=init-club-demo",
     team: {
       name: "Innovation Labs",
+      leader: "Amaan Sayyad",
       members: ["John McKenzie", "Sarah Chen", "Mike Rodriguez"]
-    }
+    },
+    githubLink: "github.com/a",
+    sector: "SocialFi",
+    defiProtocol: "DeFi",
+    progressDuringHackathon: "During hackathon, we accomplished the following: - Frontend Development: Built a user-friendly interface for NFT auctions, AI quizzes, and Social interaction. - Smart Contracts: Deployed key smart contracts for the token and betting Pool on the Mantle Testnet. - AI Quiz Integration: Implemented AIGC DALL-E's GPT models that generate dynamic quizzes based on live sports events. Developed a functional NFT auction system that allows users to bid using our tokens. - Testing and Deployment: Conducted rigorous testing to ensure seamless operation and deployed the project with all features integrated.",
+    fundraisingStatus: "Not raised any funds, but actively looking to raise.",
+    hackathonSubmissions: [
+      {
+        hackathonId: "ledgerforge-hackathon",
+        hackathonName: "Ledgerforge Hackathon, Chain Security Club",
+        status: "ended",
+        submissionDate: new Date("2024-01-15"),
+        prizePool: "50,000.00 USD",
+        participants: 405,
+        techStack: ["All tech stack"],
+        level: "All levels accepted",
+        isWinner: true,
+        placement: "Winner",
+        prizeWon: "$10,000"
+      },
+      {
+        hackathonId: "cryptovate-hack",
+        hackathonName: "Cryptovate Hack",
+        status: "live",
+        submissionDate: new Date("2024-12-01"),
+        votingEndDate: new Date("2024-12-08"),
+        prizePool: "40,000.00 USD", 
+        participants: 405,
+        techStack: ["All tech stack"],
+        level: "All levels accepted"
+      }
+    ]
   },
   {
     id: "project-2", 
@@ -65,6 +124,7 @@ export const mockProjects: Project[] = [
     githubUrl: "https://github.com/johnmckenzie/ward",
     team: {
       name: "HealthTech Innovators",
+      leader: "John McKenzie",
       members: ["John McKenzie", "Dr. Emily Watson", "Alex Thompson"]
     }
   },
@@ -84,6 +144,7 @@ export const mockProjects: Project[] = [
     videoUrl: "https://youtube.com/watch?v=wiral-demo",
     team: {
       name: "Connectivity Pioneers", 
+      leader: "John McKenzie",
       members: ["John McKenzie", "Lisa Park", "David Kim"]
     }
   },
@@ -101,6 +162,7 @@ export const mockProjects: Project[] = [
     githubUrl: "https://github.com/mariagonzalez/ecotrack-ai",
     team: {
       name: "Green Coders",
+      leader: "Maria Gonzalez",
       members: ["Maria Gonzalez", "James Wilson", "Priya Patel"]
     }
   },
@@ -118,6 +180,7 @@ export const mockProjects: Project[] = [
     githubUrl: "https://github.com/rajpatel/defi-yield-optimizer",
     team: {
       name: "DeFi Architects",
+      leader: "Raj Patel",
       members: ["Raj Patel", "Angela Lee", "Marcus Johnson"]
     }
   },
@@ -136,6 +199,7 @@ export const mockProjects: Project[] = [
     videoUrl: "https://youtube.com/watch?v=medassist-demo",
     team: {
       name: "AR Med Team",
+      leader: "Dr. Ashley Kim",
       members: ["Dr. Ashley Kim", "Tom Chen", "Rachel Martinez"]
     }
   }
