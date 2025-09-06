@@ -487,6 +487,30 @@ async function updateHackathon({
       .delete()
       .eq("hackathon_id", hackathonId);
     await supabase.from("judges").delete().eq("hackathon_id", hackathonId);
+    
+    // Get speaker IDs from schedule slots before deleting them
+    const { data: speakerIds } = await supabase
+      .from("schedule_slots")
+      .select("speaker_id")
+      .eq("hackathon_id", hackathonId);
+
+    if (speakerIds && speakerIds.length > 0) {
+      // Deduplicate and filter out nulls
+      const validSpeakerIds = [...new Set(
+        speakerIds
+          .map(slot => slot.speaker_id)
+          .filter(id => id !== null)
+      )];
+      
+      // Delete speakers if any valid IDs exist
+      if (validSpeakerIds.length > 0) {
+        await supabase
+          .from("speakers")
+          .delete()
+          .in("id", validSpeakerIds);
+      }
+    }
+    
     await supabase
       .from("schedule_slots")
       .delete()
