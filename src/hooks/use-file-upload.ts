@@ -179,7 +179,12 @@ export const useFileUpload = (
     (newFiles: FileList | File[]) => {
       if (!newFiles || newFiles.length === 0) return;
 
-      const newFilesArray = Array.from(newFiles);
+      let newFilesArray = Array.from(newFiles);
+      
+      // In single-file mode, only process the first file
+      if (!multiple) {
+        newFilesArray = [newFilesArray[0]];
+      }
       const errors: string[] = [];
 
       // Clear existing errors when new files are uploaded
@@ -364,10 +369,16 @@ export const useFileUpload = (
   const handleFileChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
-        addFiles(e.target.files);
+        // In single file mode, only use the first file
+        if (!multiple) {
+          const file = e.target.files[0];
+          addFiles([file]);
+        } else {
+          addFiles(e.target.files);
+        }
       }
     },
-    [addFiles],
+    [addFiles, multiple],
   );
 
   const openFileDialog = useCallback(() => {
