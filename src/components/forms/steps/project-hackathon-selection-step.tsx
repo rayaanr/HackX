@@ -132,22 +132,18 @@ export function HackathonSelectionStep() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {filteredHackathons.map((hackathon) => (
                         <div key={hackathon.id} className="relative">
-                          <div
-                            className="cursor-pointer"
-                            onClick={() =>
-                              toggleHackathonSelection(hackathon.id)
-                            }
-                          >
-                            <ProjectHackathonCard {...hackathon} />
-                          </div>
+                          <ProjectHackathonCard {...hackathon} />
                           <div className="absolute top-2 right-2">
                             <Checkbox
                               checked={selectedHackathonIds.includes(
                                 hackathon.id,
                               )}
-                              onCheckedChange={() =>
-                                toggleHackathonSelection(hackathon.id)
-                              }
+                              onCheckedChange={(checked) => {
+                                const newSelectedIds = checked
+                                  ? [...selectedHackathonIds, hackathon.id]
+                                  : selectedHackathonIds.filter(id => id !== hackathon.id);
+                                setValue("hackathonIds", newSelectedIds);
+                              }}
                             />
                           </div>
                         </div>
