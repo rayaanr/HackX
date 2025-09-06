@@ -568,7 +568,14 @@ export default function JudgeProjectPage({ hackathon, project }) {
             <Button 
               size="lg"
               onClick={handleSubmitReview}
-              disabled={Object.keys(scores).length !== evaluationCriteria.length}
+              disabled={
+                !evaluationCriteria.every(
+                  (c) =>
+                    Number.isFinite(scores[c.name]) &&
+                    scores[c.name] >= 0 &&
+                    scores[c.name] <= c.points
+                )
+              }
               className="px-8"
             >
               Submit Evaluation
