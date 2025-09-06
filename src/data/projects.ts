@@ -76,7 +76,7 @@ export const mockProjects: Project[] = [
       leader: "Amaan Sayyad",
       members: ["John McKenzie", "Sarah Chen", "Mike Rodriguez"]
     },
-    githubLink: "github.com/a",
+    githubUrl: "https://github.com/a",
     sector: "SocialFi",
     defiProtocol: "DeFi",
     progressDuringHackathon: "During hackathon, we accomplished the following: - Frontend Development: Built a user-friendly interface for NFT auctions, AI quizzes, and Social interaction. - Smart Contracts: Deployed key smart contracts for the token and betting Pool on the Mantle Testnet. - AI Quiz Integration: Implemented AIGC DALL-E's GPT models that generate dynamic quizzes based on live sports events. Developed a functional NFT auction system that allows users to bid using our tokens. - Testing and Deployment: Conducted rigorous testing to ensure seamless operation and deployed the project with all features integrated.",
