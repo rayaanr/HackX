@@ -19,10 +19,13 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
   const status = getHackathonStatus(hackathon);
   const statusVariant = getStatusVariant(status);
   const deadline = hackathon.registrationPeriod?.registrationEndDate;
-  
+
   // Calculate days left until deadline
-  const daysLeft = deadline 
-    ? Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+  const daysLeft = deadline
+    ? Math.max(
+        0,
+        Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+      )
     : 0;
 
   // Create sample avatar images for participants
@@ -75,19 +78,24 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                     <Award className="size-4 mr-1" />
                     Location
                   </h6>
-                  <p className="truncate" title={hackathon.location}>{hackathon.location}</p>
+                  <p className="truncate" title={hackathon.location}>
+                    {hackathon.location}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-4 mt-4">
-                <AvatarList 
-                  images={participantAvatars} 
+                <AvatarList
+                  images={participantAvatars}
                   totalCount={150}
                   additionalCount={0}
                   className="border-0 shadow-none"
                 />
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Trophy className="h-4 w-4 mr-1" />
-                  <span>{hackathon.prizeCohorts.length} Prize{hackathon.prizeCohorts.length !== 1 ? "s" : ""}</span>
+                  <span>
+                    {hackathon.prizeCohorts.length} Prize
+                    {hackathon.prizeCohorts.length !== 1 ? "s" : ""}
+                  </span>
                 </div>
               </div>
             </CardContent>

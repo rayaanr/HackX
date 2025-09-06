@@ -92,7 +92,8 @@ export function ScheduleStep() {
         <div className="space-y-6">
           {scheduleSlots.map((slot, index) => {
             // Get the watched hasSpeaker value for this specific index
-            const watchedHasSpeaker = watchedHasSpeakerValues?.[index]?.hasSpeaker;
+            const watchedHasSpeaker =
+              watchedHasSpeakerValues?.[index]?.hasSpeaker;
 
             return (
               <div key={slot.id} className="border rounded-lg p-6 space-y-6">
@@ -187,7 +188,9 @@ export function ScheduleStep() {
                         <FormControl>
                           <Checkbox
                             checked={field.value}
-                            onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                            onCheckedChange={(checked) =>
+                              field.onChange(checked === true)
+                            }
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
@@ -214,7 +217,10 @@ export function ScheduleStep() {
                               <FormItem>
                                 <FormLabel required>Speaker Name</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Speaker Name" {...field} />
+                                  <Input
+                                    placeholder="Speaker Name"
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -242,7 +248,7 @@ export function ScheduleStep() {
                             }}
                           />
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <FormField
                             control={control}

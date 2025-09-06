@@ -13,7 +13,11 @@ export default function CreateHackathonPage() {
         backHref="/hackathons"
         actions={
           <>
-            <Button type="button" variant="outline" form="create-hackathon-form">
+            <Button
+              type="button"
+              variant="outline"
+              form="create-hackathon-form"
+            >
               Save Draft
             </Button>
             <Button type="submit" form="create-hackathon-form">

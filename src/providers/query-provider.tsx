@@ -8,16 +8,19 @@ export default function QueryProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: false, // Avoid refetching on window focus
-        refetchOnReconnect: true, // Refetch when network reconnects
-        retry: 3, // Retry failed queries
-        retryDelay: 3000,
-      },
-    },
-  }));
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false, // Avoid refetching on window focus
+            refetchOnReconnect: true, // Refetch when network reconnects
+            retry: 3, // Retry failed queries
+            retryDelay: 3000,
+          },
+        },
+      }),
+  );
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

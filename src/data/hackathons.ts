@@ -1027,13 +1027,13 @@ export function getRandomHackathons(count: number = 5) {
 
 // Helper function to get hackathons by experience level
 export function getHackathonsByLevel(
-  level: "beginner" | "intermediate" | "advanced" | "all"
+  level: "beginner" | "intermediate" | "advanced" | "all",
 ) {
   if (level === "all") return hackathons;
   return hackathons.filter(
-    (h) => h.experienceLevel === level || h.experienceLevel === "all"
+    (h) => h.experienceLevel === level || h.experienceLevel === "all",
   );
 }
 
 // Export type
-export type Hackathon = typeof hackathons[0];
+export type Hackathon = (typeof hackathons)[0];

@@ -135,12 +135,18 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                 <SidebarGroupContent className="flex flex-col gap-2">
                   <SidebarMenu>
                     {sectionItems.map((item) => {
-                      const isActive = pathname === item.url || 
-                        (item.url !== "/dashboard" && pathname.startsWith(item.url));
-                      
+                      const isActive =
+                        pathname === item.url ||
+                        (item.url !== "/dashboard" &&
+                          pathname.startsWith(item.url));
+
                       return (
                         <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                          <SidebarMenuButton
+                            asChild
+                            tooltip={item.title}
+                            isActive={isActive}
+                          >
                             <Link href={item.url}>
                               <item.Icon className="!size-4" />
                               <span>{item.title}</span>

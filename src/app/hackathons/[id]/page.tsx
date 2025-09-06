@@ -1,11 +1,13 @@
+"use client";
+
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { IconShare } from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { getHackathonById } from "@/lib/server/database/hackathons";
+import { useHackathonById } from "@/hooks/queries/use-hackathons";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { PrizeAndJudgeTab } from "../../../components/hackathon-tabs/PrizeAndJudgeTab";
 import { ScheduleTab } from "../../../components/hackathon-tabs/ScheduleTab";
@@ -17,20 +19,88 @@ import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { Separator } from "@/components/ui/separator";
 
-export default async function HackathonPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export default function HackathonPage() {
+  const params = useParams();
+  const id = params.id as string;
 
-  const result = await getHackathonById(id);
+  const {
+    data: hackathonData,
+    isLoading: loading,
+    error,
+  } = useHackathonById(id);
 
-  if (!result.success || !result.data) {
-    notFound();
+  if (loading) {
+    return (
+      <div className="bg-background text-foreground">
+        <div className="container mx-auto">
+          <div className="flex justify-between pb-6">
+            <Link href="/hackathons">
+              <Button variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+            </Link>
+            <div className="space-y-2">
+              <div className="text-center">
+                <div className="h-10 w-64 bg-muted animate-pulse rounded mb-2" />
+                <div className="h-6 w-48 bg-muted animate-pulse rounded" />
+              </div>
+              <div className="text-center">
+                <div className="h-10 w-32 bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+            <div className="h-10 w-32 bg-muted animate-pulse rounded" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="aspect-video bg-muted animate-pulse rounded-lg" />
+              <div className="space-y-4">
+                <div className="h-6 w-48 bg-muted animate-pulse rounded" />
+                <div className="space-y-2">
+                  <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                  <div className="h-4 w-5/6 bg-muted animate-pulse rounded" />
+                  <div className="h-4 w-4/6 bg-muted animate-pulse rounded" />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-6">
+              <div className="h-32 bg-muted animate-pulse rounded-lg" />
+              <div className="h-48 bg-muted animate-pulse rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const hackathon = transformDatabaseToUI(result.data);
+  if (error || !hackathonData) {
+    return (
+      <div className="bg-background text-foreground">
+        <div className="container mx-auto">
+          <div className="flex justify-between pb-6">
+            <Link href="/hackathons">
+              <Button variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center py-12">
+            <h1 className="text-2xl font-bold mb-4">Hackathon Not Found</h1>
+            <p className="text-muted-foreground mb-6">
+              The hackathon you're looking for doesn't exist or you don't have
+              access to it.
+            </p>
+            <Link href="/hackathons">
+              <Button>Browse Hackathons</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const hackathon = transformDatabaseToUI(hackathonData);
 
   return (
     <div className="bg-background text-foreground">
@@ -117,11 +187,27 @@ export default async function HackathonPage({
                         hackathon.shortDescription ||
                         "",
                       {
-                        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a'],
-                        ALLOWED_ATTR: ['href', 'target'],
+                        ALLOWED_TAGS: [
+                          "p",
+                          "br",
+                          "strong",
+                          "em",
+                          "u",
+                          "h1",
+                          "h2",
+                          "h3",
+                          "h4",
+                          "h5",
+                          "h6",
+                          "ul",
+                          "ol",
+                          "li",
+                          "a",
+                        ],
+                        ALLOWED_ATTR: ["href", "target"],
                         FORBID_ATTR: ["style"],
-                      }
-                    )
+                      },
+                    ),
                   )}
                 </div>
               </div>

@@ -50,7 +50,11 @@ export function RecentHackathons({
 
   // Show most recent hackathons (up to 5)
   const recentHackathons = [...hackathons]
-    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.created_at || 0).getTime() -
+        new Date(a.created_at || 0).getTime(),
+    )
     .slice(0, 5);
 
   return (
@@ -107,18 +111,21 @@ export function RecentHackathons({
                         <span>{hackathon.location}</span>
                         <span>{totalPrize}</span>
                         <span>
-                          {hackathon.hackathon_start_date 
-                            ? format(new Date(hackathon.hackathon_start_date), "dd MMM yyyy") 
+                          {hackathon.hackathon_start_date
+                            ? format(
+                                new Date(hackathon.hackathon_start_date),
+                                "dd MMM yyyy",
+                              )
                             : "TBD"}
                         </span>
                       </div>
                     </div>
-                    <AvatarList 
+                    <AvatarList
                       images={[
                         { src: "/placeholder-user.jpg", alt: "Participant 1" },
                         { src: "/placeholder-user.jpg", alt: "Participant 2" },
                         { src: "/placeholder-user.jpg", alt: "Participant 3" },
-                      ]} 
+                      ]}
                       totalCount={50}
                       additionalCount={0}
                       className="border-0 shadow-none"
