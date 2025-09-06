@@ -37,16 +37,32 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     notFound();
   }
 
-  const [selectedPrizeCohort, setSelectedPrizeCohort] = useState<string>(hackathon.prizeCohorts[0]?.name || "");
+// At the top of src/app/hackathons/[id]/judge/[projectId]/page.tsx
+import { use, useEffect, useState } from "react";
+
+export default function JudgeProjectPage({ hackathon, project }) {
+  const [selectedPrizeCohort, setSelectedPrizeCohort] = useState<string>(
+    hackathon.prizeCohorts[0]?.name || ""
+  );
   const [scores, setScores] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [overallFeedback, setOverallFeedback] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
 
   // Get evaluation criteria from the selected prize cohort
-  const selectedCohort = hackathon.prizeCohorts.find(cohort => cohort.name === selectedPrizeCohort);
+  const selectedCohort = hackathon.prizeCohorts.find(
+    (cohort) => cohort.name === selectedPrizeCohort
+  );
   const evaluationCriteria = selectedCohort?.evaluationCriteria || [];
 
+  // Reset form state when cohort changes
+  useEffect(() => {
+    setScores({});
+    setOverallFeedback("");
+  }, [selectedPrizeCohort]);
+
+  // ...rest of component
+}
   const handleScoreChange = (criteriaName: string, score: number) => {
     setScores(prev => ({ ...prev, [criteriaName]: score }));
   };
