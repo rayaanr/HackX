@@ -36,13 +36,14 @@ export function useUserProjects() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: (failureCount, error) => {
-      // Don't retry on auth errors - check for HTTP 401 status
+      // Don't retry on auth errors - safely check error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : String(error);
+      
       if (
-        error &&
-        typeof error === 'object' &&
-        (('status' in error && error.status === 401) ||
-        ('code' in error && error.code === '401') ||
-        ('response' in error && error.response?.status === 401))
+        errorMessage.includes("401") ||
+        errorMessage.includes("Authentication")
       ) {
         return false;
       }
@@ -80,13 +81,14 @@ export function useRegisteredHackathons() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: (failureCount, error) => {
-      // Don't retry on auth errors - check for HTTP 401 status
+      // Don't retry on auth errors - safely check error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : String(error);
+      
       if (
-        error &&
-        typeof error === 'object' &&
-        (('status' in error && error.status === 401) ||
-        ('code' in error && error.code === '401') ||
-        ('response' in error && error.response?.status === 401))
+        errorMessage.includes("401") ||
+        errorMessage.includes("Authentication")
       ) {
         return false;
       }
