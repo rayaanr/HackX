@@ -107,14 +107,8 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                 </div>
               </div>
 
-              <Button 
-                className="w-full group-hover:shadow-md transition-shadow"
-                onClick={() => {
-                  // Navigate to project review page
-                  window.location.href = `/hackathons/${id}/judge/${project.id}`;
-                }}
-              >
-                Review Project
+              <Button asChild className="w-full group-hover:shadow-md transition-shadow">
+                <Link href={`/hackathons/${id}/judge/${project.id}`}>Review Project</Link>
               </Button>
             </CardContent>
           </Card>
