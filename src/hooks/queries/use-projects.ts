@@ -150,6 +150,10 @@ export function useCreateProject() {
 async function registerForHackathon(hackathonId: string): Promise<void> {
   const supabase = createClient();
 
+  if (!hackathonId?.trim()) {
+    throw new Error("hackathonId is required");
+  }
+
   const {
     data: { user },
     error: authError,
@@ -159,6 +163,8 @@ async function registerForHackathon(hackathonId: string): Promise<void> {
     throw new Error("Authentication required to register for hackathon");
   }
 
+  // …rest of implementation…
+}
   const { error } = await supabase.from("hackathon_registrations").insert({
     user_id: user.id,
     hackathon_id: hackathonId,
