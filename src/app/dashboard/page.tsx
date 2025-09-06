@@ -16,7 +16,7 @@ export default function DashboardPage() {
         description:
           typeof error === "string"
             ? error
-            : (error as Error | undefined)?.message ?? String(error),
+            : ((error as Error | undefined)?.message ?? String(error)),
       });
     }
   }, [error]);

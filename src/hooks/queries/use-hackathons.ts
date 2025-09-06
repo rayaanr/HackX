@@ -105,12 +105,12 @@ async function insertHackathonRelatedData(
       // If slot insert failed and we created a speaker, clean up the orphaned speaker
       if (speakerId) {
         const { error: deleteError } = await supabase
-          .from('speakers')
+          .from("speakers")
           .delete()
-          .eq('id', speakerId);
-        
+          .eq("id", speakerId);
+
         if (deleteError) {
-          console.error('Failed to delete orphaned speaker:', deleteError);
+          console.error("Failed to delete orphaned speaker:", deleteError);
         }
       }
       throw slotError;
@@ -487,7 +487,7 @@ async function updateHackathon({
       .delete()
       .eq("hackathon_id", hackathonId);
     await supabase.from("judges").delete().eq("hackathon_id", hackathonId);
-    
+
     // Get speaker IDs from schedule slots before deleting them
     const { data: speakerIds } = await supabase
       .from("schedule_slots")
@@ -496,21 +496,18 @@ async function updateHackathon({
 
     if (speakerIds && speakerIds.length > 0) {
       // Deduplicate and filter out nulls
-      const validSpeakerIds = [...new Set(
-        speakerIds
-          .map(slot => slot.speaker_id)
-          .filter(id => id !== null)
-      )];
-      
+      const validSpeakerIds = [
+        ...new Set(
+          speakerIds.map((slot) => slot.speaker_id).filter((id) => id !== null),
+        ),
+      ];
+
       // Delete speakers if any valid IDs exist
       if (validSpeakerIds.length > 0) {
-        await supabase
-          .from("speakers")
-          .delete()
-          .in("id", validSpeakerIds);
+        await supabase.from("speakers").delete().in("id", validSpeakerIds);
       }
     }
-    
+
     await supabase
       .from("schedule_slots")
       .delete()

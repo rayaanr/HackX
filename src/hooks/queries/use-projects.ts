@@ -37,10 +37,9 @@ export function useUserProjects() {
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: (failureCount, error) => {
       // Don't retry on auth errors - safely check error message
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : String(error);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
       if (
         errorMessage.includes("401") ||
         errorMessage.includes("Authentication")
@@ -82,10 +81,9 @@ export function useRegisteredHackathons() {
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: (failureCount, error) => {
       // Don't retry on auth errors - safely check error message
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : String(error);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
       if (
         errorMessage.includes("401") ||
         errorMessage.includes("Authentication")

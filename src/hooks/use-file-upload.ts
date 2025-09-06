@@ -97,17 +97,22 @@ export const useFileUpload = (
 
       if (accept !== "*") {
         // Normalize accepted types to lowercase and trim
-        const acceptedTypes = accept.split(",").map((type) => type.trim().toLowerCase());
-        
+        const acceptedTypes = accept
+          .split(",")
+          .map((type) => type.trim().toLowerCase());
+
         // Normalize file type to lowercase
-        const fileType = (file instanceof File ? file.type || "" : file.type || "").toLowerCase();
-        
+        const fileType = (
+          file instanceof File ? file.type || "" : file.type || ""
+        ).toLowerCase();
+
         // Extract extension robustly
         const fileName = file instanceof File ? file.name : file.name;
         const dotIndex = fileName.lastIndexOf(".");
-        const fileExtension = dotIndex !== -1 
-          ? `.${fileName.substring(dotIndex + 1).toLowerCase()}`
-          : "";
+        const fileExtension =
+          dotIndex !== -1
+            ? `.${fileName.substring(dotIndex + 1).toLowerCase()}`
+            : "";
 
         const isAccepted = acceptedTypes.some((type) => {
           if (type.startsWith(".")) {
@@ -180,7 +185,7 @@ export const useFileUpload = (
       if (!newFiles || newFiles.length === 0) return;
 
       let newFilesArray = Array.from(newFiles);
-      
+
       // In single-file mode, only process the first file
       if (!multiple) {
         newFilesArray = [newFilesArray[0]];
