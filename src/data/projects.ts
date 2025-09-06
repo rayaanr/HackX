@@ -60,7 +60,7 @@ export const mockProjects: Project[] = [
     id: "project-1",
     name: "Init Club Pro",
     description: "Init Club Pro was born from a simple but radical belief: true innovation shouldn't be slowed by legacy processes or outdated infrastructure. Built for the next generation of developers.",
-    fullDescription: "Dunk Verse is an innovative blockchain-based sports engagement platform designed to revolutionize the fan experience. Leveraging Mantle's Layer 2 infrastructure, the platform combines GameFi, SocialFi, and NFT to offer unique features like AI-generated quizzes, live NFT auctions tied to Top Shots NBA sports events, and leaderboard competitions. Fans can upload videos that are automatically minted into NFTs, participate in AI quizzes.",
+    fullDescription: "Init Club Pro is an innovative platform designed to accelerate developer innovation. Leveraging modern infra, it combines GameFi, SocialFi, and NFT-like engagement features such as AI-generated quizzes, live auctions, and leaderboards.",
     hackathonId: "hackathon-1", // AI Revolution 2025
     logo: "/project-logos/init-club-pro.png",
     lastEdited: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
