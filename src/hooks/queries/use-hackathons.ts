@@ -102,6 +102,17 @@ async function insertHackathonRelatedData(
     });
 
     if (slotError) {
+      // If slot insert failed and we created a speaker, clean up the orphaned speaker
+      if (speakerId) {
+        const { error: deleteError } = await supabase
+          .from('speakers')
+          .delete()
+          .eq('id', speakerId);
+        
+        if (deleteError) {
+          console.error('Failed to delete orphaned speaker:', deleteError);
+        }
+      }
       throw slotError;
     }
   }
