@@ -96,13 +96,22 @@ export const useFileUpload = (
       }
 
       if (accept !== "*") {
-        const acceptedTypes = accept.split(",").map((type) => type.trim());
-        const fileType = file instanceof File ? file.type || "" : file.type;
-        const fileExtension = `.${file instanceof File ? file.name.split(".").pop() : file.name.split(".").pop()}`;
+        // Normalize accepted types to lowercase and trim
+        const acceptedTypes = accept.split(",").map((type) => type.trim().toLowerCase());
+        
+        // Normalize file type to lowercase
+        const fileType = (file instanceof File ? file.type || "" : file.type || "").toLowerCase();
+        
+        // Extract extension robustly
+        const fileName = file instanceof File ? file.name : file.name;
+        const dotIndex = fileName.lastIndexOf(".");
+        const fileExtension = dotIndex !== -1 
+          ? `.${fileName.substring(dotIndex + 1).toLowerCase()}`
+          : "";
 
         const isAccepted = acceptedTypes.some((type) => {
           if (type.startsWith(".")) {
-            return fileExtension.toLowerCase() === type.toLowerCase();
+            return fileExtension === type;
           }
           if (type.endsWith("/*")) {
             const baseType = type.split("/")[0];
