@@ -519,12 +519,25 @@ export default function JudgeProjectPage({ hackathon, project }) {
                         type="number"
                         min={0}
                         max={criteria.points}
+                        step={1}
+                        inputMode="numeric"
                         placeholder="0"
-                        value={scores[criteria.name] || ""}
-                        onChange={(e) => handleScoreChange(criteria.name, Number(e.target.value))}
+                        value={scores[criteria.name] ?? ""}
+                        onChange={(e) => {
+                          const v = e.currentTarget.valueAsNumber;
+                          if (Number.isFinite(v)) {
+                            const clamped = Math.min(Math.max(v, 0), criteria.points);
+                            setScores((prev) => ({ ...prev, [criteria.name]: clamped }));
+                          } else {
+                            setScores((prev) => {
+                              const next = { ...prev };
+                              delete next[criteria.name];
+                              return next;
+                            });
+                          }
+                        }}
                         className="w-full text-center"
                       />
-                    </div>
                   </div>
                 ))}
               </div>
