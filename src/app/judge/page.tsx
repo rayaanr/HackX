@@ -9,8 +9,8 @@ import Link from "next/link";
 
 // Filter hackathons where the current user would be a judge
 // For demo purposes, showing all hackathons that have judges
-const hackathonsToJudge = hackathons.filter(hackathon => 
-  hackathon.judges && hackathon.judges.length > 0
+const hackathonsToJudge = hackathons.filter(
+  (hackathon) => hackathon.judges && hackathon.judges.length > 0,
 );
 
 export default function JudgeDashboardPage() {
@@ -29,32 +29,37 @@ export default function JudgeDashboardPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {hackathonsToJudge.map((hackathon) => {
-            const isLive = new Date() >= hackathon.hackathonPeriod.hackathonStartDate && 
-                          new Date() <= hackathon.hackathonPeriod.hackathonEndDate;
-            const isUpcoming = new Date() < hackathon.hackathonPeriod.hackathonStartDate;
-            
+            const isLive =
+              new Date() >= hackathon.hackathonPeriod.hackathonStartDate &&
+              new Date() <= hackathon.hackathonPeriod.hackathonEndDate;
+            const isUpcoming =
+              new Date() < hackathon.hackathonPeriod.hackathonStartDate;
+
             return (
-              <div 
+              <div
                 key={hackathon.id}
                 className="flex items-center justify-between p-6 border rounded-lg hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-center gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-lg">{hackathon.name}</h3>
+                      <h3 className="font-semibold text-lg">
+                        {hackathon.name}
+                      </h3>
                       {isLive && (
-                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                        >
                           Live
                         </Badge>
                       )}
-                      {isUpcoming && (
-                        <Badge variant="outline">
-                          Upcoming
-                        </Badge>
-                      )}
+                      {isUpcoming && <Badge variant="outline">Upcoming</Badge>}
                     </div>
-                    <p className="text-muted-foreground">{hackathon.shortDescription}</p>
-                    
+                    <p className="text-muted-foreground">
+                      {hackathon.shortDescription}
+                    </p>
+
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
                       <div className="flex items-center gap-1">
                         <Users className="size-4" />
@@ -66,7 +71,9 @@ export default function JudgeDashboardPage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="size-4" />
-                        <span>{hackathon.hackathonPeriod.hackathonStartDate.toLocaleDateString()}</span>
+                        <span>
+                          {hackathon.hackathonPeriod.hackathonStartDate.toLocaleDateString()}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <MapPin className="size-4" />
@@ -75,10 +82,16 @@ export default function JudgeDashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="text-sm text-muted-foreground">Tech stack:</span>
+                      <span className="text-sm text-muted-foreground">
+                        Tech stack:
+                      </span>
                       <div className="flex flex-wrap gap-1">
                         {hackathon.techStack.slice(0, 3).map((tech) => (
-                          <Badge key={tech} variant="secondary" className="text-xs">
+                          <Badge
+                            key={tech}
+                            variant="secondary"
+                            className="text-xs"
+                          >
                             {tech}
                           </Badge>
                         ))}
