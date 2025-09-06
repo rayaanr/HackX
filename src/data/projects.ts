@@ -35,7 +35,6 @@ export interface Project {
     leader: string;
     members: string[];
   };
-  githubLink?: string;
   sector?: string;
   defiProtocol?: string;
   progressDuringHackathon?: string;
