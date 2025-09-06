@@ -38,13 +38,15 @@ export function NavUser({
     return null;
   }
 
-  const userDisplayName = user.user_metadata?.firstName && user.user_metadata?.lastName 
-    ? `${user.user_metadata.firstName} ${user.user_metadata.lastName}`
-    : user.email?.split('@')[0] || 'User';
-  
-  const userInitials = user.user_metadata?.firstName && user.user_metadata?.lastName
-    ? `${user.user_metadata.firstName[0]}${user.user_metadata.lastName[0]}`
-    : user.email?.[0]?.toUpperCase() || 'U';
+  const userDisplayName =
+    user.user_metadata?.firstName && user.user_metadata?.lastName
+      ? `${user.user_metadata.firstName} ${user.user_metadata.lastName}`
+      : user.email?.split("@")[0] || "User";
+
+  const userInitials =
+    user.user_metadata?.firstName && user.user_metadata?.lastName
+      ? `${user.user_metadata.firstName[0]}${user.user_metadata.lastName[0]}`
+      : user.email?.[0]?.toUpperCase() || "U";
 
   const handleSignOut = async () => {
     try {
@@ -64,7 +66,10 @@ export function NavUser({
             className="relative rounded-full bg-muted"
           >
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
+              <AvatarImage
+                src={user.user_metadata?.avatar_url}
+                alt={userDisplayName}
+              />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
           </Button>
@@ -78,8 +83,13 @@ export function NavUser({
           <DropdownMenuLabel className="p-0 font-normal">
             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
-                <AvatarFallback className="rounded-lg">{userInitials}</AvatarFallback>
+                <AvatarImage
+                  src={user.user_metadata?.avatar_url}
+                  alt={userDisplayName}
+                />
+                <AvatarFallback className="rounded-lg">
+                  {userInitials}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{userDisplayName}</span>
@@ -124,8 +134,13 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="size-8 rounded-lg grayscale">
-                <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
-                <AvatarFallback className="rounded-lg">{userInitials}</AvatarFallback>
+                <AvatarImage
+                  src={user.user_metadata?.avatar_url}
+                  alt={userDisplayName}
+                />
+                <AvatarFallback className="rounded-lg">
+                  {userInitials}
+                </AvatarFallback>
               </Avatar>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -138,11 +153,18 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
-                  <AvatarFallback className="rounded-lg">{userInitials}</AvatarFallback>
+                  <AvatarImage
+                    src={user.user_metadata?.avatar_url}
+                    alt={userDisplayName}
+                  />
+                  <AvatarFallback className="rounded-lg">
+                    {userInitials}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{userDisplayName}</span>
+                  <span className="truncate font-medium">
+                    {userDisplayName}
+                  </span>
                   <span className="text-muted-foreground truncate text-xs">
                     {user.email}
                   </span>

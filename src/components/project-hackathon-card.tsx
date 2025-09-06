@@ -11,21 +11,27 @@ export interface ProjectHackathonCardProps {
   status: "live" | "upcoming" | "completed";
 }
 
-export function ProjectHackathonCard({ 
+export function ProjectHackathonCard({
   name,
   date,
   theme,
   prize,
   participants,
-  status
+  status,
 }: ProjectHackathonCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow">
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg">{name}</CardTitle>
-          <Badge 
-            variant={status === "live" ? "default" : status === "upcoming" ? "secondary" : "outline"}
+          <Badge
+            variant={
+              status === "live"
+                ? "default"
+                : status === "upcoming"
+                  ? "secondary"
+                  : "outline"
+            }
           >
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </Badge>

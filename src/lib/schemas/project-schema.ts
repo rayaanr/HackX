@@ -14,14 +14,20 @@ export const projectSchema = z.object({
   progress: z.string().min(1, "Progress description is required"),
   fundraisingStatus: z.string().min(1, "Fundraising status is required"),
   description: z.string().min(1, "Full description is required"),
-  
+
   // Tech stack step
   githubLink: urlSchema,
   demoVideo: urlSchema,
   techStack: z.array(z.string()).min(1, "At least one tech stack is required"),
-  
+
   // Hackathon selection step
-  hackathonIds: z.array(z.string()).min(1, "At least one hackathon must be selected"),
+  hackathonIds: z
+    .array(z.string())
+    .min(1, "At least one hackathon must be selected")
+    .refine(
+      (ids) => new Set(ids).size === ids.length,
+      "Duplicate hackathons are not allowed",
+    ),
 });
 
 // Export types

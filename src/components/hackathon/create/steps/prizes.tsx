@@ -153,10 +153,7 @@ export function PrizesStep() {
                           Prize Amount for each winner
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="USD per winner"
-                            {...field}
-                          />
+                          <Input placeholder="USD per winner" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

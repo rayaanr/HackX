@@ -43,7 +43,7 @@ export function ShareDialog({ url, children }: ShareDialogProps) {
     {
       icon: IconBrandFacebook,
       href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        url
+        url,
       )}`,
     },
     {
@@ -53,7 +53,7 @@ export function ShareDialog({ url, children }: ShareDialogProps) {
     {
       icon: IconBrandLinkedin,
       href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-        url
+        url,
       )}`,
     },
     {

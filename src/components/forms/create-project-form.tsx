@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export function CreateProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const methods = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
@@ -33,10 +33,10 @@ export function CreateProjectForm() {
 
   const onSubmit = async (data: ProjectFormData) => {
     setIsSubmitting(true);
-    
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       // Here you would typically send the data to your API
       toast.success("Project created successfully!");
     } catch (error) {
@@ -51,7 +51,7 @@ export function CreateProjectForm() {
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <CreateProjectStepper />
-        
+
         <div className="flex justify-end gap-4 pt-8">
           <Button type="button" variant="outline">
             Save Draft

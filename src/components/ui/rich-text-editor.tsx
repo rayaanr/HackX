@@ -358,7 +358,7 @@ function ToolbarPlugin() {
         editorState.read(() => {
           updateToolbar();
         });
-      })
+      }),
     );
   }, [editor, updateToolbar]);
 
@@ -367,7 +367,7 @@ function ToolbarPlugin() {
   };
 
   const formatAlignment = (
-    alignment: "left" | "center" | "right" | "justify"
+    alignment: "left" | "center" | "right" | "justify",
   ) => {
     editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, alignment);
   };
@@ -408,19 +408,27 @@ function ToolbarPlugin() {
             const focusOffset = selection.focus.offset;
             const isBackward = selection.isBackward();
             const start = node.is(selection.anchor.getNode())
-              ? (isBackward ? focusOffset : anchorOffset)
+              ? isBackward
+                ? focusOffset
+                : anchorOffset
               : 0;
             const end = node.is(selection.focus.getNode())
-              ? (isBackward ? anchorOffset : focusOffset)
+              ? isBackward
+                ? anchorOffset
+                : focusOffset
               : node.getTextContentSize();
 
             if (start !== 0 || end !== node.getTextContentSize()) {
               node = (node as any).splitText(start, end);
             }
 
-            const prev = (node as any).getStyle?.() || '';
-            const cleaned = prev.replace(/background-color:\s*[^;]+;?/g, "").trim();
-            (node as any).setStyle?.(`${cleaned ? cleaned + "; " : ""}background-color: ${color}`);
+            const prev = (node as any).getStyle?.() || "";
+            const cleaned = prev
+              .replace(/background-color:\s*[^;]+;?/g, "")
+              .trim();
+            (node as any).setStyle?.(
+              `${cleaned ? cleaned + "; " : ""}background-color: ${color}`,
+            );
           }
         });
       }
@@ -723,7 +731,7 @@ export function LexicalEditor({
       <div
         className={cn(
           "relative rounded-md border bg-background overflow-hidden",
-          className
+          className,
         )}
       >
         <ToolbarPlugin />

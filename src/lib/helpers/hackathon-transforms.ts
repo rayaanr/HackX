@@ -7,7 +7,7 @@ import type {
 
 // Transform database hackathon to UI hackathon format
 export function transformDatabaseToUI(
-  dbHackathon: HackathonWithRelations
+  dbHackathon: HackathonWithRelations,
 ): UIHackathon {
   return {
     id: dbHackathon.id,
@@ -89,7 +89,7 @@ export function transformDatabaseToUI(
 
 // Get hackathon status based on dates
 export function getHackathonStatus(
-  hackathon: UIHackathon | HackathonWithRelations
+  hackathon: UIHackathon | HackathonWithRelations,
 ): HackathonStatus {
   const now = new Date();
 
@@ -132,8 +132,18 @@ export function getHackathonStatus(
 
 // Get status variant for badge styling
 export function getStatusVariant(
-  status: HackathonStatus
-): "default" | "secondary" | "destructive" | "outline" | "green" | "red" | "blue" | "purple" | "orange" | "yellow" {
+  status: HackathonStatus,
+):
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "green"
+  | "red"
+  | "blue"
+  | "purple"
+  | "orange"
+  | "yellow" {
   switch (status) {
     case "Live":
     case "Registration Open":
@@ -151,7 +161,7 @@ export function getStatusVariant(
 
 // Calculate total prize amount for a hackathon
 export function calculateTotalPrizeAmount(
-  hackathon: HackathonWithRelations
+  hackathon: HackathonWithRelations,
 ): string {
   if (!hackathon.prize_cohorts || hackathon.prize_cohorts.length === 0) {
     return "$0";
@@ -172,7 +182,7 @@ export function calculateTotalPrizeAmount(
 
 // Format date for display
 export function formatDateForDisplay(
-  date: string | Date | null | undefined
+  date: string | Date | null | undefined,
 ): string {
   if (!date) return "TBD";
 
@@ -204,7 +214,7 @@ export function formatExperienceLevel(level: string): string {
 
 // Helper functions to map database enums to UI types
 function mapDbExperienceLevel(
-  level: string
+  level: string,
 ): "beginner" | "intermediate" | "advanced" | "all" {
   switch (level.toLowerCase()) {
     case "beginner":

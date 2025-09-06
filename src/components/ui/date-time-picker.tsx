@@ -33,7 +33,7 @@ export function DateTimePicker({
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(value);
   const [timeValue, setTimeValue] = useState<string>(
-    value ? format(value, "HH:mm") : "09:00"
+    value ? format(value, "HH:mm") : "09:00",
   );
 
   // Generate unique IDs for this component instance

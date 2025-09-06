@@ -5,45 +5,57 @@ import { useUserHackathons } from "@/hooks/queries/use-hackathons";
 import type { DashboardStats, HackathonWithRelations } from "@/types/hackathon";
 
 // Calculate dashboard statistics from hackathons data
-function calculateDashboardStats(hackathons: HackathonWithRelations[]): DashboardStats {
+function calculateDashboardStats(
+  hackathons: HackathonWithRelations[],
+): DashboardStats {
   const now = new Date();
-  
-  const activeHackathons = hackathons.filter(h => {
-    const hackathonEnd = h.hackathon_end_date ? new Date(h.hackathon_end_date) : null;
+
+  const activeHackathons = hackathons.filter((h) => {
+    const hackathonEnd = h.hackathon_end_date
+      ? new Date(h.hackathon_end_date)
+      : null;
     return hackathonEnd && hackathonEnd > now;
   }).length;
-  
-  const completedHackathons = hackathons.filter(h => {
-    const hackathonEnd = h.hackathon_end_date ? new Date(h.hackathon_end_date) : null;
+
+  const completedHackathons = hackathons.filter((h) => {
+    const hackathonEnd = h.hackathon_end_date
+      ? new Date(h.hackathon_end_date)
+      : null;
     return hackathonEnd && hackathonEnd <= now;
   }).length;
-  
+
   const totalPrizeValue = hackathons.reduce((total, hackathon) => {
-    const hackathonTotal = hackathon.prize_cohorts?.reduce((sum, cohort) => {
-      const amount = parseFloat(cohort.prize_amount.replace(/[^0-9.-]+/g, "")) || 0;
-      return sum + amount;
-    }, 0) || 0;
+    const hackathonTotal =
+      hackathon.prize_cohorts?.reduce((sum, cohort) => {
+        const amount =
+          parseFloat(cohort.prize_amount.replace(/[^0-9.-]+/g, "")) || 0;
+        return sum + amount;
+      }, 0) || 0;
     return total + hackathonTotal;
   }, 0);
-  
+
   return {
     totalHackathons: hackathons.length,
     activeHackathons,
     completedHackathons,
-    totalPrizeValue: totalPrizeValue.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0
-    })
+    totalPrizeValue: totalPrizeValue.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }),
   };
 }
 
 // Dashboard stats hook
 export function useDashboardStats() {
-  const { data: hackathons = [], isLoading: hackathonsLoading, error: hackathonsError } = useUserHackathons();
-  
+  const {
+    data: hackathons = [],
+    isLoading: hackathonsLoading,
+    error: hackathonsError,
+  } = useUserHackathons();
+
   return useQuery({
-    queryKey: ['dashboard', 'stats'],
+    queryKey: ["dashboard", "stats"],
     queryFn: () => calculateDashboardStats(hackathons),
     enabled: !hackathonsLoading && !!hackathons,
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -58,28 +70,28 @@ export function useDashboardStats() {
 
 // Combined dashboard data hook for convenience
 export function useDashboardData() {
-  const { 
-    data: hackathons = [], 
-    isLoading: hackathonsLoading, 
+  const {
+    data: hackathons = [],
+    isLoading: hackathonsLoading,
     error: hackathonsError,
-    refetch: refetchHackathons
+    refetch: refetchHackathons,
   } = useUserHackathons();
-  
+
   const {
     data: stats = {
       totalHackathons: 0,
       activeHackathons: 0,
       completedHackathons: 0,
-      totalPrizeValue: '$0'
+      totalPrizeValue: "$0",
     },
-    isLoading: statsLoading
+    isLoading: statsLoading,
   } = useDashboardStats();
-  
+
   return {
     hackathons,
     stats,
     loading: hackathonsLoading || statsLoading,
     error: hackathonsError ? (hackathonsError as Error).message : null,
-    refetch: refetchHackathons
+    refetch: refetchHackathons,
   };
 }

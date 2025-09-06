@@ -1,14 +1,21 @@
 "use client";
 
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { projectSchema } from "@/lib/schemas/project-schema";
-import { 
+import {
   ProjectHackathonCard,
-  ProjectHackathonCardProps 
+  ProjectHackathonCardProps,
 } from "@/components/project-hackathon-card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -22,7 +29,7 @@ const MOCK_HACKATHONS: ProjectHackathonCardProps[] = [
     theme: "Artificial Intelligence",
     prize: "$50,000",
     participants: 1200,
-    status: "live"
+    status: "live",
   },
   {
     id: "2",
@@ -31,7 +38,7 @@ const MOCK_HACKATHONS: ProjectHackathonCardProps[] = [
     theme: "Web3 & Cryptocurrency",
     prize: "$75,000",
     participants: 800,
-    status: "upcoming"
+    status: "upcoming",
   },
   {
     id: "3",
@@ -40,7 +47,7 @@ const MOCK_HACKATHONS: ProjectHackathonCardProps[] = [
     theme: "Sustainability",
     prize: "$30,000",
     participants: 650,
-    status: "upcoming"
+    status: "upcoming",
   },
   {
     id: "4",
@@ -49,30 +56,26 @@ const MOCK_HACKATHONS: ProjectHackathonCardProps[] = [
     theme: "Healthcare Technology",
     prize: "$40,000",
     participants: 950,
-    status: "live"
-  }
+    status: "live",
+  },
 ];
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 export function HackathonSelectionStep() {
-  const {
-    control,
-    setValue,
-    watch,
-  } = useFormContext<ProjectFormValues>();
-  
+  const { control, setValue, watch } = useFormContext<ProjectFormValues>();
+
   const [hackathons] = useState(MOCK_HACKATHONS);
   const [filteredHackathons, setFilteredHackathons] = useState(MOCK_HACKATHONS);
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");
-  
+
   const selectedHackathonIds = watch("hackathonIds") || [];
 
   useEffect(() => {
     if (filter === "all") {
       setFilteredHackathons(hackathons);
     } else {
-      setFilteredHackathons(hackathons.filter(h => h.status === filter));
+      setFilteredHackathons(hackathons.filter((h) => h.status === filter));
     }
   }, [filter, hackathons]);
 
@@ -80,7 +83,7 @@ export function HackathonSelectionStep() {
     const newSelectedIds = selectedHackathonIds.includes(id)
       ? selectedHackathonIds.filter((selectedId: string) => selectedId !== id)
       : [...selectedHackathonIds, id];
-    
+
     setValue("hackathonIds", newSelectedIds);
   };
 
@@ -125,29 +128,39 @@ export function HackathonSelectionStep() {
                         Upcoming
                       </Button>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {filteredHackathons.map((hackathon) => (
-                        <div 
-                          key={hackathon.id} 
-                          className="relative"
-                        >
-                          <div 
-                            className="cursor-pointer"
-                            onClick={() => toggleHackathonSelection(hackathon.id)}
-                          >
-                            <ProjectHackathonCard {...hackathon} />
-                          </div>
+                        <div key={hackathon.id} className="relative">
+                          <ProjectHackathonCard {...hackathon} />
                           <div className="absolute top-2 right-2">
                             <Checkbox
-                              checked={selectedHackathonIds.includes(hackathon.id)}
-                              onCheckedChange={() => toggleHackathonSelection(hackathon.id)}
+                              checked={selectedHackathonIds.includes(
+                                hackathon.id,
+                              )}
+                              onCheckedChange={(checked) => {
+                                const isChecked = checked === true;
+                                const next = isChecked
+                                  ? Array.from(
+                                      new Set([
+                                        ...selectedHackathonIds,
+                                        hackathon.id,
+                                      ]),
+                                    )
+                                  : selectedHackathonIds.filter(
+                                      (x: string) => x !== hackathon.id,
+                                    );
+                                setValue("hackathonIds", next, {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                });
+                              }}
                             />
                           </div>
                         </div>
                       ))}
                     </div>
-                    
+
                     {filteredHackathons.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         No hackathons found for the selected filter.
@@ -155,7 +168,9 @@ export function HackathonSelectionStep() {
                     )}
                   </div>
                 </FormControl>
-                <FormDescription>Select the hackathons you want to submit your project to</FormDescription>
+                <FormDescription>
+                  Select the hackathons you want to submit your project to
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

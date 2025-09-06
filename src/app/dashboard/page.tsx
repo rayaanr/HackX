@@ -13,7 +13,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (error) {
       toast.error("Failed to load dashboard data", {
-        description: error
+        description:
+          typeof error === "string"
+            ? error
+            : ((error as Error | undefined)?.message ?? String(error)),
       });
     }
   }, [error]);
