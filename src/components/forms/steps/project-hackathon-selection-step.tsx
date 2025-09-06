@@ -135,15 +135,16 @@ export function HackathonSelectionStep() {
                           <ProjectHackathonCard {...hackathon} />
                           <div className="absolute top-2 right-2">
                             <Checkbox
-                              checked={selectedHackathonIds.includes(
-                                hackathon.id,
-                              )}
-                              onCheckedChange={(checked) => {
-                                const newSelectedIds = checked
-                                  ? [...selectedHackathonIds, hackathon.id]
-                                  : selectedHackathonIds.filter(id => id !== hackathon.id);
-                                setValue("hackathonIds", newSelectedIds);
-                              }}
+<Checkbox
+  checked={selectedHackathonIds.includes(hackathon.id)}
+  onCheckedChange={(checked) => {
+    const isChecked = checked === true;
+    const next = isChecked
+      ? Array.from(new Set([...selectedHackathonIds, hackathon.id]))
+      : selectedHackathonIds.filter((x: string) => x !== hackathon.id);
+    setValue("hackathonIds", next, { shouldValidate: true, shouldDirty: true });
+  }}
+/>
                             />
                           </div>
                         </div>
