@@ -160,19 +160,12 @@ export function RegisteredHackathons() {
                                   View Details
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="w-full justify-start p-0 h-auto font-normal"
-                                  asChild
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  href={`/projects/create?hackathon=${hackathon.id}`}
                                 >
-                                  <Link
-                                    href={`/projects/create?hackathon=${hackathon.id}`}
-                                  >
-                                    Submit Project
-                                  </Link>
-                                </Button>
+                                  Submit Project
+                                </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
