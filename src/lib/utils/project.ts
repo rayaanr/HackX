@@ -56,7 +56,7 @@ export function transformProjectToUI(project: ProjectWithHackathon): UIProject {
  * Transform UI project to database project insert
  */
 export function transformUIToProjectInsert(
-  project: Partial<UIProject>,
+  project: Partial<UIProject> & { name: string },
   userId: string,
 ): Pick<
   DatabaseProject,
@@ -71,7 +71,7 @@ export function transformUIToProjectInsert(
   | "created_by"
 > & { created_by: string } {
   return {
-    name: project.name!,
+    name: project.name,
     description: project.description || null,
     hackathon_id: project.hackathon_id || null,
     tech_stack: project.tech_stack || [],
