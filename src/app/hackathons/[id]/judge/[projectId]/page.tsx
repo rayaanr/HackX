@@ -33,27 +33,26 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   const { data: dbHackathon, isLoading: hackathonLoading, error: hackathonError } = useHackathonById(hackathonId);
   const { data: project, isLoading: projectLoading, error: projectError } = useProjectById(projectId);
 
-  if (hackathonLoading || projectLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (hackathonError || projectError || !dbHackathon || !project) {
-    notFound();
-  }
-
-  const hackathon = transformDatabaseToUI(dbHackathon);
-
-  const [selectedPrizeCohort, setSelectedPrizeCohort] = useState<string>(
-    hackathon.prizeCohorts[0]?.name || ""
-  );
+  // All hooks must be called before any conditional returns
+  const [selectedPrizeCohort, setSelectedPrizeCohort] = useState<string>("");
   const [scores, setScores] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [overallFeedback, setOverallFeedback] = useState("");
 
-  const selectedCohort = hackathon.prizeCohorts.find(
+  // Transform data safely
+  const hackathon = dbHackathon ? transformDatabaseToUI(dbHackathon) : null;
+  const selectedCohort = hackathon?.prizeCohorts.find(
     (cohort) => cohort.name === selectedPrizeCohort
   );
 
+  // Initialize selectedPrizeCohort when hackathon data is available
+  useEffect(() => {
+    if (hackathon && !selectedPrizeCohort && hackathon.prizeCohorts[0]?.name) {
+      setSelectedPrizeCohort(hackathon.prizeCohorts[0].name);
+    }
+  }, [hackathon, selectedPrizeCohort]);
+
+  // Initialize scores and feedback when selectedCohort changes
   useEffect(() => {
     if (selectedCohort) {
       const initialScores: Record<string, number> = {};
@@ -68,6 +67,14 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
       setFeedback(initialFeedback);
     }
   }, [selectedCohort]);
+
+  if (hackathonLoading || projectLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (hackathonError || projectError || !dbHackathon || !project || !hackathon) {
+    notFound();
+  }
 
   const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
   const maxScore = selectedCohort?.evaluationCriteria.reduce(
