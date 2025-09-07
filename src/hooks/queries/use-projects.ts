@@ -10,7 +10,9 @@ import type {
 import { transformProjectToUI } from "@/lib/utils/project";
 
 // Fetch projects by hackathon ID directly from Supabase
-async function fetchProjectsByHackathon(hackathonId: string): Promise<UIProject[]> {
+async function fetchProjectsByHackathon(
+  hackathonId: string,
+): Promise<UIProject[]> {
   const supabase = createClient();
 
   const { data: projects, error } = await supabase
@@ -42,7 +44,9 @@ export function useProjectsByHackathon(hackathonId: string) {
 }
 
 // Fetch submitted projects by hackathon ID directly from Supabase
-async function fetchSubmittedProjectsByHackathon(hackathonId: string): Promise<UIProject[]> {
+async function fetchSubmittedProjectsByHackathon(
+  hackathonId: string,
+): Promise<UIProject[]> {
   const supabase = createClient();
 
   const { data: projects, error } = await supabase

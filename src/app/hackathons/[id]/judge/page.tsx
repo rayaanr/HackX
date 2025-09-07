@@ -18,17 +18,25 @@ interface JudgingPageProps {
 export default function JudgingPage({ params }: JudgingPageProps) {
   const { id } = use(params);
 
-  const { data: dbHackathon, isLoading: hackathonLoading, error: hackathonError } = useHackathonById(id);
-  const { data: submittedProjects = [], isLoading: projectsLoading, error: projectsError } = useSubmittedProjectsByHackathon(id);
-  
+  const {
+    data: dbHackathon,
+    isLoading: hackathonLoading,
+    error: hackathonError,
+  } = useHackathonById(id);
+  const {
+    data: submittedProjects = [],
+    isLoading: projectsLoading,
+    error: projectsError,
+  } = useSubmittedProjectsByHackathon(id);
+
   if (hackathonLoading || projectsLoading) {
     return <div>Loading...</div>;
   }
-  
+
   if (hackathonError || !dbHackathon) {
     notFound();
   }
-  
+
   const hackathon = transformDatabaseToUI(dbHackathon);
 
   return (
@@ -85,7 +93,6 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                     days ago)
                   </p>
                 </div>
-
 
                 <div>
                   <span className="text-xs font-medium text-muted-foreground">

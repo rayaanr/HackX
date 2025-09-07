@@ -10,11 +10,11 @@ import Link from "next/link";
 
 export default function JudgeDashboardPage() {
   const { data: dbHackathons = [], isLoading, error } = useAllHackathons();
-  
+
   // Transform and filter hackathons where the current user would be a judge
   const hackathonsToJudge = dbHackathons
     .map(transformDatabaseToUI)
-    .filter(hackathon => hackathon.judges && hackathon.judges.length > 0);
+    .filter((hackathon) => hackathon.judges && hackathon.judges.length > 0);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -36,13 +36,13 @@ export default function JudgeDashboardPage() {
           {hackathonsToJudge.map((hackathon) => {
             const startDate = hackathon.hackathonPeriod?.hackathonStartDate;
             const endDate = hackathon.hackathonPeriod?.hackathonEndDate;
-            
+
             const isLive =
-              startDate && endDate &&
+              startDate &&
+              endDate &&
               new Date() >= startDate &&
               new Date() <= endDate;
-            const isUpcoming =
-              startDate && new Date() < startDate;
+            const isUpcoming = startDate && new Date() < startDate;
 
             return (
               <div
@@ -80,9 +80,7 @@ export default function JudgeDashboardPage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="size-4" />
-                        <span>
-                          {startDate?.toLocaleDateString() || "TBD"}
-                        </span>
+                        <span>{startDate?.toLocaleDateString() || "TBD"}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <MapPin className="size-4" />

@@ -263,7 +263,9 @@ async function fetchHackathonById(id: string): Promise<HackathonWithRelations> {
 }
 
 // Fetch single hackathon by ID for public access (judges, participants, etc.)
-async function fetchHackathonByIdPublic(id: string): Promise<HackathonWithRelations> {
+async function fetchHackathonByIdPublic(
+  id: string,
+): Promise<HackathonWithRelations> {
   const supabase = createClient();
 
   const { data: hackathon, error } = await supabase

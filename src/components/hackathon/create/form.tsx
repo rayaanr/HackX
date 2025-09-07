@@ -16,35 +16,35 @@ export function CreateHackathonForm() {
   const router = useRouter();
 
   const defaultValues = {
-        name: "",
-        shortDescription: "",
-        registrationPeriod: {
-          registrationStartDate: undefined,
-          registrationEndDate: undefined,
-        },
-        hackathonPeriod: {
-          hackathonStartDate: undefined,
-          hackathonEndDate: undefined,
-        },
-        votingPeriod: {
-          votingStartDate: undefined,
-          votingEndDate: undefined,
-        },
-        techStack: [],
-        experienceLevel: "all" as const,
-        location: "",
-        socialLinks: {
-          website: "",
-          discord: "",
-          twitter: "",
-          telegram: "",
-          github: "",
-        },
-        fullDescription: "",
-        prizeCohorts: [],
-        judges: [],
-        schedule: [],
-      };
+    name: "",
+    shortDescription: "",
+    registrationPeriod: {
+      registrationStartDate: undefined,
+      registrationEndDate: undefined,
+    },
+    hackathonPeriod: {
+      hackathonStartDate: undefined,
+      hackathonEndDate: undefined,
+    },
+    votingPeriod: {
+      votingStartDate: undefined,
+      votingEndDate: undefined,
+    },
+    techStack: [],
+    experienceLevel: "all" as const,
+    location: "",
+    socialLinks: {
+      website: "",
+      discord: "",
+      twitter: "",
+      telegram: "",
+      github: "",
+    },
+    fullDescription: "",
+    prizeCohorts: [],
+    judges: [],
+    schedule: [],
+  };
 
   const methods = useForm<HackathonFormData>({
     resolver: zodResolver(hackathonSchema),
