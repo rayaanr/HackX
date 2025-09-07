@@ -15,7 +15,6 @@ import {
   transformDatabaseToUI,
   getHackathonStatus,
 } from "@/lib/helpers/hackathon-transforms";
-import { hackathons as mockHackathons } from "@/data/hackathons";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import Link from "next/link";
@@ -27,10 +26,8 @@ export default function ExplorePage() {
     error,
   } = useAllHackathons();
 
-  // Transform DB hackathons; only fall back to mock on error
-  const allHackathons = error
-    ? mockHackathons
-    : dbHackathons.map(transformDatabaseToUI);
+  // Transform DB hackathons
+  const allHackathons = dbHackathons.map(transformDatabaseToUI);
   const liveHackathons = allHackathons.filter((hackathon) => {
     const status = getHackathonStatus(hackathon);
     return (
@@ -49,7 +46,7 @@ export default function ExplorePage() {
   useEffect(() => {
     if (error) {
       toast.error("Failed to load hackathons", {
-        description: "Showing sample data instead",
+        description: "Please try refreshing the page",
       });
     }
   }, [error]);

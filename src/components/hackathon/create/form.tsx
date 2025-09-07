@@ -12,60 +12,10 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useCreateHackathon } from "@/hooks/queries/use-hackathons";
-import { getRandomHackathons } from "@/data/hackathons";
-
 export function CreateHackathonForm() {
   const router = useRouter();
 
-  // Get a random mock hackathon for testing
-  const randomMockData = getRandomHackathons(1)[0];
-
-  // Convert mock data to form format
-  const mockFormData: HackathonFormData = {
-    name: randomMockData.name,
-    visual: randomMockData.visual || "",
-    shortDescription: randomMockData.shortDescription,
-    fullDescription: randomMockData.fullDescription,
-    location: randomMockData.location,
-    techStack: randomMockData.techStack,
-    experienceLevel: randomMockData.experienceLevel,
-    registrationPeriod: randomMockData.registrationPeriod || {
-      registrationStartDate: undefined,
-      registrationEndDate: undefined,
-    },
-    hackathonPeriod: randomMockData.hackathonPeriod || {
-      hackathonStartDate: undefined,
-      hackathonEndDate: undefined,
-    },
-    votingPeriod: randomMockData.votingPeriod || {
-      votingStartDate: undefined,
-      votingEndDate: undefined,
-    },
-    socialLinks: {
-      website: (randomMockData.socialLinks as any)?.website || "",
-      discord: (randomMockData.socialLinks as any)?.discord || "",
-      twitter: (randomMockData.socialLinks as any)?.twitter || "",
-      telegram: (randomMockData.socialLinks as any)?.telegram || "",
-      github: (randomMockData.socialLinks as any)?.github || "",
-    },
-    prizeCohorts: randomMockData.prizeCohorts,
-    judges: randomMockData.judges,
-    schedule: randomMockData.schedule.map((slot: any) => ({
-      ...slot,
-      speaker: slot.speaker
-        ? {
-            ...slot.speaker,
-            picture: slot.speaker.picture || "",
-          }
-        : undefined,
-    })),
-  };
-
-  // Use mock data based on environment variable
-  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
-  const defaultValues = useMockData
-    ? mockFormData
-    : {
+  const defaultValues = {
         name: "",
         shortDescription: "",
         registrationPeriod: {

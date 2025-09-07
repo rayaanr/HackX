@@ -3,17 +3,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { hackathons } from "@/data/hackathons";
+import { useAllHackathons } from "@/hooks/queries/use-hackathons";
+import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { ArrowRight, Calendar, MapPin, Users, Award } from "lucide-react";
 import Link from "next/link";
 
-// Filter hackathons where the current user would be a judge
-// For demo purposes, showing all hackathons that have judges
-const hackathonsToJudge = hackathons.filter(
-  (hackathon) => hackathon.judges && hackathon.judges.length > 0,
-);
-
 export default function JudgeDashboardPage() {
+  const { data: dbHackathons = [], isLoading, error } = useAllHackathons();
+  
+  // Transform and filter hackathons where the current user would be a judge
+  const hackathonsToJudge = dbHackathons
+    .map(transformDatabaseToUI)
+    .filter(hackathon => hackathon.judges && hackathon.judges.length > 0);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="space-y-6">
       <div>
@@ -29,11 +34,15 @@ export default function JudgeDashboardPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {hackathonsToJudge.map((hackathon) => {
+            const startDate = hackathon.hackathonPeriod?.hackathonStartDate;
+            const endDate = hackathon.hackathonPeriod?.hackathonEndDate;
+            
             const isLive =
-              new Date() >= hackathon.hackathonPeriod.hackathonStartDate &&
-              new Date() <= hackathon.hackathonPeriod.hackathonEndDate;
+              startDate && endDate &&
+              new Date() >= startDate &&
+              new Date() <= endDate;
             const isUpcoming =
-              new Date() < hackathon.hackathonPeriod.hackathonStartDate;
+              startDate && new Date() < startDate;
 
             return (
               <div
@@ -72,7 +81,7 @@ export default function JudgeDashboardPage() {
                       <div className="flex items-center gap-1">
                         <Calendar className="size-4" />
                         <span>
-                          {hackathon.hackathonPeriod.hackathonStartDate.toLocaleDateString()}
+                          {startDate?.toLocaleDateString() || "TBD"}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">

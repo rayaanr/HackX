@@ -1,6 +1,6 @@
-import type { Hackathon } from "@/data/hackathons";
+import type { UIHackathon } from "@/types/hackathon";
 
-export const getHackathonStatus = (hackathon: Hackathon) => {
+export const getHackathonStatus = (hackathon: UIHackathon) => {
   const now = Date.now();
 
   if (
