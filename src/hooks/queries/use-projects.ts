@@ -305,3 +305,49 @@ export function useRegisterForHackathon() {
     },
   });
 }
+
+// Fetch hackathons that a project was submitted to
+async function fetchProjectHackathons(projectId: string): Promise<any[]> {
+  const supabase = createClient();
+
+  const { data: submissions, error } = await supabase
+    .from("project_hackathon_submissions")
+    .select(`
+      *,
+      hackathon:hackathons(
+        id,
+        name,
+        short_description,
+        location,
+        experience_level,
+        hackathon_start_date,
+        hackathon_end_date,
+        tech_stack,
+        prize_cohorts(
+          name,
+          prize_amount,
+          description
+        )
+      )
+    `)
+    .eq("project_id", projectId)
+    .order("submitted_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to fetch project hackathons: ${error.message}`);
+  }
+
+  return submissions || [];
+}
+
+// Hook to get hackathons that a project was submitted to
+export function useProjectHackathons(projectId: string) {
+  return useQuery({
+    queryKey: ["projects", "hackathons", projectId],
+    queryFn: () => fetchProjectHackathons(projectId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 3,
+    enabled: !!projectId, // Only run when projectId is available
+  });
+}
