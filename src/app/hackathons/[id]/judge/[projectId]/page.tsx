@@ -38,7 +38,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   }
 
   const [selectedPrizeCohort, setSelectedPrizeCohort] = useState<string>(
-    hackathon.prizeCohorts[0]?.name || "",
+    hackathon.prizeCohorts[0]?.name || ""
   );
   const [scores, setScores] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, string>>({});
@@ -47,7 +47,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   // Get evaluation criteria from the selected prize cohort
   const selectedCohort = hackathon.prizeCohorts.find(
-    (cohort) => cohort.name === selectedPrizeCohort,
+    (cohort) => cohort.name === selectedPrizeCohort
   );
   const evaluationCriteria = selectedCohort?.evaluationCriteria || [];
 
@@ -72,7 +72,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   const getMaxTotalScore = () => {
     return evaluationCriteria.reduce(
       (sum, criteria) => sum + criteria.points,
-      0,
+      0
     );
   };
 
@@ -256,14 +256,19 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                       GitHub link
                     </Label>
                     <p className="text-sm text-blue-600 hover:underline">
-                      <a
-                        href={`https://${project.githubUrl || "github.com"}`}
+                      <Link
+                        href={
+                          project.githubUrl?.startsWith("http")
+                            ? project.githubUrl
+                            : `https://${project.githubUrl || "github.com"}`
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        {project.githubUrl?.replace("https://", "") ||
-                          "github.com"}
-                      </a>
+                        {project.githubUrl
+                          ? project.githubUrl.replace(/^https?:\/\//, "")
+                          : "github.com"}
+                      </Link>
                     </p>
                   </div>
                 </CardContent>
@@ -357,26 +362,26 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                                   submission.status === "ended"
                                     ? "secondary"
                                     : submission.status === "live"
-                                      ? "default"
-                                      : submission.status === "voting"
-                                        ? "outline"
-                                        : "secondary"
+                                    ? "default"
+                                    : submission.status === "voting"
+                                    ? "outline"
+                                    : "secondary"
                                 }
                                 className={
                                   submission.status === "ended"
                                     ? "bg-gray-100 text-gray-800"
                                     : submission.status === "live"
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-blue-100 text-blue-800"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-blue-100 text-blue-800"
                                 }
                               >
                                 {submission.status === "ended"
                                   ? "Ended"
                                   : submission.status === "live"
-                                    ? "Live"
-                                    : submission.status === "voting"
-                                      ? "Voting"
-                                      : "Upcoming"}
+                                  ? "Live"
+                                  : submission.status === "voting"
+                                  ? "Voting"
+                                  : "Upcoming"}
                               </Badge>
                               {submission.isWinner && (
                                 <Badge
@@ -448,7 +453,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                                 {Math.ceil(
                                   (submission.votingEndDate.getTime() -
                                     Date.now()) /
-                                    (1000 * 60 * 60 * 24),
+                                    (1000 * 60 * 60 * 24)
                                 )}{" "}
                                 days left
                               </div>
@@ -502,40 +507,36 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                             {submission.hackathonName.includes("Ledgerforge")
                               ? "LEDGERFORGE\nHACKATHON"
                               : submission.hackathonName.includes("Cryptovate")
-                                ? "CRYPTOVATE\nHACK"
-                                : submission.hackathonName
-                                    .toUpperCase()
-                                    .split(" ")
-                                    .join("\n")}
+                              ? "CRYPTOVATE\nHACK"
+                              : submission.hackathonName
+                                  .toUpperCase()
+                                  .split(" ")
+                                  .join("\n")}
                           </h4>
                           <div className="text-xs mb-3 opacity-80">
                             {submission.hackathonName.includes("Ledgerforge")
                               ? "CHAIN SECURITY LAB"
                               : submission.hackathonName.includes("Cryptovate")
-                                ? "DIGITAL IDENTITY\nSPRINT"
-                                : "HACKATHON"}
+                              ? "DIGITAL IDENTITY\nSPRINT"
+                              : "HACKATHON"}
                           </div>
                           <div className="text-xs mb-1 opacity-80">
                             Focus:{" "}
                             {submission.hackathonName.includes("Ledgerforge")
                               ? "Smart Contract Auditing & Risk Mitigation"
                               : submission.hackathonName.includes("Cryptovate")
-                                ? "Secure Credentials & Reputation"
-                                : "Innovation & Development"}
+                              ? "Secure Credentials & Reputation"
+                              : "Innovation & Development"}
                           </div>
                           <div className="text-lg font-bold text-cyan-400 mb-1">
-                            {submission.prizePool.includes("50,000")
-                              ? "$41,000 PRIZE POOL"
-                              : submission.prizePool.includes("40,000")
-                                ? "PRIZE: $37,500"
-                                : submission.prizePool}
+                            {submission.prizePool}
                           </div>
                           <div className="text-xs opacity-80">
                             {submission.hackathonName.includes("Ledgerforge")
                               ? "January 12-16, 2024"
                               : submission.hackathonName.includes("Cryptovate")
-                                ? "DECEMBER 1-8, 2024"
-                                : "Dates TBA"}
+                              ? "DECEMBER 1-8, 2024"
+                              : "Dates TBA"}
                           </div>
                         </div>
 
@@ -655,7 +656,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                           if (Number.isFinite(v)) {
                             const clamped = Math.min(
                               Math.max(v, 0),
-                              criteria.points,
+                              criteria.points
                             );
                             setScores((prev) => ({
                               ...prev,
@@ -709,7 +710,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                   (c) =>
                     Number.isFinite(scores[c.name]) &&
                     scores[c.name] >= 0 &&
-                    scores[c.name] <= c.points,
+                    scores[c.name] <= c.points
                 )
               }
               className="px-8"
