@@ -15,11 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useHackathonById } from "@/hooks/queries/use-hackathons";
+import { useHackathonByIdPublic } from "@/hooks/queries/use-hackathons";
 import { useProjectById, useProjectHackathons } from "@/hooks/queries/use-projects";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { notFound } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Github, Play, Users } from "lucide-react";
 
@@ -30,7 +30,7 @@ interface ProjectReviewPageProps {
 export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   const { id: hackathonId, projectId } = use(params);
 
-  const { data: dbHackathon, isLoading: hackathonLoading, error: hackathonError } = useHackathonById(hackathonId);
+  const { data: dbHackathon, isLoading: hackathonLoading, error: hackathonError } = useHackathonByIdPublic(hackathonId);
   const { data: project, isLoading: projectLoading, error: projectError } = useProjectById(projectId);
   const { data: projectHackathons = [], isLoading: projectHackathonsLoading } = useProjectHackathons(projectId);
 
@@ -42,9 +42,13 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   // Transform data safely
   const hackathon = dbHackathon ? transformDatabaseToUI(dbHackathon) : null;
-  const selectedCohort = hackathon?.prizeCohorts.find(
-    (cohort) => cohort.name === selectedPrizeCohort
-  );
+  
+  // Memoize selectedCohort to prevent infinite re-renders
+  const selectedCohort = useMemo(() => {
+    return hackathon?.prizeCohorts.find(
+      (cohort) => cohort.name === selectedPrizeCohort
+    );
+  }, [hackathon?.prizeCohorts, selectedPrizeCohort]);
 
   // Initialize selectedPrizeCohort when hackathon data is available
   useEffect(() => {
@@ -55,7 +59,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   // Initialize scores and feedback when selectedCohort changes
   useEffect(() => {
-    if (selectedCohort) {
+    if (selectedCohort && selectedCohort.evaluationCriteria.length > 0) {
       const initialScores: Record<string, number> = {};
       const initialFeedback: Record<string, string> = {};
       
@@ -64,10 +68,24 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         initialFeedback[criterion.name] = "";
       });
       
-      setScores(initialScores);
-      setFeedback(initialFeedback);
+      // Only update if the scores are actually different
+      setScores(prevScores => {
+        const isDifferent = Object.keys(initialScores).some(
+          key => !(key in prevScores)
+        ) || Object.keys(prevScores).length !== Object.keys(initialScores).length;
+        
+        return isDifferent ? initialScores : prevScores;
+      });
+      
+      setFeedback(prevFeedback => {
+        const isDifferent = Object.keys(initialFeedback).some(
+          key => !(key in prevFeedback)
+        ) || Object.keys(prevFeedback).length !== Object.keys(initialFeedback).length;
+        
+        return isDifferent ? initialFeedback : prevFeedback;
+      });
     }
-  }, [selectedCohort]);
+  }, [selectedCohort?.evaluationCriteria]);
 
   if (hackathonLoading || projectLoading || projectHackathonsLoading) {
     return <div>Loading...</div>;
@@ -360,120 +378,81 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         </TabsContent>
 
         <TabsContent value="judging" className="space-y-6">
-              {/* Evaluation Form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Evaluation</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Prize Cohort Selection */}
-                  <div className="space-y-2">
-                    <Label>Prize Cohort</Label>
-                    <Select value={selectedPrizeCohort} onValueChange={setSelectedPrizeCohort}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a prize cohort" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {hackathon.prizeCohorts.map((cohort) => (
-                          <SelectItem key={cohort.name} value={cohort.name}>
-                            {cohort.name} - {cohort.prizeAmount}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+          <div className="space-y-6">
+            {/* Prize Cohort Selection */}
+            <div className="space-y-3">
+              <h2 className="text-xl font-semibold">Select A Prize Cohort</h2>
+              <Select value={selectedPrizeCohort} onValueChange={setSelectedPrizeCohort}>
+                <SelectTrigger className="w-full bg-muted">
+                  <SelectValue placeholder="Tech Fairness Exploration Awards" />
+                </SelectTrigger>
+                <SelectContent>
+                  {hackathon.prizeCohorts.map((cohort) => (
+                    <SelectItem key={cohort.name} value={cohort.name}>
+                      {cohort.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                  {/* Evaluation Criteria */}
-                  {selectedCohort && (
-                    <div className="space-y-4">
-                      <h4 className="font-semibold">Evaluation Criteria</h4>
-                      {selectedCohort.evaluationCriteria.map((criterion) => (
-                        <Card key={criterion.name}>
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base">
-                              {criterion.name} ({criterion.points} points)
-                            </CardTitle>
-                            <p className="text-sm text-muted-foreground">
-                              {criterion.description}
-                            </p>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                              <Label>Score (0-{criterion.points})</Label>
-                              <Input
-                                type="number"
-                                min="0"
-                                max={criterion.points}
-                                value={scores[criterion.name] || 0}
-                                onChange={(e) =>
-                                  setScores({
-                                    ...scores,
-                                    [criterion.name]: Math.min(
-                                      criterion.points,
-                                      Math.max(0, parseInt(e.target.value) || 0)
-                                    ),
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Feedback</Label>
-                              <Textarea
-                                placeholder="Provide specific feedback for this criterion..."
-                                value={feedback[criterion.name] || ""}
-                                onChange={(e) =>
-                                  setFeedback({
-                                    ...feedback,
-                                    [criterion.name]: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+            {/* Evaluation Criteria Table */}
+            {selectedCohort && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Evaluation Criteria</h2>
+                
+                {/* Table Header */}
+                <div className="grid grid-cols-4 gap-4 py-3 border-b border-muted text-sm font-medium text-muted-foreground">
+                  <div>Name</div>
+                  <div>Description</div>
+                  <div>Max Score</div>
+                  <div>Your Score</div>
+                </div>
 
-                      {/* Overall Feedback */}
-                      <div className="space-y-2">
-                        <Label>Overall Feedback</Label>
-                        <Textarea
-                          placeholder="Provide overall feedback for this project..."
-                          value={overallFeedback}
-                          onChange={(e) => setOverallFeedback(e.target.value)}
-                          rows={4}
+                {/* Table Rows */}
+                <div className="space-y-1">
+                  {selectedCohort.evaluationCriteria.map((criterion) => (
+                    <div key={criterion.name} className="grid grid-cols-4 gap-4 py-4 border-b border-muted/50 items-start">
+                      <div className="font-medium text-sm">
+                        {criterion.name}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {criterion.description}
+                      </div>
+                      <div className="font-medium text-sm">
+                        {criterion.points}
+                      </div>
+                      <div>
+                        <Input
+                          type="number"
+                          min="0"
+                          max={criterion.points}
+                          value={scores[criterion.name] || 0}
+                          onChange={(e) =>
+                            setScores({
+                              ...scores,
+                              [criterion.name]: Math.min(
+                                criterion.points,
+                                Math.max(0, parseInt(e.target.value) || 0)
+                              ),
+                            })
+                          }
+                          className="w-20 h-8 text-center bg-muted"
                         />
                       </div>
-
-                      {/* Score Summary */}
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">Total Score:</span>
-                            <span className="text-2xl font-bold">
-                              {totalScore} / {maxScore}
-                            </span>
-                          </div>
-                          <div className="mt-2">
-                            <div className="h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-primary rounded-full transition-all"
-                                style={{
-                                  width: `${maxScore > 0 ? (totalScore / maxScore) * 100 : 0}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Submit Button */}
-                      <Button onClick={handleSubmitEvaluation} className="w-full">
-                        Submit Evaluation
-                      </Button>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                  ))}
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-6">
+                  <Button onClick={handleSubmitEvaluation} className="w-full">
+                    Submit Evaluation
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
