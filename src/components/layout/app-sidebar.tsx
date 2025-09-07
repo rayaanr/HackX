@@ -15,6 +15,7 @@ import {
   UserCheck,
   MoreHorizontal,
   ListTodo,
+  Gavel,
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,6 +37,11 @@ import { usePathname } from "next/navigation";
 const nav = {
   main: {
     section1: [
+      {
+        title: "Judge Dashboard",
+        url: "/judge",
+        Icon: Gavel,
+      },
       {
         title: "Quest",
         url: "/quest",
