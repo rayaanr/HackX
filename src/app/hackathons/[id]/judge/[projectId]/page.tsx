@@ -102,7 +102,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         return isDifferent ? initialFeedback : prevFeedback;
       });
     }
-  }, [selectedCohort?.evaluationCriteria]);
+  }, [selectedCohort?.id]);
 
   if (hackathonLoading || projectLoading || projectHackathonsLoading || userLoading) {
     return <div>Loading...</div>;
