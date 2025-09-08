@@ -1,20 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useHackathonByIdPublic } from "@/hooks/queries/use-hackathons";
 import {
   useProjectById,
@@ -25,8 +10,11 @@ import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { createClient } from "@/lib/supabase/client";
 import { notFound } from "next/navigation";
 import { use, useEffect, useState, useMemo } from "react";
-import Link from "next/link";
-import { ArrowLeft, ExternalLink, Github, Play, Users } from "lucide-react";
+import { ProjectReviewHeader } from "@/components/judge/ProjectReviewHeader";
+import { ProjectDetailsSection } from "@/components/judge/ProjectDetailsSection";
+import { JudgingInterface } from "@/components/judge/JudgingInterface";
+import { ReviewActions } from "@/components/judge/ReviewActions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProjectReviewPageProps {
   params: Promise<{ id: string; projectId: string }>;
@@ -233,42 +221,12 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={`/hackathons/${hackathonId}/judge`}>
-            <ArrowLeft className="size-4" />
-            Back to Projects
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Review Project</h1>
-          <p className="text-muted-foreground">
-            Evaluate this project for {hackathon.name}
-          </p>
-        </div>
-      </div>
+      <ProjectReviewHeader
+        hackathonId={hackathonId}
+        hackathon={hackathon}
+        project={project}
+      />
 
-      {/* Project Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
-              <span className="text-2xl font-semibold text-muted-foreground">
-                {project.name.charAt(0)}
-              </span>
-            </div>
-            <div className="flex-1">
-              <CardTitle className="text-3xl">{project.name}</CardTitle>
-              <p className="text-muted-foreground mt-1">
-                {project.description}
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
-      {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Project Overview</TabsTrigger>
@@ -277,426 +235,50 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-6">
-              {/* Project Description */}
-              <div>
-                <p className="text-muted-foreground leading-relaxed">
-                  {project.description}
-                </p>
-              </div>
-
-              {/* Demo and Code Links */}
-              <div className="flex gap-4">
-                {project.demo_url && (
-                  <Button asChild>
-                    <a
-                      href={project.demo_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Demo Video
-                    </a>
-                  </Button>
-                )}
-                {project.repository_url && (
-                  <Button variant="outline" asChild>
-                    <a
-                      href={project.repository_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Pitch Video
-                    </a>
-                  </Button>
-                )}
-              </div>
-
-              {/* Video Placeholder */}
-              <div className="relative aspect-video bg-black rounded-lg flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-                  <Play className="size-6 text-black ml-1" />
-                </div>
-              </div>
-
-              {/* Project Description */}
-              {project?.description && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">
-                    Project Details
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {project.description}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-4">
-              {/* Team Leader */}
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                  Team Leader
-                </h4>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Amaan Sayyad</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
-                      Github link
-                    </span>
-                    <a
-                      href="https://github.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 text-xs"
-                    >
-                      github.com ↗
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sector */}
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                  Sector
-                </h4>
-                <div className="flex flex-wrap gap-1">
-                  <Badge variant="secondary" className="text-xs">
-                    SocialFi
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    Infra
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    GameFi
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    NFT
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    AI
-                  </Badge>
-                </div>
-                <div className="mt-1">
-                  <Badge variant="secondary" className="text-xs">
-                    DeFi
-                  </Badge>
-                </div>
-              </div>
-
-              {project.team_members && (
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                    Team Members
-                  </h4>
-                  <div className="space-y-2">
-                    {project.team_members.map((member, index) => {
-                      // Handle different member formats
-                      const getMemberData = (member: any) => {
-                        if (typeof member === "string") {
-                          return {
-                            name: member,
-                            role: undefined,
-                            github: undefined,
-                          };
-                        }
-                        if (typeof member === "object" && member !== null) {
-                          return {
-                            name: member.name || "?",
-                            role: member.role,
-                            github: member.github,
-                          };
-                        }
-                        return {
-                          name: "?",
-                          role: undefined,
-                          github: undefined,
-                        };
-                      };
-
-                      const memberData = getMemberData(member);
-                      const stableKey =
-                        memberData.github ||
-                        memberData.name ||
-                        `member-${index}`;
-
-                      return (
-                        <div
-                          key={stableKey}
-                          className="flex items-center gap-2"
-                        >
-                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-                            <span className="text-xs font-medium">
-                              {memberData.name.charAt(0) || "?"}
-                            </span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">
-                              {memberData.name}
-                            </span>
-                            {memberData.role && (
-                              <span className="text-xs text-muted-foreground">
-                                {memberData.role}
-                              </span>
-                            )}
-                            {memberData.github && (
-                              <a
-                                href={`https://github.com/${memberData.github}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
-                              >
-                                @{memberData.github}
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Tech Stack */}
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                  Tech Stack
-                </h4>
-                <div className="flex flex-wrap gap-1">
-                  {project.tech_stack.map((tech) => (
-                    <Badge key={tech} variant="secondary" className="text-xs">
-                      {tech}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              {/* Status */}
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                  Status
-                </h4>
-                <Badge
-                  variant={
-                    project.status === "submitted" ? "default" : "secondary"
-                  }
-                >
-                  {project.status}
-                </Badge>
-              </div>
-            </div>
-          </div>
+          <ProjectDetailsSection
+            project={project}
+            projectHackathons={projectHackathons}
+            hackathon={hackathon}
+            activeTab="overview"
+          />
         </TabsContent>
 
         <TabsContent value="hackathon" className="space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Submitted Hackathon</h2>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {projectHackathons.map((submission) => {
-                const hackathonData = submission.hackathon;
-                const startDate = new Date(hackathonData.hackathon_start_date);
-                const endDate = new Date(hackathonData.hackathon_end_date);
-
-                return (
-                  <Card key={hackathonData.id} className="relative">
-                    {submission.status === "submitted" && (
-                      <div className="absolute top-3 right-3">
-                        <Badge variant="default" className="bg-red-500">
-                          Ended
-                        </Badge>
-                      </div>
-                    )}
-
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg">
-                        {hackathonData.name}
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {hackathonData.short_description}
-                      </p>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium text-muted-foreground">
-                            Winner
-                          </span>
-                          <p>Announced</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">
-                            Tech stack
-                          </span>
-                          <p>
-                            {hackathonData.tech_stack?.join(", ") ||
-                              "All tech stack"}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">
-                            Level
-                          </span>
-                          <p>
-                            {hackathonData.experience_level?.toLowerCase() ||
-                              "All levels accepted"}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">
-                            Total prize
-                          </span>
-                          <p>
-                            {hackathonData.prize_cohorts?.[0]?.prize_amount ||
-                              "50,000.00 USD"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 pt-2">
-                        <Button variant="outline" size="sm" className="text-xs">
-                          Online
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-xs">
-                          {hackathon?.participantCount
-                            ? `${hackathon.participantCount} Participants`
-                            : "N/A Participants"}
-                        </Button>
-                      </div>
-                    </CardContent>
-
-                    {/* Hackathon branding/visual */}
-                    <div className="absolute top-0 right-0 w-32 h-20 bg-gradient-to-br from-blue-500 to-purple-600 opacity-10 rounded-bl-3xl" />
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
+          <ProjectDetailsSection
+            project={project}
+            projectHackathons={projectHackathons}
+            hackathon={hackathon}
+            activeTab="hackathon"
+          />
         </TabsContent>
 
         <TabsContent value="judging" className="space-y-6">
-          <div className="space-y-6">
-            {/* Prize Cohort Selection */}
-            <div className="space-y-3">
-              <h2 className="text-xl font-semibold">Select A Prize Cohort</h2>
-              <Select
-                value={selectedPrizeCohortId}
-                onValueChange={setSelectedPrizeCohortId}
-              >
-                <SelectTrigger className="w-full bg-muted">
-                  <SelectValue placeholder="Tech Fairness Exploration Awards" />
-                </SelectTrigger>
-                <SelectContent>
-                  {hackathon.prizeCohorts.map((cohort) => (
-                    <SelectItem key={cohort.id} value={cohort.id}>
-                      {cohort.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Evaluation Criteria Table */}
-            {selectedCohort && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold">Evaluation Criteria</h2>
-
-                {/* Table Header */}
-                <div className="grid grid-cols-4 gap-4 py-3 border-b border-muted text-sm font-medium text-muted-foreground">
-                  <div>Name</div>
-                  <div>Description</div>
-                  <div>Max Score</div>
-                  <div>Your Score</div>
-                </div>
-
-                {/* Table Rows */}
-                <div className="space-y-1">
-                  {selectedCohort.evaluationCriteria.map((criterion) => (
-                    <div
-                      key={criterion.name}
-                      className="space-y-3 py-4 border-b border-muted/50"
-                    >
-                      <div className="grid grid-cols-4 gap-4 items-start">
-                        <div className="font-medium text-sm">
-                          {criterion.name}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {criterion.description}
-                        </div>
-                        <div className="font-medium text-sm">
-                          {criterion.points}
-                        </div>
-                        <div>
-                          <Input
-                            type="number"
-                            min="0"
-                            max={criterion.points}
-                            step="0.5"
-                            value={scores[criterion.name] || 0}
-                            onChange={(e) =>
-                              setScores({
-                                ...scores,
-                                [criterion.name]: Math.min(
-                                  criterion.points,
-                                  Math.max(0, parseFloat(e.target.value) || 0),
-                                ),
-                              })
-                            }
-                            className="w-20 h-8 text-center bg-muted"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-4 gap-4 items-start">
-                        <Label className="text-xs text-muted-foreground">
-                          Feedback
-                        </Label>
-                        <div className="col-span-3">
-                          <Textarea
-                            placeholder={`Provide specific feedback for ${criterion.name}...`}
-                            value={feedback[criterion.name] || ""}
-                            onChange={(e) =>
-                              setFeedback({
-                                ...feedback,
-                                [criterion.name]: e.target.value,
-                              })
-                            }
-                            className="min-h-[60px] text-sm"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Overall Feedback */}
-                <div className="space-y-3 pt-6 border-t border-muted/50">
-                  <Label className="text-sm font-medium">
-                    Overall Feedback
-                  </Label>
-                  <Textarea
-                    placeholder="Provide overall feedback for this project submission..."
-                    value={overallFeedback}
-                    onChange={(e) => setOverallFeedback(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-                </div>
-
-                {/* Submit Button */}
-                <div className="pt-6">
-                  <Button
-                    onClick={handleSubmitEvaluation}
-                    className="w-full"
-                    disabled={!selectedPrizeCohortId || isSubmitting}
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit Evaluation"}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
+          <JudgingInterface
+            hackathon={hackathon}
+            selectedPrizeCohortId={selectedPrizeCohortId}
+            setSelectedPrizeCohortId={setSelectedPrizeCohortId}
+            selectedCohort={selectedCohort}
+            scores={scores}
+            setScores={setScores}
+            feedback={feedback}
+            setFeedback={setFeedback}
+            overallFeedback={overallFeedback}
+            setOverallFeedback={setOverallFeedback}
+          />
+          {selectedCohort && (
+            <ReviewActions
+              projectId={projectId}
+              hackathonId={hackathonId}
+              selectedPrizeCohortId={selectedPrizeCohortId}
+              selectedCohort={selectedCohort}
+              judgeEmail={judgeEmail}
+              scores={scores}
+              feedback={feedback}
+              overallFeedback={overallFeedback}
+              isSubmitting={isSubmitting}
+              setIsSubmitting={setIsSubmitting}
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>
