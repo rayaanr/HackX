@@ -14,11 +14,11 @@ export default function JudgeDashboardPage() {
   const { data: currentUser, isLoading: userLoading } = useCurrentUser();
 
   // Transform and filter hackathons where the current user is assigned as a judge
-  const hackathonsToJudge = currentUser?.email 
+  const hackathonsToJudge = currentUser?.email
     ? dbHackathons
         .map(transformDatabaseToUI)
-        .filter((hackathon) => 
-          hackathon.judges?.some(judge => judge.email === currentUser.email)
+        .filter((hackathon) =>
+          hackathon.judges?.some((judge) => judge.email === currentUser.email),
         )
     : []; // Return empty array if no user email available
 

@@ -7,7 +7,7 @@ import type { User } from "@supabase/supabase-js";
 // Fetch current user
 async function fetchCurrentUser(): Promise<User | null> {
   const supabase = createClient();
-  
+
   const {
     data: { user },
     error: authError,

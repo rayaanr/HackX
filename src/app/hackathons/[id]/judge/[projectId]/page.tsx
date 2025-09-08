@@ -48,7 +48,8 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     useProjectHackathons(projectId);
 
   // All hooks must be called before any conditional returns
-  const [selectedPrizeCohortId, setSelectedPrizeCohortId] = useState<string>("");
+  const [selectedPrizeCohortId, setSelectedPrizeCohortId] =
+    useState<string>("");
   const [scores, setScores] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [overallFeedback, setOverallFeedback] = useState("");
@@ -139,9 +140,11 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         {
           project_id: projectId,
           hackathon_id: hackathonId,
-          prize_cohort_id: selectedPrizeCohortId || (() => {
-            throw new Error("No prize cohort selected for evaluation");
-          })(),
+          prize_cohort_id:
+            selectedPrizeCohortId ||
+            (() => {
+              throw new Error("No prize cohort selected for evaluation");
+            })(),
           judge_email: judgeEmail,
           scores: scores,
           feedback: feedback,
@@ -157,7 +160,9 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
       if (error) {
         console.error("Error submitting evaluation:", error);
         const errorMessage = error.message || "Unknown error occurred";
-        alert(`Failed to submit evaluation: ${errorMessage}. Please try again.`);
+        alert(
+          `Failed to submit evaluation: ${errorMessage}. Please try again.`,
+        );
         return;
       }
 
@@ -467,10 +472,9 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                           Online
                         </Button>
                         <Button variant="outline" size="sm" className="text-xs">
-                          {hackathon?.participantCount 
+                          {hackathon?.participantCount
                             ? `${hackathon.participantCount} Participants`
-                            : "N/A Participants"
-                          }
+                            : "N/A Participants"}
                         </Button>
                       </div>
                     </CardContent>
@@ -559,8 +563,8 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
                 {/* Submit Button */}
                 <div className="pt-6">
-                  <Button 
-                    onClick={handleSubmitEvaluation} 
+                  <Button
+                    onClick={handleSubmitEvaluation}
                     className="w-full"
                     disabled={!selectedPrizeCohortId}
                   >
