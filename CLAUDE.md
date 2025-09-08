@@ -4,75 +4,99 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-- `bun run dev` - Start development server with Turbopack
-- `bun run build` - Build the application with Turbopack
+- `bun run dev` - Start development server with Next.js
+- `bun run build` - Build the application for production
 - `bun start` - Start production server
 - `bun run lint` - Run Biome linting checks
 - `bun run format` - Format code using Biome
+- `bun run db:types` - Generate TypeScript types from Supabase database
 
 ## Code Architecture & Structure
 
-This is a Next.js 15 hackathon management application built with modern React patterns and shadcn/ui components.
+This is a Next.js 15 hackathon management application with Supabase backend integration.
 
 ### Tech Stack
-- **Framework**: Next.js 15 with App Router and Turbopack
+- **Framework**: Next.js 15 with App Router
+- **Database**: Supabase (PostgreSQL) with SSR support
 - **Language**: TypeScript with strict mode enabled
 - **Styling**: Tailwind CSS 4 with CSS variables for theming
-- **UI Components**: shadcn/ui (Radix UI primitives) with custom components
+- **UI Components**: shadcn/ui (Radix UI primitives) with "new-york" style
 - **Icons**: Lucide React and Tabler Icons
 - **Linting/Formatting**: Biome (replaces ESLint + Prettier)
-- **State Management**: React hooks with context providers
-- **Theming**: next-themes for dark/light mode
-- **Form Handling**: react-hook-form for form state management
-- **Validation**: Zod for schema validation
-- **Icons**: Lucide React and Tabler Icons
+- **State Management**: TanStack Query for server state, React Context for client state
+- **Authentication**: Supabase Auth with custom AuthProvider
+- **Form Handling**: react-hook-form with Zod validation
+- **Rich Text**: Lexical editor with HTML/Markdown support
 
 ### Key Architectural Patterns
 
-**Layout System**: Uses a sidebar-based layout with:
-- `AppSidebar` - Main navigation sidebar
+**Provider Architecture**: 
+- `AuthProvider` - Authentication state management
+- `QueryProvider` - TanStack Query configuration
+- `ThemeProvider` - Dark/light mode theming
+- `SidebarProvider` - Sidebar state management
+
+**Layout System**: Conditional layout based on route:
+- `ConditionalLayout` - Wraps children with sidebar layout except for auth/home pages
+- `AppSidebar` - Main navigation sidebar with user context
 - `SiteHeader` - Top header component
-- `SidebarProvider` - Context for sidebar state management
+- Auth pages (`/login`, `/signup`) and home page (`/`) use full-width layout
+
+**Database Integration**:
+- Supabase client/server setup in `src/lib/supabase/`
+- Database types generated in `src/types/supabase.ts`
+- Comprehensive type mapping between database and UI types in `src/types/hackathon.ts`
+- API middleware for authentication in `src/lib/api/auth-middleware.ts`
+
+**Form & Validation System**:
+- Complex multi-step forms using react-hook-form
+- Zod schemas in `src/lib/schemas/` with cross-field validation
+- `hackathon-schema.ts` includes comprehensive validation for hackathon creation with date consistency checks
 
 **Component Organization**:
-- `src/components/ui/` - Reusable shadcn/ui components
-- `src/components/layout/` - Layout-specific components
-- `src/components/hackathon-*` - Domain-specific hackathon components
-- `src/hooks/` - Custom React hooks
-- `src/lib/` - Utility functions
-- `src/providers/` - React context providers
-- `src/types/` - TypeScript type definitions
-- `src/data/` - Static data
-- `src/lib/schemas/` - Schemas for validation
+- `src/components/ui/` - shadcn/ui base components
+- `src/components/layout/` - Layout and navigation components
+- `src/components/forms/` - Form components with stepper patterns
+- `src/components/hackathon/` - Hackathon-specific components
+- `src/components/dashboard/` - Dashboard-specific components
+- `src/hooks/` - Custom React hooks including TanStack Query hooks
 
-**Data Layer**: 
-- Static data in `src/data/hackathons.ts` with TypeScript interfaces
-- Comprehensive `Hackathon` interface with nested types for prizes, judges, voting rules
-
-**Routing**: Next.js App Router structure:
-- `/` - Home page
-- `/dashboard` - Dashboard page
-- `/hackathons` - Hackathon listing
-- `/hackathons/[id]` - Individual hackathon details with tabbed interface
+**Routing Structure**:
+- `/` - Landing page (no sidebar)
+- `/dashboard` - Main dashboard with stats and recent hackathons
+- `/hackathons/` - Hackathon listing and individual hackathon pages
+- `/hackathons/create` - Multi-step hackathon creation form
+- `/projects/` - Project management pages
+- `/(auth)/login` and `/(auth)/signup` - Authentication pages (no sidebar)
 
 ### Configuration Files
 
-- **biome.json**: Configured for Next.js and React with recommended rules, 2-space indentation, auto-import organization
-- **components.json**: shadcn/ui configuration using "new-york" style with Lucide icons
-- **tsconfig.json**: Path aliases configured (`@/*` maps to `./src/*`)
+- **biome.json**: Configured for Next.js/React with 2-space indentation, import organization
+- **components.json**: shadcn/ui using "new-york" style, Lucide icons, CSS variables
+- **tsconfig.json**: Path aliases (`@/*` maps to `./src/*`)
 
-### Development Notes
+### Type System
 
-- Uses Geist font family (sans and mono variants)
-- Implements comprehensive theming system with CSS variables
-- All UI components follow shadcn/ui patterns with class-variance-authority for styling
-- Drag and drop functionality available via @dnd-kit
-- Form handling with react-hook-form and Zod validation
-- Data visualization with Recharts
+The application uses a dual-type system:
+- **Database types**: Generated from Supabase (`DatabaseHackathon`, `DatabaseProject`, etc.)
+- **UI types**: Application-specific interfaces (`UIHackathon`, `UIProject`, etc.)
+- **Form types**: Zod-inferred types from schemas (`HackathonFormData`, etc.)
+- **API types**: Response wrappers (`HackathonsResponse`, `CreateHackathonResponse`, etc.)
+
+### Key Features
+
+- Multi-step hackathon creation with complex validation
+- Rich text editing with Lexical
+- File upload with drag-and-drop
+- Responsive design with container queries
 - Toast notifications with Sonner
+- Date/time pickers with validation
+- Multi-select components for tech stacks
+- Avatar lists for team displays
 
 When making changes:
-- Follow the existing component patterns in `src/components/ui/`
-- Use TypeScript interfaces from `src/data/hackathons.ts` for type safety
-- Maintain consistency with Biome formatting rules
-- Utilize existing utility classes and design tokens
+- Use existing Zod schemas for validation and extend them as needed
+- Follow the database/UI type mapping patterns
+- Maintain the provider hierarchy in `src/app/providers.tsx`
+- Use TanStack Query for server state management
+- Follow shadcn/ui component patterns with class-variance-authority
