@@ -517,7 +517,7 @@ CREATE TABLE IF NOT EXISTS evaluations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     hackathon_id UUID NOT NULL REFERENCES hackathons(id) ON DELETE CASCADE,
-    prize_cohort_id TEXT NOT NULL, -- Using TEXT for now to store prize cohort name
+    prize_cohort_id UUID NOT NULL REFERENCES prize_cohorts(id) ON DELETE CASCADE,
     judge_email TEXT NOT NULL,
     scores JSONB NOT NULL DEFAULT '{}',
     feedback JSONB NOT NULL DEFAULT '{}',
