@@ -39,7 +39,7 @@ export interface UIHackathon {
   visual: string | null;
   shortDescription: string;
   fullDescription: string;
-  participantCount: number;
+  participantCount?: number;
   location: string;
   techStack: string[];
   experienceLevel: "beginner" | "intermediate" | "advanced" | "all";
