@@ -576,39 +576,70 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                 {/* Table Rows */}
                 <div className="space-y-1">
                   {selectedCohort.evaluationCriteria.map((criterion) => (
-                    <div
-                      key={criterion.name}
-                      className="grid grid-cols-4 gap-4 py-4 border-b border-muted/50 items-start"
-                    >
-                      <div className="font-medium text-sm">
-                        {criterion.name}
+                    <div key={criterion.name} className="space-y-3 py-4 border-b border-muted/50">
+                      <div className="grid grid-cols-4 gap-4 items-start">
+                        <div className="font-medium text-sm">
+                          {criterion.name}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {criterion.description}
+                        </div>
+                        <div className="font-medium text-sm">
+                          {criterion.points}
+                        </div>
+                        <div>
+                          <Input
+                            type="number"
+                            min="0"
+                            max={criterion.points}
+                            step="0.5"
+                            value={scores[criterion.name] || 0}
+                            onChange={(e) =>
+                              setScores({
+                                ...scores,
+                                [criterion.name]: Math.min(
+                                  criterion.points,
+                                  Math.max(0, parseFloat(e.target.value) || 0),
+                                ),
+                              })
+                            }
+                            className="w-20 h-8 text-center bg-muted"
+                          />
+                        </div>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {criterion.description}
-                      </div>
-                      <div className="font-medium text-sm">
-                        {criterion.points}
-                      </div>
-                      <div>
-                        <Input
-                          type="number"
-                          min="0"
-                          max={criterion.points}
-                          value={scores[criterion.name] || 0}
-                          onChange={(e) =>
-                            setScores({
-                              ...scores,
-                              [criterion.name]: Math.min(
-                                criterion.points,
-                                Math.max(0, parseInt(e.target.value) || 0),
-                              ),
-                            })
-                          }
-                          className="w-20 h-8 text-center bg-muted"
-                        />
+                      <div className="grid grid-cols-4 gap-4 items-start">
+                        <Label className="text-xs text-muted-foreground">
+                          Feedback
+                        </Label>
+                        <div className="col-span-3">
+                          <Textarea
+                            placeholder={`Provide specific feedback for ${criterion.name}...`}
+                            value={feedback[criterion.name] || ""}
+                            onChange={(e) =>
+                              setFeedback({
+                                ...feedback,
+                                [criterion.name]: e.target.value,
+                              })
+                            }
+                            className="min-h-[60px] text-sm"
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Overall Feedback */}
+                <div className="space-y-3 pt-6 border-t border-muted/50">
+                  <Label className="text-sm font-medium">
+                    Overall Feedback
+                  </Label>
+                  <Textarea
+                    placeholder="Provide overall feedback for this project submission..."
+                    value={overallFeedback}
+                    onChange={(e) => setOverallFeedback(e.target.value)}
+                    className="min-h-[100px]"
+                  />
                 </div>
 
                 {/* Submit Button */}
