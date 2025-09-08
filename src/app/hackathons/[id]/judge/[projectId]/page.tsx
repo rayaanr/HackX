@@ -467,7 +467,10 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                           Online
                         </Button>
                         <Button variant="outline" size="sm" className="text-xs">
-                          {Math.floor(Math.random() * 500) + 100} Participants
+                          {hackathon?.participantCount 
+                            ? `${hackathon.participantCount} Participants`
+                            : "N/A Participants"
+                          }
                         </Button>
                       </div>
                     </CardContent>
