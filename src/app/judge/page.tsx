@@ -4,20 +4,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAllHackathons } from "@/hooks/queries/use-hackathons";
+import { useCurrentUser } from "@/hooks/use-auth";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { ArrowRight, Calendar, MapPin, Users, Award } from "lucide-react";
 import Link from "next/link";
 
 export default function JudgeDashboardPage() {
   const { data: dbHackathons = [], isLoading, error } = useAllHackathons();
+  const { data: currentUser, isLoading: userLoading } = useCurrentUser();
 
-  // Transform and filter hackathons where the current user would be a judge
-  const hackathonsToJudge = dbHackathons
-    .map(transformDatabaseToUI)
-    .filter((hackathon) => hackathon.judges && hackathon.judges.length > 0);
+  // Transform and filter hackathons where the current user is assigned as a judge
+  const hackathonsToJudge = currentUser?.email 
+    ? dbHackathons
+        .map(transformDatabaseToUI)
+        .filter((hackathon) => 
+          hackathon.judges?.some(judge => judge.email === currentUser.email)
+        )
+    : []; // Return empty array if no user email available
 
-  if (isLoading) {
+  if (isLoading || userLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (!currentUser) {
+    return <div>Authentication required to view judge dashboard.</div>;
   }
   return (
     <div className="space-y-6">
