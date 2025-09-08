@@ -472,8 +472,8 @@ CREATE TABLE IF NOT EXISTS projects (
     status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'in_review', 'completed')),
     repository_url TEXT,
     demo_url TEXT,
-    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    team_members JSONB DEFAULT '[]',
+    created_by UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' REFERENCES auth.users(id) ON DELETE RESTRICT,
+    team_members JSONB DEFAULT '[]' CHECK (jsonb_typeof(team_members) = 'array'),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -593,7 +593,8 @@ CREATE POLICY "Users can view own projects or projects in registered hackathons"
     EXISTS (
         SELECT 1 FROM judges
         WHERE judges.hackathon_id = projects.hackathon_id
-        AND judges.email = auth.email()
+        AND lower(judges.email) = lower(auth.email())
+        AND judges.status = 'accepted'
     )
 );
 CREATE POLICY "Users can create projects" ON projects FOR INSERT WITH CHECK (auth.uid() = created_by);
