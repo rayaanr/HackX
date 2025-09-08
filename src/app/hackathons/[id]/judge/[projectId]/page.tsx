@@ -20,6 +20,7 @@ import {
   useProjectById,
   useProjectHackathons,
 } from "@/hooks/queries/use-projects";
+import { useCurrentUser } from "@/hooks/use-auth";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { createClient } from "@/lib/supabase/client";
 import { notFound } from "next/navigation";
@@ -46,6 +47,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   } = useProjectById(projectId);
   const { data: projectHackathons = [], isLoading: projectHackathonsLoading } =
     useProjectHackathons(projectId);
+  const { data: currentUser, isLoading: userLoading, error: userError } = useCurrentUser();
 
   // All hooks must be called before any conditional returns
   const [selectedPrizeCohortId, setSelectedPrizeCohortId] =
@@ -102,8 +104,39 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     }
   }, [selectedCohort?.evaluationCriteria]);
 
-  if (hackathonLoading || projectLoading || projectHackathonsLoading) {
+  if (hackathonLoading || projectLoading || projectHackathonsLoading || userLoading) {
     return <div>Loading...</div>;
+  }
+
+  // Validate authentication and judge access
+  if (userError || !currentUser?.email) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+          <p className="text-muted-foreground">You must be signed in as a judge to access this page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Validate judge email format
+  const judgeEmail = currentUser.email;
+  if (!judgeEmail.includes('@') || !judgeEmail.includes('.')) {
+    throw new Error('Invalid email format for judge authentication');
+  }
+
+  // Check if current user is assigned as judge for this hackathon
+  const isAuthorizedJudge = hackathon?.judges?.some(judge => judge.email === judgeEmail);
+  if (!isAuthorizedJudge) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <p className="text-muted-foreground">You are not assigned as a judge for this hackathon.</p>
+        </div>
+      </div>
+    );
   }
 
   if (
@@ -132,9 +165,8 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     try {
       const supabase = createClient();
 
-      // For now, we'll use a placeholder judge email
-      // In a real app, this would come from authentication
-      const judgeEmail = "judge@example.com";
+      // Use authenticated user's email for judge identification
+      // Email validation already performed above
 
       const { error } = await supabase.from("evaluations").upsert(
         {
