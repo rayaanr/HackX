@@ -638,10 +638,11 @@ CREATE POLICY "Judges/owners can view submissions" ON project_hackathon_submissi
 -- Evaluations policies (allow judges to manage only their own evaluations)
 CREATE POLICY "Judges can view their own evaluations" ON evaluations 
     FOR SELECT USING (
-        judge_email = auth.email() AND 
+        LOWER(judge_email) = LOWER(auth.email()) AND 
         EXISTS(
             SELECT 1 FROM judges j 
-            WHERE j.email = auth.email() 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
             AND j.hackathon_id = (
                 SELECT p.hackathon_id FROM projects p 
                 WHERE p.id = evaluations.project_id
@@ -651,10 +652,11 @@ CREATE POLICY "Judges can view their own evaluations" ON evaluations
 
 CREATE POLICY "Judges can create their own evaluations" ON evaluations 
     FOR INSERT WITH CHECK (
-        judge_email = auth.email() AND 
+        LOWER(judge_email) = LOWER(auth.email()) AND 
         EXISTS(
             SELECT 1 FROM judges j 
-            WHERE j.email = auth.email() 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
             AND j.hackathon_id = (
                 SELECT p.hackathon_id FROM projects p 
                 WHERE p.id = evaluations.project_id
@@ -664,20 +666,22 @@ CREATE POLICY "Judges can create their own evaluations" ON evaluations
 
 CREATE POLICY "Judges can update their own evaluations" ON evaluations 
     FOR UPDATE USING (
-        judge_email = auth.email() AND 
+        LOWER(judge_email) = LOWER(auth.email()) AND 
         EXISTS(
             SELECT 1 FROM judges j 
-            WHERE j.email = auth.email() 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
             AND j.hackathon_id = (
                 SELECT p.hackathon_id FROM projects p 
                 WHERE p.id = evaluations.project_id
             )
         )
     ) WITH CHECK (
-        judge_email = auth.email() AND 
+        LOWER(judge_email) = LOWER(auth.email()) AND 
         EXISTS(
             SELECT 1 FROM judges j 
-            WHERE j.email = auth.email() 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
             AND j.hackathon_id = (
                 SELECT p.hackathon_id FROM projects p 
                 WHERE p.id = evaluations.project_id
@@ -687,10 +691,11 @@ CREATE POLICY "Judges can update their own evaluations" ON evaluations
 
 CREATE POLICY "Judges can delete their own evaluations" ON evaluations 
     FOR DELETE USING (
-        judge_email = auth.email() AND 
+        LOWER(judge_email) = LOWER(auth.email()) AND 
         EXISTS(
             SELECT 1 FROM judges j 
-            WHERE j.email = auth.email() 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
             AND j.hackathon_id = (
                 SELECT p.hackathon_id FROM projects p 
                 WHERE p.id = evaluations.project_id
