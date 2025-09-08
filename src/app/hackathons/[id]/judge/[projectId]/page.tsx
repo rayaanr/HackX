@@ -367,20 +367,55 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                     Team Members
                   </h4>
                   <div className="space-y-2">
-                    {project.team_members.map((member, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-                          <span className="text-xs font-medium">
-                            {member.name?.charAt(0) || "?"}
-                          </span>
+                    {project.team_members.map((member, index) => {
+                      // Handle different member formats
+                      const getMemberData = (member: any) => {
+                        if (typeof member === "string") {
+                          return { name: member, role: undefined, github: undefined };
+                        }
+                        if (typeof member === "object" && member !== null) {
+                          return {
+                            name: member.name || "?",
+                            role: member.role,
+                            github: member.github
+                          };
+                        }
+                        return { name: "?", role: undefined, github: undefined };
+                      };
+
+                      const memberData = getMemberData(member);
+                      const stableKey = memberData.github || memberData.name || `member-${index}`;
+
+                      return (
+                        <div key={stableKey} className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-xs font-medium">
+                              {memberData.name.charAt(0) || "?"}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">
+                              {memberData.name}
+                            </span>
+                            {memberData.role && (
+                              <span className="text-xs text-muted-foreground">
+                                {memberData.role}
+                              </span>
+                            )}
+                            {memberData.github && (
+                              <a
+                                href={`https://github.com/${memberData.github}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                              >
+                                @{memberData.github}
+                              </a>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-sm">
-                          {typeof member === "string"
-                            ? member
-                            : JSON.stringify(member)}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
