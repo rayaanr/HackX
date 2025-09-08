@@ -553,7 +553,14 @@ ALTER TABLE evaluations ENABLE ROW LEVEL SECURITY;
 -- Create RLS Policies for new tables
 
 -- Projects policies
-CREATE POLICY "Users can view all projects" ON projects FOR SELECT USING (true);
+CREATE POLICY "Users can view own projects or projects in registered hackathons" ON projects FOR SELECT USING (
+    auth.uid() = created_by OR 
+    EXISTS (
+        SELECT 1 FROM hackathon_registrations 
+        WHERE hackathon_registrations.hackathon_id = projects.hackathon_id 
+        AND hackathon_registrations.user_id = auth.uid()
+    )
+);
 CREATE POLICY "Users can create projects" ON projects FOR INSERT WITH CHECK (auth.uid() = created_by);
 CREATE POLICY "Users can update their own projects" ON projects FOR UPDATE USING (auth.uid() = created_by);
 CREATE POLICY "Users can delete their own projects" ON projects FOR DELETE USING (auth.uid() = created_by);
