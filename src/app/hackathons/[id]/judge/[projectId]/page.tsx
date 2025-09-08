@@ -293,35 +293,17 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                 </div>
               </div>
 
-              {/* Progress During Hackathon */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">
-                  Progress During Hackathon
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  During hackathon, we accomplished following: - Frontend
-                  Development: Built a user-friendly interface for NFT auctions,
-                  AI quizzes, and Social interaction. - Smart Contracts:
-                  Deployed key smart contracts for the token and Betting Pool on
-                  the Mantle Testnet. - AI Quiz Integration: Implemented AIGC
-                  DALL-E3 GPT models that generate dynamic quizzes based on live
-                  sports events. Developed a functional NFT auction system that
-                  allows users to bid using our tokens. - Testing and
-                  Deployment: Conducted rigorous testing to ensure seamless
-                  operations and deployed the project with all features
-                  integrated.
-                </p>
-              </div>
-
-              {/* Fundraising Status */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">
-                  Fundraising Status
-                </h3>
-                <p className="text-muted-foreground">
-                  Not raised any funds, but actively looking to raise.
-                </p>
-              </div>
+              {/* Project Description */}
+              {project?.description && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">
+                    Project Details
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {project.description}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Sidebar */}
