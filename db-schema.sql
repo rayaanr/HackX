@@ -585,8 +585,19 @@ CREATE POLICY "Project owners can manage submissions" ON project_hackathon_submi
         )
     );
 
--- Evaluations policies (allow judges to manage their evaluations)
-CREATE POLICY "Judges can manage their own evaluations" ON evaluations FOR ALL USING (true);
+-- Evaluations policies (allow judges to manage only their own evaluations)
+CREATE POLICY "Judges can view their own evaluations" ON evaluations 
+    FOR SELECT USING (judge_email = auth.email());
+
+CREATE POLICY "Judges can create their own evaluations" ON evaluations 
+    FOR INSERT WITH CHECK (judge_email = auth.email());
+
+CREATE POLICY "Judges can update their own evaluations" ON evaluations 
+    FOR UPDATE USING (judge_email = auth.email()) 
+    WITH CHECK (judge_email = auth.email());
+
+CREATE POLICY "Judges can delete their own evaluations" ON evaluations 
+    FOR DELETE USING (judge_email = auth.email());
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_hackathons_created_by ON hackathons(created_by);
