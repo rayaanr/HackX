@@ -47,7 +47,11 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   } = useProjectById(projectId);
   const { data: projectHackathons = [], isLoading: projectHackathonsLoading } =
     useProjectHackathons(projectId);
-  const { data: currentUser, isLoading: userLoading, error: userError } = useCurrentUser();
+  const {
+    data: currentUser,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
 
   // All hooks must be called before any conditional returns
   const [selectedPrizeCohortId, setSelectedPrizeCohortId] =
@@ -105,7 +109,12 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     }
   }, [selectedCohort?.id]);
 
-  if (hackathonLoading || projectLoading || projectHackathonsLoading || userLoading) {
+  if (
+    hackathonLoading ||
+    projectLoading ||
+    projectHackathonsLoading ||
+    userLoading
+  ) {
     return <div>Loading...</div>;
   }
 
@@ -125,8 +134,12 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-          <p className="text-muted-foreground">You must be signed in as a judge to access this page.</p>
+          <h2 className="text-xl font-semibold mb-2">
+            Authentication Required
+          </h2>
+          <p className="text-muted-foreground">
+            You must be signed in as a judge to access this page.
+          </p>
         </div>
       </div>
     );
@@ -134,18 +147,22 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   // Validate judge email format
   const judgeEmail = currentUser.email;
-  if (!judgeEmail.includes('@') || !judgeEmail.includes('.')) {
-    throw new Error('Invalid email format for judge authentication');
+  if (!judgeEmail.includes("@") || !judgeEmail.includes(".")) {
+    throw new Error("Invalid email format for judge authentication");
   }
 
   // Check if current user is assigned as judge for this hackathon
-  const isAuthorizedJudge = hackathon?.judges?.some(judge => judge.email === judgeEmail);
+  const isAuthorizedJudge = hackathon?.judges?.some(
+    (judge) => judge.email === judgeEmail,
+  );
   if (!isAuthorizedJudge) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-          <p className="text-muted-foreground">You are not assigned as a judge for this hackathon.</p>
+          <p className="text-muted-foreground">
+            You are not assigned as a judge for this hackathon.
+          </p>
         </div>
       </div>
     );
@@ -379,23 +396,37 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                       // Handle different member formats
                       const getMemberData = (member: any) => {
                         if (typeof member === "string") {
-                          return { name: member, role: undefined, github: undefined };
+                          return {
+                            name: member,
+                            role: undefined,
+                            github: undefined,
+                          };
                         }
                         if (typeof member === "object" && member !== null) {
                           return {
                             name: member.name || "?",
                             role: member.role,
-                            github: member.github
+                            github: member.github,
                           };
                         }
-                        return { name: "?", role: undefined, github: undefined };
+                        return {
+                          name: "?",
+                          role: undefined,
+                          github: undefined,
+                        };
                       };
 
                       const memberData = getMemberData(member);
-                      const stableKey = memberData.github || memberData.name || `member-${index}`;
+                      const stableKey =
+                        memberData.github ||
+                        memberData.name ||
+                        `member-${index}`;
 
                       return (
-                        <div key={stableKey} className="flex items-center gap-2">
+                        <div
+                          key={stableKey}
+                          className="flex items-center gap-2"
+                        >
                           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
                             <span className="text-xs font-medium">
                               {memberData.name.charAt(0) || "?"}
@@ -584,7 +615,10 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                 {/* Table Rows */}
                 <div className="space-y-1">
                   {selectedCohort.evaluationCriteria.map((criterion) => (
-                    <div key={criterion.name} className="space-y-3 py-4 border-b border-muted/50">
+                    <div
+                      key={criterion.name}
+                      className="space-y-3 py-4 border-b border-muted/50"
+                    >
                       <div className="grid grid-cols-4 gap-4 items-start">
                         <div className="font-medium text-sm">
                           {criterion.name}
