@@ -18,58 +18,45 @@ import {
   ProjectHackathonCardProps,
 } from "@/components/project-hackathon-card";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useAllHackathons } from "@/hooks/queries/use-hackathons";
+import { getHackathonStatus, calculateTotalPrizeAmount, formatDateForDisplay } from "@/lib/helpers/hackathon-transforms";
+import type { HackathonWithRelations } from "@/types/hackathon";
 
-// Mock hackathon data - in a real app, this would come from an API
-const MOCK_HACKATHONS: ProjectHackathonCardProps[] = [
-  {
-    id: "1",
-    name: "AI Innovation Challenge",
-    date: "2025-09-15",
-    theme: "Artificial Intelligence",
-    prize: "$50,000",
-    participants: 1200,
-    status: "live",
-  },
-  {
-    id: "2",
-    name: "Blockchain Summit",
-    date: "2025-10-20",
-    theme: "Web3 & Cryptocurrency",
-    prize: "$75,000",
-    participants: 800,
-    status: "upcoming",
-  },
-  {
-    id: "3",
-    name: "Green Tech Hackathon",
-    date: "2025-11-05",
-    theme: "Sustainability",
-    prize: "$30,000",
-    participants: 650,
-    status: "upcoming",
-  },
-  {
-    id: "4",
-    name: "HealthTech Innovation",
-    date: "2025-08-30",
-    theme: "Healthcare Technology",
-    prize: "$40,000",
-    participants: 950,
-    status: "live",
-  },
-];
+// Transform hackathon data to match ProjectHackathonCardProps interface
+function transformHackathonToCardProps(hackathon: HackathonWithRelations): ProjectHackathonCardProps {
+  const status = getHackathonStatus(hackathon);
+  const cardStatus: "live" | "upcoming" | "completed" = 
+    status === "Live" ? "live" :
+    status === "Ended" ? "completed" : "upcoming";
+
+  return {
+    id: hackathon.id,
+    name: hackathon.name,
+    date: formatDateForDisplay(hackathon.hackathon_start_date),
+    theme: hackathon.short_description,
+    prize: calculateTotalPrizeAmount(hackathon),
+    participants: hackathon.participant_count || 0,
+    status: cardStatus,
+  };
+}
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 export function HackathonSelectionStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormValues>();
+  const { data: hackathonData, isLoading, error } = useAllHackathons();
 
-  const [hackathons] = useState(MOCK_HACKATHONS);
-  const [filteredHackathons, setFilteredHackathons] = useState(MOCK_HACKATHONS);
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");
-
   const selectedHackathonIds = watch("hackathonIds") || [];
+
+  // Transform hackathon data to card props format
+  const hackathons = useMemo(() => {
+    if (!hackathonData) return [];
+    return hackathonData.map(transformHackathonToCardProps);
+  }, [hackathonData]);
+
+  const [filteredHackathons, setFilteredHackathons] = useState<ProjectHackathonCardProps[]>([]);
 
   useEffect(() => {
     if (filter === "all") {
@@ -129,42 +116,54 @@ export function HackathonSelectionStep() {
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {filteredHackathons.map((hackathon) => (
-                        <div key={hackathon.id} className="relative">
-                          <ProjectHackathonCard {...hackathon} />
-                          <div className="absolute top-2 right-2">
-                            <Checkbox
-                              checked={selectedHackathonIds.includes(
-                                hackathon.id,
-                              )}
-                              onCheckedChange={(checked) => {
-                                const isChecked = checked === true;
-                                const next = isChecked
-                                  ? Array.from(
-                                      new Set([
-                                        ...selectedHackathonIds,
-                                        hackathon.id,
-                                      ]),
-                                    )
-                                  : selectedHackathonIds.filter(
-                                      (x: string) => x !== hackathon.id,
-                                    );
-                                setValue("hackathonIds", next, {
-                                  shouldValidate: true,
-                                  shouldDirty: true,
-                                });
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {filteredHackathons.length === 0 && (
+                    {isLoading ? (
                       <div className="text-center py-8 text-muted-foreground">
-                        No hackathons found for the selected filter.
+                        Loading hackathons...
                       </div>
+                    ) : error ? (
+                      <div className="text-center py-8 text-destructive">
+                        Failed to load hackathons. Please try again.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {filteredHackathons.map((hackathon) => (
+                            <div key={hackathon.id} className="relative">
+                              <ProjectHackathonCard {...hackathon} />
+                              <div className="absolute top-2 right-2">
+                                <Checkbox
+                                  checked={selectedHackathonIds.includes(
+                                    hackathon.id,
+                                  )}
+                                  onCheckedChange={(checked) => {
+                                    const isChecked = checked === true;
+                                    const next = isChecked
+                                      ? Array.from(
+                                          new Set([
+                                            ...selectedHackathonIds,
+                                            hackathon.id,
+                                          ]),
+                                        )
+                                      : selectedHackathonIds.filter(
+                                          (x: string) => x !== hackathon.id,
+                                        );
+                                    setValue("hackathonIds", next, {
+                                      shouldValidate: true,
+                                      shouldDirty: true,
+                                    });
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {filteredHackathons.length === 0 && !isLoading && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            No hackathons found for the selected filter.
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </FormControl>
