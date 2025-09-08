@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 
 interface PrizeCohort {
   id: string;
@@ -11,48 +12,58 @@ interface PrizeCohort {
 interface ReviewActionsProps {
   projectId: string;
   hackathonId: string;
-  selectedPrizeCohortId: string;
   selectedCohort: PrizeCohort | undefined;
   judgeEmail: string;
-  scores: Record<string, number>;
-  feedback: Record<string, string>;
-  overallFeedback: string;
+  formData: JudgeEvaluationFormData | null;
   isSubmitting: boolean;
   setIsSubmitting: (submitting: boolean) => void;
+  onSubmitSuccess?: () => void;
 }
 
 export function ReviewActions({
   projectId,
   hackathonId,
-  selectedPrizeCohortId,
   selectedCohort,
   judgeEmail,
-  scores,
-  feedback,
-  overallFeedback,
+  formData,
   isSubmitting,
   setIsSubmitting,
+  onSubmitSuccess,
 }: ReviewActionsProps) {
-  const totalScore = Object.values(scores).reduce(
-    (sum, score) => sum + score,
-    0,
-  );
-  const maxScore =
-    selectedCohort?.evaluationCriteria.reduce(
-      (sum, criterion) => sum + criterion.points,
-      0,
-    ) || 0;
+  const isFormValid = formData && 
+    formData.selectedPrizeCohortId && 
+    formData.overallFeedback.trim().length >= 10 &&
+    Object.keys(formData.criteriaEvaluations).length > 0 &&
+    Object.values(formData.criteriaEvaluations).every(
+      (evaluation) => evaluation.feedback.trim().length > 0
+    );
 
   const handleSubmitEvaluation = async () => {
-    if (!selectedCohort || isSubmitting) return;
+    if (!selectedCohort || !formData || isSubmitting || !isFormValid) return;
 
     setIsSubmitting(true);
 
     try {
       const supabase = createClient();
 
-      // Use authenticated user's email for judge identification
-      // Email validation already performed above
+      // Calculate total score and max score from form data
+      const scores = Object.fromEntries(
+        Object.entries(formData.criteriaEvaluations).map(([name, evaluation]) => [
+          name, evaluation.score
+        ])
+      );
+      
+      const feedback = Object.fromEntries(
+        Object.entries(formData.criteriaEvaluations).map(([name, evaluation]) => [
+          name, evaluation.feedback
+        ])
+      );
+
+      const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+      const maxScore = selectedCohort.evaluationCriteria.reduce(
+        (sum, criterion) => sum + criterion.points,
+        0,
+      );
 
       const { error } = await supabase
         .from("evaluations")
@@ -60,15 +71,11 @@ export function ReviewActions({
           {
             project_id: projectId,
             hackathon_id: hackathonId,
-            prize_cohort_id:
-              selectedPrizeCohortId ||
-              (() => {
-                throw new Error("No prize cohort selected for evaluation");
-              })(),
+            prize_cohort_id: formData.selectedPrizeCohortId,
             judge_email: judgeEmail,
             scores: scores,
             feedback: feedback,
-            overall_feedback: overallFeedback,
+            overall_feedback: formData.overallFeedback,
             total_score: totalScore,
             max_possible_score: maxScore,
           },
@@ -76,7 +83,7 @@ export function ReviewActions({
             onConflict: "project_id,hackathon_id,prize_cohort_id,judge_email",
           },
         )
-        .select("id"); // Minimal return - only need to confirm insertion
+        .select("id");
 
       if (error) {
         console.error("Error submitting evaluation:", error);
@@ -88,6 +95,7 @@ export function ReviewActions({
       }
 
       alert("Evaluation submitted successfully!");
+      onSubmitSuccess?.();
     } catch (error) {
       console.error("Error submitting evaluation:", error);
       alert("Failed to submit evaluation. Please try again.");
@@ -101,7 +109,7 @@ export function ReviewActions({
       <Button
         onClick={handleSubmitEvaluation}
         className="w-full"
-        disabled={!selectedPrizeCohortId || isSubmitting}
+        disabled={!isFormValid || isSubmitting}
       >
         {isSubmitting ? "Submitting..." : "Submit Evaluation"}
       </Button>
