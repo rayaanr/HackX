@@ -620,6 +620,20 @@ CREATE POLICY "Project owners can manage submissions" ON project_hackathon_submi
         )
     );
 
+CREATE POLICY "Judges/owners can view submissions" ON project_hackathon_submissions
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM judges 
+            WHERE judges.hackathon_id = project_hackathon_submissions.hackathon_id
+                AND lower(judges.email) = lower(auth.email())
+        )
+        OR EXISTS (
+            SELECT 1 FROM hackathons h
+            WHERE h.id = project_hackathon_submissions.hackathon_id
+                AND h.created_by = auth.uid()
+        )
+    );
+
 -- Evaluations policies (allow judges to manage only their own evaluations)
 CREATE POLICY "Judges can view their own evaluations" ON evaluations 
     FOR SELECT USING (
