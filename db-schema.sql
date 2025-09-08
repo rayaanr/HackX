@@ -530,6 +530,31 @@ CREATE TABLE IF NOT EXISTS evaluations (
     UNIQUE(project_id, hackathon_id, prize_cohort_id, judge_email)
 );
 
+-- Create PL/pgSQL function to validate evaluation project-hackathon consistency
+CREATE OR REPLACE FUNCTION validate_evaluation_project_hackathon()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if the project belongs to the specified hackathon
+    IF NOT EXISTS (
+        SELECT 1 FROM projects 
+        WHERE projects.id = NEW.project_id 
+        AND projects.hackathon_id = NEW.hackathon_id
+    ) THEN
+        RAISE EXCEPTION 'Project ID % does not belong to hackathon ID %. Cannot create evaluation.', 
+            NEW.project_id, NEW.hackathon_id;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to enforce evaluation project-hackathon consistency
+DROP TRIGGER IF EXISTS evaluations_project_hackathon_check ON evaluations;
+CREATE TRIGGER evaluations_project_hackathon_check
+    BEFORE INSERT OR UPDATE ON evaluations
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_evaluation_project_hackathon();
+
 -- Create trigger for evaluations updated_at
 DO $$
 BEGIN
