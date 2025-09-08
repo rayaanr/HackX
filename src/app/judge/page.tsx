@@ -3,17 +3,36 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { hackathons } from "@/data/hackathons";
+import { useAllHackathons } from "@/hooks/queries/use-hackathons";
+import { useCurrentUser } from "@/hooks/use-auth";
+import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { ArrowRight, Calendar, MapPin, Users, Award } from "lucide-react";
 import Link from "next/link";
 
-// Filter hackathons where the current user would be a judge
-// For demo purposes, showing all hackathons that have judges
-const hackathonsToJudge = hackathons.filter(
-  (hackathon) => hackathon.judges && hackathon.judges.length > 0,
-);
-
 export default function JudgeDashboardPage() {
+  const { data: dbHackathons = [], isLoading, error } = useAllHackathons();
+  const { data: currentUser, isLoading: userLoading } = useCurrentUser();
+
+  // Transform and filter hackathons where the current user is assigned as a judge
+  const hackathonsToJudge = currentUser?.email
+    ? dbHackathons
+        .map(transformDatabaseToUI)
+        .filter((hackathon) =>
+          hackathon.judges?.some(
+            (judge) =>
+              (judge.email ?? "").toLowerCase() ===
+              (currentUser.email ?? "").toLowerCase(),
+          ),
+        )
+    : []; // Return empty array if no user email available
+
+  if (isLoading || userLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!currentUser) {
+    return <div>Authentication required to view judge dashboard.</div>;
+  }
   return (
     <div className="space-y-6">
       <div>
@@ -29,11 +48,15 @@ export default function JudgeDashboardPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {hackathonsToJudge.map((hackathon) => {
+            const startDate = hackathon.hackathonPeriod?.hackathonStartDate;
+            const endDate = hackathon.hackathonPeriod?.hackathonEndDate;
+
             const isLive =
-              new Date() >= hackathon.hackathonPeriod.hackathonStartDate &&
-              new Date() <= hackathon.hackathonPeriod.hackathonEndDate;
-            const isUpcoming =
-              new Date() < hackathon.hackathonPeriod.hackathonStartDate;
+              startDate &&
+              endDate &&
+              new Date() >= startDate &&
+              new Date() <= endDate;
+            const isUpcoming = startDate && new Date() < startDate;
 
             return (
               <div
@@ -71,9 +94,7 @@ export default function JudgeDashboardPage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="size-4" />
-                        <span>
-                          {hackathon.hackathonPeriod.hackathonStartDate.toLocaleDateString()}
-                        </span>
+                        <span>{startDate?.toLocaleDateString() || "TBD"}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <MapPin className="size-4" />

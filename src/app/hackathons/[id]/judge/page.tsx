@@ -3,8 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { hackathons } from "@/data/hackathons";
-import { getSubmittedProjectsByHackathon } from "@/data/projects";
+import { useHackathonById } from "@/hooks/queries/use-hackathons";
+import { useSubmittedProjectsByHackathon } from "@/hooks/queries/use-projects";
+import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { notFound } from "next/navigation";
 import { use } from "react";
 import Image from "next/image";
@@ -17,12 +18,26 @@ interface JudgingPageProps {
 export default function JudgingPage({ params }: JudgingPageProps) {
   const { id } = use(params);
 
-  const hackathon = hackathons.find((h) => h.id === id);
-  if (!hackathon) {
+  const {
+    data: dbHackathon,
+    isLoading: hackathonLoading,
+    error: hackathonError,
+  } = useHackathonById(id);
+  const {
+    data: submittedProjects = [],
+    isLoading: projectsLoading,
+    error: projectsError,
+  } = useSubmittedProjectsByHackathon(id);
+
+  if (hackathonLoading || projectsLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (hackathonError || !dbHackathon) {
     notFound();
   }
 
-  const submittedProjects = getSubmittedProjectsByHackathon(id);
+  const hackathon = transformDatabaseToUI(dbHackathon);
 
   return (
     <div className="space-y-6">
@@ -44,23 +59,11 @@ export default function JudgingPage({ params }: JudgingPageProps) {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  {project.logo ? (
-                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                      <Image
-                        src={project.logo}
-                        alt={project.name}
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                      <span className="text-lg font-semibold text-muted-foreground">
-                        {project.name.charAt(0)}
-                      </span>
-                    </div>
-                  )}
+                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                    <span className="text-lg font-semibold text-muted-foreground">
+                      {project.name.charAt(0)}
+                    </span>
+                  </div>
                   <div>
                     <CardTitle className="text-lg">{project.name}</CardTitle>
                     <Badge variant="secondary" className="mt-1 text-xs">
@@ -82,9 +85,9 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                     Last edited
                   </span>
                   <p className="text-sm">
-                    {project.lastEdited.toLocaleDateString()} (
+                    {new Date(project.updated_at).toLocaleDateString()} (
                     {Math.ceil(
-                      (Date.now() - project.lastEdited.getTime()) /
+                      (Date.now() - new Date(project.updated_at).getTime()) /
                         (1000 * 60 * 60 * 24),
                     )}{" "}
                     days ago)
@@ -93,17 +96,10 @@ export default function JudgingPage({ params }: JudgingPageProps) {
 
                 <div>
                   <span className="text-xs font-medium text-muted-foreground">
-                    Builder
-                  </span>
-                  <p className="text-sm font-medium">{project.builder}</p>
-                </div>
-
-                <div>
-                  <span className="text-xs font-medium text-muted-foreground">
                     Tech Stack
                   </span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {project.techStack.map((tech) => (
+                    {project.tech_stack.map((tech) => (
                       <Badge key={tech} variant="outline" className="text-xs">
                         {tech}
                       </Badge>
@@ -111,15 +107,17 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                   </div>
                 </div>
 
-                <div>
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Team
-                  </span>
-                  <p className="text-sm font-medium">{project.team.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {project.team.members.length} members
-                  </p>
-                </div>
+                {project.team_members && (
+                  <div>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Team
+                    </span>
+                    <p className="text-sm font-medium">Team Members</p>
+                    <p className="text-xs text-muted-foreground">
+                      {project.team_members.length} members
+                    </p>
+                  </div>
+                )}
               </div>
 
               <Button

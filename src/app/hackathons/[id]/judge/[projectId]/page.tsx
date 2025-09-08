@@ -15,11 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { hackathons } from "@/data/hackathons";
-import { getProjectById } from "@/data/projects";
+import { useHackathonByIdPublic } from "@/hooks/queries/use-hackathons";
+import {
+  useProjectById,
+  useProjectHackathons,
+} from "@/hooks/queries/use-projects";
+import { useCurrentUser } from "@/hooks/use-auth";
+import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
+import { createClient } from "@/lib/supabase/client";
 import { notFound } from "next/navigation";
-import { use, useEffect, useState } from "react";
-import Image from "next/image";
+import { use, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Github, Play, Users } from "lucide-react";
 
@@ -30,66 +35,200 @@ interface ProjectReviewPageProps {
 export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   const { id: hackathonId, projectId } = use(params);
 
-  const hackathon = hackathons.find((h) => h.id === hackathonId);
-  const project = getProjectById(projectId);
+  const {
+    data: dbHackathon,
+    isLoading: hackathonLoading,
+    error: hackathonError,
+  } = useHackathonByIdPublic(hackathonId);
+  const {
+    data: project,
+    isLoading: projectLoading,
+    error: projectError,
+  } = useProjectById(projectId);
+  const { data: projectHackathons = [], isLoading: projectHackathonsLoading } =
+    useProjectHackathons(projectId);
+  const {
+    data: currentUser,
+    isLoading: userLoading,
+    error: userError,
+  } = useCurrentUser();
 
-  if (!hackathon || !project) {
-    notFound();
-  }
-
-  const [selectedPrizeCohort, setSelectedPrizeCohort] = useState<string>(
-    hackathon.prizeCohorts[0]?.name || ""
-  );
+  // All hooks must be called before any conditional returns
+  const [selectedPrizeCohortId, setSelectedPrizeCohortId] =
+    useState<string>("");
   const [scores, setScores] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [overallFeedback, setOverallFeedback] = useState("");
-  const [activeTab, setActiveTab] = useState("overview");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get evaluation criteria from the selected prize cohort
-  const selectedCohort = hackathon.prizeCohorts.find(
-    (cohort) => cohort.name === selectedPrizeCohort
-  );
-  const evaluationCriteria = selectedCohort?.evaluationCriteria || [];
+  // Transform data safely
+  const hackathon = dbHackathon ? transformDatabaseToUI(dbHackathon) : null;
 
-  // Reset form state when cohort changes
-  useEffect(() => {
-    setScores({});
-    setOverallFeedback("");
-  }, [selectedPrizeCohort]);
-
-  const handleScoreChange = (criteriaName: string, score: number) => {
-    setScores((prev) => ({ ...prev, [criteriaName]: score }));
-  };
-
-  const handleFeedbackChange = (criteriaName: string, feedbackText: string) => {
-    setFeedback((prev) => ({ ...prev, [criteriaName]: feedbackText }));
-  };
-
-  const calculateTotalScore = () => {
-    return Object.values(scores).reduce((sum, score) => sum + score, 0);
-  };
-
-  const getMaxTotalScore = () => {
-    return evaluationCriteria.reduce(
-      (sum, criteria) => sum + criteria.points,
-      0
+  // Memoize selectedCohort to prevent infinite re-renders
+  const selectedCohort = useMemo(() => {
+    return hackathon?.prizeCohorts.find(
+      (cohort) => cohort.id === selectedPrizeCohortId,
     );
-  };
+  }, [hackathon?.prizeCohorts, selectedPrizeCohortId]);
 
-  const handleSubmitReview = () => {
-    // Here you would typically send the review data to your backend
-    console.log({
-      projectId,
-      scores,
-      feedback,
-      overallFeedback,
-      totalScore: calculateTotalScore(),
-      maxTotalScore: getMaxTotalScore(),
-    });
+  // Initialize selectedPrizeCohortId when hackathon data is available
+  useEffect(() => {
+    if (hackathon && !selectedPrizeCohortId && hackathon.prizeCohorts[0]?.id) {
+      setSelectedPrizeCohortId(hackathon.prizeCohorts[0].id);
+    }
+  }, [hackathon, selectedPrizeCohortId]);
 
-    // Show success message and redirect back to judging page
-    alert("Review submitted successfully!");
-    window.location.href = `/hackathons/${hackathonId}/judge`;
+  // Initialize scores and feedback when selectedCohort changes
+  useEffect(() => {
+    if (selectedCohort && selectedCohort.evaluationCriteria.length > 0) {
+      const initialScores: Record<string, number> = {};
+      const initialFeedback: Record<string, string> = {};
+
+      selectedCohort.evaluationCriteria.forEach((criterion) => {
+        initialScores[criterion.name] = 0;
+        initialFeedback[criterion.name] = "";
+      });
+
+      // Only update if the scores are actually different
+      setScores((prevScores) => {
+        const isDifferent =
+          Object.keys(initialScores).some((key) => !(key in prevScores)) ||
+          Object.keys(prevScores).length !== Object.keys(initialScores).length;
+
+        return isDifferent ? initialScores : prevScores;
+      });
+
+      setFeedback((prevFeedback) => {
+        const isDifferent =
+          Object.keys(initialFeedback).some((key) => !(key in prevFeedback)) ||
+          Object.keys(prevFeedback).length !==
+            Object.keys(initialFeedback).length;
+
+        return isDifferent ? initialFeedback : prevFeedback;
+      });
+    }
+  }, [selectedCohort?.id]);
+
+  if (
+    hackathonLoading ||
+    projectLoading ||
+    projectHackathonsLoading ||
+    userLoading
+  ) {
+    return <div>Loading...</div>;
+  }
+
+  // Check for data errors or missing resources first
+  if (
+    hackathonError ||
+    projectError ||
+    !dbHackathon ||
+    !project ||
+    !hackathon
+  ) {
+    notFound();
+  }
+
+  // Validate authentication and judge access
+  if (userError || !currentUser?.email) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">
+            Authentication Required
+          </h2>
+          <p className="text-muted-foreground">
+            You must be signed in as a judge to access this page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Validate judge email format
+  const judgeEmail = currentUser.email;
+  if (!judgeEmail.includes("@") || !judgeEmail.includes(".")) {
+    throw new Error("Invalid email format for judge authentication");
+  }
+
+  // Check if current user is assigned as judge for this hackathon
+  const isAuthorizedJudge = hackathon?.judges?.some(
+    (judge) => judge.email === judgeEmail,
+  );
+  if (!isAuthorizedJudge) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <p className="text-muted-foreground">
+            You are not assigned as a judge for this hackathon.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const totalScore = Object.values(scores).reduce(
+    (sum, score) => sum + score,
+    0,
+  );
+  const maxScore =
+    selectedCohort?.evaluationCriteria.reduce(
+      (sum, criterion) => sum + criterion.points,
+      0,
+    ) || 0;
+
+  const handleSubmitEvaluation = async () => {
+    if (!selectedCohort || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const supabase = createClient();
+
+      // Use authenticated user's email for judge identification
+      // Email validation already performed above
+
+      const { error } = await supabase
+        .from("evaluations")
+        .upsert(
+          {
+            project_id: projectId,
+            hackathon_id: hackathonId,
+            prize_cohort_id:
+              selectedPrizeCohortId ||
+              (() => {
+                throw new Error("No prize cohort selected for evaluation");
+              })(),
+            judge_email: judgeEmail,
+            scores: scores,
+            feedback: feedback,
+            overall_feedback: overallFeedback,
+            total_score: totalScore,
+            max_possible_score: maxScore,
+          },
+          {
+            onConflict: "project_id,hackathon_id,prize_cohort_id,judge_email",
+          },
+        )
+        .select("id"); // Minimal return - only need to confirm insertion
+
+      if (error) {
+        console.error("Error submitting evaluation:", error);
+        const errorMessage = error.message || "Unknown error occurred";
+        alert(
+          `Failed to submit evaluation: ${errorMessage}. Please try again.`,
+        );
+        return;
+      }
+
+      alert("Evaluation submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting evaluation:", error);
+      alert("Failed to submit evaluation. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -99,32 +238,26 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         <Button variant="ghost" size="sm" asChild>
           <Link href={`/hackathons/${hackathonId}/judge`}>
             <ArrowLeft className="size-4" />
-            Back to {hackathon.name} Projects
+            Back to Projects
           </Link>
         </Button>
+        <div>
+          <h1 className="text-2xl font-bold">Review Project</h1>
+          <p className="text-muted-foreground">
+            Evaluate this project for {hackathon.name}
+          </p>
+        </div>
       </div>
 
       {/* Project Header */}
       <Card>
         <CardHeader>
           <div className="flex items-start gap-4">
-            {project.logo ? (
-              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                <Image
-                  src={project.logo}
-                  alt={project.name}
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
-                <span className="text-2xl font-semibold text-muted-foreground">
-                  {project.name.charAt(0)}
-                </span>
-              </div>
-            )}
+            <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
+              <span className="text-2xl font-semibold text-muted-foreground">
+                {project.name.charAt(0)}
+              </span>
+            </div>
             <div className="flex-1">
               <CardTitle className="text-3xl">{project.name}</CardTitle>
               <p className="text-muted-foreground mt-1">
@@ -135,588 +268,434 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         </CardHeader>
       </Card>
 
-      {/* Tabs Navigation */}
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="space-y-6"
-      >
-        <TabsList className="grid w-full grid-cols-3">
+      {/* Tabs */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList>
           <TabsTrigger value="overview">Project Overview</TabsTrigger>
           <TabsTrigger value="hackathon">Hackathon</TabsTrigger>
           <TabsTrigger value="judging">Judging</TabsTrigger>
         </TabsList>
 
-        {/* Project Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
-            {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground leading-relaxed">
-                    {project.fullDescription || project.description}
-                  </p>
-                </CardContent>
-              </Card>
+              {/* Project Description */}
+              <div>
+                <p className="text-muted-foreground leading-relaxed">
+                  {project.description}
+                </p>
+              </div>
 
-              {/* Demo and Pitch Videos */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                {project.demoUrl && (
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg">Demo Video</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Button asChild className="w-full">
-                        <a
-                          href={project.demoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Play className="size-4" />
-                          Watch Demo
-                        </a>
-                      </Button>
-                    </CardContent>
-                  </Card>
+              {/* Demo and Code Links */}
+              <div className="flex gap-4">
+                {project.demo_url && (
+                  <Button asChild>
+                    <a
+                      href={project.demo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Demo Video
+                    </a>
+                  </Button>
                 )}
-
-                {project.pitchVideoUrl && (
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg">Pitch Video</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Button asChild className="w-full">
-                        <a
-                          href={project.pitchVideoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Play className="size-4" />
-                          Watch Pitch
-                        </a>
-                      </Button>
-                    </CardContent>
-                  </Card>
+                {project.repository_url && (
+                  <Button variant="outline" asChild>
+                    <a
+                      href={project.repository_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Pitch Video
+                    </a>
+                  </Button>
                 )}
               </div>
 
-              {/* Progress During Hackathon */}
-              {project.progressDuringHackathon && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Progress During Hackathon</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {project.progressDuringHackathon}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+              {/* Video Placeholder */}
+              <div className="relative aspect-video bg-black rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                  <Play className="size-6 text-black ml-1" />
+                </div>
+              </div>
 
-              {/* Fundraising Status */}
-              {project.fundraisingStatus && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Fundraising Status</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      {project.fundraisingStatus}
-                    </p>
-                  </CardContent>
-                </Card>
+              {/* Project Description */}
+              {project?.description && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">
+                    Project Details
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {project.description}
+                  </p>
+                </div>
               )}
             </div>
 
-            {/* Side Panel */}
-            <div className="space-y-6">
-              {/* Team Information */}
-              <Card>
-                <CardHeader>
+            {/* Sidebar */}
+            <div className="space-y-4">
+              {/* Team Leader */}
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                  Team Leader
+                </h4>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Amaan Sayyad</span>
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">Team Leader</CardTitle>
+                    <span className="text-xs text-muted-foreground">
+                      Github link
+                    </span>
+                    <a
+                      href="https://github.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 text-xs"
+                    >
+                      github.com ↗
+                    </a>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
-                      Name
-                    </Label>
-                    <p className="font-medium">{project.team.leader}</p>
-                  </div>
+                </div>
+              </div>
 
-                  <Separator />
+              {/* Sector */}
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                  Sector
+                </h4>
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant="secondary" className="text-xs">
+                    SocialFi
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    Infra
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    GameFi
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    NFT
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    AI
+                  </Badge>
+                </div>
+                <div className="mt-1">
+                  <Badge variant="secondary" className="text-xs">
+                    DeFi
+                  </Badge>
+                </div>
+              </div>
 
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
-                      GitHub link
-                    </Label>
-                    <p className="text-sm text-blue-600 hover:underline">
-                      <Link
-                        href={
-                          project.githubUrl?.startsWith("http")
-                            ? project.githubUrl
-                            : `https://${project.githubUrl || "github.com"}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {project.githubUrl
-                          ? project.githubUrl.replace(/^https?:\/\//, "")
-                          : "github.com"}
-                      </Link>
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Project Details */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
-                      Sector
-                    </Label>
-                    <p className="font-medium">{project.sector}</p>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
-                      DeFi Protocol
-                    </Label>
-                    <p className="font-medium">{project.defiProtocol}</p>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">
-                      Tech Stack
-                    </Label>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {project.techStack.map((tech) => (
-                        <Badge key={tech} variant="outline" className="text-xs">
-                          {tech}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Team Members */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Team Members</CardTitle>
-                </CardHeader>
-                <CardContent>
+              {project.team_members && (
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                    Team Members
+                  </h4>
                   <div className="space-y-2">
-                    {project.team.members.map((member, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                          <span className="text-sm font-medium">
-                            {member.charAt(0)}
-                          </span>
+                    {project.team_members.map((member, index) => {
+                      // Handle different member formats
+                      const getMemberData = (member: any) => {
+                        if (typeof member === "string") {
+                          return {
+                            name: member,
+                            role: undefined,
+                            github: undefined,
+                          };
+                        }
+                        if (typeof member === "object" && member !== null) {
+                          return {
+                            name: member.name || "?",
+                            role: member.role,
+                            github: member.github,
+                          };
+                        }
+                        return {
+                          name: "?",
+                          role: undefined,
+                          github: undefined,
+                        };
+                      };
+
+                      const memberData = getMemberData(member);
+                      const stableKey =
+                        memberData.github ||
+                        memberData.name ||
+                        `member-${index}`;
+
+                      return (
+                        <div
+                          key={stableKey}
+                          className="flex items-center gap-2"
+                        >
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-xs font-medium">
+                              {memberData.name.charAt(0) || "?"}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">
+                              {memberData.name}
+                            </span>
+                            {memberData.role && (
+                              <span className="text-xs text-muted-foreground">
+                                {memberData.role}
+                              </span>
+                            )}
+                            {memberData.github && (
+                              <a
+                                href={`https://github.com/${memberData.github}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                              >
+                                @{memberData.github}
+                              </a>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-sm">{member}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              )}
+
+              {/* Tech Stack */}
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                  Tech Stack
+                </h4>
+                <div className="flex flex-wrap gap-1">
+                  {project.tech_stack.map((tech) => (
+                    <Badge key={tech} variant="secondary" className="text-xs">
+                      {tech}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                  Status
+                </h4>
+                <Badge
+                  variant={
+                    project.status === "submitted" ? "default" : "secondary"
+                  }
+                >
+                  {project.status}
+                </Badge>
+              </div>
             </div>
           </div>
         </TabsContent>
 
-        {/* Hackathon Tab */}
         <TabsContent value="hackathon" className="space-y-6">
           <div>
-            <h2 className="text-xl font-semibold mb-6">Submitted Hackathon</h2>
+            <h2 className="text-xl font-semibold mb-4">Submitted Hackathon</h2>
 
-            {project.hackathonSubmissions &&
-            project.hackathonSubmissions.length > 0 ? (
-              <div className="space-y-6">
-                {project.hackathonSubmissions.map((submission) => (
-                  <Card
-                    key={submission.hackathonId}
-                    className="overflow-hidden"
-                  >
-                    <div className="grid md:grid-cols-3 gap-0">
-                      {/* Left side - Hackathon details */}
-                      <div className="md:col-span-2 p-6 space-y-4">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="font-semibold text-lg">
-                                {submission.hackathonName}
-                              </h3>
-                              <Badge
-                                variant={
-                                  submission.status === "ended"
-                                    ? "secondary"
-                                    : submission.status === "live"
-                                    ? "default"
-                                    : submission.status === "voting"
-                                    ? "outline"
-                                    : "secondary"
-                                }
-                                className={
-                                  submission.status === "ended"
-                                    ? "bg-gray-100 text-gray-800"
-                                    : submission.status === "live"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-blue-100 text-blue-800"
-                                }
-                              >
-                                {submission.status === "ended"
-                                  ? "Ended"
-                                  : submission.status === "live"
-                                  ? "Live"
-                                  : submission.status === "voting"
-                                  ? "Voting"
-                                  : "Upcoming"}
-                              </Badge>
-                              {submission.isWinner && (
-                                <Badge
-                                  variant="outline"
-                                  className="bg-yellow-50 text-yellow-800 border-yellow-200"
-                                >
-                                  {submission.placement}
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-muted-foreground text-sm leading-relaxed">
-                              {submission.hackathonName}. Was born from a simple
-                              but radical belief: true innovation shouldn't be
-                              strangled by black-box algorithms
-                            </p>
-                          </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              {projectHackathons.map((submission) => {
+                const hackathonData = submission.hackathon;
+                const startDate = new Date(hackathonData.hackathon_start_date);
+                const endDate = new Date(hackathonData.hackathon_end_date);
+
+                return (
+                  <Card key={hackathonData.id} className="relative">
+                    {submission.status === "submitted" && (
+                      <div className="absolute top-3 right-3">
+                        <Badge variant="default" className="bg-red-500">
+                          Ended
+                        </Badge>
+                      </div>
+                    )}
+
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg">
+                        {hackathonData.name}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        {hackathonData.short_description}
+                      </p>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-muted-foreground">
+                            Winner
+                          </span>
+                          <p>Announced</p>
                         </div>
-
-                        {/* Hackathon stats */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Winner
-                            </div>
-                            <div className="font-medium text-sm">
-                              {submission.isWinner
-                                ? submission.placement || "Yes"
-                                : "Announced"}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Tech stack
-                            </div>
-                            <div className="font-medium text-sm">
-                              {submission.techStack.join(", ")}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Level
-                            </div>
-                            <div className="font-medium text-sm">
-                              {submission.level}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Total prize
-                            </div>
-                            <div className="font-medium text-sm">
-                              {submission.prizePool}
-                            </div>
-                          </div>
+                        <div>
+                          <span className="font-medium text-muted-foreground">
+                            Tech stack
+                          </span>
+                          <p>
+                            {hackathonData.tech_stack?.join(", ") ||
+                              "All tech stack"}
+                          </p>
                         </div>
-
-                        {/* Status badges */}
-                        <div className="flex items-center gap-3 pt-2">
-                          <Badge variant="secondary" className="text-xs">
-                            Online
-                          </Badge>
-                          <Badge variant="secondary" className="text-xs">
-                            {submission.participants} Participants
-                          </Badge>
-                          {submission.status === "live" &&
-                            submission.votingEndDate && (
-                              <div className="text-xs text-muted-foreground">
-                                Voting{" "}
-                                {Math.ceil(
-                                  (submission.votingEndDate.getTime() -
-                                    Date.now()) /
-                                    (1000 * 60 * 60 * 24)
-                                )}{" "}
-                                days left
-                              </div>
-                            )}
+                        <div>
+                          <span className="font-medium text-muted-foreground">
+                            Level
+                          </span>
+                          <p>
+                            {hackathonData.experience_level?.toLowerCase() ||
+                              "All levels accepted"}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-muted-foreground">
+                            Total prize
+                          </span>
+                          <p>
+                            {hackathonData.prize_cohorts?.[0]?.prize_amount ||
+                              "50,000.00 USD"}
+                          </p>
                         </div>
                       </div>
 
-                      {/* Right side - Hackathon branding */}
-                      <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 flex flex-col justify-center relative overflow-hidden">
-                        {/* Circuit pattern background */}
-                        <div className="absolute inset-0 opacity-10">
-                          <svg viewBox="0 0 100 100" className="w-full h-full">
-                            <defs>
-                              <pattern
-                                id="circuit"
-                                x="0"
-                                y="0"
-                                width="20"
-                                height="20"
-                                patternUnits="userSpaceOnUse"
-                              >
-                                <path
-                                  d="M10,0 L10,20 M0,10 L20,10"
-                                  stroke="currentColor"
-                                  strokeWidth="0.5"
-                                  fill="none"
-                                />
-                                <circle
-                                  cx="10"
-                                  cy="10"
-                                  r="1"
-                                  fill="currentColor"
-                                />
-                              </pattern>
-                            </defs>
-                            <rect
-                              width="100"
-                              height="100"
-                              fill="url(#circuit)"
-                            />
-                          </svg>
-                        </div>
-
-                        <div className="relative z-10 text-center text-white">
-                          <div className="text-xs mb-2 opacity-80">
-                            {submission.hackathonName
-                              .split(" ")[0]
-                              .toUpperCase()}
-                          </div>
-                          <h4 className="font-bold text-lg mb-1 leading-tight">
-                            {submission.hackathonName.includes("Ledgerforge")
-                              ? "LEDGERFORGE\nHACKATHON"
-                              : submission.hackathonName.includes("Cryptovate")
-                              ? "CRYPTOVATE\nHACK"
-                              : submission.hackathonName
-                                  .toUpperCase()
-                                  .split(" ")
-                                  .join("\n")}
-                          </h4>
-                          <div className="text-xs mb-3 opacity-80">
-                            {submission.hackathonName.includes("Ledgerforge")
-                              ? "CHAIN SECURITY LAB"
-                              : submission.hackathonName.includes("Cryptovate")
-                              ? "DIGITAL IDENTITY\nSPRINT"
-                              : "HACKATHON"}
-                          </div>
-                          <div className="text-xs mb-1 opacity-80">
-                            Focus:{" "}
-                            {submission.hackathonName.includes("Ledgerforge")
-                              ? "Smart Contract Auditing & Risk Mitigation"
-                              : submission.hackathonName.includes("Cryptovate")
-                              ? "Secure Credentials & Reputation"
-                              : "Innovation & Development"}
-                          </div>
-                          <div className="text-lg font-bold text-cyan-400 mb-1">
-                            {submission.prizePool}
-                          </div>
-                          <div className="text-xs opacity-80">
-                            {submission.hackathonName.includes("Ledgerforge")
-                              ? "January 12-16, 2024"
-                              : submission.hackathonName.includes("Cryptovate")
-                              ? "DECEMBER 1-8, 2024"
-                              : "Dates TBA"}
-                          </div>
-                        </div>
-
-                        {/* Fingerprint icon */}
-                        <div className="absolute bottom-4 right-4 opacity-20">
-                          <svg
-                            width="60"
-                            height="60"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1"
-                            className="text-white"
-                          >
-                            <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" />
-                            <path d="M14 13.12c0 2.38 0 6.38-1 8.88" />
-                            <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02" />
-                            <path d="M2 12a10 10 0 0 1 18-6" />
-                            <path d="M2 16h.01" />
-                            <path d="M21.8 16c.2-2 .131-5.354 0-6" />
-                            <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" />
-                            <path d="M8.65 22c.21-.66.45-1.32.57-2" />
-                            <path d="M9 6.8a6 6 0 0 1 9 5.2v2" />
-                          </svg>
-                        </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button variant="outline" size="sm" className="text-xs">
+                          Online
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-xs">
+                          {hackathon?.participantCount
+                            ? `${hackathon.participantCount} Participants`
+                            : "N/A Participants"}
+                        </Button>
                       </div>
-                    </div>
+                    </CardContent>
+
+                    {/* Hackathon branding/visual */}
+                    <div className="absolute top-0 right-0 w-32 h-20 bg-gradient-to-br from-blue-500 to-purple-600 opacity-10 rounded-bl-3xl" />
                   </Card>
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No hackathon submissions found for this project.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
 
-        {/* Judging Tab */}
         <TabsContent value="judging" className="space-y-6">
-          {/* Prize Cohort Selection */}
-          <div className="space-y-4">
-            <div>
-              <Label className="text-base font-medium">
-                Select A Prize Cohort
-              </Label>
-            </div>
-            <Select
-              value={selectedPrizeCohort}
-              onValueChange={setSelectedPrizeCohort}
-            >
-              <SelectTrigger className="w-full max-w-md bg-muted/50 border-muted">
-                <SelectValue placeholder="Select a prize cohort" />
-              </SelectTrigger>
-              <SelectContent>
-                {hackathon.prizeCohorts.map((cohort) => (
-                  <SelectItem key={cohort.name} value={cohort.name}>
-                    {cohort.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Evaluation Criteria Table */}
-          <div className="space-y-4">
-            <div>
-              <Label className="text-base font-medium">
-                Evaluation Criteria
-              </Label>
+          <div className="space-y-6">
+            {/* Prize Cohort Selection */}
+            <div className="space-y-3">
+              <h2 className="text-xl font-semibold">Select A Prize Cohort</h2>
+              <Select
+                value={selectedPrizeCohortId}
+                onValueChange={setSelectedPrizeCohortId}
+              >
+                <SelectTrigger className="w-full bg-muted">
+                  <SelectValue placeholder="Tech Fairness Exploration Awards" />
+                </SelectTrigger>
+                <SelectContent>
+                  {hackathon.prizeCohorts.map((cohort) => (
+                    <SelectItem key={cohort.id} value={cohort.id}>
+                      {cohort.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="rounded-lg border bg-card overflow-hidden">
-              {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 p-4 bg-muted/30 border-b font-medium text-sm">
-                <div className="col-span-3">Name</div>
-                <div className="col-span-5">Description</div>
-                <div className="col-span-2 text-center">Max Score</div>
-                <div className="col-span-2 text-center">Your Score</div>
-              </div>
+            {/* Evaluation Criteria Table */}
+            {selectedCohort && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Evaluation Criteria</h2>
 
-              {/* Table Rows */}
-              <div className="divide-y">
-                {evaluationCriteria.map((criteria) => (
-                  <div
-                    key={criteria.name}
-                    className="grid grid-cols-12 gap-4 p-4 items-start"
+                {/* Table Header */}
+                <div className="grid grid-cols-4 gap-4 py-3 border-b border-muted text-sm font-medium text-muted-foreground">
+                  <div>Name</div>
+                  <div>Description</div>
+                  <div>Max Score</div>
+                  <div>Your Score</div>
+                </div>
+
+                {/* Table Rows */}
+                <div className="space-y-1">
+                  {selectedCohort.evaluationCriteria.map((criterion) => (
+                    <div
+                      key={criterion.name}
+                      className="space-y-3 py-4 border-b border-muted/50"
+                    >
+                      <div className="grid grid-cols-4 gap-4 items-start">
+                        <div className="font-medium text-sm">
+                          {criterion.name}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {criterion.description}
+                        </div>
+                        <div className="font-medium text-sm">
+                          {criterion.points}
+                        </div>
+                        <div>
+                          <Input
+                            type="number"
+                            min="0"
+                            max={criterion.points}
+                            step="0.5"
+                            value={scores[criterion.name] || 0}
+                            onChange={(e) =>
+                              setScores({
+                                ...scores,
+                                [criterion.name]: Math.min(
+                                  criterion.points,
+                                  Math.max(0, parseFloat(e.target.value) || 0),
+                                ),
+                              })
+                            }
+                            className="w-20 h-8 text-center bg-muted"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-4 gap-4 items-start">
+                        <Label className="text-xs text-muted-foreground">
+                          Feedback
+                        </Label>
+                        <div className="col-span-3">
+                          <Textarea
+                            placeholder={`Provide specific feedback for ${criterion.name}...`}
+                            value={feedback[criterion.name] || ""}
+                            onChange={(e) =>
+                              setFeedback({
+                                ...feedback,
+                                [criterion.name]: e.target.value,
+                              })
+                            }
+                            className="min-h-[60px] text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Overall Feedback */}
+                <div className="space-y-3 pt-6 border-t border-muted/50">
+                  <Label className="text-sm font-medium">
+                    Overall Feedback
+                  </Label>
+                  <Textarea
+                    placeholder="Provide overall feedback for this project submission..."
+                    value={overallFeedback}
+                    onChange={(e) => setOverallFeedback(e.target.value)}
+                    className="min-h-[100px]"
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-6">
+                  <Button
+                    onClick={handleSubmitEvaluation}
+                    className="w-full"
+                    disabled={!selectedPrizeCohortId || isSubmitting}
                   >
-                    <div className="col-span-3">
-                      <div className="font-medium text-sm">{criteria.name}</div>
-                    </div>
-                    <div className="col-span-5">
-                      <div className="text-sm text-muted-foreground leading-relaxed">
-                        {criteria.description}
-                      </div>
-                    </div>
-                    <div className="col-span-2 text-center">
-                      <div className="text-sm font-medium">
-                        {criteria.points}
-                      </div>
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        min={0}
-                        max={criteria.points}
-                        step={1}
-                        inputMode="numeric"
-                        placeholder="0"
-                        value={scores[criteria.name] ?? ""}
-                        onChange={(e) => {
-                          const v = e.currentTarget.valueAsNumber;
-                          if (Number.isFinite(v)) {
-                            const clamped = Math.min(
-                              Math.max(v, 0),
-                              criteria.points
-                            );
-                            setScores((prev) => ({
-                              ...prev,
-                              [criteria.name]: clamped,
-                            }));
-                          } else {
-                            setScores((prev) => {
-                              const next = { ...prev };
-                              delete next[criteria.name];
-                              return next;
-                            });
-                          }
-                        }}
-                        className="w-full text-center"
-                      />
-                    </div>
-                  </div>
-                ))}
+                    {isSubmitting ? "Submitting..." : "Submit Evaluation"}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </div>
-
-          {/* Additional Feedback */}
-          <div className="space-y-4">
-            <div>
-              <Label className="text-base font-medium">
-                Additional Feedback (Optional)
-              </Label>
-            </div>
-            <Textarea
-              placeholder="Provide overall feedback for the team..."
-              className="min-h-[120px]"
-              value={overallFeedback}
-              onChange={(e) => setOverallFeedback(e.target.value)}
-            />
-          </div>
-
-          {/* Score Summary and Submit */}
-          <div className="flex items-center justify-between p-6 bg-muted/20 rounded-lg">
-            <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">Total Score</div>
-              <div className="text-2xl font-bold">
-                {calculateTotalScore()}/{getMaxTotalScore()}
-              </div>
-            </div>
-            <Button
-              size="lg"
-              onClick={handleSubmitReview}
-              disabled={
-                !evaluationCriteria.every(
-                  (c) =>
-                    Number.isFinite(scores[c.name]) &&
-                    scores[c.name] >= 0 &&
-                    scores[c.name] <= c.points
-                )
-              }
-              className="px-8"
-            >
-              Submit Evaluation
-            </Button>
+            )}
           </div>
         </TabsContent>
       </Tabs>

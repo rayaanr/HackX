@@ -9,6 +9,116 @@ import type {
 } from "@/types/hackathon";
 import { transformProjectToUI } from "@/lib/utils/project";
 
+// Fetch projects by hackathon ID directly from Supabase
+async function fetchProjectsByHackathon(
+  hackathonId: string,
+): Promise<UIProject[]> {
+  const supabase = createClient();
+
+  const { data: projects, error } = await supabase
+    .from("projects")
+    .select(`
+      *,
+      hackathon:hackathons(*)
+    `)
+    .eq("hackathon_id", hackathonId)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to fetch projects: ${error.message}`);
+  }
+
+  return (projects || []).map(transformProjectToUI);
+}
+
+// Get projects by hackathon ID
+export function useProjectsByHackathon(hackathonId: string) {
+  return useQuery({
+    queryKey: ["projects", "by-hackathon", hackathonId],
+    queryFn: () => fetchProjectsByHackathon(hackathonId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 3,
+    enabled: !!hackathonId, // Only run when hackathonId is available
+  });
+}
+
+// Fetch submitted projects by hackathon ID directly from Supabase
+async function fetchSubmittedProjectsByHackathon(
+  hackathonId: string,
+): Promise<UIProject[]> {
+  const supabase = createClient();
+
+  const { data: projects, error } = await supabase
+    .from("projects")
+    .select(`
+      *,
+      hackathon:hackathons(*)
+    `)
+    .eq("hackathon_id", hackathonId)
+    .eq("status", "submitted")
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to fetch submitted projects: ${error.message}`);
+  }
+
+  return (projects || []).map(transformProjectToUI);
+}
+
+// Get submitted projects by hackathon ID
+export function useSubmittedProjectsByHackathon(hackathonId: string) {
+  return useQuery({
+    queryKey: ["projects", "submitted", "by-hackathon", hackathonId],
+    queryFn: () => fetchSubmittedProjectsByHackathon(hackathonId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 3,
+    enabled: !!hackathonId, // Only run when hackathonId is available
+  });
+}
+
+// Fetch project by ID directly from Supabase
+async function fetchProjectById(projectId: string): Promise<UIProject> {
+  const supabase = createClient();
+
+  const { data: project, error } = await supabase
+    .from("projects")
+    .select(`
+      *,
+      hackathon:hackathons(*)
+    `)
+    .eq("id", projectId)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      throw new Error("Project not found");
+    }
+    throw new Error(`Failed to fetch project: ${error.message}`);
+  }
+
+  return transformProjectToUI(project);
+}
+
+// Get project by ID
+export function useProjectById(projectId: string) {
+  return useQuery({
+    queryKey: ["projects", "by-id", projectId],
+    queryFn: () => fetchProjectById(projectId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      // Don't retry on not found errors
+      if (error?.message?.includes("not found")) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    enabled: !!projectId, // Only run when projectId is available
+  });
+}
+
 // Fetch user's projects directly from Supabase
 async function fetchUserProjects(): Promise<UIProject[]> {
   const supabase = createClient();
@@ -197,5 +307,51 @@ export function useRegisterForHackathon() {
     onError: (error) => {
       console.error("Failed to register for hackathon:", error);
     },
+  });
+}
+
+// Fetch hackathons that a project was submitted to
+async function fetchProjectHackathons(projectId: string): Promise<any[]> {
+  const supabase = createClient();
+
+  const { data: submissions, error } = await supabase
+    .from("project_hackathon_submissions")
+    .select(`
+      *,
+      hackathon:hackathons(
+        id,
+        name,
+        short_description,
+        location,
+        experience_level,
+        hackathon_start_date,
+        hackathon_end_date,
+        tech_stack,
+        prize_cohorts(
+          name,
+          prize_amount,
+          description
+        )
+      )
+    `)
+    .eq("project_id", projectId)
+    .order("submitted_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to fetch project hackathons: ${error.message}`);
+  }
+
+  return submissions || [];
+}
+
+// Hook to get hackathons that a project was submitted to
+export function useProjectHackathons(projectId: string) {
+  return useQuery({
+    queryKey: ["projects", "hackathons", projectId],
+    queryFn: () => fetchProjectHackathons(projectId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 3,
+    enabled: !!projectId, // Only run when projectId is available
   });
 }

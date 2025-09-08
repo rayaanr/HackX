@@ -462,6 +462,247 @@ CREATE POLICY "Users can manage schedule slots for their hackathons" ON schedule
         )
     );
 
+-- Create projects table
+CREATE TABLE IF NOT EXISTS projects (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    description TEXT,
+    hackathon_id UUID REFERENCES hackathons(id) ON DELETE SET NULL,
+    tech_stack TEXT[] DEFAULT '{}',
+    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'in_review', 'completed')),
+    repository_url TEXT,
+    demo_url TEXT,
+    created_by UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' REFERENCES auth.users(id) ON DELETE RESTRICT,
+    team_members JSONB DEFAULT '[]' CHECK (jsonb_typeof(team_members) = 'array'),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create trigger for projects updated_at
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.triggers 
+        WHERE trigger_name = 'projects_updated_at_trigger'
+    ) THEN
+        CREATE TRIGGER projects_updated_at_trigger
+            BEFORE UPDATE ON projects
+            FOR EACH ROW
+            EXECUTE FUNCTION set_updated_at();
+    END IF;
+END $$;
+
+-- Create hackathon_registrations table
+CREATE TABLE IF NOT EXISTS hackathon_registrations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    hackathon_id UUID REFERENCES hackathons(id) ON DELETE CASCADE,
+    registered_at TIMESTAMPTZ DEFAULT NOW(),
+    status TEXT DEFAULT 'registered' CHECK (status IN ('registered', 'confirmed', 'cancelled')),
+    UNIQUE(user_id, hackathon_id)
+);
+
+-- Create project_hackathon_submissions table
+CREATE TABLE IF NOT EXISTS project_hackathon_submissions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    hackathon_id UUID NOT NULL REFERENCES hackathons(id) ON DELETE CASCADE,
+    submitted_at TIMESTAMPTZ DEFAULT NOW(),
+    status TEXT DEFAULT 'submitted' CHECK (status IN ('draft', 'submitted', 'under_review', 'accepted', 'rejected')),
+    UNIQUE(project_id, hackathon_id)
+);
+
+-- Create evaluations table
+CREATE TABLE IF NOT EXISTS evaluations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    hackathon_id UUID NOT NULL REFERENCES hackathons(id) ON DELETE CASCADE,
+    prize_cohort_id UUID NOT NULL REFERENCES prize_cohorts(id) ON DELETE CASCADE,
+    judge_email TEXT NOT NULL,
+    scores JSONB NOT NULL DEFAULT '{}',
+    feedback JSONB NOT NULL DEFAULT '{}',
+    overall_feedback TEXT,
+    total_score INTEGER NOT NULL DEFAULT 0,
+    max_possible_score INTEGER NOT NULL DEFAULT 0,
+    submitted_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(project_id, hackathon_id, prize_cohort_id, judge_email)
+);
+
+-- Create PL/pgSQL function to validate evaluation project-hackathon consistency
+CREATE OR REPLACE FUNCTION validate_evaluation_project_hackathon()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if the project belongs to the specified hackathon
+    IF NOT EXISTS (
+        SELECT 1 FROM projects 
+        WHERE projects.id = NEW.project_id 
+        AND projects.hackathon_id = NEW.hackathon_id
+    ) THEN
+        RAISE EXCEPTION 'Project ID % does not belong to hackathon ID %. Cannot create evaluation.', 
+            NEW.project_id, NEW.hackathon_id;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to enforce evaluation project-hackathon consistency
+DROP TRIGGER IF EXISTS evaluations_project_hackathon_check ON evaluations;
+CREATE TRIGGER evaluations_project_hackathon_check
+    BEFORE INSERT OR UPDATE ON evaluations
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_evaluation_project_hackathon();
+
+-- Create trigger for evaluations updated_at
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.triggers 
+        WHERE trigger_name = 'evaluations_updated_at_trigger'
+    ) THEN
+        CREATE TRIGGER evaluations_updated_at_trigger
+            BEFORE UPDATE ON evaluations
+            FOR EACH ROW
+            EXECUTE FUNCTION set_updated_at();
+    END IF;
+END $$;
+
+-- Enable Row Level Security for new tables
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE hackathon_registrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_hackathon_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE evaluations ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS Policies for new tables
+
+-- Projects policies
+CREATE POLICY "Users can view own projects or projects in registered hackathons" ON projects FOR SELECT USING (
+    auth.uid() = created_by OR 
+    EXISTS (
+        SELECT 1 FROM hackathon_registrations 
+        WHERE hackathon_registrations.hackathon_id = projects.hackathon_id 
+        AND hackathon_registrations.user_id = auth.uid()
+    ) OR
+    EXISTS (
+        SELECT 1 FROM hackathons
+        WHERE hackathons.id = projects.hackathon_id
+        AND hackathons.created_by = auth.uid()
+    ) OR
+    EXISTS (
+        SELECT 1 FROM judges
+        WHERE judges.hackathon_id = projects.hackathon_id
+        AND lower(judges.email) = lower(auth.email())
+        AND judges.status = 'accepted'
+    )
+);
+CREATE POLICY "Users can create projects" ON projects FOR INSERT WITH CHECK (auth.uid() = created_by);
+CREATE POLICY "Users can update their own projects" ON projects FOR UPDATE USING (auth.uid() = created_by);
+CREATE POLICY "Users can delete their own projects" ON projects FOR DELETE USING (auth.uid() = created_by);
+
+-- Hackathon registrations policies
+CREATE POLICY "Users can view their own registrations" ON hackathon_registrations 
+    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can create their own registrations" ON hackathon_registrations 
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own registrations" ON hackathon_registrations 
+    FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own registrations" ON hackathon_registrations 
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Project hackathon submissions policies
+CREATE POLICY "Project owners can manage submissions" ON project_hackathon_submissions
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM projects 
+            WHERE projects.id = project_hackathon_submissions.project_id 
+            AND projects.created_by = auth.uid()
+        )
+    );
+
+CREATE POLICY "Judges/owners can view submissions" ON project_hackathon_submissions
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM judges 
+            WHERE judges.hackathon_id = project_hackathon_submissions.hackathon_id
+                AND lower(judges.email) = lower(auth.email())
+        )
+        OR EXISTS (
+            SELECT 1 FROM hackathons h
+            WHERE h.id = project_hackathon_submissions.hackathon_id
+                AND h.created_by = auth.uid()
+        )
+    );
+
+-- Evaluations policies (allow judges to manage only their own evaluations)
+CREATE POLICY "Judges can view their own evaluations" ON evaluations 
+    FOR SELECT USING (
+        LOWER(judge_email) = LOWER(auth.email()) AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    );
+
+CREATE POLICY "Judges can create their own evaluations" ON evaluations 
+    FOR INSERT WITH CHECK (
+        LOWER(judge_email) = LOWER(auth.email()) AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    );
+
+CREATE POLICY "Judges can update their own evaluations" ON evaluations 
+    FOR UPDATE USING (
+        LOWER(judge_email) = LOWER(auth.email()) AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    ) WITH CHECK (
+        LOWER(judge_email) = LOWER(auth.email()) AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    );
+
+CREATE POLICY "Judges can delete their own evaluations" ON evaluations 
+    FOR DELETE USING (
+        LOWER(judge_email) = LOWER(auth.email()) AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE LOWER(j.email) = LOWER(auth.email()) 
+            AND j.status = 'accepted'
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    );
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_hackathons_created_by ON hackathons(created_by);
 CREATE INDEX IF NOT EXISTS idx_hackathons_created_at ON hackathons(created_at);
@@ -469,6 +710,15 @@ CREATE INDEX IF NOT EXISTS idx_prize_cohorts_hackathon_id ON prize_cohorts(hacka
 CREATE INDEX IF NOT EXISTS idx_evaluation_criteria_prize_cohort_id ON evaluation_criteria(prize_cohort_id);
 CREATE INDEX IF NOT EXISTS idx_judges_hackathon_id ON judges(hackathon_id);
 CREATE INDEX IF NOT EXISTS idx_schedule_slots_hackathon_id ON schedule_slots(hackathon_id);
+CREATE INDEX IF NOT EXISTS idx_projects_created_by ON projects(created_by);
+CREATE INDEX IF NOT EXISTS idx_projects_hackathon_id ON projects(hackathon_id);
+CREATE INDEX IF NOT EXISTS idx_hackathon_registrations_user_id ON hackathon_registrations(user_id);
+CREATE INDEX IF NOT EXISTS idx_hackathon_registrations_hackathon_id ON hackathon_registrations(hackathon_id);
+CREATE INDEX IF NOT EXISTS idx_project_hackathon_submissions_project_id ON project_hackathon_submissions(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_hackathon_submissions_hackathon_id ON project_hackathon_submissions(hackathon_id);
+CREATE INDEX IF NOT EXISTS idx_evaluations_project_hackathon ON evaluations(project_id, hackathon_id);
+CREATE INDEX IF NOT EXISTS idx_evaluations_judge_email ON evaluations(judge_email);
+CREATE INDEX IF NOT EXISTS idx_evaluations_submitted_at ON evaluations(submitted_at DESC);
 
 -- Success message
 SELECT 'Database schema created successfully! 🎉' as result;

@@ -262,6 +262,41 @@ async function fetchHackathonById(id: string): Promise<HackathonWithRelations> {
   return hackathon;
 }
 
+// Fetch single hackathon by ID for public access (judges, participants, etc.)
+async function fetchHackathonByIdPublic(
+  id: string,
+): Promise<HackathonWithRelations> {
+  const supabase = createClient();
+
+  const { data: hackathon, error } = await supabase
+    .from("hackathons")
+    .select(
+      `
+        *,
+        prize_cohorts:prize_cohorts!hackathon_id (
+          *,
+          evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
+        ),
+        judges:judges!hackathon_id (*),
+        schedule_slots:schedule_slots!hackathon_id (
+          *,
+          speaker:speakers (*)
+        )
+      `,
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      throw new Error("Hackathon not found");
+    }
+    throw new Error(`Failed to fetch hackathon: ${error.message}`);
+  }
+
+  return hackathon;
+}
+
 // Get single hackathon by ID
 export function useHackathonById(id: string) {
   return useQuery({
@@ -280,6 +315,24 @@ export function useHackathonById(id: string) {
       }
       return failureCount < 3;
     },
+  });
+}
+
+// Get single hackathon by ID for public access (judges, participants, etc.)
+export function useHackathonByIdPublic(id: string) {
+  return useQuery({
+    queryKey: ["hackathons", "public", "by-id", id],
+    queryFn: () => fetchHackathonByIdPublic(id),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      // Don't retry on not found errors
+      if (error?.message?.includes("not found")) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    enabled: !!id, // Only run when id is available
   });
 }
 

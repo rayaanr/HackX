@@ -15,6 +15,7 @@ export function transformDatabaseToUI(
     visual: dbHackathon.visual,
     shortDescription: dbHackathon.short_description,
     fullDescription: dbHackathon.full_description,
+    participantCount: dbHackathon.participant_count ?? undefined,
     location: dbHackathon.location,
     techStack: dbHackathon.tech_stack,
     experienceLevel: mapDbExperienceLevel(dbHackathon.experience_level),
@@ -48,6 +49,7 @@ export function transformDatabaseToUI(
     socialLinks: (dbHackathon.social_links as Record<string, string>) || {},
     prizeCohorts:
       dbHackathon.prize_cohorts?.map((cohort) => ({
+        id: cohort.id,
         name: cohort.name,
         numberOfWinners: cohort.number_of_winners,
         prizeAmount: cohort.prize_amount,

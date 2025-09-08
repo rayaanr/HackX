@@ -23,6 +23,7 @@ export type DatabaseHackathonRegistration =
 
 // Extended database hackathon with relations
 export interface HackathonWithRelations extends DatabaseHackathon {
+  participant_count?: number | null;
   prize_cohorts: (DatabasePrizeCohort & {
     evaluation_criteria: DatabaseEvaluationCriteria[];
   })[];
@@ -39,6 +40,7 @@ export interface UIHackathon {
   visual: string | null;
   shortDescription: string;
   fullDescription: string;
+  participantCount?: number;
   location: string;
   techStack: string[];
   experienceLevel: "beginner" | "intermediate" | "advanced" | "all";
@@ -56,6 +58,7 @@ export interface UIHackathon {
   } | null;
   socialLinks: Record<string, string | undefined>;
   prizeCohorts: {
+    id: string;
     name: string;
     numberOfWinners: number;
     prizeAmount: string;
