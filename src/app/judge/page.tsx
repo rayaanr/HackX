@@ -18,7 +18,9 @@ export default function JudgeDashboardPage() {
     ? dbHackathons
         .map(transformDatabaseToUI)
         .filter((hackathon) =>
-          hackathon.judges?.some((judge) => judge.email === currentUser.email),
+          hackathon.judges?.some((judge) => 
+            (judge.email ?? "").toLowerCase() === (currentUser.email ?? "").toLowerCase()
+          ),
         )
     : []; // Return empty array if no user email available
 
