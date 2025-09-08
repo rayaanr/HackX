@@ -55,6 +55,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [overallFeedback, setOverallFeedback] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Transform data safely
   const hackathon = dbHackathon ? transformDatabaseToUI(dbHackathon) : null;
@@ -161,7 +162,9 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     ) || 0;
 
   const handleSubmitEvaluation = async () => {
-    if (!selectedCohort) return;
+    if (!selectedCohort || isSubmitting) return;
+
+    setIsSubmitting(true);
 
     try {
       const supabase = createClient();
@@ -169,26 +172,29 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
       // Use authenticated user's email for judge identification
       // Email validation already performed above
 
-      const { error } = await supabase.from("evaluations").upsert(
-        {
-          project_id: projectId,
-          hackathon_id: hackathonId,
-          prize_cohort_id:
-            selectedPrizeCohortId ||
-            (() => {
-              throw new Error("No prize cohort selected for evaluation");
-            })(),
-          judge_email: judgeEmail,
-          scores: scores,
-          feedback: feedback,
-          overall_feedback: overallFeedback,
-          total_score: totalScore,
-          max_possible_score: maxScore,
-        },
-        {
-          onConflict: "project_id,hackathon_id,prize_cohort_id,judge_email",
-        },
-      );
+      const { error } = await supabase
+        .from("evaluations")
+        .upsert(
+          {
+            project_id: projectId,
+            hackathon_id: hackathonId,
+            prize_cohort_id:
+              selectedPrizeCohortId ||
+              (() => {
+                throw new Error("No prize cohort selected for evaluation");
+              })(),
+            judge_email: judgeEmail,
+            scores: scores,
+            feedback: feedback,
+            overall_feedback: overallFeedback,
+            total_score: totalScore,
+            max_possible_score: maxScore,
+          },
+          {
+            onConflict: "project_id,hackathon_id,prize_cohort_id,judge_email",
+          },
+        )
+        .select("id"); // Minimal return - only need to confirm insertion
 
       if (error) {
         console.error("Error submitting evaluation:", error);
@@ -203,6 +209,8 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     } catch (error) {
       console.error("Error submitting evaluation:", error);
       alert("Failed to submit evaluation. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -647,9 +655,9 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                   <Button
                     onClick={handleSubmitEvaluation}
                     className="w-full"
-                    disabled={!selectedPrizeCohortId}
+                    disabled={!selectedPrizeCohortId || isSubmitting}
                   >
-                    Submit Evaluation
+                    {isSubmitting ? "Submitting..." : "Submit Evaluation"}
                   </Button>
                 </div>
               </div>
