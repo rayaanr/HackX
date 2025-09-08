@@ -15,7 +15,7 @@ export function transformDatabaseToUI(
     visual: dbHackathon.visual,
     shortDescription: dbHackathon.short_description,
     fullDescription: dbHackathon.full_description,
-    participantCount: undefined,
+    participantCount: dbHackathon.participant_count ?? undefined,
     location: dbHackathon.location,
     techStack: dbHackathon.tech_stack,
     experienceLevel: mapDbExperienceLevel(dbHackathon.experience_level),

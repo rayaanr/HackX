@@ -23,6 +23,7 @@ export type DatabaseHackathonRegistration =
 
 // Extended database hackathon with relations
 export interface HackathonWithRelations extends DatabaseHackathon {
+  participant_count?: number | null;
   prize_cohorts: (DatabasePrizeCohort & {
     evaluation_criteria: DatabaseEvaluationCriteria[];
   })[];
