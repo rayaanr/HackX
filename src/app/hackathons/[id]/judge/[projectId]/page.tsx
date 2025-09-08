@@ -108,6 +108,17 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     return <div>Loading...</div>;
   }
 
+  // Check for data errors or missing resources first
+  if (
+    hackathonError ||
+    projectError ||
+    !dbHackathon ||
+    !project ||
+    !hackathon
+  ) {
+    notFound();
+  }
+
   // Validate authentication and judge access
   if (userError || !currentUser?.email) {
     return (
@@ -137,16 +148,6 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         </div>
       </div>
     );
-  }
-
-  if (
-    hackathonError ||
-    projectError ||
-    !dbHackathon ||
-    !project ||
-    !hackathon
-  ) {
-    notFound();
   }
 
   const totalScore = Object.values(scores).reduce(
