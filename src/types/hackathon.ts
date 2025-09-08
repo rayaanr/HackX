@@ -56,6 +56,7 @@ export interface UIHackathon {
   } | null;
   socialLinks: Record<string, string | undefined>;
   prizeCohorts: {
+    id: string;
     name: string;
     numberOfWinners: number;
     prizeAmount: string;

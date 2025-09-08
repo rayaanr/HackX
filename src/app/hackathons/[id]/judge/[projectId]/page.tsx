@@ -48,7 +48,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     useProjectHackathons(projectId);
 
   // All hooks must be called before any conditional returns
-  const [selectedPrizeCohort, setSelectedPrizeCohort] = useState<string>("");
+  const [selectedPrizeCohortId, setSelectedPrizeCohortId] = useState<string>("");
   const [scores, setScores] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [overallFeedback, setOverallFeedback] = useState("");
@@ -59,16 +59,16 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   // Memoize selectedCohort to prevent infinite re-renders
   const selectedCohort = useMemo(() => {
     return hackathon?.prizeCohorts.find(
-      (cohort) => cohort.name === selectedPrizeCohort,
+      (cohort) => cohort.id === selectedPrizeCohortId,
     );
-  }, [hackathon?.prizeCohorts, selectedPrizeCohort]);
+  }, [hackathon?.prizeCohorts, selectedPrizeCohortId]);
 
-  // Initialize selectedPrizeCohort when hackathon data is available
+  // Initialize selectedPrizeCohortId when hackathon data is available
   useEffect(() => {
-    if (hackathon && !selectedPrizeCohort && hackathon.prizeCohorts[0]?.name) {
-      setSelectedPrizeCohort(hackathon.prizeCohorts[0].name);
+    if (hackathon && !selectedPrizeCohortId && hackathon.prizeCohorts[0]?.id) {
+      setSelectedPrizeCohortId(hackathon.prizeCohorts[0].id);
     }
-  }, [hackathon, selectedPrizeCohort]);
+  }, [hackathon, selectedPrizeCohortId]);
 
   // Initialize scores and feedback when selectedCohort changes
   useEffect(() => {
@@ -139,9 +139,9 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         {
           project_id: projectId,
           hackathon_id: hackathonId,
-          prize_cohort_id:
-            hackathon.prizeCohorts.find((c) => c.name === selectedPrizeCohort)
-              ?.name || selectedPrizeCohort, // Using name as identifier for now
+          prize_cohort_id: selectedPrizeCohortId || (() => {
+            throw new Error("No prize cohort selected for evaluation");
+          })(),
           judge_email: judgeEmail,
           scores: scores,
           feedback: feedback,
@@ -488,15 +488,15 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
             <div className="space-y-3">
               <h2 className="text-xl font-semibold">Select A Prize Cohort</h2>
               <Select
-                value={selectedPrizeCohort}
-                onValueChange={setSelectedPrizeCohort}
+                value={selectedPrizeCohortId}
+                onValueChange={setSelectedPrizeCohortId}
               >
                 <SelectTrigger className="w-full bg-muted">
                   <SelectValue placeholder="Tech Fairness Exploration Awards" />
                 </SelectTrigger>
                 <SelectContent>
                   {hackathon.prizeCohorts.map((cohort) => (
-                    <SelectItem key={cohort.name} value={cohort.name}>
+                    <SelectItem key={cohort.id} value={cohort.id}>
                       {cohort.name}
                     </SelectItem>
                   ))}
@@ -557,7 +557,11 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
                 {/* Submit Button */}
                 <div className="pt-6">
-                  <Button onClick={handleSubmitEvaluation} className="w-full">
+                  <Button 
+                    onClick={handleSubmitEvaluation} 
+                    className="w-full"
+                    disabled={!selectedPrizeCohortId}
+                  >
                     Submit Evaluation
                   </Button>
                 </div>
