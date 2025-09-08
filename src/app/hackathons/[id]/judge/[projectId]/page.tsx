@@ -351,9 +351,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                       <div key={index} className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
                           <span className="text-xs font-medium">
-                            {typeof member === "string"
-                              ? member.charAt(0)
-                              : "?"}
+                            {member.name?.charAt(0) || "?"}
                           </span>
                         </div>
                         <span className="text-sm">
