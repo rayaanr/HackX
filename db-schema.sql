@@ -612,17 +612,66 @@ CREATE POLICY "Project owners can manage submissions" ON project_hackathon_submi
 
 -- Evaluations policies (allow judges to manage only their own evaluations)
 CREATE POLICY "Judges can view their own evaluations" ON evaluations 
-    FOR SELECT USING (judge_email = auth.email());
+    FOR SELECT USING (
+        judge_email = auth.email() AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE j.email = auth.email() 
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    );
 
 CREATE POLICY "Judges can create their own evaluations" ON evaluations 
-    FOR INSERT WITH CHECK (judge_email = auth.email());
+    FOR INSERT WITH CHECK (
+        judge_email = auth.email() AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE j.email = auth.email() 
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    );
 
 CREATE POLICY "Judges can update their own evaluations" ON evaluations 
-    FOR UPDATE USING (judge_email = auth.email()) 
-    WITH CHECK (judge_email = auth.email());
+    FOR UPDATE USING (
+        judge_email = auth.email() AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE j.email = auth.email() 
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    ) WITH CHECK (
+        judge_email = auth.email() AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE j.email = auth.email() 
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    );
 
 CREATE POLICY "Judges can delete their own evaluations" ON evaluations 
-    FOR DELETE USING (judge_email = auth.email());
+    FOR DELETE USING (
+        judge_email = auth.email() AND 
+        EXISTS(
+            SELECT 1 FROM judges j 
+            WHERE j.email = auth.email() 
+            AND j.hackathon_id = (
+                SELECT p.hackathon_id FROM projects p 
+                WHERE p.id = evaluations.project_id
+            )
+        )
+    );
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_hackathons_created_by ON hackathons(created_by);
