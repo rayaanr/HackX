@@ -156,7 +156,8 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
       if (error) {
         console.error("Error submitting evaluation:", error);
-        alert("Failed to submit evaluation. Please try again.");
+        const errorMessage = error.message || "Unknown error occurred";
+        alert(`Failed to submit evaluation: ${errorMessage}. Please try again.`);
         return;
       }
 
