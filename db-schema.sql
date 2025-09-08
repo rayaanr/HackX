@@ -584,6 +584,16 @@ CREATE POLICY "Users can view own projects or projects in registered hackathons"
         SELECT 1 FROM hackathon_registrations 
         WHERE hackathon_registrations.hackathon_id = projects.hackathon_id 
         AND hackathon_registrations.user_id = auth.uid()
+    ) OR
+    EXISTS (
+        SELECT 1 FROM hackathons
+        WHERE hackathons.id = projects.hackathon_id
+        AND hackathons.created_by = auth.uid()
+    ) OR
+    EXISTS (
+        SELECT 1 FROM judges
+        WHERE judges.hackathon_id = projects.hackathon_id
+        AND judges.email = auth.email()
     )
 );
 CREATE POLICY "Users can create projects" ON projects FOR INSERT WITH CHECK (auth.uid() = created_by);
