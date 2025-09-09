@@ -122,13 +122,15 @@ async function fetchProjectsToEvaluate({
     .from("projects")
     .select(`
       *,
-      evaluations:judge_evaluations!inner(
+      evaluations:judge_evaluations(
         *,
         judge:judges(*)
       )
     `)
     .eq("hackathon_id", hackathonId)
-    .eq("status", "submitted");
+    .eq("status", "submitted")
+    .eq("evaluations.prize_cohort_id", prizeCohortId)
+    .eq("evaluations.judge_id", user.id);
 
   if (error) {
     throw new Error(`Failed to fetch projects to evaluate: ${error.message}`);
