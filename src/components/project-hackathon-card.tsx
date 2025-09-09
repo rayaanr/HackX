@@ -29,8 +29,8 @@ export function ProjectHackathonCard({
               status === "live"
                 ? "default"
                 : status === "upcoming"
-                  ? "secondary"
-                  : "outline"
+                ? "secondary"
+                : "outline"
             }
           >
             {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -41,7 +41,7 @@ export function ProjectHackathonCard({
         <div className="space-y-3">
           <div className="flex items-center text-sm text-muted-foreground">
             <span className="font-medium">Date:</span>
-            <span className="ml-2">{new Date(date).toLocaleDateString()}</span>
+            <span className="ml-2">{date}</span>
           </div>
           <div className="flex items-center text-sm text-muted-foreground">
             <span className="font-medium">Theme:</span>
