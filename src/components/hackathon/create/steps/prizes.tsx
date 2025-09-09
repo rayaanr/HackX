@@ -19,9 +19,11 @@ import {
 } from "@/components/ui/select";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { hackathonSchema, type HackathonFormData } from "@/lib/schemas/hackathon-schema";
+import {
+  hackathonSchema,
+  type HackathonFormData,
+} from "@/lib/schemas/hackathon-schema";
 import { Trash2, Plus, Trophy, X } from "lucide-react";
-
 
 export function PrizesStep() {
   const { control } = useFormContext<HackathonFormData>();

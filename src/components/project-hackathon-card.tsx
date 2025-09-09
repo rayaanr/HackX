@@ -29,8 +29,8 @@ export function ProjectHackathonCard({
               status === "live"
                 ? "default"
                 : status === "upcoming"
-                ? "secondary"
-                : "outline"
+                  ? "secondary"
+                  : "outline"
             }
           >
             {status.charAt(0).toUpperCase() + status.slice(1)}

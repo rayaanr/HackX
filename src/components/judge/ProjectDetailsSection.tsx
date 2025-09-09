@@ -128,8 +128,8 @@ export function ProjectDetailsSection({
                     typeof leaderObj.github === "string"
                       ? leaderObj.github
                       : typeof leaderObj.githubUsername === "string"
-                      ? leaderObj.githubUsername
-                      : undefined,
+                        ? leaderObj.githubUsername
+                        : undefined,
                 };
               }
               return null;

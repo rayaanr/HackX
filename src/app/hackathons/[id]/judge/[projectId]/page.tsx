@@ -41,8 +41,12 @@ export default function ProjectReviewPage() {
   } = useCurrentUser();
 
   // State for form data and selected cohort
-  const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(null);
-  const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(undefined);
+  const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(
+    null,
+  );
+  const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(
+    undefined,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Transform data safely
@@ -106,7 +110,6 @@ export default function ProjectReviewPage() {
       </div>
     );
   }
-
 
   return (
     <div className="space-y-6">

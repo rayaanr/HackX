@@ -25,8 +25,10 @@ import {
   type JudgeEvaluationFormData,
   type CriterionEvaluation,
 } from "@/lib/schemas/judge-evaluation-schema";
-import type { PrizeCohort, EvaluationCriteria } from "@/lib/schemas/hackathon-schema";
-
+import type {
+  PrizeCohort,
+  EvaluationCriteria,
+} from "@/lib/schemas/hackathon-schema";
 
 interface Hackathon {
   prizeCohorts: PrizeCohort[];
@@ -45,12 +47,12 @@ export function JudgingInterface({
 }: JudgingInterfaceProps) {
   // Lift cohort selection to local state
   const [selectedCohortId, setSelectedCohortId] = useState<string>(
-    hackathon.prizeCohorts[0]?.id || ""
+    hackathon.prizeCohorts[0]?.id || "",
   );
 
   // Find the selected cohort
   const selectedCohort = hackathon.prizeCohorts.find(
-    (cohort) => cohort.id === selectedCohortId
+    (cohort) => cohort.id === selectedCohortId,
   );
 
   // Handle cohort selection change
@@ -91,9 +93,11 @@ function JudgingFormContent({
   onCohortChange,
 }: JudgingFormContentProps) {
   // Generate default values
-  const getDefaultValues = (cohort: PrizeCohort | null): JudgeEvaluationFormData => {
+  const getDefaultValues = (
+    cohort: PrizeCohort | null,
+  ): JudgeEvaluationFormData => {
     const criteriaEvaluations: Record<string, CriterionEvaluation> = {};
-    
+
     if (cohort) {
       cohort.evaluationCriteria.forEach((criterion) => {
         criteriaEvaluations[criterion.name] = {
@@ -111,8 +115,8 @@ function JudgingFormContent({
   };
 
   // Create schema and form based on current selected cohort
-  const schema = selectedCohort 
-    ? createJudgeEvaluationSchema(selectedCohort.evaluationCriteria) 
+  const schema = selectedCohort
+    ? createJudgeEvaluationSchema(selectedCohort.evaluationCriteria)
     : createJudgeEvaluationSchema([]);
 
   const form = useForm<JudgeEvaluationFormData>({
@@ -126,7 +130,7 @@ function JudgingFormContent({
   // Update parent component when form data changes
   useEffect(() => {
     const subscription = watch((data) => {
-      if (data && typeof data === 'object') {
+      if (data && typeof data === "object") {
         onFormDataChange(data as JudgeEvaluationFormData);
       }
     });
@@ -140,19 +144,18 @@ function JudgingFormContent({
         <div className="space-y-3">
           <h2 className="text-xl font-semibold">Select A Prize Cohort</h2>
           <div>
-            <Select
-              value={selectedCohortId}
-              onValueChange={onCohortChange}
-            >
+            <Select value={selectedCohortId} onValueChange={onCohortChange}>
               <SelectTrigger className="w-full bg-muted">
                 <SelectValue placeholder="Select a prize cohort" />
               </SelectTrigger>
               <SelectContent>
-                {hackathon.prizeCohorts.filter(cohort => cohort.id).map((cohort) => (
-                  <SelectItem key={cohort.id!} value={cohort.id!}>
-                    {cohort.name}
-                  </SelectItem>
-                ))}
+                {hackathon.prizeCohorts
+                  .filter((cohort) => cohort.id)
+                  .map((cohort) => (
+                    <SelectItem key={cohort.id!} value={cohort.id!}>
+                      {cohort.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
@@ -179,9 +182,7 @@ function JudgingFormContent({
                   className="space-y-3 py-4 border-b border-muted/50"
                 >
                   <div className="grid grid-cols-4 gap-4 items-start">
-                    <div className="font-medium text-sm">
-                      {criterion.name}
-                    </div>
+                    <div className="font-medium text-sm">{criterion.name}</div>
                     <div className="text-sm text-muted-foreground">
                       {criterion.description}
                     </div>
@@ -204,7 +205,10 @@ function JudgingFormContent({
                                 onChange={(e) => {
                                   const value = Math.min(
                                     criterion.points,
-                                    Math.max(0, parseFloat(e.target.value) || 0)
+                                    Math.max(
+                                      0,
+                                      parseFloat(e.target.value) || 0,
+                                    ),
                                   );
                                   field.onChange(value);
                                 }}

@@ -12,9 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
-import { projectSchema, type ProjectFormData } from "@/lib/schemas/project-schema";
+import {
+  projectSchema,
+  type ProjectFormData,
+} from "@/lib/schemas/project-schema";
 import MultipleSelector, { Option } from "@/components/ui/multiselect";
-
 
 // https://github.com/marwin1991/profile-technology-icons
 // prettier-ignore

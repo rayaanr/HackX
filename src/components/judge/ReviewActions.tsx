@@ -32,7 +32,7 @@ export function ReviewActions({
     formData.overallFeedback.trim().length >= 10 &&
     Object.keys(formData.criteriaEvaluations).length > 0 &&
     Object.values(formData.criteriaEvaluations).every(
-      (evaluation) => evaluation.feedback.trim().length > 0
+      (evaluation) => evaluation.feedback.trim().length > 0,
     );
 
   const handleSubmitEvaluation = async () => {
@@ -47,28 +47,28 @@ export function ReviewActions({
       // Calculate total score and max score from form data
       const scores = Object.fromEntries(
         Object.entries(formData.criteriaEvaluations).map(
-          ([name, evaluation]) => [name, evaluation.score]
-        )
+          ([name, evaluation]) => [name, evaluation.score],
+        ),
       );
 
       const feedback = Object.fromEntries(
         Object.entries(formData.criteriaEvaluations).map(
-          ([name, evaluation]) => [name, evaluation.feedback]
-        )
+          ([name, evaluation]) => [name, evaluation.feedback],
+        ),
       );
 
       const allowed = new Set(
         selectedCohort.evaluationCriteria
           .map((c) => String(c.points) && c.name)
-          .filter(Boolean)
+          .filter(Boolean),
       );
       const totalScore = Object.entries(scores).reduce(
         (sum, [name, score]) => (allowed.has(name) ? sum + Number(score) : sum),
-        0
+        0,
       );
       const maxScore = selectedCohort.evaluationCriteria.reduce(
         (sum, criterion) => sum + criterion.points,
-        0
+        0,
       );
 
       const { error } = await supabase
@@ -87,7 +87,7 @@ export function ReviewActions({
           },
           {
             onConflict: "project_id,hackathon_id,prize_cohort_id,judge_email",
-          }
+          },
         )
         .select("id");
 
@@ -95,7 +95,7 @@ export function ReviewActions({
         console.error("Error submitting evaluation:", error);
         const errorMessage = error.message || "Unknown error occurred";
         alert(
-          `Failed to submit evaluation: ${errorMessage}. Please try again.`
+          `Failed to submit evaluation: ${errorMessage}. Please try again.`,
         );
         return;
       }

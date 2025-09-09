@@ -8,12 +8,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { hackathonSchema, type HackathonFormData } from "@/lib/schemas/hackathon-schema";
+import {
+  hackathonSchema,
+  type HackathonFormData,
+} from "@/lib/schemas/hackathon-schema";
 import { Trash2, Mail, Send, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { nanoid } from "nanoid";
-
 
 export function JudgesStep() {
   const { control } = useFormContext<HackathonFormData>();

@@ -11,9 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useFormContext } from "react-hook-form";
-import {
-  type ProjectFormData,
-} from "@/lib/schemas/project-schema";
+import { type ProjectFormData } from "@/lib/schemas/project-schema";
 import {
   ProjectHackathonCard,
   ProjectHackathonCardProps,
@@ -30,7 +28,7 @@ import type { HackathonWithRelations } from "@/types/hackathon";
 
 // Transform hackathon data to match ProjectHackathonCardProps interface
 function transformHackathonToCardProps(
-  hackathon: HackathonWithRelations
+  hackathon: HackathonWithRelations,
 ): ProjectHackathonCardProps {
   const status = getHackathonStatus(hackathon);
 
@@ -151,7 +149,7 @@ export function HackathonSelectionStep() {
                               <div className="absolute top-2 right-2">
                                 <Checkbox
                                   checked={selectedHackathonIds.includes(
-                                    hackathon.id
+                                    hackathon.id,
                                   )}
                                   onCheckedChange={(checked) => {
                                     const isChecked = checked === true;
@@ -160,10 +158,10 @@ export function HackathonSelectionStep() {
                                           new Set([
                                             ...selectedHackathonIds,
                                             hackathon.id,
-                                          ])
+                                          ]),
                                         )
                                       : selectedHackathonIds.filter(
-                                          (x: string) => x !== hackathon.id
+                                          (x: string) => x !== hackathon.id,
                                         );
                                     setValue("hackathonIds", next, {
                                       shouldValidate: true,
