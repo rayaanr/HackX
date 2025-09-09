@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUserProjects } from "@/hooks/queries/use-projects";
-import { getProjectStatusVariant } from "@/lib/utils/project";
-import { formatRelativeDate } from "@/lib/utils/date";
+import { getProjectStatusVariant } from "@/lib/helpers/project";
+import { formatRelativeDate } from "@/lib/helpers/date";
 import Link from "next/link";
 
 export function ActiveProjects() {

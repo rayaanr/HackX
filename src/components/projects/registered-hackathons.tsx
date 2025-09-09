@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRegisteredHackathons } from "@/hooks/queries/use-projects";
-import { getDaysLeft, formatDisplayDate } from "@/lib/utils/date";
+import { getDaysLeft, formatDisplayDate } from "@/lib/helpers/date";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -186,7 +186,9 @@ export function RegisteredHackathons() {
                           </h6>
                           <p className="text-sm font-medium">
                             {hackathon.registration_end_date
-                              ? `Registration ${getDaysLeft(hackathon.registration_end_date)} days left`
+                              ? `Registration ${getDaysLeft(
+                                  hackathon.registration_end_date
+                                )} days left`
                               : "Registration TBD"}
                           </p>
                         </div>
@@ -235,7 +237,7 @@ export function RegisteredHackathons() {
                           <span className="font-medium">
                             {hackathon.hackathon_start_date
                               ? formatDisplayDate(
-                                  hackathon.hackathon_start_date,
+                                  hackathon.hackathon_start_date
                                 )
                               : "TBD"}
                           </span>{" "}
