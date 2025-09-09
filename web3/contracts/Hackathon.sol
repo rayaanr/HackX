@@ -21,6 +21,23 @@ contract Hackathon is ReentrancyGuard, Pausable {
     // Events
     event PhaseChanged(Phase indexed oldPhase, Phase indexed newPhase);
     event ParticipantRegistered(address indexed participant, uint256 timestamp);
+    event PrizeCategoryAdded(
+        uint256 indexed categoryId,
+        string name,
+        uint256 amount
+    );
+    event PrizeFundsDeposited(uint256 amount, address indexed depositor);
+    event WinnerSet(
+        uint256 indexed categoryId,
+        address indexed winner,
+        uint256 amount
+    );
+    event PrizeDistributed(
+        uint256 indexed categoryId,
+        address indexed winner,
+        uint256 amount
+    );
+    event EmergencyWithdrawal(uint256 amount, address indexed organizer);
 
     // State variables
     uint256 public hackathonId;
@@ -40,6 +57,20 @@ contract Hackathon is ReentrancyGuard, Pausable {
     uint256 public participantCount;
     mapping(address => bool) public participants;
 
+    // Prize Pool Management
+    struct PrizeCategory {
+        string name;
+        uint256 amount;
+        address winner;
+        bool distributed;
+    }
+
+    uint256 public totalPrizeFunds;
+    uint256 public distributedFunds;
+    uint256 public prizeCategories;
+    mapping(uint256 => PrizeCategory) public prizePool;
+    mapping(address => uint256) public participantWinnings;
+
     // Modifiers
     modifier onlyOrganizer() {
         require(
@@ -50,7 +81,23 @@ contract Hackathon is ReentrancyGuard, Pausable {
     }
 
     modifier inPhase(Phase _phase) {
-        require(currentPhase == _phase, "Hackathon: not in correct phase");
+        require(
+            currentPhase == _phase,
+            "Hackathon: function called in wrong phase"
+        );
+        _;
+    }
+
+    modifier onlyAfterPhase(Phase _phase) {
+        require(currentPhase > _phase, "Hackathon: function called too early");
+        _;
+    }
+
+    modifier onlyParticipant() {
+        require(
+            participants[msg.sender],
+            "Hackathon: caller is not a participant"
+        );
         _;
     }
 
@@ -188,6 +235,183 @@ contract Hackathon is ReentrancyGuard, Pausable {
      */
     function isParticipant(address _user) external view returns (bool) {
         return participants[_user];
+    }
+
+    // ============ PRIZE POOL MANAGEMENT ============
+
+    /**
+     * @dev Add a new prize category (only organizer, before judging phase)
+     * @param _name Name of the prize category
+     * @param _amount Prize amount in wei
+     */
+    function addPrizeCategory(
+        string memory _name,
+        uint256 _amount
+    ) external onlyOrganizer nonReentrant {
+        require(
+            currentPhase < Phase.Judging,
+            "Hackathon: cannot add prizes after judging started"
+        );
+        require(_amount > 0, "Hackathon: prize amount must be greater than 0");
+        require(
+            bytes(_name).length > 0,
+            "Hackathon: prize name cannot be empty"
+        );
+
+        uint256 categoryId = prizeCategories++;
+        prizePool[categoryId] = PrizeCategory({
+            name: _name,
+            amount: _amount,
+            winner: address(0),
+            distributed: false
+        });
+
+        emit PrizeCategoryAdded(categoryId, _name, _amount);
+    }
+
+    /**
+     * @dev Deposit prize funds to the contract
+     */
+    function depositPrizeFunds()
+        external
+        payable
+        onlyOrganizer
+        nonReentrant
+        whenNotPaused
+    {
+        require(msg.value > 0, "Hackathon: must deposit some funds");
+        require(
+            currentPhase < Phase.Completed,
+            "Hackathon: cannot deposit after hackathon completed"
+        );
+
+        totalPrizeFunds += msg.value;
+        emit PrizeFundsDeposited(msg.value, msg.sender);
+    }
+
+    /**
+     * @dev Set winner for a prize category (only organizer, during judging phase)
+     * @param _categoryId Prize category ID
+     * @param _winner Winner address
+     */
+    function setWinner(
+        uint256 _categoryId,
+        address _winner
+    ) external onlyOrganizer inPhase(Phase.Judging) nonReentrant {
+        require(
+            _categoryId < prizeCategories,
+            "Hackathon: invalid category ID"
+        );
+        require(
+            _winner != address(0),
+            "Hackathon: winner cannot be zero address"
+        );
+        require(
+            participants[_winner],
+            "Hackathon: winner must be a participant"
+        );
+        require(
+            prizePool[_categoryId].winner == address(0),
+            "Hackathon: winner already set for this category"
+        );
+
+        prizePool[_categoryId].winner = _winner;
+        participantWinnings[_winner] += prizePool[_categoryId].amount;
+
+        emit WinnerSet(_categoryId, _winner, prizePool[_categoryId].amount);
+    }
+
+    /**
+     * @dev Distribute prize to winner (after judging phase)
+     * @param _categoryId Prize category ID
+     */
+    function distributePrize(
+        uint256 _categoryId
+    ) external onlyAfterPhase(Phase.Judging) nonReentrant whenNotPaused {
+        require(
+            _categoryId < prizeCategories,
+            "Hackathon: invalid category ID"
+        );
+
+        PrizeCategory storage prize = prizePool[_categoryId];
+        require(prize.winner != address(0), "Hackathon: no winner set");
+        require(!prize.distributed, "Hackathon: prize already distributed");
+        require(
+            prize.amount <= address(this).balance,
+            "Hackathon: insufficient funds"
+        );
+
+        prize.distributed = true;
+        distributedFunds += prize.amount;
+
+        // Transfer prize to winner
+        (bool success, ) = prize.winner.call{value: prize.amount}("");
+        require(success, "Hackathon: prize transfer failed");
+
+        emit PrizeDistributed(_categoryId, prize.winner, prize.amount);
+    }
+
+    /**
+     * @dev Emergency withdrawal of remaining funds (only organizer, after hackathon)
+     */
+    function emergencyWithdraw()
+        external
+        onlyOrganizer
+        onlyAfterPhase(Phase.Hackathon)
+        nonReentrant
+    {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "Hackathon: no funds to withdraw");
+
+        (bool success, ) = organizer.call{value: balance}("");
+        require(success, "Hackathon: withdrawal failed");
+
+        emit EmergencyWithdrawal(balance, organizer);
+    }
+
+    /**
+     * @dev Get prize category details
+     * @param _categoryId Prize category ID
+     */
+    function getPrizeCategory(
+        uint256 _categoryId
+    )
+        external
+        view
+        returns (
+            string memory name,
+            uint256 amount,
+            address winner,
+            bool distributed
+        )
+    {
+        require(
+            _categoryId < prizeCategories,
+            "Hackathon: invalid category ID"
+        );
+        PrizeCategory memory prize = prizePool[_categoryId];
+        return (prize.name, prize.amount, prize.winner, prize.distributed);
+    }
+
+    /**
+     * @dev Get total prize funds information
+     */
+    function getPrizeFundsInfo()
+        external
+        view
+        returns (
+            uint256 total,
+            uint256 distributed,
+            uint256 remaining,
+            uint256 balance
+        )
+    {
+        return (
+            totalPrizeFunds,
+            distributedFunds,
+            totalPrizeFunds - distributedFunds,
+            address(this).balance
+        );
     }
 
     /**
