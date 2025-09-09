@@ -66,7 +66,7 @@ export function ProjectDetailsSection({
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Pitch Video
+                  Repository
                 </a>
               </Button>
             )}
