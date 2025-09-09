@@ -145,8 +145,8 @@ export function ProjectDetailsSection({
                     typeof leaderObj.github === "string"
                       ? leaderObj.github
                       : typeof leaderObj.githubUsername === "string"
-                      ? leaderObj.githubUsername
-                      : undefined,
+                        ? leaderObj.githubUsername
+                        : undefined,
                 };
               }
               return null;
@@ -321,7 +321,7 @@ export function ProjectDetailsSection({
                 <div className="absolute top-3 right-3">
                   <Badge variant="default">
                     {getHackathonStatus(
-                      normalizeHackathonForStatus(hackathonData) as any
+                      normalizeHackathonForStatus(hackathonData) as any,
                     )}
                   </Badge>
                 </div>

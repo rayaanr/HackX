@@ -6,7 +6,7 @@ import type {
   HackathonWithRelations,
   HackathonFormData,
 } from "@/types/hackathon";
-import { EXPERIENCE_LEVEL_MAP } from "@/lib/constants/hackathon";
+import { EXPERIENCE_LEVEL_MAP } from "@/constants/hackathon";
 
 // Helper function to insert related data for a hackathon
 async function insertHackathonRelatedData(

@@ -187,7 +187,7 @@ export function RegisteredHackathons() {
                           <p className="text-sm font-medium">
                             {hackathon.registration_end_date
                               ? `Registration ${getDaysLeft(
-                                  hackathon.registration_end_date
+                                  hackathon.registration_end_date,
                                 )} days left`
                               : "Registration TBD"}
                           </p>
@@ -237,7 +237,7 @@ export function RegisteredHackathons() {
                           <span className="font-medium">
                             {hackathon.hackathon_start_date
                               ? formatDisplayDate(
-                                  hackathon.hackathon_start_date
+                                  hackathon.hackathon_start_date,
                                 )
                               : "TBD"}
                           </span>{" "}

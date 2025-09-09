@@ -11,7 +11,7 @@ import { transformProjectToUI } from "@/lib/helpers/project";
 
 // Fetch projects by hackathon ID directly from Supabase
 async function fetchProjectsByHackathon(
-  hackathonId: string
+  hackathonId: string,
 ): Promise<UIProject[]> {
   const supabase = createClient();
 
@@ -21,7 +21,7 @@ async function fetchProjectsByHackathon(
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .eq("hackathon_id", hackathonId)
     .order("updated_at", { ascending: false });
@@ -47,7 +47,7 @@ export function useProjectsByHackathon(hackathonId: string) {
 
 // Fetch submitted projects by hackathon ID directly from Supabase
 async function fetchSubmittedProjectsByHackathon(
-  hackathonId: string
+  hackathonId: string,
 ): Promise<UIProject[]> {
   const supabase = createClient();
 
@@ -57,7 +57,7 @@ async function fetchSubmittedProjectsByHackathon(
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .eq("hackathon_id", hackathonId)
     .eq("status", "submitted")
@@ -92,7 +92,7 @@ async function fetchProjectById(projectId: string): Promise<UIProject> {
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .eq("id", projectId)
     .single();
@@ -135,7 +135,7 @@ async function fetchUserProjects(): Promise<UIProject[]> {
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .order("updated_at", { ascending: false });
 
@@ -181,7 +181,7 @@ async function fetchRegisteredHackathons(): Promise<
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .order("registered_at", { ascending: false });
 
@@ -217,7 +217,7 @@ export function useRegisteredHackathons() {
 
 // Create a new project directly in Supabase
 async function createProject(
-  projectData: Partial<UIProject>
+  projectData: Partial<UIProject>,
 ): Promise<ProjectWithHackathon> {
   const supabase = createClient();
 
@@ -247,7 +247,7 @@ async function createProject(
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .single();
 
@@ -346,7 +346,7 @@ async function fetchProjectHackathons(projectId: string): Promise<any[]> {
           description
         )
       )
-    `
+    `,
     )
     .eq("project_id", projectId)
     .order("submitted_at", { ascending: false });
