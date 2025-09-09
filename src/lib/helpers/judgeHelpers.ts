@@ -4,16 +4,20 @@ import { z } from "zod";
 // Email validation using Zod
 const emailSchema = z.string().email("Please enter a valid email address");
 
-export function validateJudgeEmail(email: string): { isValid: boolean; error?: string } {
+export function validateJudgeEmail(email: string): {
+  isValid: boolean;
+  error?: string;
+} {
   if (!email || !email.trim()) {
     return { isValid: false, error: "Email is required" };
   }
 
   const result = emailSchema.safeParse(email.trim());
   if (!result.success) {
-    return { 
-      isValid: false, 
-      error: result.error.issues[0]?.message || "Please enter a valid email address" 
+    return {
+      isValid: false,
+      error:
+        result.error.issues[0]?.message || "Please enter a valid email address",
     };
   }
 
@@ -22,13 +26,17 @@ export function validateJudgeEmail(email: string): { isValid: boolean; error?: s
 
 // Generate judge invitation link
 export function generateJudgeInviteLink(baseUrl?: string): string {
-  const origin = baseUrl || (typeof window !== "undefined" ? window.location.origin : "");
+  const origin =
+    baseUrl || (typeof window !== "undefined" ? window.location.origin : "");
   const token = nanoid();
   return `${origin}/hackathons/invite?token=${token}`;
 }
 
 // Format judge invitation email content
-export function formatJudgeInvitationEmail(hackathonName: string, inviteLink: string): {
+export function formatJudgeInvitationEmail(
+  hackathonName: string,
+  inviteLink: string
+): {
   subject: string;
   body: string;
 } {
@@ -103,30 +111,67 @@ export function composeJudgeInvitation(
   };
 }
 
+// Judge invitation validation schema
+const judgeInvitationSchema = z
+  .object({
+    email: z.string().email("Please enter a valid email address"),
+    status: z.enum(["pending", "waiting", "accepted", "declined", "revoked"], {
+      message:
+        "Status must be one of: pending, waiting, accepted, declined, revoked",
+    }),
+    invitedAt: z
+      .string()
+      .refine(
+        (date) => !isNaN(Date.parse(date)),
+        "Invalid date format for invitedAt"
+      )
+      .optional(),
+    invitedBy: z.string().optional(),
+    // Support both camelCase and snake_case variations
+    invited_at: z
+      .string()
+      .refine(
+        (date) => !isNaN(Date.parse(date)),
+        "Invalid date format for invited_at"
+      )
+      .optional(),
+    invited_by: z.string().optional(),
+  })
+  .refine(
+    (data) => data.invitedAt || data.invited_at || true, // At least one date field can be present
+    { message: "Invalid invitation data structure" }
+  );
+
 // Validate judge invitation data
 export function validateJudgeInvitation(invitation: any): {
   isValid: boolean;
   errors: string[];
 } {
-  const errors: string[] = [];
+  const result = judgeInvitationSchema.safeParse(invitation);
 
-  if (!invitation.email) {
-    errors.push("Email is required");
-  } else {
-    const emailValidation = validateJudgeEmail(invitation.email);
-    if (!emailValidation.isValid) {
-      errors.push(emailValidation.error || "Invalid email");
-    }
+  if (result.success) {
+    return {
+      isValid: true,
+      errors: [],
+    };
   }
 
+  const errors = result.error.issues.map((err: any) => {
+    const field = err.path.length > 0 ? `${err.path.join(".")}: ` : "";
+    return `${field}${err.message}`;
+  });
+
   return {
-    isValid: errors.length === 0,
+    isValid: false,
     errors,
   };
 }
 
 // Check if judge is already invited
-export function isJudgeAlreadyInvited(email: string, existingJudges: any[]): boolean {
+export function isJudgeAlreadyInvited(
+  email: string,
+  existingJudges: any[]
+): boolean {
   return existingJudges.some(
     (judge) => judge.email.toLowerCase() === email.toLowerCase()
   );
@@ -143,7 +188,7 @@ export function getJudgeStats(judges: any[]): {
     (stats, judge) => {
       stats.total++;
       const status = judge.status.toLowerCase();
-      
+
       if (status === "pending" || status === "waiting") {
         stats.pending++;
       } else if (status === "accepted") {
@@ -151,7 +196,7 @@ export function getJudgeStats(judges: any[]): {
       } else if (status === "declined") {
         stats.declined++;
       }
-      
+
       return stats;
     },
     { total: 0, pending: 0, accepted: 0, declined: 0 }
@@ -171,6 +216,8 @@ export function formatJudgesForDisplay(judges: any[]): Array<{
     email: judge.email,
     status: getJudgeStatusDisplay(judge.status),
     invitedAt: judge.invitedAt || judge.created_at || new Date().toISOString(),
-    canResendInvite: judge.status.toLowerCase() === "pending" || judge.status.toLowerCase() === "waiting",
+    canResendInvite:
+      judge.status.toLowerCase() === "pending" ||
+      judge.status.toLowerCase() === "waiting",
   }));
 }

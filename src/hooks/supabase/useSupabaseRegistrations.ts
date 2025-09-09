@@ -25,7 +25,7 @@ async function fetchRegisteredHackathons(): Promise<
       `
       *,
       hackathon:hackathons(*)
-    `,
+    `
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -98,7 +98,9 @@ async function unregisterFromHackathon(hackathonId: string): Promise<void> {
 }
 
 // Check if user is registered for a hackathon
-async function checkHackathonRegistration(hackathonId: string): Promise<boolean> {
+async function checkHackathonRegistration(
+  hackathonId: string
+): Promise<boolean> {
   const supabase = createClient();
 
   if (!hackathonId?.trim()) {
@@ -130,7 +132,7 @@ async function checkHackathonRegistration(hackathonId: string): Promise<boolean>
 
 // Fetch registration details for a hackathon
 async function fetchHackathonRegistration(
-  hackathonId: string,
+  hackathonId: string
 ): Promise<HackathonRegistrationWithHackathon | null> {
   const supabase = createClient();
 
@@ -153,7 +155,7 @@ async function fetchHackathonRegistration(
       `
       *,
       hackathon:hackathons(*)
-    `,
+    `
     )
     .eq("user_id", user.id)
     .eq("hackathon_id", hackathonId)
@@ -198,7 +200,7 @@ async function updateRegistrationStatus({
       `
       *,
       hackathon:hackathons(*)
-    `,
+    `
     )
     .single();
 
