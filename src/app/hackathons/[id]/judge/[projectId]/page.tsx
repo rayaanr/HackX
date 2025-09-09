@@ -17,6 +17,7 @@ import { ReviewActions } from "@/components/judge/ReviewActions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
+import { validateJudgeEmail } from "@/lib/helpers/judgeHelpers";
 
 export default function ProjectReviewPage() {
   const { id, projectId } = useParams<{ id: string; projectId: string }>();
@@ -90,8 +91,9 @@ export default function ProjectReviewPage() {
 
   // Validate judge email format
   const judgeEmail = currentUser.email;
-  if (!judgeEmail.includes("@") || !judgeEmail.includes(".")) {
-    throw new Error("Invalid email format for judge authentication");
+  const emailValidation = validateJudgeEmail(judgeEmail);
+  if (!emailValidation.isValid) {
+    throw new Error(`Invalid email format for judge authentication: ${emailValidation.error}`);
   }
 
   // Check if current user is assigned as judge for this hackathon

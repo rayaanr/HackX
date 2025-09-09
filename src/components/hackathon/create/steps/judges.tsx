@@ -14,13 +14,19 @@ import {
 } from "@/lib/schemas/hackathon-schema";
 import { Trash2, Mail, Send, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-import { useClipboard } from "@/hooks/use-clipboard";
-import { nanoid } from "nanoid";
+import { useCopyToClipboard } from "@uidotdev/usehooks";
+import {
+  validateJudgeEmail,
+  generateJudgeInviteLink,
+  composeJudgeInvitation,
+  isJudgeAlreadyInvited,
+  getJudgeStats,
+} from "@/lib/helpers/judgeHelpers";
 
 export function JudgesStep() {
   const { control } = useFormContext<HackathonFormData>();
   const [newJudgeEmail, setNewJudgeEmail] = useState("");
-  const { copied: copiedLink, copy } = useClipboard();
+  const [copiedText, copyToClipboard] = useCopyToClipboard();
 
   const {
     fields: judges,
@@ -32,25 +38,33 @@ export function JudgesStep() {
   });
 
   const inviteJudgeByEmail = () => {
-    if (!newJudgeEmail || !newJudgeEmail.includes("@")) {
-      toast.error("Please enter a valid email address");
+    const validation = validateJudgeEmail(newJudgeEmail);
+    if (!validation.isValid) {
+      toast.error(validation.error || "Please enter a valid email address");
       return;
     }
 
+    // Check if judge is already invited
+    if (isJudgeAlreadyInvited(newJudgeEmail, judges)) {
+      toast.error("This judge has already been invited");
+      return;
+    }
+
+    const judgeInvitation = composeJudgeInvitation(newJudgeEmail, "Current Hackathon");
+    
     appendJudge({
-      email: newJudgeEmail,
-      status: "waiting",
+      email: judgeInvitation.email,
+      status: judgeInvitation.status as "waiting",
     });
 
     setNewJudgeEmail("");
-    toast.success(`Invitation sent to ${newJudgeEmail}`);
+    toast.success(`Invitation sent to ${judgeInvitation.email}`);
   };
 
   const copyInviteLink = () => {
-    const inviteLink = `${
-      window.location.origin
-    }/hackathons/invite?token=${nanoid()}`;
-    copy(inviteLink, { successMessage: "Invite link copied to clipboard" });
+    const inviteLink = generateJudgeInviteLink();
+    copyToClipboard(inviteLink);
+    toast.success("Invite link copied to clipboard");
   };
 
   return (
@@ -165,7 +179,7 @@ export function JudgesStep() {
                   onClick={copyInviteLink}
                   className="w-full"
                 >
-                  {copiedLink ? (
+                  {copiedText ? (
                     <>
                       <Check className="h-4 w-4 mr-2" />
                       Copied!
