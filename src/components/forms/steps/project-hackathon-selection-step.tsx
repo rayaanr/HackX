@@ -11,8 +11,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useFormContext } from "react-hook-form";
-import { z } from "zod";
-import { projectSchema, type ProjectFormData } from "@/lib/schemas/project-schema";
+import {
+  type ProjectFormData,
+} from "@/lib/schemas/project-schema";
 import {
   ProjectHackathonCard,
   ProjectHackathonCardProps,
@@ -20,15 +21,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useMemo } from "react";
 import { useAllHackathons } from "@/hooks/queries/use-hackathons";
-import { getHackathonStatus, calculateTotalPrizeAmount, formatDateForDisplay } from "@/lib/helpers/hackathon-transforms";
+import {
+  getHackathonStatus,
+  calculateTotalPrizeAmount,
+  formatDateForDisplay,
+} from "@/lib/helpers/hackathon-transforms";
 import type { HackathonWithRelations } from "@/types/hackathon";
 
 // Transform hackathon data to match ProjectHackathonCardProps interface
-function transformHackathonToCardProps(hackathon: HackathonWithRelations): ProjectHackathonCardProps {
+function transformHackathonToCardProps(
+  hackathon: HackathonWithRelations
+): ProjectHackathonCardProps {
   const status = getHackathonStatus(hackathon);
-  const cardStatus: "live" | "upcoming" | "completed" = 
-    status === "Live" ? "live" :
-    status === "Ended" ? "completed" : "upcoming";
+
+  // Map status to card status with improved logic
+  let cardStatus: "live" | "upcoming" | "completed";
+  if (status === "Voting" || status.toLowerCase().includes("voting")) {
+    cardStatus = "live";
+  } else if (
+    status === "Registration Open" ||
+    status === "Registration Closed" ||
+    status.toLowerCase().includes("registration")
+  ) {
+    cardStatus = "upcoming";
+  } else {
+    cardStatus = status === "Live" ? "live" : "completed";
+  }
 
   return {
     id: hackathon.id,
@@ -40,7 +58,6 @@ function transformHackathonToCardProps(hackathon: HackathonWithRelations): Proje
     status: cardStatus,
   };
 }
-
 
 export function HackathonSelectionStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormData>();
@@ -55,7 +72,9 @@ export function HackathonSelectionStep() {
     return hackathonData.map(transformHackathonToCardProps);
   }, [hackathonData]);
 
-  const [filteredHackathons, setFilteredHackathons] = useState<ProjectHackathonCardProps[]>([]);
+  const [filteredHackathons, setFilteredHackathons] = useState<
+    ProjectHackathonCardProps[]
+  >([]);
 
   useEffect(() => {
     if (filter === "all") {
@@ -132,7 +151,7 @@ export function HackathonSelectionStep() {
                               <div className="absolute top-2 right-2">
                                 <Checkbox
                                   checked={selectedHackathonIds.includes(
-                                    hackathon.id,
+                                    hackathon.id
                                   )}
                                   onCheckedChange={(checked) => {
                                     const isChecked = checked === true;
@@ -141,10 +160,10 @@ export function HackathonSelectionStep() {
                                           new Set([
                                             ...selectedHackathonIds,
                                             hackathon.id,
-                                          ]),
+                                          ])
                                         )
                                       : selectedHackathonIds.filter(
-                                          (x: string) => x !== hackathon.id,
+                                          (x: string) => x !== hackathon.id
                                         );
                                     setValue("hackathonIds", next, {
                                       shouldValidate: true,
