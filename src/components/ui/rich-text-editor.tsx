@@ -155,9 +155,9 @@ function validateLinkUrl(url: string): { isValid: boolean; error?: string } {
   // Use the same URL validation as in hackathon schema
   const validation = urlSchema.safeParse(url.trim());
   if (!validation.success) {
-    return { 
-      isValid: false, 
-      error: validation.error.issues[0]?.message || "Invalid URL" 
+    return {
+      isValid: false,
+      error: validation.error.issues[0]?.message || "Invalid URL",
     };
   }
 
@@ -560,15 +560,17 @@ function ToolbarPlugin() {
 
   // Use extracted formatting functions
   const formatText = (format: string) => formatTextCommand(editor, format);
-  const formatAlignment = (alignment: "left" | "center" | "right" | "justify") => 
-    formatAlignmentCommand(editor, alignment);
-  const formatBlock = (blockType: "paragraph" | "h3" | "quote" | "code") => 
+  const formatAlignment = (
+    alignment: "left" | "center" | "right" | "justify",
+  ) => formatAlignmentCommand(editor, alignment);
+  const formatBlock = (blockType: "paragraph" | "h3" | "quote" | "code") =>
     formatBlockCommand(editor, blockType);
   const insertLink = (url: string) => insertLinkCommand(editor, url);
-  const handleHighlight = (color: string) => applyHighlightCommand(editor, color);
-  const formatHeading = (headingSize: "h1" | "h2" | "h3") => 
+  const handleHighlight = (color: string) =>
+    applyHighlightCommand(editor, color);
+  const formatHeading = (headingSize: "h1" | "h2" | "h3") =>
     formatHeadingCommand(editor, headingSize);
-  const formatList = (listType: "bullet" | "number") => 
+  const formatList = (listType: "bullet" | "number") =>
     formatListCommand(editor, listType);
 
   return (

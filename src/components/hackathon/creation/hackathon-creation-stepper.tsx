@@ -3,9 +3,10 @@
 import { defineStepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
 import { Fragment } from "react";
-import { OverviewStep } from "@/components/forms/steps/project-overview-step";
-import { TechStackStep } from "@/components/forms/steps/project-tech-stack-step";
-import { HackathonSelectionStep } from "@/components/forms/steps/project-hackathon-selection-step";
+import { OverviewStep } from "./hackathon-overview-step";
+import { PrizesStep } from "./hackathon-prizes-step";
+import { JudgesStep } from "./hackathon-judges-step";
+import { ScheduleStep } from "./hackathon-schedule-step";
 
 const { Stepper } = defineStepper(
   {
@@ -13,20 +14,30 @@ const { Stepper } = defineStepper(
     title: "Overview",
   },
   {
-    id: "tech-stack",
-    title: "Tech Stack",
+    id: "prizes",
+    title: "Prizes",
   },
   {
-    id: "hackathon",
-    title: "Select Hackathon",
+    id: "judges",
+    title: "Judges",
+  },
+  {
+    id: "schedule",
+    title: "Schedule",
   },
 );
 
-export function CreateProjectStepper() {
+interface CreateHackathonStepperProps {
+  isSubmitting?: boolean;
+}
+
+export function CreateHackathonStepper({
+  isSubmitting = false,
+}: CreateHackathonStepperProps) {
   return (
     <div className="flex w-full flex-col gap-8">
       <Stepper.Provider
-        className="space-y-4"
+        className="space-y-8"
         variant="horizontal"
         labelOrientation="horizontal"
       >
@@ -49,30 +60,46 @@ export function CreateProjectStepper() {
                   <OverviewStep />
                 </Stepper.Panel>
               ),
-              "tech-stack": () => (
+              prizes: () => (
                 <Stepper.Panel>
-                  <TechStackStep />
+                  <PrizesStep />
                 </Stepper.Panel>
               ),
-              hackathon: () => (
+              judges: () => (
                 <Stepper.Panel>
-                  <HackathonSelectionStep />
+                  <JudgesStep />
+                </Stepper.Panel>
+              ),
+              schedule: () => (
+                <Stepper.Panel>
+                  <ScheduleStep />
                 </Stepper.Panel>
               ),
             })}
             <Stepper.Controls>
               {!methods.isFirst && (
                 <Button
+                  type="button"
                   variant="secondary"
                   onClick={methods.prev}
-                  disabled={methods.isFirst}
+                  disabled={methods.isFirst || isSubmitting}
                 >
                   Previous
                 </Button>
               )}
-              <Button onClick={methods.isLast ? methods.reset : methods.next}>
-                {methods.isLast ? "Reset" : "Next"}
-              </Button>
+              {methods.isLast ? (
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Creating Hackathon..." : "Create Hackathon"}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={methods.next}
+                  disabled={isSubmitting}
+                >
+                  Next
+                </Button>
+              )}
             </Stepper.Controls>
           </Fragment>
         )}

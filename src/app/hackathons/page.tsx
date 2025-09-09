@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { HackathonCard } from "@/components/hackathon-card";
-import { FeaturedCarousel } from "@/components/hackathon/featured-carousel";
+import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
+import { FeaturedCarousel } from "@/components/hackathon/widgets/featured-carousel";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

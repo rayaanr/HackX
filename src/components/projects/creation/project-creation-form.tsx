@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreateProjectStepper } from "@/components/forms/create-project-stepper";
+import { CreateProjectStepper } from "./project-creation-stepper";
 import { projectSchema, ProjectFormData } from "@/lib/schemas/project-schema";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";

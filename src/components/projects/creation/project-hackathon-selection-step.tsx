@@ -15,7 +15,7 @@ import { type ProjectFormData } from "@/lib/schemas/project-schema";
 import {
   ProjectHackathonCard,
   ProjectHackathonCardProps,
-} from "@/components/project-hackathon-card";
+} from "@/components/projects/display/hackathon-card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useMemo } from "react";
 import { useAllHackathons } from "@/hooks/queries/use-hackathons";

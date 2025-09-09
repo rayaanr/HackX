@@ -24,26 +24,25 @@ import {
   type HackathonFormData,
 } from "@/lib/schemas/hackathon-schema";
 import { Trash2, Plus, Trophy, X } from "lucide-react";
-import { usePrizeCohorts, useEvaluationCriteria } from "@/hooks/usePrizeCohorts";
+import {
+  usePrizeCohorts,
+  useEvaluationCriteria,
+} from "@/hooks/usePrizeCohorts";
 
 export function PrizesStep() {
   const { control } = useFormContext<HackathonFormData>();
-  const { 
-    prizeCohorts, 
-    addNewPrizeCohort, 
-    removePrizeCohortByIndex, 
-    hasPrizeCohorts 
+  const {
+    prizeCohorts,
+    addNewPrizeCohort,
+    removePrizeCohortByIndex,
+    hasPrizeCohorts,
   } = usePrizeCohorts();
 
   return (
     <div className="space-y-6">
       {hasPrizeCohorts && (
         <div className="flex justify-end">
-          <Button
-            type="button"
-            onClick={addNewPrizeCohort}
-            variant="outline"
-          >
+          <Button type="button" onClick={addNewPrizeCohort} variant="outline">
             <Plus className="mr-2 h-4 w-4" /> Add Prize Cohort
           </Button>
         </div>
@@ -249,11 +248,11 @@ export function PrizesStep() {
 
 function EvaluationCriteriaField({ index }: { index: number }) {
   const { control } = useFormContext<HackathonFormData>();
-  const { 
-    criteria, 
-    addNewCriterion, 
-    removeCriterionByIndex, 
-    canRemoveCriterion 
+  const {
+    criteria,
+    addNewCriterion,
+    removeCriterionByIndex,
+    canRemoveCriterion,
   } = useEvaluationCriteria(index);
 
   return (

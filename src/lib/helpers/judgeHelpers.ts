@@ -35,7 +35,7 @@ export function generateJudgeInviteLink(baseUrl?: string): string {
 // Format judge invitation email content
 export function formatJudgeInvitationEmail(
   hackathonName: string,
-  inviteLink: string
+  inviteLink: string,
 ): {
   subject: string;
   body: string;
@@ -96,7 +96,7 @@ export function getJudgeStatusDisplay(status: string): {
 export function composeJudgeInvitation(
   email: string,
   hackathonName: string,
-  organizerName?: string
+  organizerName?: string,
 ): {
   email: string;
   status: string;
@@ -123,7 +123,7 @@ const judgeInvitationSchema = z
       .string()
       .refine(
         (date) => !isNaN(Date.parse(date)),
-        "Invalid date format for invitedAt"
+        "Invalid date format for invitedAt",
       )
       .optional(),
     invitedBy: z.string().optional(),
@@ -132,14 +132,14 @@ const judgeInvitationSchema = z
       .string()
       .refine(
         (date) => !isNaN(Date.parse(date)),
-        "Invalid date format for invited_at"
+        "Invalid date format for invited_at",
       )
       .optional(),
     invited_by: z.string().optional(),
   })
   .refine(
     (data) => data.invitedAt || data.invited_at || true, // At least one date field can be present
-    { message: "Invalid invitation data structure" }
+    { message: "Invalid invitation data structure" },
   );
 
 // Validate judge invitation data
@@ -170,10 +170,10 @@ export function validateJudgeInvitation(invitation: any): {
 // Check if judge is already invited
 export function isJudgeAlreadyInvited(
   email: string,
-  existingJudges: any[]
+  existingJudges: any[],
 ): boolean {
   return existingJudges.some(
-    (judge) => judge.email.toLowerCase() === email.toLowerCase()
+    (judge) => judge.email.toLowerCase() === email.toLowerCase(),
   );
 }
 
@@ -199,7 +199,7 @@ export function getJudgeStats(judges: any[]): {
 
       return stats;
     },
-    { total: 0, pending: 0, accepted: 0, declined: 0 }
+    { total: 0, pending: 0, accepted: 0, declined: 0 },
   );
 }
 
