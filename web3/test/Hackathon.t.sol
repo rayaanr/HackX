@@ -48,7 +48,7 @@ contract HackathonTest is Test {
     }
 
     // Test constructor
-    function test_Constructor() public {
+    function test_Constructor() public view {
         assertEq(hackathon.hackathonId(), HACKATHON_ID);
         assertEq(hackathon.organizer(), organizer);
         assertEq(hackathon.ipfsHash(), IPFS_HASH);

@@ -45,7 +45,7 @@ contract HackathonFactoryTest is Test {
     }
 
     // Test constructor
-    function test_Constructor() public {
+    function test_Constructor() public view {
         assertEq(factory.owner(), owner);
         assertEq(factory.hackathonCounter(), 0);
         assertTrue(factory.authorizedOrganizers(owner));
@@ -338,7 +338,7 @@ contract HackathonFactoryTest is Test {
         assertTrue(factory.isAuthorizedOrganizer(organizer1));
     }
 
-    function test_GetOrganizerHackathons_EmptyInitially() public {
+    function test_GetOrganizerHackathons_EmptyInitially() public view {
         uint256[] memory hackathons = factory.getOrganizerHackathons(
             organizer1
         );
