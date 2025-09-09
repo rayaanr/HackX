@@ -127,6 +127,25 @@ export type JudgeStatus =
 
 // Re-export schema types for convenience
 export type { HackathonFormData, PrizeCohort, Judge, ScheduleSlot };
+export type { ProjectFormData } from "@/lib/schemas/project-schema";
+export type { JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
+
+// Common component prop types
+export interface ProjectComponentProps {
+  name: string;
+  description: string | null;
+  demo_url?: string;
+  repository_url?: string;
+  team_members?: any[];
+  tech_stack: string[];
+  status: string;
+  sector?: string[];
+}
+
+export interface HackathonComponentProps {
+  name: string;
+  participantCount?: number;
+}
 
 // API response types
 export interface HackathonsResponse {

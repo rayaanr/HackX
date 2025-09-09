@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAllHackathons } from "@/hooks/queries/use-hackathons";
-import { useCurrentUser } from "@/hooks/use-auth";
+import { useCurrentUser } from "@/hooks/supabase/useSupabaseAuth";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { ArrowRight, Calendar, MapPin, Users, Award } from "lucide-react";
 import Link from "next/link";

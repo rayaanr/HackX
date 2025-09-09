@@ -118,7 +118,7 @@ async function insertHackathonRelatedData(
   }
 }
 
-// Fetch user's hackathons directly from Supabase
+// Fetch user's hackathons
 async function fetchUserHackathons(): Promise<HackathonWithRelations[]> {
   const supabase = createClient();
 
@@ -157,27 +157,7 @@ async function fetchUserHackathons(): Promise<HackathonWithRelations[]> {
   return hackathons || [];
 }
 
-// Get user's hackathons
-export function useUserHackathons() {
-  return useQuery({
-    queryKey: ["hackathons", "user"],
-    queryFn: fetchUserHackathons,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on auth errors
-      if (
-        error.message.includes("401") ||
-        error.message.includes("Authentication")
-      ) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-  });
-}
-
-// Fetch all hackathons (for explore page) directly from Supabase
+// Fetch all hackathons (for explore page)
 async function fetchAllHackathons(): Promise<HackathonWithRelations[]> {
   const supabase = createClient();
 
@@ -206,20 +186,7 @@ async function fetchAllHackathons(): Promise<HackathonWithRelations[]> {
   return hackathons || [];
 }
 
-// Get all hackathons
-export function useAllHackathons() {
-  return useQuery({
-    queryKey: ["hackathons", "all"],
-    queryFn: fetchAllHackathons,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      return failureCount < 3;
-    },
-  });
-}
-
-// Fetch single hackathon by ID directly from Supabase
+// Fetch single hackathon by ID
 async function fetchHackathonById(id: string): Promise<HackathonWithRelations> {
   const supabase = createClient();
 
@@ -262,7 +229,7 @@ async function fetchHackathonById(id: string): Promise<HackathonWithRelations> {
   return hackathon;
 }
 
-// Fetch single hackathon by ID for public access (judges, participants, etc.)
+// Fetch single hackathon by ID for public access
 async function fetchHackathonByIdPublic(
   id: string,
 ): Promise<HackathonWithRelations> {
@@ -297,46 +264,7 @@ async function fetchHackathonByIdPublic(
   return hackathon;
 }
 
-// Get single hackathon by ID
-export function useHackathonById(id: string) {
-  return useQuery({
-    queryKey: ["hackathons", "by-id", id],
-    queryFn: () => fetchHackathonById(id),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on auth errors or not found errors
-      if (
-        error.message.includes("401") ||
-        error.message.includes("Authentication") ||
-        error.message.includes("not found")
-      ) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-  });
-}
-
-// Get single hackathon by ID for public access (judges, participants, etc.)
-export function useHackathonByIdPublic(id: string) {
-  return useQuery({
-    queryKey: ["hackathons", "public", "by-id", id],
-    queryFn: () => fetchHackathonByIdPublic(id),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on not found errors
-      if (error?.message?.includes("not found")) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-    enabled: !!id, // Only run when id is available
-  });
-}
-
-// Create a new hackathon directly in Supabase
+// Create a new hackathon
 async function createHackathon(
   formData: HackathonFormData,
 ): Promise<HackathonWithRelations> {
@@ -390,7 +318,7 @@ async function createHackathon(
 
     hackathonId = hackathonData.id;
 
-    // Insert related data using helper function
+    // Insert related data
     if (!hackathonId) {
       throw new Error("Failed to get hackathon ID");
     }
@@ -436,24 +364,7 @@ async function createHackathon(
   }
 }
 
-// Hook for creating hackathons
-export function useCreateHackathon() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: createHackathon,
-    onSuccess: () => {
-      // Invalidate and refetch hackathons
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "user"] });
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "all"] });
-    },
-    onError: (error) => {
-      console.error("Failed to create hackathon:", error);
-    },
-  });
-}
-
-// Update a hackathon directly in Supabase
+// Update a hackathon
 async function updateHackathon({
   hackathonId,
   formData,
@@ -547,6 +458,13 @@ async function updateHackathon({
       .select("speaker_id")
       .eq("hackathon_id", hackathonId);
 
+    // Delete schedule_slots first to avoid FK constraint violations
+    await supabase
+      .from("schedule_slots")
+      .delete()
+      .eq("hackathon_id", hackathonId);
+
+    // Then delete orphaned speakers
     if (speakerIds && speakerIds.length > 0) {
       // Deduplicate and filter out nulls
       const validSpeakerIds = [
@@ -561,12 +479,7 @@ async function updateHackathon({
       }
     }
 
-    await supabase
-      .from("schedule_slots")
-      .delete()
-      .eq("hackathon_id", hackathonId);
-
-    // Recreate prize cohorts, judges, and schedule slots using helper function
+    // Recreate prize cohorts, judges, and schedule slots
     await insertHackathonRelatedData(supabase, hackathonId, formData);
 
     // Fetch the complete updated hackathon with relations
@@ -602,27 +515,7 @@ async function updateHackathon({
   }
 }
 
-// Hook for updating hackathons
-export function useUpdateHackathon() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: updateHackathon,
-    onSuccess: (data) => {
-      // Invalidate and refetch hackathons
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "user"] });
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "all"] });
-      queryClient.invalidateQueries({
-        queryKey: ["hackathons", "by-id", data.id],
-      });
-    },
-    onError: (error) => {
-      console.error("Failed to update hackathon:", error);
-    },
-  });
-}
-
-// Delete a hackathon directly in Supabase
+// Delete a hackathon
 async function deleteHackathon(hackathonId: string): Promise<void> {
   const supabase = createClient();
 
@@ -652,6 +545,117 @@ async function deleteHackathon(hackathonId: string): Promise<void> {
   if (!deletedHackathon) {
     throw new Error("Hackathon not found or access denied");
   }
+}
+
+// HOOKS
+
+// Get user's hackathons
+export function useUserHackathons() {
+  return useQuery({
+    queryKey: ["hackathons", "user"],
+    queryFn: fetchUserHackathons,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      // Don't retry on auth errors
+      if (
+        error.message.includes("401") ||
+        error.message.includes("Authentication")
+      ) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+  });
+}
+
+// Get all hackathons
+export function useAllHackathons() {
+  return useQuery({
+    queryKey: ["hackathons", "all"],
+    queryFn: fetchAllHackathons,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      return failureCount < 3;
+    },
+  });
+}
+
+// Get single hackathon by ID
+export function useHackathonById(id: string) {
+  return useQuery({
+    queryKey: ["hackathons", "by-id", id],
+    queryFn: () => fetchHackathonById(id),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      // Don't retry on auth errors or not found errors
+      if (
+        error.message.includes("401") ||
+        error.message.includes("Authentication") ||
+        error.message.includes("not found")
+      ) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+  });
+}
+
+// Get single hackathon by ID for public access
+export function useHackathonByIdPublic(id: string) {
+  return useQuery({
+    queryKey: ["hackathons", "public", "by-id", id],
+    queryFn: () => fetchHackathonByIdPublic(id),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      // Don't retry on not found errors
+      if (error?.message?.includes("not found")) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    enabled: !!id, // Only run when id is available
+  });
+}
+
+// Hook for creating hackathons
+export function useCreateHackathon() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createHackathon,
+    onSuccess: () => {
+      // Invalidate and refetch hackathons
+      queryClient.invalidateQueries({ queryKey: ["hackathons", "user"] });
+      queryClient.invalidateQueries({ queryKey: ["hackathons", "all"] });
+    },
+    onError: (error) => {
+      console.error("Failed to create hackathon:", error);
+    },
+  });
+}
+
+// Hook for updating hackathons
+export function useUpdateHackathon() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateHackathon,
+    onSuccess: (data) => {
+      // Invalidate and refetch hackathons
+      queryClient.invalidateQueries({ queryKey: ["hackathons", "user"] });
+      queryClient.invalidateQueries({ queryKey: ["hackathons", "all"] });
+      queryClient.invalidateQueries({
+        queryKey: ["hackathons", "by-id", data.id],
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to update hackathon:", error);
+    },
+  });
 }
 
 // Hook for deleting hackathons

@@ -7,7 +7,7 @@ import type {
   UIProject,
   HackathonRegistrationWithHackathon,
 } from "@/types/hackathon";
-import { transformProjectToUI } from "@/lib/utils/project";
+import { transformProjectToUI } from "@/lib/helpers/project";
 
 // Fetch projects by hackathon ID directly from Supabase
 async function fetchProjectsByHackathon(
@@ -17,10 +17,12 @@ async function fetchProjectsByHackathon(
 
   const { data: projects, error } = await supabase
     .from("projects")
-    .select(`
+    .select(
+      `
       *,
       hackathon:hackathons(*)
-    `)
+    `,
+    )
     .eq("hackathon_id", hackathonId)
     .order("updated_at", { ascending: false });
 
@@ -51,10 +53,12 @@ async function fetchSubmittedProjectsByHackathon(
 
   const { data: projects, error } = await supabase
     .from("projects")
-    .select(`
+    .select(
+      `
       *,
       hackathon:hackathons(*)
-    `)
+    `,
+    )
     .eq("hackathon_id", hackathonId)
     .eq("status", "submitted")
     .order("updated_at", { ascending: false });
@@ -84,10 +88,12 @@ async function fetchProjectById(projectId: string): Promise<UIProject> {
 
   const { data: project, error } = await supabase
     .from("projects")
-    .select(`
+    .select(
+      `
       *,
       hackathon:hackathons(*)
-    `)
+    `,
+    )
     .eq("id", projectId)
     .single();
 
@@ -125,10 +131,12 @@ async function fetchUserProjects(): Promise<UIProject[]> {
 
   const { data: projects, error } = await supabase
     .from("projects")
-    .select(`
+    .select(
+      `
       *,
       hackathon:hackathons(*)
-    `)
+    `,
+    )
     .order("updated_at", { ascending: false });
 
   if (error) {
@@ -169,10 +177,12 @@ async function fetchRegisteredHackathons(): Promise<
 
   const { data: registrations, error } = await supabase
     .from("hackathon_registrations")
-    .select(`
+    .select(
+      `
       *,
       hackathon:hackathons(*)
-    `)
+    `,
+    )
     .order("registered_at", { ascending: false });
 
   if (error) {
@@ -233,10 +243,12 @@ async function createProject(
       team_members: projectData.team_members || null,
       created_by: user.id,
     })
-    .select(`
+    .select(
+      `
       *,
       hackathon:hackathons(*)
-    `)
+    `,
+    )
     .single();
 
   if (error) {
@@ -316,7 +328,8 @@ async function fetchProjectHackathons(projectId: string): Promise<any[]> {
 
   const { data: submissions, error } = await supabase
     .from("project_hackathon_submissions")
-    .select(`
+    .select(
+      `
       *,
       hackathon:hackathons(
         id,
@@ -333,7 +346,8 @@ async function fetchProjectHackathons(projectId: string): Promise<any[]> {
           description
         )
       )
-    `)
+    `,
+    )
     .eq("project_id", projectId)
     .order("submitted_at", { ascending: false });
 

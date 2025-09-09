@@ -20,17 +20,14 @@ import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Separator } from "@/components/ui/separator";
 import { FileUploadField } from "@/components/ui/file-upload";
 import { useFormContext } from "react-hook-form";
-import { z } from "zod";
-import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
+import { type HackathonFormData } from "@/lib/schemas/hackathon-schema";
 import { LexicalEditor } from "@/components/ui/rich-text-editor";
-import { SocialLinksInput } from "@/components/hackathon/create/steps/social-links-input";
-import { TECH_STACK_OPTIONS } from "@/components/forms/steps/project-tech-stack-step";
+import { SocialLinksInput } from "./social-links-input";
 import MultipleSelector from "@/components/ui/multiselect";
-
-type HackathonFormValues = z.infer<typeof hackathonSchema>;
+import { TECH_STACK } from "@/constants/tech-stack";
 
 export function OverviewStep() {
-  const { control, setValue } = useFormContext<HackathonFormValues>();
+  const { control, setValue } = useFormContext<HackathonFormData>();
 
   return (
     <div className="space-y-6">
@@ -286,7 +283,7 @@ export function OverviewStep() {
                 onChange={(options) =>
                   field.onChange(options.map((option) => option.value))
                 }
-                defaultOptions={TECH_STACK_OPTIONS}
+                defaultOptions={TECH_STACK}
                 placeholder="Technologies and themes for your hackathon"
                 creatable
                 emptyIndicator={

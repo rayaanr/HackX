@@ -73,6 +73,25 @@ import {
 import { cn } from "@/lib/utils";
 import { urlSchema } from "@/lib/schemas/hackathon-schema";
 
+// Utility functions
+function getHighlightColors() {
+  return [
+    { value: "yellow", class: "bg-yellow-200" },
+    { value: "green", class: "bg-green-200" },
+    { value: "blue", class: "bg-blue-200" },
+    { value: "pink", class: "bg-pink-200" },
+    { value: "purple", class: "bg-purple-200" },
+    { value: "orange", class: "bg-orange-200" },
+  ];
+}
+
+function getButtonClasses(size: "sm" | "default") {
+  return {
+    button: size === "sm" ? "size-7 p-0" : "size-8 p-0",
+    icon: size === "sm" ? "size-3" : "size-4",
+  };
+}
+
 // Color Highlighter Component
 function ColorHighlighter({
   onHighlight,
@@ -84,18 +103,13 @@ function ColorHighlighter({
   size?: "sm" | "default";
 }) {
   const [open, setOpen] = useState(false);
+  const colors = getHighlightColors();
+  const { button: buttonClass, icon: iconClass } = getButtonClasses(size);
 
-  const colors = [
-    { value: "yellow", class: "bg-yellow-200" },
-    { value: "green", class: "bg-green-200" },
-    { value: "blue", class: "bg-blue-200" },
-    { value: "pink", class: "bg-pink-200" },
-    { value: "purple", class: "bg-purple-200" },
-    { value: "orange", class: "bg-orange-200" },
-  ];
-
-  const buttonClass = size === "sm" ? "size-7 p-0" : "size-8 p-0";
-  const iconClass = size === "sm" ? "size-3" : "size-4";
+  const handleColorSelect = (color: string) => {
+    onHighlight(color);
+    setOpen(false);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -120,10 +134,7 @@ function ColorHighlighter({
                 variant="ghost"
                 size={"icon"}
                 className={`h-8 w-full justify-start gap-2 ${color.class} hover:opacity-80`}
-                onClick={() => {
-                  onHighlight(color.value);
-                  setOpen(false);
-                }}
+                onClick={() => handleColorSelect(color.value)}
               >
                 <div className={`size-4 rounded-full ${color.class}`} />
               </Button>
@@ -133,6 +144,24 @@ function ColorHighlighter({
       </PopoverContent>
     </Popover>
   );
+}
+
+// Link validation functions using Zod directly
+function validateLinkUrl(url: string): { isValid: boolean; error?: string } {
+  if (!url.trim()) {
+    return { isValid: false, error: "URL is required" };
+  }
+
+  // Use the same URL validation as in hackathon schema
+  const validation = urlSchema.safeParse(url.trim());
+  if (!validation.success) {
+    return {
+      isValid: false,
+      error: validation.error.issues[0]?.message || "Invalid URL",
+    };
+  }
+
+  return { isValid: true };
 }
 
 // Link Popover Component
@@ -148,20 +177,24 @@ function LinkPopover({
   const [url, setUrl] = useState("");
   const [open, setOpen] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const { button: buttonClass, icon: iconClass } = getButtonClasses(size);
 
   const handleInsert = () => {
-    if (!url.trim()) return;
-
-    const validation = urlSchema.safeParse(url.trim());
-    if (!validation.success) {
-      setValidationError(validation.error.issues[0]?.message || "Invalid URL");
+    const validation = validateLinkUrl(url);
+    if (!validation.isValid) {
+      setValidationError(validation.error || "Invalid URL");
       return;
     }
 
     setValidationError(null);
     onInsertLink(url.trim());
+    resetForm();
+  };
+
+  const resetForm = () => {
     setUrl("");
     setOpen(false);
+    setValidationError(null);
   };
 
   const handleUrlChange = (value: string) => {
@@ -177,13 +210,9 @@ function LinkPopover({
       handleInsert();
     }
     if (e.key === "Escape") {
-      setOpen(false);
-      setUrl("");
+      resetForm();
     }
   };
-
-  const buttonClass = size === "sm" ? "h-7 w-7 p-0" : "h-8 w-8 p-0";
-  const iconClass = size === "sm" ? "h-3 w-3" : "h-4 w-4";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -304,8 +333,8 @@ const theme = {
   },
 };
 
-// Toolbar Plugin
-function ToolbarPlugin() {
+// Custom hook for toolbar state management
+function useRichTextToolbar() {
   const [editor] = useLexicalComposerContext();
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
@@ -362,95 +391,187 @@ function ToolbarPlugin() {
     );
   }, [editor, updateToolbar]);
 
-  const formatText = (format: string) => {
-    editor.dispatchCommand(FORMAT_TEXT_COMMAND, format as any);
+  return {
+    editor,
+    state: {
+      isBold,
+      isItalic,
+      isUnderline,
+      isHighlight,
+      isCode,
+      blockType,
+      alignment,
+      hasSelection,
+    },
   };
+}
 
+// Text formatting functions
+function formatTextCommand(editor: any, format: string) {
+  editor.dispatchCommand(FORMAT_TEXT_COMMAND, format as any);
+}
+
+function formatAlignmentCommand(
+  editor: any,
+  alignment: "left" | "center" | "right" | "justify",
+) {
+  editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, alignment);
+}
+
+function formatBlockCommand(
+  editor: any,
+  blockType: "paragraph" | "h3" | "quote" | "code",
+) {
+  editor.update(() => {
+    const selection = $getSelection();
+    if ($isRangeSelection(selection)) {
+      switch (blockType) {
+        case "paragraph":
+          $setBlocksType(selection, () => $createParagraphNode());
+          break;
+        case "h3":
+          $setBlocksType(selection, () => $createHeadingNode("h3"));
+          break;
+        case "quote":
+          $setBlocksType(selection, () => $createQuoteNode());
+          break;
+        case "code":
+          $setBlocksType(selection, () => $createCodeNode());
+          break;
+      }
+    }
+  });
+}
+
+function formatHeadingCommand(editor: any, headingSize: "h1" | "h2" | "h3") {
+  editor.update(() => {
+    const selection = $getSelection();
+    if ($isRangeSelection(selection)) {
+      $setBlocksType(selection, () => $createHeadingNode(headingSize));
+    }
+  });
+}
+
+function formatListCommand(editor: any, listType: "bullet" | "number") {
+  if (listType === "bullet") {
+    editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
+  } else {
+    editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
+  }
+}
+
+function insertLinkCommand(editor: any, url: string) {
+  editor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
+}
+
+function applyHighlightCommand(editor: any, color: string) {
+  editor.update(() => {
+    const selection = $getSelection();
+    if ($isRangeSelection(selection)) {
+      selection.getNodes().forEach((node) => {
+        if ($isTextNode(node)) {
+          const anchorOffset = selection.anchor.offset;
+          const focusOffset = selection.focus.offset;
+          const isBackward = selection.isBackward();
+          const start = node.is(selection.anchor.getNode())
+            ? isBackward
+              ? focusOffset
+              : anchorOffset
+            : 0;
+          const end = node.is(selection.focus.getNode())
+            ? isBackward
+              ? anchorOffset
+              : focusOffset
+            : node.getTextContentSize();
+
+          if (start !== 0 || end !== node.getTextContentSize()) {
+            node = (node as any).splitText(start, end);
+          }
+
+          const prev = (node as any).getStyle?.() || "";
+          const cleaned = prev
+            .replace(/background-color:\s*[^;]+;?/g, "")
+            .trim();
+          (node as any).setStyle?.(
+            `${cleaned ? cleaned + "; " : ""}background-color: ${color}`,
+          );
+        }
+      });
+    }
+  });
+}
+
+// Content serialization functions
+function serializeEditorToHTML(editor: any): string {
+  let htmlContent = "";
+  editor.getEditorState().read(() => {
+    htmlContent = $generateHtmlFromNodes(editor, null);
+  });
+  return htmlContent;
+}
+
+function deserializeHTMLToEditor(editor: any, htmlContent: string) {
+  editor.update(() => {
+    const root = $getRoot();
+    root.clear();
+
+    if (typeof window !== "undefined" && htmlContent.includes("<")) {
+      try {
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(htmlContent, "text/html");
+        const nodes = $generateNodesFromDOM(editor, dom);
+        root.append(...nodes);
+      } catch {
+        // Fallback to plain text
+        const paragraph = $createParagraphNode();
+        paragraph.append($createTextNode(htmlContent));
+        root.append(paragraph);
+      }
+    } else {
+      const paragraph = $createParagraphNode();
+      paragraph.append($createTextNode(htmlContent));
+      root.append(paragraph);
+    }
+  });
+}
+
+function createInitialEditorState(editor: any, initialContent?: string) {
+  if (!initialContent) return undefined;
+
+  return (editorInstance: any) => {
+    deserializeHTMLToEditor(editorInstance, initialContent);
+    return editorInstance.getEditorState();
+  };
+}
+
+// Toolbar Plugin
+function ToolbarPlugin() {
+  const { editor, state } = useRichTextToolbar();
+  const {
+    isBold,
+    isItalic,
+    isUnderline,
+    isHighlight,
+    isCode,
+    blockType,
+    alignment,
+    hasSelection,
+  } = state;
+
+  // Use extracted formatting functions
+  const formatText = (format: string) => formatTextCommand(editor, format);
   const formatAlignment = (
     alignment: "left" | "center" | "right" | "justify",
-  ) => {
-    editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, alignment);
-  };
-
-  const formatBlock = (blockType: "paragraph" | "h3" | "quote" | "code") => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        switch (blockType) {
-          case "paragraph":
-            $setBlocksType(selection, () => $createParagraphNode());
-            break;
-          case "h3":
-            $setBlocksType(selection, () => $createHeadingNode("h3"));
-            break;
-          case "quote":
-            $setBlocksType(selection, () => $createQuoteNode());
-            break;
-          case "code":
-            $setBlocksType(selection, () => $createCodeNode());
-            break;
-        }
-      }
-    });
-  };
-
-  const insertLink = (url: string) => {
-    editor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
-  };
-
-  const handleHighlight = (color: string) => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        selection.getNodes().forEach((node) => {
-          if ($isTextNode(node)) {
-            const anchorOffset = selection.anchor.offset;
-            const focusOffset = selection.focus.offset;
-            const isBackward = selection.isBackward();
-            const start = node.is(selection.anchor.getNode())
-              ? isBackward
-                ? focusOffset
-                : anchorOffset
-              : 0;
-            const end = node.is(selection.focus.getNode())
-              ? isBackward
-                ? anchorOffset
-                : focusOffset
-              : node.getTextContentSize();
-
-            if (start !== 0 || end !== node.getTextContentSize()) {
-              node = (node as any).splitText(start, end);
-            }
-
-            const prev = (node as any).getStyle?.() || "";
-            const cleaned = prev
-              .replace(/background-color:\s*[^;]+;?/g, "")
-              .trim();
-            (node as any).setStyle?.(
-              `${cleaned ? cleaned + "; " : ""}background-color: ${color}`,
-            );
-          }
-        });
-      }
-    });
-  };
-
-  const formatHeading = (headingSize: "h1" | "h2" | "h3") => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        $setBlocksType(selection, () => $createHeadingNode(headingSize));
-      }
-    });
-  };
-
-  const formatList = (listType: "bullet" | "number") => {
-    if (listType === "bullet") {
-      editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
-    } else {
-      editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
-    }
-  };
+  ) => formatAlignmentCommand(editor, alignment);
+  const formatBlock = (blockType: "paragraph" | "h3" | "quote" | "code") =>
+    formatBlockCommand(editor, blockType);
+  const insertLink = (url: string) => insertLinkCommand(editor, url);
+  const handleHighlight = (color: string) =>
+    applyHighlightCommand(editor, color);
+  const formatHeading = (headingSize: "h1" | "h2" | "h3") =>
+    formatHeadingCommand(editor, headingSize);
+  const formatList = (listType: "bullet" | "number") =>
+    formatListCommand(editor, listType);
 
   return (
     <div className="flex items-center gap-1 border-b border-border p-2 bg-muted/30 flex-wrap">
@@ -672,8 +793,7 @@ function OnChangePluginWithHTML({
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
-        // Get HTML content instead of just plain text
-        const htmlContent = $generateHtmlFromNodes(editor, null);
+        const htmlContent = serializeEditorToHTML(editor);
         onChange(htmlContent);
       });
     });
@@ -695,35 +815,7 @@ export function LexicalEditor({
       console.error(error);
     },
     nodes: [HeadingNode, ListNode, ListItemNode, QuoteNode, CodeNode, LinkNode],
-    editorState: initialContent
-      ? (editor: LxEditor) => {
-          editor.update(() => {
-            const root = $getRoot();
-            root.clear();
-
-            const setPlainText = (text: string) => {
-              const paragraph = $createParagraphNode();
-              paragraph.append($createTextNode(text));
-              root.append(paragraph);
-            };
-
-            if (typeof window !== "undefined" && initialContent.includes("<")) {
-              try {
-                const parser = new DOMParser();
-                const dom = parser.parseFromString(initialContent, "text/html");
-                const nodes = $generateNodesFromDOM(editor, dom);
-                root.append(...nodes);
-              } catch {
-                setPlainText(initialContent);
-              }
-            } else {
-              setPlainText(initialContent);
-            }
-          });
-
-          return editor.getEditorState();
-        }
-      : undefined,
+    editorState: createInitialEditorState(null, initialContent),
   };
 
   return (
