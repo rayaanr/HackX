@@ -17,52 +17,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 import {
   hackathonSchema,
   type HackathonFormData,
 } from "@/lib/schemas/hackathon-schema";
 import { Trash2, Plus, Trophy, X } from "lucide-react";
+import { usePrizeCohorts, useEvaluationCriteria } from "@/hooks/usePrizeCohorts";
 
 export function PrizesStep() {
   const { control } = useFormContext<HackathonFormData>();
-
-  const {
-    fields: prizeCohorts,
-    append: appendPrizeCohort,
-    remove: removePrizeCohort,
-  } = useFieldArray({
-    control,
-    name: "prizeCohorts",
-  });
-
-  const appendNewPrizeCohort = () => {
-    appendPrizeCohort({
-      name: "",
-      numberOfWinners: 1,
-      prizeAmount: "",
-      description: "",
-      judgingMode: "manual" as const,
-      votingMode: "public" as const,
-      maxVotesPerJudge: 1,
-      evaluationCriteria: [
-        {
-          name: "",
-          points: 10,
-          description: "",
-        },
-      ],
-    });
-  };
+  const { 
+    prizeCohorts, 
+    addNewPrizeCohort, 
+    removePrizeCohortByIndex, 
+    hasPrizeCohorts 
+  } = usePrizeCohorts();
 
   return (
     <div className="space-y-6">
-      {prizeCohorts.length > 0 && (
+      {hasPrizeCohorts && (
         <div className="flex justify-end">
           <Button
             type="button"
-            onClick={appendNewPrizeCohort}
+            onClick={addNewPrizeCohort}
             variant="outline"
           >
             <Plus className="mr-2 h-4 w-4" /> Add Prize Cohort
@@ -70,7 +49,7 @@ export function PrizesStep() {
         </div>
       )}
 
-      {prizeCohorts.length === 0 ? (
+      {!hasPrizeCohorts ? (
         <div className="text-center py-8 border border-dashed rounded-lg">
           <Trophy className="mx-auto h-12 w-12 text-muted-foreground" />
           <p className="mt-2 text-sm text-muted-foreground">
@@ -80,7 +59,7 @@ export function PrizesStep() {
             type="button"
             variant="outline"
             className="mt-4"
-            onClick={appendNewPrizeCohort}
+            onClick={addNewPrizeCohort}
           >
             Add your first prize
           </Button>
@@ -98,7 +77,7 @@ export function PrizesStep() {
                   variant="ghost"
                   size="icon"
                   className="bg-transparent! text-red-500 hover:text-red-700"
-                  onClick={() => removePrizeCohort(index)}
+                  onClick={() => removePrizeCohortByIndex(index)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -270,15 +249,12 @@ export function PrizesStep() {
 
 function EvaluationCriteriaField({ index }: { index: number }) {
   const { control } = useFormContext<HackathonFormData>();
-
-  const {
-    fields: criteria,
-    append: appendCriteria,
-    remove: removeCriteria,
-  } = useFieldArray({
-    control,
-    name: `prizeCohorts.${index}.evaluationCriteria`,
-  });
+  const { 
+    criteria, 
+    addNewCriterion, 
+    removeCriterionByIndex, 
+    canRemoveCriterion 
+  } = useEvaluationCriteria(index);
 
   return (
     <div className="space-y-4">
@@ -288,13 +264,7 @@ function EvaluationCriteriaField({ index }: { index: number }) {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() =>
-            appendCriteria({
-              name: "",
-              points: 10,
-              description: "",
-            })
-          }
+          onClick={addNewCriterion}
         >
           <Plus className="mr-2 h-4 w-4" /> Add Criteria
         </Button>
@@ -363,8 +333,8 @@ function EvaluationCriteriaField({ index }: { index: number }) {
             type="button"
             variant="ghost"
             size="icon"
-            className={`absolute top-0 right-0 ${criterionIndex === 0 ? "hidden" : ""}`}
-            onClick={() => removeCriteria(criterionIndex)}
+            className={`absolute top-0 right-0 ${!canRemoveCriterion(criterionIndex) ? "hidden" : ""}`}
+            onClick={() => removeCriterionByIndex(criterionIndex)}
           >
             <X className="h-4 w-4" />
           </Button>

@@ -5,7 +5,7 @@ import {
   useProjectById,
   useProjectHackathons,
 } from "@/hooks/queries/use-projects";
-import { useCurrentUser } from "@/hooks/use-auth";
+import { useCurrentUser } from "@/hooks/supabase/useSupabaseAuth";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { notFound } from "next/navigation";
 import { useState } from "react";
@@ -17,6 +17,8 @@ import { ReviewActions } from "@/components/judge/ReviewActions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
+import { validateJudgeEmail } from "@/lib/helpers/judgeHelpers";
+import { Button } from "@/components/ui/button";
 
 export default function ProjectReviewPage() {
   const { id, projectId } = useParams<{ id: string; projectId: string }>();
@@ -42,10 +44,10 @@ export default function ProjectReviewPage() {
 
   // State for form data and selected cohort
   const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(
-    null,
+    null
   );
   const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(
-    undefined,
+    undefined
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -90,13 +92,27 @@ export default function ProjectReviewPage() {
 
   // Validate judge email format
   const judgeEmail = currentUser.email;
-  if (!judgeEmail.includes("@") || !judgeEmail.includes(".")) {
-    throw new Error("Invalid email format for judge authentication");
+  const emailValidation = validateJudgeEmail(judgeEmail);
+
+  // Handle invalid email validation gracefully
+  if (!emailValidation.isValid) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold mb-2">Invalid Email Format</h2>
+          <p className="text-muted-foreground max-w-md">
+            {emailValidation.error ||
+              "Your email format is not valid for judge authentication."}
+          </p>
+          <Button onClick={() => window.history.back()}>Go Back</Button>
+        </div>
+      </div>
+    );
   }
 
   // Check if current user is assigned as judge for this hackathon
   const isAuthorizedJudge = hackathon?.judges?.some(
-    (judge) => judge.email === judgeEmail,
+    (judge) => judge.email === judgeEmail
   );
   if (!isAuthorizedJudge) {
     return (

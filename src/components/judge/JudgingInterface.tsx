@@ -1,8 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormField,
@@ -20,15 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  createJudgeEvaluationSchema,
-  type JudgeEvaluationFormData,
-  type CriterionEvaluation,
-} from "@/lib/schemas/judge-evaluation-schema";
 import type {
   PrizeCohort,
   EvaluationCriteria,
 } from "@/lib/schemas/hackathon-schema";
+import type { JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
+import { useJudgingForm } from "@/hooks/useJudgingForm";
 
 interface Hackathon {
   prizeCohorts: PrizeCohort[];
@@ -45,97 +39,45 @@ export function JudgingInterface({
   onFormDataChange,
   onSelectedCohortChange,
 }: JudgingInterfaceProps) {
-  // Lift cohort selection to local state
-  const [selectedCohortId, setSelectedCohortId] = useState<string>(
-    hackathon.prizeCohorts[0]?.id || "",
-  );
-
-  // Find the selected cohort
-  const selectedCohort = hackathon.prizeCohorts.find(
-    (cohort) => cohort.id === selectedCohortId,
-  );
-
-  // Handle cohort selection change
-  const handleCohortChange = (cohortId: string) => {
-    setSelectedCohortId(cohortId);
-  };
-
-  // Update parent component when selected cohort changes
-  useEffect(() => {
-    onSelectedCohortChange(selectedCohort);
-  }, [selectedCohort, onSelectedCohortChange]);
+  const {
+    form,
+    selectedCohort,
+    selectedCohortId,
+    handleCohortChange,
+  } = useJudgingForm({
+    hackathon,
+    onFormDataChange,
+    onSelectedCohortChange,
+  });
 
   return (
     <JudgingFormContent
       key={selectedCohortId} // Force remount when cohort changes
+      form={form}
       hackathon={hackathon}
       selectedCohort={selectedCohort}
       selectedCohortId={selectedCohortId}
-      onFormDataChange={onFormDataChange}
       onCohortChange={handleCohortChange}
     />
   );
 }
 
 interface JudgingFormContentProps {
+  form: any; // form instance from useJudgingForm
   hackathon: Hackathon;
   selectedCohort: PrizeCohort | undefined;
   selectedCohortId: string;
-  onFormDataChange: (data: JudgeEvaluationFormData) => void;
   onCohortChange: (cohortId: string) => void;
 }
 
 function JudgingFormContent({
+  form,
   hackathon,
   selectedCohort,
   selectedCohortId,
-  onFormDataChange,
   onCohortChange,
 }: JudgingFormContentProps) {
-  // Generate default values
-  const getDefaultValues = (
-    cohort: PrizeCohort | null,
-  ): JudgeEvaluationFormData => {
-    const criteriaEvaluations: Record<string, CriterionEvaluation> = {};
-
-    if (cohort) {
-      cohort.evaluationCriteria.forEach((criterion) => {
-        criteriaEvaluations[criterion.name] = {
-          score: 0,
-          feedback: "",
-        };
-      });
-    }
-
-    return {
-      selectedPrizeCohortId: cohort?.id || "",
-      criteriaEvaluations,
-      overallFeedback: "",
-    };
-  };
-
-  // Create schema and form based on current selected cohort
-  const schema = selectedCohort
-    ? createJudgeEvaluationSchema(selectedCohort.evaluationCriteria)
-    : createJudgeEvaluationSchema([]);
-
-  const form = useForm<JudgeEvaluationFormData>({
-    resolver: zodResolver(schema),
-    defaultValues: getDefaultValues(selectedCohort || null),
-    mode: "onChange",
-  });
-
-  const { watch } = form;
-
-  // Update parent component when form data changes
-  useEffect(() => {
-    const subscription = watch((data) => {
-      if (data && typeof data === "object") {
-        onFormDataChange(data as JudgeEvaluationFormData);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, onFormDataChange]);
+  // Form logic is now handled by the useJudgingForm hook
 
   return (
     <Form {...form}>
