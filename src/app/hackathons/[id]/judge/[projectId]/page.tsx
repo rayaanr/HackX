@@ -8,7 +8,8 @@ import {
 import { useCurrentUser } from "@/hooks/use-auth";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { notFound } from "next/navigation";
-import { use, useState } from "react";
+import { useState } from "react";
+import { useParams } from "next/navigation";
 import { ProjectReviewHeader } from "@/components/judge/ProjectReviewHeader";
 import { ProjectDetailsSection } from "@/components/judge/ProjectDetailsSection";
 import { JudgingInterface } from "@/components/judge/JudgingInterface";
@@ -17,12 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
 
-interface ProjectReviewPageProps {
-  params: Promise<{ id: string; projectId: string }>;
-}
-
-export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
-  const { id: hackathonId, projectId } = use(params);
+export default function ProjectReviewPage() {
+  const { id, projectId } = useParams<{ id: string; projectId: string }>();
+  const hackathonId = id as string;
 
   const {
     data: dbHackathon,
