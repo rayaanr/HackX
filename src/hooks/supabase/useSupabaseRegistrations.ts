@@ -182,6 +182,12 @@ async function updateRegistrationStatus({
     throw new Error("hackathonId is required");
   }
 
+  // Validate registration status against allowed values
+  const allowedStatuses = ["registered", "cancelled", "waitlist"] as const;
+  if (!status || !allowedStatuses.includes(status as any)) {
+    throw new Error("status must be one of: registered, cancelled, waitlist");
+  }
+
   const {
     data: { user },
     error: authError,
