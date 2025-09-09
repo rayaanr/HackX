@@ -170,7 +170,7 @@ export function JudgingInterface({
                     <div>
                       <FormField
                         control={form.control}
-                        name={`criteriaEvaluations.${criterion.name}.score`}
+                        name={`criteriaEvaluations.${criterion.id}.score`}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
