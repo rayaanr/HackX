@@ -56,7 +56,13 @@ export function ReviewActions({
         ])
       );
 
-      const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+      const allowed = new Set(
+        selectedCohort.evaluationCriteria.map((c) => String(c.points) && c.name).filter(Boolean)
+      );
+      const totalScore = Object.entries(scores).reduce(
+        (sum, [name, score]) => (allowed.has(name) ? sum + Number(score) : sum),
+        0
+      );
       const maxScore = selectedCohort.evaluationCriteria.reduce(
         (sum, criterion) => sum + criterion.points,
         0,
