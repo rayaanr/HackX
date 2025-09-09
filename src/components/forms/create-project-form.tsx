@@ -1,17 +1,18 @@
 "use client";
 
-import { FormProvider, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateProjectStepper } from "@/components/forms/create-project-stepper";
 import { projectSchema, ProjectFormData } from "@/lib/schemas/project-schema";
 import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export function CreateProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const methods = useForm<ProjectFormData>({
+  const form = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
       logo: "",
@@ -28,8 +29,6 @@ export function CreateProjectForm() {
       hackathonIds: [],
     },
   });
-
-  const { handleSubmit } = methods;
 
   const onSubmit = async (data: ProjectFormData) => {
     setIsSubmitting(true);
@@ -48,8 +47,8 @@ export function CreateProjectForm() {
   };
 
   return (
-    <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <CreateProjectStepper />
 
         <div className="flex justify-end gap-4 pt-8">
@@ -61,6 +60,6 @@ export function CreateProjectForm() {
           </Button>
         </div>
       </form>
-    </FormProvider>
+    </Form>
   );
 }
