@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client";
 import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
 
-
 interface ReviewActionsProps {
   projectId: string;
   hackathonId: string;
@@ -27,8 +26,9 @@ export function ReviewActions({
   setIsSubmitting,
   onSubmitSuccess,
 }: ReviewActionsProps) {
-  const isFormValid = formData && 
-    formData.selectedPrizeCohortId && 
+  const isFormValid =
+    formData &&
+    formData.selectedPrizeCohortId &&
     formData.overallFeedback.trim().length >= 10 &&
     Object.keys(formData.criteriaEvaluations).length > 0 &&
     Object.values(formData.criteriaEvaluations).every(
@@ -37,6 +37,7 @@ export function ReviewActions({
 
   const handleSubmitEvaluation = async () => {
     if (!selectedCohort || !formData || isSubmitting || !isFormValid) return;
+    if (formData.selectedPrizeCohortId !== selectedCohort.id) return;
 
     setIsSubmitting(true);
 
@@ -45,19 +46,21 @@ export function ReviewActions({
 
       // Calculate total score and max score from form data
       const scores = Object.fromEntries(
-        Object.entries(formData.criteriaEvaluations).map(([name, evaluation]) => [
-          name, evaluation.score
-        ])
+        Object.entries(formData.criteriaEvaluations).map(
+          ([name, evaluation]) => [name, evaluation.score]
+        )
       );
-      
+
       const feedback = Object.fromEntries(
-        Object.entries(formData.criteriaEvaluations).map(([name, evaluation]) => [
-          name, evaluation.feedback
-        ])
+        Object.entries(formData.criteriaEvaluations).map(
+          ([name, evaluation]) => [name, evaluation.feedback]
+        )
       );
 
       const allowed = new Set(
-        selectedCohort.evaluationCriteria.map((c) => String(c.points) && c.name).filter(Boolean)
+        selectedCohort.evaluationCriteria
+          .map((c) => String(c.points) && c.name)
+          .filter(Boolean)
       );
       const totalScore = Object.entries(scores).reduce(
         (sum, [name, score]) => (allowed.has(name) ? sum + Number(score) : sum),
@@ -65,7 +68,7 @@ export function ReviewActions({
       );
       const maxScore = selectedCohort.evaluationCriteria.reduce(
         (sum, criterion) => sum + criterion.points,
-        0,
+        0
       );
 
       const { error } = await supabase
@@ -84,7 +87,7 @@ export function ReviewActions({
           },
           {
             onConflict: "project_id,hackathon_id,prize_cohort_id,judge_email",
-          },
+          }
         )
         .select("id");
 
@@ -92,7 +95,7 @@ export function ReviewActions({
         console.error("Error submitting evaluation:", error);
         const errorMessage = error.message || "Unknown error occurred";
         alert(
-          `Failed to submit evaluation: ${errorMessage}. Please try again.`,
+          `Failed to submit evaluation: ${errorMessage}. Please try again.`
         );
         return;
       }
