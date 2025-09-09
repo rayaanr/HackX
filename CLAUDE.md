@@ -53,19 +53,21 @@ This is a Next.js 15 hackathon management application with Supabase backend inte
 - Zod schemas in `src/lib/schemas/` with cross-field validation
 - `hackathon-schema.ts` includes comprehensive validation for hackathon creation with date consistency checks
 
-**Component Organization**:
-- `src/components/ui/` - shadcn/ui base components
-- `src/components/layout/` - Layout and navigation components
-- `src/components/forms/` - Form components with stepper patterns
-- `src/components/hackathon/` - Hackathon-specific components
-- `src/components/dashboard/` - Dashboard-specific components
-- `src/hooks/` - Custom React hooks including TanStack Query hooks
+**Code Organization Rules**:
+- Components: `src/components/{feature}/` - Group by feature with creation/display subdirectories  
+- Hooks: `src/hooks/queries/` for TanStack Query, `src/hooks/supabase/` for direct DB operations
+- Utils: `src/lib/helpers/` for transformations, `src/lib/schemas/` for Zod validation
+- Types: `src/types/supabase.ts` (generated), `src/types/hackathon.ts` (UI mappings)
+- Constants: `src/constants/` for static data and configuration options
 
 **Routing Structure**:
 - `/` - Landing page (no sidebar)
 - `/dashboard` - Main dashboard with stats and recent hackathons
 - `/hackathons/` - Hackathon listing and individual hackathon pages
 - `/hackathons/create` - Multi-step hackathon creation form
+- `/hackathons/[id]/judge` - Judge dashboard for evaluating projects in a hackathon
+- `/hackathons/[id]/judge/[projectId]` - Individual project evaluation page for judges
+- `/judge` - Judge overview page showing all hackathons available for judging
 - `/projects/` - Project management pages
 - `/(auth)/login` and `/(auth)/signup` - Authentication pages (no sidebar)
 
