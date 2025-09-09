@@ -69,6 +69,7 @@ export function useJudgingForm({
     resolver: zodResolver(schema),
     defaultValues: generateDefaultFormValues(selectedCohort || null),
     mode: "onChange",
+    shouldUnregister: true, // Drop stale fields when form remounts
   });
 
   const { watch } = form;
