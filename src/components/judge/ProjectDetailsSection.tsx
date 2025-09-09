@@ -8,6 +8,7 @@ import type {
   HackathonComponentProps,
   ProjectComponentProps,
 } from "@/types/hackathon";
+import { getHackathonStatus } from "@/lib/helpers/hackathon-transforms";
 
 interface ProjectHackathon {
   hackathon: {
@@ -300,13 +301,11 @@ export function ProjectDetailsSection({
 
             return (
               <Card key={hackathonData.id} className="relative">
-                {submission.status === "submitted" && (
-                  <div className="absolute top-3 right-3">
-                    <Badge variant="default" className="bg-red-500">
-                      Ended
-                    </Badge>
-                  </div>
-                )}
+                <div className="absolute top-3 right-3">
+                  <Badge variant="default">
+                    {getHackathonStatus(hackathonData as any)}
+                  </Badge>
+                </div>
 
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">
