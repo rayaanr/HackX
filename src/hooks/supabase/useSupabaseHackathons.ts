@@ -12,7 +12,7 @@ import { EXPERIENCE_LEVEL_MAP } from "@/constants/hackathon";
 async function insertHackathonRelatedData(
   supabase: any,
   hackathonId: string,
-  formData: HackathonFormData
+  formData: HackathonFormData,
 ) {
   // Insert prize cohorts
   for (const cohort of formData.prizeCohorts) {
@@ -145,7 +145,7 @@ async function fetchUserHackathons(): Promise<HackathonWithRelations[]> {
           *,
           speaker:speakers (*)
         )
-      `
+      `,
     )
     .eq("created_by", user.id)
     .order("created_at", { ascending: false });
@@ -175,7 +175,7 @@ async function fetchAllHackathons(): Promise<HackathonWithRelations[]> {
           *,
           speaker:speakers (*)
         )
-      `
+      `,
     )
     .order("created_at", { ascending: false });
 
@@ -213,7 +213,7 @@ async function fetchHackathonById(id: string): Promise<HackathonWithRelations> {
           *,
           speaker:speakers (*)
         )
-      `
+      `,
     )
     .eq("id", id)
     .eq("created_by", user.id)
@@ -231,7 +231,7 @@ async function fetchHackathonById(id: string): Promise<HackathonWithRelations> {
 
 // Fetch single hackathon by ID for public access
 async function fetchHackathonByIdPublic(
-  id: string
+  id: string,
 ): Promise<HackathonWithRelations> {
   const supabase = createClient();
 
@@ -249,7 +249,7 @@ async function fetchHackathonByIdPublic(
           *,
           speaker:speakers (*)
         )
-      `
+      `,
     )
     .eq("id", id)
     .single();
@@ -266,7 +266,7 @@ async function fetchHackathonByIdPublic(
 
 // Create a new hackathon
 async function createHackathon(
-  formData: HackathonFormData
+  formData: HackathonFormData,
 ): Promise<HackathonWithRelations> {
   const supabase = createClient();
   let hackathonId: string | null = null;
@@ -340,7 +340,7 @@ async function createHackathon(
             *,
             speaker:speakers (*)
           )
-        `
+        `,
       )
       .eq("id", hackathonId)
       .single();
@@ -359,7 +359,7 @@ async function createHackathon(
       }
     } catch (_) {}
     throw new Error(
-      error instanceof Error ? error.message : "Failed to create hackathon"
+      error instanceof Error ? error.message : "Failed to create hackathon",
     );
   }
 }
@@ -469,7 +469,7 @@ async function updateHackathon({
       // Deduplicate and filter out nulls
       const validSpeakerIds = [
         ...new Set(
-          speakerIds.map((slot) => slot.speaker_id).filter((id) => id !== null)
+          speakerIds.map((slot) => slot.speaker_id).filter((id) => id !== null),
         ),
       ];
 
@@ -497,7 +497,7 @@ async function updateHackathon({
             *,
             speaker:speakers (*)
           )
-        `
+        `,
       )
       .eq("id", hackathonId)
       .single();
@@ -510,7 +510,7 @@ async function updateHackathon({
   } catch (error) {
     console.error("Error updating hackathon:", error);
     throw new Error(
-      error instanceof Error ? error.message : "Failed to update hackathon"
+      error instanceof Error ? error.message : "Failed to update hackathon",
     );
   }
 }
@@ -538,7 +538,7 @@ async function deleteHackathon(hackathonId: string): Promise<void> {
 
   if (error) {
     throw new Error(
-      error instanceof Error ? error.message : "Failed to delete hackathon"
+      error instanceof Error ? error.message : "Failed to delete hackathon",
     );
   }
 

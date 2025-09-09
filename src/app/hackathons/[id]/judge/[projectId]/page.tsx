@@ -10,10 +10,10 @@ import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { notFound } from "next/navigation";
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { ProjectReviewHeader } from "@/components/judge/ProjectReviewHeader";
-import { ProjectDetailsSection } from "@/components/judge/ProjectDetailsSection";
-import { JudgingInterface } from "@/components/judge/JudgingInterface";
-import { ReviewActions } from "@/components/judge/ReviewActions";
+import { ProjectReviewHeader } from "@/components/judge/project-evaluation-header";
+import { ProjectDetailsSection } from "@/components/judge/project-details-viewer";
+import { JudgingInterface } from "@/components/judge/project-evaluation-form";
+import { ReviewActions } from "@/components/judge/evaluation-submit-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
@@ -44,10 +44,10 @@ export default function ProjectReviewPage() {
 
   // State for form data and selected cohort
   const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(
-    null
+    null,
   );
   const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(
-    undefined
+    undefined,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -112,7 +112,7 @@ export default function ProjectReviewPage() {
 
   // Check if current user is assigned as judge for this hackathon
   const isAuthorizedJudge = hackathon?.judges?.some(
-    (judge) => judge.email === judgeEmail
+    (judge) => judge.email === judgeEmail,
   );
   if (!isAuthorizedJudge) {
     return (

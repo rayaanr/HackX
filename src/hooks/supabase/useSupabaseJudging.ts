@@ -55,7 +55,7 @@ async function fetchJudgeAssignments(): Promise<JudgeAssignment[]> {
       *,
       hackathon:hackathons(*),
       prize_cohort:prize_cohorts(*)
-    `
+    `,
     )
     .eq("judge_email", user.email)
     .order("assigned_at", { ascending: false });
@@ -129,7 +129,7 @@ async function fetchProjectsToEvaluate({
         *,
         judge:judges(*)
       )
-    `
+    `,
     )
     .eq("hackathon_id", hackathonId)
     .eq("status", "submitted")
@@ -167,7 +167,7 @@ async function submitJudgeEvaluation({
   // Calculate total score
   const totalScore = Object.values(evaluationData.criteriaEvaluations).reduce(
     (sum, criteria) => sum + criteria.score,
-    0
+    0,
   );
 
   // Check if evaluation already exists
@@ -181,7 +181,7 @@ async function submitJudgeEvaluation({
 
   if (checkError && checkError.code !== "PGRST116") {
     throw new Error(
-      `Failed to check existing evaluation: ${checkError.message}`
+      `Failed to check existing evaluation: ${checkError.message}`,
     );
   }
 
@@ -261,7 +261,7 @@ async function fetchProjectEvaluation({
 
 // Fetch all evaluations for a hackathon (for hackathon organizers)
 async function fetchHackathonEvaluations(
-  hackathonId: string
+  hackathonId: string,
 ): Promise<JudgeEvaluation[]> {
   const supabase = createClient();
 
@@ -283,7 +283,7 @@ async function fetchHackathonEvaluations(
 
   if (hackathonError || hackathon.created_by !== user.id) {
     throw new Error(
-      "Access denied: Only hackathon organizers can view all evaluations"
+      "Access denied: Only hackathon organizers can view all evaluations",
     );
   }
 
@@ -294,7 +294,7 @@ async function fetchHackathonEvaluations(
       *,
       project:projects(*),
       prize_cohort:prize_cohorts(*)
-    `
+    `,
     )
     .eq("hackathon_id", hackathonId)
     .order("created_at", { ascending: false });
@@ -328,7 +328,7 @@ async function calculateHackathonRankings(hackathonId: string): Promise<any[]> {
 
   if (hackathonError || hackathon.created_by !== user.id) {
     throw new Error(
-      "Access denied: Only hackathon organizers can calculate rankings"
+      "Access denied: Only hackathon organizers can calculate rankings",
     );
   }
 
@@ -342,13 +342,13 @@ async function calculateHackathonRankings(hackathonId: string): Promise<any[]> {
       total_score,
       project:projects(name, description),
       prize_cohort:prize_cohorts(name)
-    `
+    `,
     )
     .eq("hackathon_id", hackathonId);
 
   if (error) {
     throw new Error(
-      `Failed to fetch evaluations for ranking: ${error.message}`
+      `Failed to fetch evaluations for ranking: ${error.message}`,
     );
   }
 

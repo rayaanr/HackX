@@ -3,10 +3,9 @@
 import { defineStepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
 import { Fragment } from "react";
-import { OverviewStep } from "./steps/overview";
-import { PrizesStep } from "./steps/prizes";
-import { JudgesStep } from "./steps/judges";
-import { ScheduleStep } from "./steps/schedule";
+import { OverviewStep } from "./project-overview-step";
+import { TechStackStep } from "./project-tech-stack-step";
+import { HackathonSelectionStep } from "./project-hackathon-selection-step";
 
 const { Stepper } = defineStepper(
   {
@@ -14,30 +13,20 @@ const { Stepper } = defineStepper(
     title: "Overview",
   },
   {
-    id: "prizes",
-    title: "Prizes",
+    id: "tech-stack",
+    title: "Tech Stack",
   },
   {
-    id: "judges",
-    title: "Judges",
-  },
-  {
-    id: "schedule",
-    title: "Schedule",
+    id: "hackathon",
+    title: "Select Hackathon",
   },
 );
 
-interface CreateHackathonStepperProps {
-  isSubmitting?: boolean;
-}
-
-export function CreateHackathonStepper({
-  isSubmitting = false,
-}: CreateHackathonStepperProps) {
+export function CreateProjectStepper() {
   return (
     <div className="flex w-full flex-col gap-8">
       <Stepper.Provider
-        className="space-y-8"
+        className="space-y-4"
         variant="horizontal"
         labelOrientation="horizontal"
       >
@@ -60,46 +49,30 @@ export function CreateHackathonStepper({
                   <OverviewStep />
                 </Stepper.Panel>
               ),
-              prizes: () => (
+              "tech-stack": () => (
                 <Stepper.Panel>
-                  <PrizesStep />
+                  <TechStackStep />
                 </Stepper.Panel>
               ),
-              judges: () => (
+              hackathon: () => (
                 <Stepper.Panel>
-                  <JudgesStep />
-                </Stepper.Panel>
-              ),
-              schedule: () => (
-                <Stepper.Panel>
-                  <ScheduleStep />
+                  <HackathonSelectionStep />
                 </Stepper.Panel>
               ),
             })}
             <Stepper.Controls>
               {!methods.isFirst && (
                 <Button
-                  type="button"
                   variant="secondary"
                   onClick={methods.prev}
-                  disabled={methods.isFirst || isSubmitting}
+                  disabled={methods.isFirst}
                 >
                   Previous
                 </Button>
               )}
-              {methods.isLast ? (
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating Hackathon..." : "Create Hackathon"}
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={methods.next}
-                  disabled={isSubmitting}
-                >
-                  Next
-                </Button>
-              )}
+              <Button onClick={methods.isLast ? methods.reset : methods.next}>
+                {methods.isLast ? "Reset" : "Next"}
+              </Button>
             </Stepper.Controls>
           </Fragment>
         )}

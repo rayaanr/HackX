@@ -70,7 +70,7 @@ function createErrorHandler(router: any) {
 function validateHackathonForm(
   data: HackathonFormData,
   setError: any,
-  clearErrors: any
+  clearErrors: any,
 ): boolean {
   // Validate date consistency (client-side pre-validation)
   const dateErrors = validateDateConsistency(data);

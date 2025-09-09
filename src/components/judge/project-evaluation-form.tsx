@@ -39,16 +39,12 @@ export function JudgingInterface({
   onFormDataChange,
   onSelectedCohortChange,
 }: JudgingInterfaceProps) {
-  const {
-    form,
-    selectedCohort,
-    selectedCohortId,
-    handleCohortChange,
-  } = useJudgingForm({
-    hackathon,
-    onFormDataChange,
-    onSelectedCohortChange,
-  });
+  const { form, selectedCohort, selectedCohortId, handleCohortChange } =
+    useJudgingForm({
+      hackathon,
+      onFormDataChange,
+      onSelectedCohortChange,
+    });
 
   return (
     <JudgingFormContent

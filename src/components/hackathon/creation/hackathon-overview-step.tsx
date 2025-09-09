@@ -22,7 +22,7 @@ import { FileUploadField } from "@/components/ui/file-upload";
 import { useFormContext } from "react-hook-form";
 import { type HackathonFormData } from "@/lib/schemas/hackathon-schema";
 import { LexicalEditor } from "@/components/ui/rich-text-editor";
-import { SocialLinksInput } from "@/components/hackathon/create/steps/social-links-input";
+import { SocialLinksInput } from "./social-links-input";
 import MultipleSelector from "@/components/ui/multiselect";
 import { TECH_STACK } from "@/constants/tech-stack";
 

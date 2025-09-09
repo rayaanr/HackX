@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { ActiveProjects } from "@/components/projects/active-projects";
-import { RegisteredHackathons } from "@/components/projects/registered-hackathons";
+import { ActiveProjects } from "@/components/projects/display/active-projects";
+import { RegisteredHackathons } from "@/components/projects/display/registered-hackathons";
 
 export default function ProjectsPage() {
   return (

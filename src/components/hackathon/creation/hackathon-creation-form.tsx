@@ -1,7 +1,7 @@
 "use client";
 
 import { Form } from "@/components/ui/form";
-import { CreateHackathonStepper } from "./stepper";
+import { CreateHackathonStepper } from "./hackathon-creation-stepper";
 import { useHackathonForm } from "@/hooks/useHackathonForm";
 export function CreateHackathonForm() {
   const { methods, onSubmit, isSubmitting } = useHackathonForm();
@@ -23,9 +23,7 @@ export function CreateHackathonForm() {
           }
         }}
       >
-        <CreateHackathonStepper
-          isSubmitting={isSubmitting}
-        />
+        <CreateHackathonStepper isSubmitting={isSubmitting} />
       </form>
     </Form>
   );

@@ -20,7 +20,7 @@ interface JudgingFormOptions {
 
 // Helper function to generate default values for evaluation form
 function generateDefaultFormValues(
-  cohort: PrizeCohort | null
+  cohort: PrizeCohort | null,
 ): JudgeEvaluationFormData {
   const criteriaEvaluations: Record<string, CriterionEvaluation> = {};
 
@@ -47,12 +47,12 @@ export function useJudgingForm({
 }: JudgingFormOptions) {
   // State for cohort selection
   const [selectedCohortId, setSelectedCohortId] = useState<string>(
-    hackathon.prizeCohorts[0]?.id || ""
+    hackathon.prizeCohorts[0]?.id || "",
   );
 
   // Find the selected cohort
   const selectedCohort = hackathon.prizeCohorts.find(
-    (cohort) => cohort.id === selectedCohortId
+    (cohort) => cohort.id === selectedCohortId,
   );
 
   // Handle cohort selection change

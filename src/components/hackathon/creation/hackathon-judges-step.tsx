@@ -55,7 +55,7 @@ export function JudgesStep() {
 
     const judgeInvitation = composeJudgeInvitation(
       newJudgeEmail,
-      hackathonName
+      hackathonName,
     );
 
     appendJudge({

@@ -11,7 +11,7 @@ import { transformProjectToUI } from "@/lib/helpers/project";
 
 // Fetch projects by hackathon ID
 async function fetchProjectsByHackathon(
-  hackathonId: string
+  hackathonId: string,
 ): Promise<UIProject[]> {
   const supabase = createClient();
 
@@ -21,7 +21,7 @@ async function fetchProjectsByHackathon(
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .eq("hackathon_id", hackathonId)
     .order("updated_at", { ascending: false });
@@ -35,7 +35,7 @@ async function fetchProjectsByHackathon(
 
 // Fetch submitted projects by hackathon ID
 async function fetchSubmittedProjectsByHackathon(
-  hackathonId: string
+  hackathonId: string,
 ): Promise<UIProject[]> {
   const supabase = createClient();
 
@@ -45,7 +45,7 @@ async function fetchSubmittedProjectsByHackathon(
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .eq("hackathon_id", hackathonId)
     .eq("status", "submitted")
@@ -68,7 +68,7 @@ async function fetchProjectById(projectId: string): Promise<UIProject> {
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .eq("id", projectId)
     .single();
@@ -93,7 +93,7 @@ async function fetchUserProjects(): Promise<UIProject[]> {
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .order("updated_at", { ascending: false });
 
@@ -106,7 +106,7 @@ async function fetchUserProjects(): Promise<UIProject[]> {
 
 // Create a new project
 async function createProject(
-  projectData: Partial<UIProject>
+  projectData: Partial<UIProject>,
 ): Promise<ProjectWithHackathon> {
   const supabase = createClient();
 
@@ -136,7 +136,7 @@ async function createProject(
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .single();
 
@@ -217,7 +217,7 @@ async function updateProject({
       `
       *,
       hackathon:hackathons(*)
-    `
+    `,
     )
     .single();
 
@@ -251,7 +251,7 @@ async function deleteProject(projectId: string): Promise<void> {
 
   if (error) {
     throw new Error(
-      error instanceof Error ? error.message : "Failed to delete project"
+      error instanceof Error ? error.message : "Failed to delete project",
     );
   }
 
@@ -284,7 +284,7 @@ async function fetchProjectHackathons(projectId: string): Promise<any[]> {
           description
         )
       )
-    `
+    `,
     )
     .eq("project_id", projectId)
     .order("submitted_at", { ascending: false });
