@@ -50,11 +50,13 @@ async function fetchJudgeAssignments(): Promise<JudgeAssignment[]> {
 
   const { data: assignments, error } = await supabase
     .from("judge_assignments")
-    .select(`
+    .select(
+      `
       *,
       hackathon:hackathons(*),
       prize_cohort:prize_cohorts(*)
-    `)
+    `
+    )
     .eq("judge_email", user.email)
     .order("assigned_at", { ascending: false });
 
@@ -120,13 +122,15 @@ async function fetchProjectsToEvaluate({
 
   const { data: projects, error } = await supabase
     .from("projects")
-    .select(`
+    .select(
+      `
       *,
       evaluations:judge_evaluations(
         *,
         judge:judges(*)
       )
-    `)
+    `
+    )
     .eq("hackathon_id", hackathonId)
     .eq("status", "submitted")
     .eq("evaluations.prize_cohort_id", prizeCohortId)
@@ -176,7 +180,9 @@ async function submitJudgeEvaluation({
     .single();
 
   if (checkError && checkError.code !== "PGRST116") {
-    throw new Error(`Failed to check existing evaluation: ${checkError.message}`);
+    throw new Error(
+      `Failed to check existing evaluation: ${checkError.message}`
+    );
   }
 
   const evaluationPayload = {
@@ -254,7 +260,9 @@ async function fetchProjectEvaluation({
 }
 
 // Fetch all evaluations for a hackathon (for hackathon organizers)
-async function fetchHackathonEvaluations(hackathonId: string): Promise<JudgeEvaluation[]> {
+async function fetchHackathonEvaluations(
+  hackathonId: string
+): Promise<JudgeEvaluation[]> {
   const supabase = createClient();
 
   const {
@@ -274,16 +282,20 @@ async function fetchHackathonEvaluations(hackathonId: string): Promise<JudgeEval
     .single();
 
   if (hackathonError || hackathon.created_by !== user.id) {
-    throw new Error("Access denied: Only hackathon organizers can view all evaluations");
+    throw new Error(
+      "Access denied: Only hackathon organizers can view all evaluations"
+    );
   }
 
   const { data: evaluations, error } = await supabase
     .from("judge_evaluations")
-    .select(`
+    .select(
+      `
       *,
       project:projects(*),
       prize_cohort:prize_cohorts(*)
-    `)
+    `
+    )
     .eq("hackathon_id", hackathonId)
     .order("created_at", { ascending: false });
 
@@ -315,28 +327,34 @@ async function calculateHackathonRankings(hackathonId: string): Promise<any[]> {
     .single();
 
   if (hackathonError || hackathon.created_by !== user.id) {
-    throw new Error("Access denied: Only hackathon organizers can calculate rankings");
+    throw new Error(
+      "Access denied: Only hackathon organizers can calculate rankings"
+    );
   }
 
   // This would involve complex aggregation - for now, return a simplified version
   const { data: evaluations, error } = await supabase
     .from("judge_evaluations")
-    .select(`
+    .select(
+      `
       project_id,
       prize_cohort_id,
       total_score,
       project:projects(name, description),
       prize_cohort:prize_cohorts(name)
-    `)
+    `
+    )
     .eq("hackathon_id", hackathonId);
 
   if (error) {
-    throw new Error(`Failed to fetch evaluations for ranking: ${error.message}`);
+    throw new Error(
+      `Failed to fetch evaluations for ranking: ${error.message}`
+    );
   }
 
   // Group by project and prize cohort, calculate average scores
   const projectScores: Record<string, any> = {};
-  
+
   evaluations?.forEach((evaluation) => {
     const key = `${evaluation.project_id}-${evaluation.prize_cohort_id}`;
     if (!projectScores[key]) {
@@ -356,7 +374,9 @@ async function calculateHackathonRankings(hackathonId: string): Promise<any[]> {
   const rankings = Object.values(projectScores)
     .map((projectScore: any) => ({
       ...projectScore,
-      average_score: projectScore.scores.reduce((a: number, b: number) => a + b, 0) / projectScore.scores.length,
+      average_score:
+        projectScore.scores.reduce((a: number, b: number) => a + b, 0) /
+        projectScore.scores.length,
       judge_count: projectScore.scores.length,
     }))
     .sort((a, b) => b.average_score - a.average_score);
@@ -500,7 +520,12 @@ export function useSubmitJudgeEvaluation() {
     onSuccess: (data, { projectId, hackathonId, evaluationData }) => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({
-        queryKey: ["judge", "evaluation", projectId, evaluationData.selectedPrizeCohortId],
+        queryKey: [
+          "judge",
+          "evaluation",
+          projectId,
+          evaluationData.selectedPrizeCohortId,
+        ],
       });
       queryClient.invalidateQueries({
         queryKey: ["hackathon", "evaluations", hackathonId],

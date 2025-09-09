@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -19,7 +19,9 @@ interface JudgingFormOptions {
 }
 
 // Helper function to generate default values for evaluation form
-function generateDefaultFormValues(cohort: PrizeCohort | null): JudgeEvaluationFormData {
+function generateDefaultFormValues(
+  cohort: PrizeCohort | null
+): JudgeEvaluationFormData {
   const criteriaEvaluations: Record<string, CriterionEvaluation> = {};
 
   if (cohort) {
@@ -38,15 +40,19 @@ function generateDefaultFormValues(cohort: PrizeCohort | null): JudgeEvaluationF
   };
 }
 
-export function useJudgingForm({ hackathon, onFormDataChange, onSelectedCohortChange }: JudgingFormOptions) {
+export function useJudgingForm({
+  hackathon,
+  onFormDataChange,
+  onSelectedCohortChange,
+}: JudgingFormOptions) {
   // State for cohort selection
   const [selectedCohortId, setSelectedCohortId] = useState<string>(
-    hackathon.prizeCohorts[0]?.id || "",
+    hackathon.prizeCohorts[0]?.id || ""
   );
 
   // Find the selected cohort
   const selectedCohort = hackathon.prizeCohorts.find(
-    (cohort) => cohort.id === selectedCohortId,
+    (cohort) => cohort.id === selectedCohortId
   );
 
   // Handle cohort selection change
@@ -87,11 +93,18 @@ export function useJudgingForm({ hackathon, onFormDataChange, onSelectedCohortCh
     form.reset(generateDefaultFormValues(selectedCohort || null));
   }, [selectedCohort, form]);
 
+  // Create a formKey that changes whenever selectedCohortId changes
+  // This allows consumers to force-remount the form on cohort switch
+  const formKey = useMemo(() => {
+    return `judging-form-${selectedCohortId || "no-cohort"}`;
+  }, [selectedCohortId]);
+
   return {
     form,
     selectedCohort,
     selectedCohortId,
     handleCohortChange,
     hackathon,
+    formKey,
   };
 }
