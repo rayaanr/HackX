@@ -1,12 +1,13 @@
 "use client";
 
+import { Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play } from "lucide-react";
-import type { ProjectComponentProps, HackathonComponentProps } from "@/types/hackathon";
-
+import type {
+  HackathonComponentProps,
+  ProjectComponentProps,
+} from "@/types/hackathon";
 
 interface ProjectHackathon {
   hackathon: {
@@ -82,9 +83,7 @@ export function ProjectDetailsSection({
           {/* Project Description */}
           {project?.description && (
             <div>
-              <h3 className="text-lg font-semibold mb-3">
-                Project Details
-              </h3>
+              <h3 className="text-lg font-semibold mb-3">Project Details</h3>
               <p className="text-muted-foreground leading-relaxed">
                 {project.description || "No description available"}
               </p>
@@ -95,56 +94,89 @@ export function ProjectDetailsSection({
         {/* Sidebar */}
         <div className="space-y-4">
           {/* Team Leader */}
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">
-              Team Leader
-            </h4>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Amaan Sayyad</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  Github link
-                </span>
-                <a
-                  href="https://github.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 text-xs"
-                >
-                  github.com ↗
-                </a>
+          {(() => {
+            // Find team leader from team members array
+            const teamLeader =
+              project.team_members?.find((member: unknown) => {
+                if (typeof member === "object" && member !== null) {
+                  const memberObj = member as Record<string, unknown>;
+                  return (
+                    (typeof memberObj.role === "string" &&
+                      memberObj.role.toLowerCase().includes("leader")) ||
+                    (typeof memberObj.role === "string" &&
+                      memberObj.role.toLowerCase().includes("lead")) ||
+                    memberObj.isLeader === true
+                  );
+                }
+                return false;
+              }) || project.team_members?.[0]; // fallback to first member
+
+            const getLeaderData = (leader: unknown) => {
+              if (typeof leader === "string") {
+                return { name: leader, github: undefined };
+              }
+              if (typeof leader === "object" && leader !== null) {
+                const leaderObj = leader as Record<string, unknown>;
+                return {
+                  name:
+                    typeof leaderObj.name === "string"
+                      ? leaderObj.name
+                      : "Team Leader",
+                  github:
+                    typeof leaderObj.github === "string"
+                      ? leaderObj.github
+                      : typeof leaderObj.githubUsername === "string"
+                        ? leaderObj.githubUsername
+                        : undefined,
+                };
+              }
+              return null;
+            };
+
+            const leaderData = teamLeader ? getLeaderData(teamLeader) : null;
+
+            return leaderData ? (
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                  Team Leader
+                </h4>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">{leaderData.name}</span>
+                  {leaderData.github && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        Github link
+                      </span>
+                      <a
+                        href={`https://github.com/${leaderData.github}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 text-xs"
+                      >
+                        github.com/{leaderData.github} ↗
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
+            ) : null;
+          })()}
 
           {/* Sector */}
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">
-              Sector
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              <Badge variant="secondary" className="text-xs">
-                SocialFi
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                Infra
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                GameFi
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                NFT
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                AI
-              </Badge>
+          {project.sector && project.sector.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                Sector
+              </h4>
+              <div className="flex flex-wrap gap-1">
+                {project.sector.map((sector) => (
+                  <Badge key={sector} variant="secondary" className="text-xs">
+                    {sector}
+                  </Badge>
+                ))}
+              </div>
             </div>
-            <div className="mt-1">
-              <Badge variant="secondary" className="text-xs">
-                DeFi
-              </Badge>
-            </div>
-          </div>
+          )}
 
           {project.team_members && (
             <div>
@@ -154,7 +186,7 @@ export function ProjectDetailsSection({
               <div className="space-y-2">
                 {project.team_members.map((member, index) => {
                   // Handle different member formats
-                  const getMemberData = (member: any) => {
+                  const getMemberData = (member: unknown) => {
                     if (typeof member === "string") {
                       return {
                         name: member,
@@ -163,10 +195,20 @@ export function ProjectDetailsSection({
                       };
                     }
                     if (typeof member === "object" && member !== null) {
+                      const memberObj = member as Record<string, unknown>;
                       return {
-                        name: member.name || "?",
-                        role: member.role,
-                        github: member.github,
+                        name:
+                          typeof memberObj.name === "string"
+                            ? memberObj.name
+                            : "?",
+                        role:
+                          typeof memberObj.role === "string"
+                            ? memberObj.role
+                            : undefined,
+                        github:
+                          typeof memberObj.github === "string"
+                            ? memberObj.github
+                            : undefined,
                       };
                     }
                     return {
@@ -178,15 +220,10 @@ export function ProjectDetailsSection({
 
                   const memberData = getMemberData(member);
                   const stableKey =
-                    memberData.github ||
-                    memberData.name ||
-                    `member-${index}`;
+                    memberData.github || memberData.name || `member-${index}`;
 
                   return (
-                    <div
-                      key={stableKey}
-                      className="flex items-center gap-2"
-                    >
+                    <div key={stableKey} className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
                         <span className="text-xs font-medium">
                           {memberData.name.charAt(0) || "?"}
@@ -239,9 +276,7 @@ export function ProjectDetailsSection({
               Status
             </h4>
             <Badge
-              variant={
-                project.status === "submitted" ? "default" : "secondary"
-              }
+              variant={project.status === "submitted" ? "default" : "secondary"}
             >
               {project.status}
             </Badge>
@@ -259,8 +294,8 @@ export function ProjectDetailsSection({
         <div className="grid gap-6 md:grid-cols-2">
           {projectHackathons.map((submission) => {
             const hackathonData = submission.hackathon;
-            const startDate = new Date(hackathonData.hackathon_start_date);
-            const endDate = new Date(hackathonData.hackathon_end_date);
+            const _startDate = new Date(hackathonData.hackathon_start_date);
+            const _endDate = new Date(hackathonData.hackathon_end_date);
 
             return (
               <Card key={hackathonData.id} className="relative">

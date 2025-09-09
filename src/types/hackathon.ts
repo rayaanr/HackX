@@ -139,6 +139,7 @@ export interface ProjectComponentProps {
   team_members?: any[];
   tech_stack: string[];
   status: string;
+  sector?: string[];
 }
 
 export interface HackathonComponentProps {
