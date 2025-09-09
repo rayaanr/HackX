@@ -8,90 +8,78 @@ import "./Hackathon.sol";
 
 /**
  * @title ProjectRegistry
- * @dev Project submission and metadata management system
- * @author HackX Team
+ * @dev Registry for managing hackathon project submissions with IPFS metadata storage
  */
 contract ProjectRegistry is ReentrancyGuard, Pausable, Ownable {
     // Enums
     enum SubmissionStatus {
-        Draft, // Project created but not submitted
-        Submitted, // Project submitted before deadline
-        Evaluated // Project has been evaluated by judges
+        DRAFT,
+        SUBMITTED,
+        EVALUATED
     }
 
     // Structs
     struct Project {
-        uint256 projectId;
+        string ipfsHash;           // IPFS hash containing all project metadata
+        address creator;
         uint256 hackathonId;
-        address teamLead;
-        string name;
-        string description;
-        string ipfsHash; // IPFS hash for detailed project data
-        string repositoryUrl;
-        string demoUrl;
-        string[] techStack;
         SubmissionStatus status;
-        uint256 submissionTimestamp;
+        uint256 createdAt;
+        uint256 submittedAt;
+        address[] teamMembers;
+        mapping(address => bool) isTeamMember;
+        mapping(address => string) memberRoles;
         bool exists;
     }
 
-    struct TeamMember {
-        address member;
-        string role;
-        bool isActive;
-        uint256 joinedAt;
-    }
+    // State variables
+    mapping(uint256 => Project) public projects;
+    mapping(uint256 => address) public hackathonContracts;
+    mapping(address => uint256[]) public creatorProjects;
+    mapping(uint256 => uint256[]) public hackathonProjects;
+    mapping(string => bool) public registeredIpfsHashes; // Prevent duplicate IPFS hashes
+    uint256 public nextProjectId;
 
     // Events
     event ProjectCreated(
         uint256 indexed projectId,
-        uint256 indexed hackathonId,
-        address indexed teamLead,
-        string name
+        string ipfsHash,
+        address indexed creator,
+        uint256 indexed hackathonId
     );
-
-    event ProjectSubmitted(
+    
+    event ProjectUpdated(
         uint256 indexed projectId,
-        uint256 indexed hackathonId,
-        address indexed teamLead,
-        uint256 timestamp
+        string newIpfsHash
     );
-
+    
     event TeamMemberAdded(
         uint256 indexed projectId,
         address indexed member,
         string role
     );
-
-    event TeamMemberRemoved(uint256 indexed projectId, address indexed member);
-
-    event ProjectUpdated(
+    
+    event TeamMemberRemoved(
         uint256 indexed projectId,
-        string field,
-        string newValue
+        address indexed member
+    );
+    
+    event ProjectSubmitted(
+        uint256 indexed projectId,
+        address indexed submitter,
+        uint256 submittedAt
+    );
+    
+    event HackathonRegistered(
+        uint256 indexed hackathonId,
+        address indexed hackathonContract
     );
 
-    // State variables
-    uint256 private nextProjectId;
-    mapping(uint256 => Project) public projects;
-    mapping(uint256 => address[]) public projectTeamMembers;
-    mapping(uint256 => mapping(address => TeamMember)) public teamMemberDetails;
-    mapping(uint256 => uint256[]) public hackathonProjects; // hackathonId => projectIds
-    mapping(address => uint256[]) public userProjects; // user => projectIds
-    mapping(string => bool) public registeredRepositories; // prevent duplicate repos
-
-    // Hackathon contract reference for validation
-    mapping(uint256 => address) public hackathonContracts;
-
     // Modifiers
-    modifier onlyTeamLead(uint256 _projectId) {
+    modifier projectExists(uint256 _projectId) {
         require(
             projects[_projectId].exists,
             "ProjectRegistry: project does not exist"
-        );
-        require(
-            projects[_projectId].teamLead == msg.sender,
-            "ProjectRegistry: caller is not team lead"
         );
         _;
     }
@@ -102,36 +90,27 @@ contract ProjectRegistry is ReentrancyGuard, Pausable, Ownable {
             "ProjectRegistry: project does not exist"
         );
         require(
-            projects[_projectId].teamLead == msg.sender ||
-                teamMemberDetails[_projectId][msg.sender].isActive,
+            projects[_projectId].isTeamMember[msg.sender],
             "ProjectRegistry: caller is not a team member"
         );
         _;
     }
 
-    modifier onlyBeforeDeadline(uint256 _projectId) {
+    modifier onlyCreator(uint256 _projectId) {
         require(
             projects[_projectId].exists,
             "ProjectRegistry: project does not exist"
         );
-        uint256 hackathonId = projects[_projectId].hackathonId;
-        address hackathonContract = hackathonContracts[hackathonId];
         require(
-            hackathonContract != address(0),
-            "ProjectRegistry: hackathon contract not registered"
-        );
-
-        Hackathon hackathon = Hackathon(hackathonContract);
-        require(
-            block.timestamp <= hackathon.hackathonEnd(),
-            "ProjectRegistry: submission deadline passed"
+            projects[_projectId].creator == msg.sender,
+            "ProjectRegistry: caller is not the project creator"
         );
         _;
     }
 
-    modifier onlyDraftStatus(uint256 _projectId) {
+    modifier onlyDraftProject(uint256 _projectId) {
         require(
-            projects[_projectId].status == SubmissionStatus.Draft,
+            projects[_projectId].status == SubmissionStatus.DRAFT,
             "ProjectRegistry: project already submitted"
         );
         _;
@@ -155,89 +134,104 @@ contract ProjectRegistry is ReentrancyGuard, Pausable, Ownable {
             "ProjectRegistry: invalid contract address"
         );
         hackathonContracts[_hackathonId] = _hackathonContract;
+        emit HackathonRegistered(_hackathonId, _hackathonContract);
     }
 
     /**
-     * @dev Create a new project (draft state)
+     * @dev Create a new project with IPFS metadata
      * @param _hackathonId Hackathon ID
-     * @param _name Project name
-     * @param _description Project description
-     * @param _repositoryUrl Repository URL
+     * @param _ipfsHash IPFS hash containing project metadata (name, description, repo URL, etc.)
      * @return projectId The created project ID
      */
     function createProject(
         uint256 _hackathonId,
-        string calldata _name,
-        string calldata _description,
-        string calldata _repositoryUrl
+        string calldata _ipfsHash
     ) external whenNotPaused nonReentrant returns (uint256) {
         require(
-            bytes(_name).length > 0,
-            "ProjectRegistry: name cannot be empty"
+            bytes(_ipfsHash).length > 0,
+            "ProjectRegistry: IPFS hash cannot be empty"
         );
         require(
-            bytes(_repositoryUrl).length > 0,
-            "ProjectRegistry: repository URL cannot be empty"
+            !registeredIpfsHashes[_ipfsHash],
+            "ProjectRegistry: IPFS hash already registered"
         );
-        require(
-            !registeredRepositories[_repositoryUrl],
-            "ProjectRegistry: repository already registered"
-        );
-
-        // Validate hackathon exists and caller is registered participant
+        
         address hackathonContract = hackathonContracts[_hackathonId];
         require(
             hackathonContract != address(0),
             "ProjectRegistry: hackathon not registered"
         );
 
+        // Validate user is registered for the hackathon
         Hackathon hackathon = Hackathon(hackathonContract);
         require(
             hackathon.isParticipant(msg.sender),
-            "ProjectRegistry: caller is not a participant"
-        );
-        require(
-            hackathon.currentPhase() == Hackathon.Phase.Hackathon,
-            "ProjectRegistry: not in hackathon phase"
+            "ProjectRegistry: user not registered for hackathon"
         );
 
         uint256 projectId = nextProjectId++;
-
-        projects[projectId] = Project({
-            projectId: projectId,
-            hackathonId: _hackathonId,
-            teamLead: msg.sender,
-            name: _name,
-            description: _description,
-            ipfsHash: "",
-            repositoryUrl: _repositoryUrl,
-            demoUrl: "",
-            techStack: new string[](0),
-            status: SubmissionStatus.Draft,
-            submissionTimestamp: 0,
-            exists: true
-        });
-
-        // Add team lead as first team member
-        projectTeamMembers[projectId].push(msg.sender);
-        teamMemberDetails[projectId][msg.sender] = TeamMember({
-            member: msg.sender,
-            role: "Team Lead",
-            isActive: true,
-            joinedAt: block.timestamp
-        });
-
+        Project storage project = projects[projectId];
+        
+        project.ipfsHash = _ipfsHash;
+        project.creator = msg.sender;
+        project.hackathonId = _hackathonId;
+        project.status = SubmissionStatus.DRAFT;
+        project.createdAt = block.timestamp;
+        project.exists = true;
+        
+        // Add creator as team member
+        project.teamMembers.push(msg.sender);
+        project.isTeamMember[msg.sender] = true;
+        project.memberRoles[msg.sender] = "Creator";
+        
         // Update mappings
+        registeredIpfsHashes[_ipfsHash] = true;
+        creatorProjects[msg.sender].push(projectId);
         hackathonProjects[_hackathonId].push(projectId);
-        userProjects[msg.sender].push(projectId);
-        registeredRepositories[_repositoryUrl] = true;
 
-        emit ProjectCreated(projectId, _hackathonId, msg.sender, _name);
+        emit ProjectCreated(projectId, _ipfsHash, msg.sender, _hackathonId);
         return projectId;
     }
 
     /**
-     * @dev Add a team member to project
+     * @dev Update project metadata with new IPFS hash
+     * @param _projectId Project ID
+     * @param _newIpfsHash New IPFS hash containing updated metadata
+     */
+    function updateProject(
+        uint256 _projectId,
+        string calldata _newIpfsHash
+    ) 
+        external 
+        projectExists(_projectId)
+        onlyTeamMember(_projectId)
+        onlyDraftProject(_projectId)
+        whenNotPaused 
+        nonReentrant 
+    {
+        require(
+            bytes(_newIpfsHash).length > 0,
+            "ProjectRegistry: IPFS hash cannot be empty"
+        );
+        require(
+            !registeredIpfsHashes[_newIpfsHash],
+            "ProjectRegistry: IPFS hash already registered"
+        );
+
+        Project storage project = projects[_projectId];
+        
+        // Free up old IPFS hash
+        registeredIpfsHashes[project.ipfsHash] = false;
+        
+        // Set new IPFS hash
+        project.ipfsHash = _newIpfsHash;
+        registeredIpfsHashes[_newIpfsHash] = true;
+
+        emit ProjectUpdated(_projectId, _newIpfsHash);
+    }
+
+    /**
+     * @dev Add team member to project
      * @param _projectId Project ID
      * @param _member Member address
      * @param _role Member role
@@ -246,74 +240,67 @@ contract ProjectRegistry is ReentrancyGuard, Pausable, Ownable {
         uint256 _projectId,
         address _member,
         string calldata _role
-    )
-        external
-        onlyTeamLead(_projectId)
-        onlyDraftStatus(_projectId)
-        whenNotPaused
+    ) 
+        external 
+        projectExists(_projectId)
+        onlyCreator(_projectId)
+        onlyDraftProject(_projectId)
+        whenNotPaused 
+        nonReentrant 
     {
         require(
             _member != address(0),
             "ProjectRegistry: invalid member address"
         );
         require(
-            bytes(_role).length > 0,
-            "ProjectRegistry: role cannot be empty"
-        );
-        require(
-            !teamMemberDetails[_projectId][_member].isActive,
-            "ProjectRegistry: member already added"
+            !projects[_projectId].isTeamMember[_member],
+            "ProjectRegistry: user is already a team member"
         );
 
-        // Validate member is registered participant
-        uint256 hackathonId = projects[_projectId].hackathonId;
-        address hackathonContract = hackathonContracts[hackathonId];
+        address hackathonContract = hackathonContracts[projects[_projectId].hackathonId];
         Hackathon hackathon = Hackathon(hackathonContract);
         require(
             hackathon.isParticipant(_member),
-            "ProjectRegistry: member is not a participant"
+            "ProjectRegistry: user not registered for hackathon"
         );
 
-        projectTeamMembers[_projectId].push(_member);
-        teamMemberDetails[_projectId][_member] = TeamMember({
-            member: _member,
-            role: _role,
-            isActive: true,
-            joinedAt: block.timestamp
-        });
-
-        userProjects[_member].push(_projectId);
+        Project storage project = projects[_projectId];
+        project.teamMembers.push(_member);
+        project.isTeamMember[_member] = true;
+        project.memberRoles[_member] = _role;
 
         emit TeamMemberAdded(_projectId, _member, _role);
     }
 
     /**
-     * @dev Remove a team member from project
+     * @dev Remove team member from project
      * @param _projectId Project ID
      * @param _member Member address
      */
     function removeTeamMember(
         uint256 _projectId,
         address _member
-    )
-        external
-        onlyTeamLead(_projectId)
-        onlyDraftStatus(_projectId)
-        whenNotPaused
+    ) 
+        external 
+        projectExists(_projectId)
+        onlyCreator(_projectId)
+        onlyDraftProject(_projectId)
+        whenNotPaused 
+        nonReentrant 
     {
         require(
-            _member != projects[_projectId].teamLead,
-            "ProjectRegistry: cannot remove team lead"
+            _member != projects[_projectId].creator,
+            "ProjectRegistry: cannot remove project creator"
         );
         require(
-            teamMemberDetails[_projectId][_member].isActive,
-            "ProjectRegistry: member not found"
+            projects[_projectId].isTeamMember[_member],
+            "ProjectRegistry: user is not a team member"
         );
 
-        teamMemberDetails[_projectId][_member].isActive = false;
-
-        // Remove from projectTeamMembers array
-        address[] storage members = projectTeamMembers[_projectId];
+        Project storage project = projects[_projectId];
+        
+        // Remove from team members array
+        address[] storage members = project.teamMembers;
         for (uint256 i = 0; i < members.length; i++) {
             if (members[i] == _member) {
                 members[i] = members[members.length - 1];
@@ -321,311 +308,148 @@ contract ProjectRegistry is ReentrancyGuard, Pausable, Ownable {
                 break;
             }
         }
-
-        // Remove from userProjects array
-        uint256[] storage userProjectsArray = userProjects[_member];
-        for (uint256 i = 0; i < userProjectsArray.length; i++) {
-            if (userProjectsArray[i] == _projectId) {
-                userProjectsArray[i] = userProjectsArray[
-                    userProjectsArray.length - 1
-                ];
-                userProjectsArray.pop();
-                break;
-            }
-        }
+        
+        // Clean up mappings
+        project.isTeamMember[_member] = false;
+        delete project.memberRoles[_member];
 
         emit TeamMemberRemoved(_projectId, _member);
-    }
-
-    /**
-     * @dev Update project basic details
-     * @param _projectId Project ID
-     * @param _name New name
-     * @param _description New description
-     */
-    function updateProjectBasics(
-        uint256 _projectId,
-        string calldata _name,
-        string calldata _description
-    )
-        external
-        onlyTeamMember(_projectId)
-        onlyDraftStatus(_projectId)
-        onlyBeforeDeadline(_projectId)
-        whenNotPaused
-    {
-        require(
-            bytes(_name).length > 0,
-            "ProjectRegistry: name cannot be empty"
-        );
-
-        Project storage project = projects[_projectId];
-        project.name = _name;
-        project.description = _description;
-
-        emit ProjectUpdated(_projectId, "basics", "updated");
-    }
-
-    /**
-     * @dev Update project demo and IPFS hash
-     * @param _projectId Project ID
-     * @param _demoUrl Demo URL
-     * @param _ipfsHash IPFS hash for detailed project data
-     */
-    function updateProjectMedia(
-        uint256 _projectId,
-        string calldata _demoUrl,
-        string calldata _ipfsHash
-    )
-        external
-        onlyTeamMember(_projectId)
-        onlyDraftStatus(_projectId)
-        onlyBeforeDeadline(_projectId)
-        whenNotPaused
-    {
-        Project storage project = projects[_projectId];
-        project.demoUrl = _demoUrl;
-        project.ipfsHash = _ipfsHash;
-
-        emit ProjectUpdated(_projectId, "media", "updated");
-    }
-
-    /**
-     * @dev Update project tech stack
-     * @param _projectId Project ID
-     * @param _techStack Tech stack array
-     */
-    function updateProjectTechStack(
-        uint256 _projectId,
-        string[] calldata _techStack
-    )
-        external
-        onlyTeamMember(_projectId)
-        onlyDraftStatus(_projectId)
-        onlyBeforeDeadline(_projectId)
-        whenNotPaused
-    {
-        Project storage project = projects[_projectId];
-        project.techStack = _techStack;
-
-        emit ProjectUpdated(_projectId, "techstack", "updated");
     }
 
     /**
      * @dev Submit project for evaluation
      * @param _projectId Project ID
      */
-    function submitProject(
-        uint256 _projectId
-    )
-        external
+    function submitProject(uint256 _projectId) 
+        external 
+        projectExists(_projectId)
         onlyTeamMember(_projectId)
-        onlyDraftStatus(_projectId)
-        onlyBeforeDeadline(_projectId)
-        whenNotPaused
+        onlyDraftProject(_projectId)
+        whenNotPaused 
+        nonReentrant 
     {
+        address hackathonContract = hackathonContracts[projects[_projectId].hackathonId];
+        Hackathon hackathon = Hackathon(hackathonContract);
+        
+        require(
+            hackathon.currentPhase() == Hackathon.Phase.Hackathon,
+            "ProjectRegistry: submission phase has ended"
+        );
+
         Project storage project = projects[_projectId];
-        require(
-            bytes(project.ipfsHash).length > 0,
-            "ProjectRegistry: IPFS hash required for submission"
-        );
-        require(
-            bytes(project.demoUrl).length > 0,
-            "ProjectRegistry: demo URL required for submission"
-        );
-        require(
-            project.techStack.length > 0,
-            "ProjectRegistry: tech stack required for submission"
-        );
+        project.status = SubmissionStatus.SUBMITTED;
+        project.submittedAt = block.timestamp;
 
-        project.status = SubmissionStatus.Submitted;
-        project.submissionTimestamp = block.timestamp;
-
-        emit ProjectSubmitted(
-            _projectId,
-            project.hackathonId,
-            project.teamLead,
-            block.timestamp
-        );
+        emit ProjectSubmitted(_projectId, msg.sender, block.timestamp);
     }
 
-    /**
-     * @dev Mark project as evaluated (only called by judge contracts)
-     * @param _projectId Project ID
-     */
-    function markAsEvaluated(uint256 _projectId) external whenNotPaused {
-        require(
-            projects[_projectId].exists,
-            "ProjectRegistry: project does not exist"
-        );
-        require(
-            projects[_projectId].status == SubmissionStatus.Submitted,
-            "ProjectRegistry: project not submitted"
-        );
-
-        // This would typically be called by a judge contract
-        // For now, allow owner to mark as evaluated for testing
-        require(
-            msg.sender == owner(),
-            "ProjectRegistry: caller is not authorized"
-        );
-
-        projects[_projectId].status = SubmissionStatus.Evaluated;
-    }
-
-    /**
-     * @dev Get project details
-     * @param _projectId Project ID
-     */
-    function getProject(
-        uint256 _projectId
-    )
-        external
-        view
+    // View functions
+    function getProject(uint256 _projectId) 
+        external 
+        view 
+        projectExists(_projectId)
         returns (
-            uint256 hackathonId,
-            address teamLead,
-            string memory name,
-            string memory description,
             string memory ipfsHash,
-            string memory repositoryUrl,
-            string memory demoUrl,
+            address creator,
+            uint256 hackathonId,
             SubmissionStatus status,
-            uint256 submissionTimestamp
-        )
+            uint256 createdAt,
+            uint256 submittedAt,
+            uint256 teamMemberCount
+        ) 
     {
-        require(
-            projects[_projectId].exists,
-            "ProjectRegistry: project does not exist"
-        );
-
         Project storage project = projects[_projectId];
         return (
-            project.hackathonId,
-            project.teamLead,
-            project.name,
-            project.description,
             project.ipfsHash,
-            project.repositoryUrl,
-            project.demoUrl,
+            project.creator,
+            project.hackathonId,
             project.status,
-            project.submissionTimestamp
+            project.createdAt,
+            project.submittedAt,
+            project.teamMembers.length
         );
     }
 
-    /**
-     * @dev Get project tech stack
-     * @param _projectId Project ID
-     */
-    function getProjectTechStack(
-        uint256 _projectId
-    ) external view returns (string[] memory) {
-        require(
-            projects[_projectId].exists,
-            "ProjectRegistry: project does not exist"
-        );
-        return projects[_projectId].techStack;
-    }
-
-    /**
-     * @dev Get team members for a project
-     * @param _projectId Project ID
-     */
-    function getProjectTeamMembers(
-        uint256 _projectId
-    ) external view returns (address[] memory) {
-        require(
-            projects[_projectId].exists,
-            "ProjectRegistry: project does not exist"
-        );
-        return projectTeamMembers[_projectId];
-    }
-
-    /**
-     * @dev Get team member details
-     * @param _projectId Project ID
-     * @param _member Member address
-     */
-    function getTeamMemberDetails(
-        uint256 _projectId,
-        address _member
-    )
-        external
-        view
-        returns (string memory role, bool isActive, uint256 joinedAt)
+    function getTeamMembers(uint256 _projectId) 
+        external 
+        view 
+        projectExists(_projectId)
+        returns (address[] memory) 
     {
-        require(
-            projects[_projectId].exists,
-            "ProjectRegistry: project does not exist"
-        );
-        TeamMember storage member = teamMemberDetails[_projectId][_member];
-        return (member.role, member.isActive, member.joinedAt);
+        return projects[_projectId].teamMembers;
     }
 
-    /**
-     * @dev Get projects for a hackathon
-     * @param _hackathonId Hackathon ID
-     */
-    function getHackathonProjects(
-        uint256 _hackathonId
-    ) external view returns (uint256[] memory) {
+    function getMemberRole(uint256 _projectId, address _member) 
+        external 
+        view 
+        projectExists(_projectId)
+        returns (string memory) 
+    {
+        return projects[_projectId].memberRoles[_member];
+    }
+
+    function isTeamMember(uint256 _projectId, address _member) 
+        external 
+        view 
+        projectExists(_projectId)
+        returns (bool) 
+    {
+        return projects[_projectId].isTeamMember[_member];
+    }
+
+    function getProjectsByCreator(address _creator) 
+        external 
+        view 
+        returns (uint256[] memory) 
+    {
+        return creatorProjects[_creator];
+    }
+
+    function getHackathonProjects(uint256 _hackathonId) 
+        external 
+        view 
+        returns (uint256[] memory) 
+    {
         return hackathonProjects[_hackathonId];
     }
 
-    /**
-     * @dev Get projects for a user
-     * @param _user User address
-     */
-    function getUserProjects(
-        address _user
-    ) external view returns (uint256[] memory) {
-        return userProjects[_user];
-    }
-
-    /**
-     * @dev Get submitted projects for a hackathon
-     * @param _hackathonId Hackathon ID
-     */
-    function getSubmittedProjects(
-        uint256 _hackathonId
-    ) external view returns (uint256[] memory) {
+    function getSubmittedProjects(uint256 _hackathonId) 
+        external 
+        view 
+        returns (uint256[] memory) 
+    {
         uint256[] memory allProjects = hackathonProjects[_hackathonId];
-        uint256[] memory submittedProjects = new uint256[](allProjects.length);
         uint256 count = 0;
-
+        
+        // Count submitted projects
         for (uint256 i = 0; i < allProjects.length; i++) {
-            if (projects[allProjects[i]].status == SubmissionStatus.Submitted) {
-                submittedProjects[count] = allProjects[i];
+            if (projects[allProjects[i]].status == SubmissionStatus.SUBMITTED) {
                 count++;
             }
         }
-
-        // Resize array to actual count
-        uint256[] memory result = new uint256[](count);
-        for (uint256 i = 0; i < count; i++) {
-            result[i] = submittedProjects[i];
+        
+        // Create result array
+        uint256[] memory submittedProjects = new uint256[](count);
+        uint256 index = 0;
+        
+        for (uint256 i = 0; i < allProjects.length; i++) {
+            if (projects[allProjects[i]].status == SubmissionStatus.SUBMITTED) {
+                submittedProjects[index] = allProjects[i];
+                index++;
+            }
         }
-
-        return result;
+        
+        return submittedProjects;
     }
 
-    /**
-     * @dev Get total project count
-     */
     function getTotalProjects() external view returns (uint256) {
         return nextProjectId - 1;
     }
 
-    /**
-     * @dev Pause contract (owner only)
-     */
     function pause() external onlyOwner {
         _pause();
     }
 
-    /**
-     * @dev Unpause contract (owner only)
-     */
     function unpause() external onlyOwner {
         _unpause();
     }
