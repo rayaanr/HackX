@@ -60,14 +60,22 @@ export function useJudgingForm({
     setSelectedCohortId(cohortId);
   };
 
-  // Create schema and form based on current selected cohort
-  const schema = selectedCohort
-    ? createJudgeEvaluationSchema(selectedCohort.evaluationCriteria)
-    : createJudgeEvaluationSchema([]);
+  // Memoize schema to provide stable object reference across renders
+  // Only recreate when the evaluation criteria actually change
+  const schema = useMemo(() => {
+    return selectedCohort
+      ? createJudgeEvaluationSchema(selectedCohort.evaluationCriteria)
+      : createJudgeEvaluationSchema([]);
+  }, [selectedCohort?.evaluationCriteria]);
+
+  // Memoize default values to provide stable reference
+  const defaultValues = useMemo(() => {
+    return generateDefaultFormValues(selectedCohort || null);
+  }, [selectedCohort]);
 
   const form = useForm<JudgeEvaluationFormData>({
     resolver: zodResolver(schema),
-    defaultValues: generateDefaultFormValues(selectedCohort || null),
+    defaultValues,
     mode: "onChange",
     shouldUnregister: true, // Drop stale fields when form remounts
   });
