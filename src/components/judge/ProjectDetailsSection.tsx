@@ -19,6 +19,7 @@ interface ProjectHackathon {
     tech_stack?: string[];
     experience_level?: string;
     prize_cohorts?: Array<{ prize_amount?: string }>;
+    participantCount?: number;
   };
   status: string;
 }
@@ -126,8 +127,8 @@ export function ProjectDetailsSection({
                     typeof leaderObj.github === "string"
                       ? leaderObj.github
                       : typeof leaderObj.githubUsername === "string"
-                        ? leaderObj.githubUsername
-                        : undefined,
+                      ? leaderObj.githubUsername
+                      : undefined,
                 };
               }
               return null;
@@ -358,8 +359,8 @@ export function ProjectDetailsSection({
                       Online
                     </Button>
                     <Button variant="outline" size="sm" className="text-xs">
-                      {hackathon?.participantCount
-                        ? `${hackathon.participantCount} Participants`
+                      {hackathonData?.participantCount
+                        ? `${hackathonData.participantCount} Participants`
                         : "N/A Participants"}
                     </Button>
                   </div>
