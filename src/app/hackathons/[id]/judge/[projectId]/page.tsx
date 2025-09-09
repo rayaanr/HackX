@@ -5,7 +5,7 @@ import {
   useProjectById,
   useProjectHackathons,
 } from "@/hooks/queries/use-projects";
-import { useCurrentUser } from "@/hooks/use-auth";
+import { useCurrentUser } from "@/hooks/supabase/useSupabaseAuth";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { notFound } from "next/navigation";
 import { useState } from "react";
