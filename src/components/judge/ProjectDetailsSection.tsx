@@ -17,12 +17,29 @@ interface ProjectHackathon {
     short_description: string;
     hackathon_start_date: string;
     hackathon_end_date: string;
+    registration_start_date?: string | null;
+    registration_end_date?: string | null;
+    voting_start_date?: string | null;
+    voting_end_date?: string | null;
     tech_stack?: string[];
     experience_level?: string;
     prize_cohorts?: Array<{ prize_amount?: string }>;
     participantCount?: number;
   };
   status: string;
+}
+
+// Helper function to normalize hackathon data for getHackathonStatus
+function normalizeHackathonForStatus(hackathon: ProjectHackathon["hackathon"]) {
+  // Create a minimal object that matches what getHackathonStatus expects for DB format
+  return {
+    registration_start_date: hackathon.registration_start_date || null,
+    registration_end_date: hackathon.registration_end_date || null,
+    hackathon_start_date: hackathon.hackathon_start_date,
+    hackathon_end_date: hackathon.hackathon_end_date,
+    voting_start_date: hackathon.voting_start_date || null,
+    voting_end_date: hackathon.voting_end_date || null,
+  } as const;
 }
 
 interface ProjectDetailsSectionProps {
@@ -128,8 +145,8 @@ export function ProjectDetailsSection({
                     typeof leaderObj.github === "string"
                       ? leaderObj.github
                       : typeof leaderObj.githubUsername === "string"
-                        ? leaderObj.githubUsername
-                        : undefined,
+                      ? leaderObj.githubUsername
+                      : undefined,
                 };
               }
               return null;
@@ -303,7 +320,9 @@ export function ProjectDetailsSection({
               <Card key={hackathonData.id} className="relative">
                 <div className="absolute top-3 right-3">
                   <Badge variant="default">
-                    {getHackathonStatus(hackathonData as any)}
+                    {getHackathonStatus(
+                      normalizeHackathonForStatus(hackathonData) as any
+                    )}
                   </Badge>
                 </div>
 
