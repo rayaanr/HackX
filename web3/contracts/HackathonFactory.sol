@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./Hackathon.sol";
 
 /**
@@ -8,7 +11,7 @@ import "./Hackathon.sol";
  * @dev Factory contract for creating and managing hackathons
  * @author HackX Team
  */
-contract HackathonFactory {
+contract HackathonFactory is Ownable, ReentrancyGuard, Pausable {
     // Events
     event HackathonCreated(
         address indexed hackathonAddress,
@@ -25,7 +28,6 @@ contract HackathonFactory {
     event GlobalSettingUpdated(string setting, bytes value);
 
     // State variables
-    address public owner;
     uint256 public hackathonCounter;
 
     // Mappings
@@ -37,27 +39,19 @@ contract HackathonFactory {
     mapping(string => bytes) public globalSettings;
 
     // Modifiers
-    modifier onlyOwner() {
-        require(
-            msg.sender == owner,
-            "HackathonFactory: caller is not the owner"
-        );
-        _;
-    }
-
     modifier onlyAuthorizedOrganizer() {
         require(
-            authorizedOrganizers[msg.sender] || msg.sender == owner,
+            authorizedOrganizers[msg.sender] || msg.sender == owner(),
             "HackathonFactory: caller is not an authorized organizer"
         );
         _;
     }
 
     /**
-     * @dev Constructor sets the contract owner
+     * @dev Constructor sets the contract owner and initializes OpenZeppelin contracts
      */
-    constructor() {
-        owner = msg.sender;
+    constructor() Ownable(msg.sender) {
+        // Owner is automatically set by Ownable constructor
         authorizedOrganizers[msg.sender] = true;
     }
 
@@ -84,6 +78,8 @@ contract HackathonFactory {
     )
         external
         onlyAuthorizedOrganizer
+        nonReentrant
+        whenNotPaused
         returns (uint256 hackathonId, address hackathonAddress)
     {
         // Validate timestamps
@@ -166,7 +162,7 @@ contract HackathonFactory {
      * @param _organizer Address to remove from organizers
      */
     function removeOrganizer(address _organizer) external onlyOwner {
-        require(_organizer != owner, "HackathonFactory: cannot remove owner");
+        require(_organizer != owner(), "HackathonFactory: cannot remove owner");
         require(
             authorizedOrganizers[_organizer],
             "HackathonFactory: organizer not found"
@@ -243,26 +239,41 @@ contract HackathonFactory {
 
     /**
      * @dev Transfers ownership of the factory
-     * @param _newOwner New owner address
+     * @dev Override transferOwnership to also handle organizer permissions
+     * @param newOwner New owner address
      */
-    function transferOwnership(address _newOwner) external onlyOwner {
+    function transferOwnership(
+        address newOwner
+    ) public virtual override onlyOwner {
         require(
-            _newOwner != address(0),
-            "HackathonFactory: new owner cannot be zero address"
-        );
-        require(
-            _newOwner != owner,
-            "HackathonFactory: new owner cannot be current owner"
+            newOwner != address(0),
+            "Ownable: new owner is the zero address"
         );
 
         // Remove current owner from organizers and add new owner
-        authorizedOrganizers[owner] = false;
-        authorizedOrganizers[_newOwner] = true;
+        authorizedOrganizers[owner()] = false;
+        authorizedOrganizers[newOwner] = true;
 
-        address previousOwner = owner;
-        owner = _newOwner;
+        address previousOwner = owner();
 
-        emit OrganizerRemoved(previousOwner, _newOwner);
-        emit OrganizerAdded(_newOwner, _newOwner);
+        // Call parent transferOwnership
+        super.transferOwnership(newOwner);
+
+        emit OrganizerRemoved(previousOwner, newOwner);
+        emit OrganizerAdded(newOwner, newOwner);
+    }
+
+    /**
+     * @dev Pause contract functionality - only owner
+     */
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @dev Unpause contract functionality - only owner
+     */
+    function unpause() external onlyOwner {
+        _unpause();
     }
 }

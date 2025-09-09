@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+
 /**
  * @title Hackathon
  * @dev Individual hackathon contract with event management
  * @author HackX Team
  */
-contract Hackathon {
+contract Hackathon is ReentrancyGuard, Pausable {
     // Enums
     enum Phase {
         Registration,
@@ -86,7 +89,12 @@ contract Hackathon {
     /**
      * @dev Register as a participant
      */
-    function register() external inPhase(Phase.Registration) {
+    function register()
+        external
+        inPhase(Phase.Registration)
+        nonReentrant
+        whenNotPaused
+    {
         require(
             block.timestamp >= registrationStart,
             "Hackathon: registration not started"
@@ -180,5 +188,19 @@ contract Hackathon {
      */
     function isParticipant(address _user) external view returns (bool) {
         return participants[_user];
+    }
+
+    /**
+     * @dev Pause hackathon - only organizer
+     */
+    function pause() external onlyOrganizer {
+        _pause();
+    }
+
+    /**
+     * @dev Unpause hackathon - only organizer
+     */
+    function unpause() external onlyOrganizer {
+        _unpause();
     }
 }
