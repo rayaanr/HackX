@@ -178,19 +178,40 @@ async function updateProject({
     throw new Error("Project not found or access denied");
   }
 
+  // Build sparse payload - only include fields that are explicitly provided
+  const updatePayload: Record<string, any> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  // Only set fields that are explicitly provided in projectData
+  if (projectData.hasOwnProperty('name')) {
+    updatePayload.name = projectData.name;
+  }
+  if (projectData.hasOwnProperty('description')) {
+    updatePayload.description = projectData.description;
+  }
+  if (projectData.hasOwnProperty('hackathon_id')) {
+    updatePayload.hackathon_id = projectData.hackathon_id;
+  }
+  if (projectData.hasOwnProperty('tech_stack')) {
+    updatePayload.tech_stack = projectData.tech_stack;
+  }
+  if (projectData.hasOwnProperty('status')) {
+    updatePayload.status = projectData.status;
+  }
+  if (projectData.hasOwnProperty('repository_url')) {
+    updatePayload.repository_url = projectData.repository_url;
+  }
+  if (projectData.hasOwnProperty('demo_url')) {
+    updatePayload.demo_url = projectData.demo_url;
+  }
+  if (projectData.hasOwnProperty('team_members')) {
+    updatePayload.team_members = projectData.team_members;
+  }
+
   const { data: project, error } = await supabase
     .from("projects")
-    .update({
-      name: projectData.name,
-      description: projectData.description || null,
-      hackathon_id: projectData.hackathon_id || null,
-      tech_stack: projectData.tech_stack || [],
-      status: projectData.status,
-      repository_url: projectData.repository_url || null,
-      demo_url: projectData.demo_url || null,
-      team_members: projectData.team_members || null,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq("id", projectId)
     .select(
       `
