@@ -19,13 +19,12 @@ import {
 } from "@/components/ui/select";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
+import { hackathonSchema, type HackathonFormData } from "@/lib/schemas/hackathon-schema";
 import { Trash2, Plus, Trophy, X } from "lucide-react";
 
-type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
 export function PrizesStep() {
-  const { control } = useFormContext<HackathonFormValues>();
+  const { control } = useFormContext<HackathonFormData>();
 
   const {
     fields: prizeCohorts,
@@ -268,7 +267,7 @@ export function PrizesStep() {
 }
 
 function EvaluationCriteriaField({ index }: { index: number }) {
-  const { control } = useFormContext<HackathonFormValues>();
+  const { control } = useFormContext<HackathonFormData>();
 
   const {
     fields: criteria,

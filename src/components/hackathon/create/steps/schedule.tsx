@@ -15,14 +15,13 @@ import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useFormContext, useFieldArray, useWatch } from "react-hook-form";
 import { z } from "zod";
-import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
+import { hackathonSchema, type HackathonFormData } from "@/lib/schemas/hackathon-schema";
 import { Trash2, Plus } from "lucide-react";
 import { ImageUploader } from "@/components/ui/file-upload";
 
-type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
 export function ScheduleStep() {
-  const { control, watch, setValue } = useFormContext<HackathonFormValues>();
+  const { control, watch, setValue } = useFormContext<HackathonFormData>();
 
   const {
     fields: scheduleSlots,

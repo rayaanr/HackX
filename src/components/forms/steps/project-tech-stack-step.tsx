@@ -12,10 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
-import { projectSchema } from "@/lib/schemas/project-schema";
+import { projectSchema, type ProjectFormData } from "@/lib/schemas/project-schema";
 import MultipleSelector, { Option } from "@/components/ui/multiselect";
 
-type ProjectFormValues = z.infer<typeof projectSchema>;
 
 // https://github.com/marwin1991/profile-technology-icons
 // prettier-ignore
@@ -298,7 +297,7 @@ export const TECH_STACK_OPTIONS: Option[] = [
 ];
 
 export function TechStackStep() {
-  const { control, watch } = useFormContext<ProjectFormValues>();
+  const { control, watch } = useFormContext<ProjectFormData>();
 
   return (
     <div className="space-y-8">

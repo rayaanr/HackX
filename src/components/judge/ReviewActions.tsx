@@ -3,11 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
+import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
 
-interface PrizeCohort {
-  id: string;
-  evaluationCriteria: Array<{ points: number }>;
-}
 
 interface ReviewActionsProps {
   projectId: string;

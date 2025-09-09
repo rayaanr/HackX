@@ -4,20 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import type { ProjectComponentProps, HackathonComponentProps } from "@/types/hackathon";
 
-interface Project {
-  name: string;
-  description: string | null;
-}
-
-interface Hackathon {
-  name: string;
-}
 
 interface ProjectReviewHeaderProps {
   hackathonId: string;
-  hackathon: Hackathon;
-  project: Project;
+  hackathon: HackathonComponentProps;
+  project: ProjectComponentProps;
 }
 
 export function ProjectReviewHeader({

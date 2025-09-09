@@ -15,6 +15,7 @@ import { JudgingInterface } from "@/components/judge/JudgingInterface";
 import { ReviewActions } from "@/components/judge/ReviewActions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
+import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
 
 interface ProjectReviewPageProps {
   params: Promise<{ id: string; projectId: string }>;
@@ -43,11 +44,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   // State for form data and selected cohort
   const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(null);
-  const [selectedCohort, setSelectedCohort] = useState<{
-    id: string;
-    name: string;
-    evaluationCriteria: Array<{ name: string; description: string; points: number }>;
-  } | undefined>(undefined);
+  const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Transform data safely

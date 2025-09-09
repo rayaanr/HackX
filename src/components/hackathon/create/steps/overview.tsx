@@ -21,16 +21,15 @@ import { Separator } from "@/components/ui/separator";
 import { FileUploadField } from "@/components/ui/file-upload";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
-import { hackathonSchema } from "@/lib/schemas/hackathon-schema";
+import { hackathonSchema, type HackathonFormData } from "@/lib/schemas/hackathon-schema";
 import { LexicalEditor } from "@/components/ui/rich-text-editor";
 import { SocialLinksInput } from "@/components/hackathon/create/steps/social-links-input";
 import { TECH_STACK_OPTIONS } from "@/components/forms/steps/project-tech-stack-step";
 import MultipleSelector from "@/components/ui/multiselect";
 
-type HackathonFormValues = z.infer<typeof hackathonSchema>;
 
 export function OverviewStep() {
-  const { control, setValue } = useFormContext<HackathonFormValues>();
+  const { control, setValue } = useFormContext<HackathonFormData>();
 
   return (
     <div className="space-y-6">

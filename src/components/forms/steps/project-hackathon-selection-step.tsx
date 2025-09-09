@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
-import { projectSchema } from "@/lib/schemas/project-schema";
+import { projectSchema, type ProjectFormData } from "@/lib/schemas/project-schema";
 import {
   ProjectHackathonCard,
   ProjectHackathonCardProps,
@@ -41,10 +41,9 @@ function transformHackathonToCardProps(hackathon: HackathonWithRelations): Proje
   };
 }
 
-type ProjectFormValues = z.infer<typeof projectSchema>;
 
 export function HackathonSelectionStep() {
-  const { control, setValue, watch } = useFormContext<ProjectFormValues>();
+  const { control, setValue, watch } = useFormContext<ProjectFormData>();
   const { data: hackathonData, isLoading, error } = useAllHackathons();
 
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");

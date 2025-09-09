@@ -25,18 +25,8 @@ import {
   type JudgeEvaluationFormData,
   type CriterionEvaluation,
 } from "@/lib/schemas/judge-evaluation-schema";
+import type { PrizeCohort, EvaluationCriteria } from "@/lib/schemas/hackathon-schema";
 
-interface EvaluationCriterion {
-  name: string;
-  description: string;
-  points: number;
-}
-
-interface PrizeCohort {
-  id: string;
-  name: string;
-  evaluationCriteria: EvaluationCriterion[];
-}
 
 interface Hackathon {
   prizeCohorts: PrizeCohort[];
@@ -133,8 +123,8 @@ export function JudgingInterface({
                       <SelectValue placeholder="Select a prize cohort" />
                     </SelectTrigger>
                     <SelectContent>
-                      {hackathon.prizeCohorts.map((cohort) => (
-                        <SelectItem key={cohort.id} value={cohort.id}>
+                      {hackathon.prizeCohorts.filter(cohort => cohort.id).map((cohort) => (
+                        <SelectItem key={cohort.id!} value={cohort.id!}>
                           {cohort.name}
                         </SelectItem>
                       ))}

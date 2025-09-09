@@ -5,21 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play } from "lucide-react";
+import type { ProjectComponentProps, HackathonComponentProps } from "@/types/hackathon";
 
-interface Project {
-  name: string;
-  description: string | null;
-  demo_url?: string;
-  repository_url?: string;
-  team_members?: any[];
-  tech_stack: string[];
-  status: string;
-}
-
-interface Hackathon {
-  name: string;
-  participantCount?: number;
-}
 
 interface ProjectHackathon {
   hackathon: {
@@ -36,9 +23,9 @@ interface ProjectHackathon {
 }
 
 interface ProjectDetailsSectionProps {
-  project: Project;
+  project: ProjectComponentProps;
   projectHackathons: ProjectHackathon[];
-  hackathon: Hackathon;
+  hackathon: HackathonComponentProps;
   activeTab: "overview" | "hackathon";
 }
 
