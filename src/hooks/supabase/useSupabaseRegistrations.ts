@@ -10,6 +10,15 @@ async function fetchRegisteredHackathons(): Promise<
 > {
   const supabase = createClient();
 
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("Authentication required to fetch registered hackathons");
+  }
+
   const { data: registrations, error } = await supabase
     .from("hackathon_registrations")
     .select(
@@ -18,7 +27,8 @@ async function fetchRegisteredHackathons(): Promise<
       hackathon:hackathons(*)
     `,
     )
-    .order("registered_at", { ascending: false });
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
 
   if (error) {
     throw new Error(`Failed to fetch registered hackathons: ${error.message}`);
