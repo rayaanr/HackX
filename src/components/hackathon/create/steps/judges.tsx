@@ -24,9 +24,12 @@ import {
 } from "@/lib/helpers/judgeHelpers";
 
 export function JudgesStep() {
-  const { control } = useFormContext<HackathonFormData>();
+  const { control, watch } = useFormContext<HackathonFormData>();
   const [newJudgeEmail, setNewJudgeEmail] = useState("");
   const [copiedText, copyToClipboard] = useCopyToClipboard();
+
+  // Watch the hackathon name from the form
+  const hackathonName = watch("name") || "Your Hackathon";
 
   const {
     fields: judges,
@@ -50,11 +53,14 @@ export function JudgesStep() {
       return;
     }
 
-    const judgeInvitation = composeJudgeInvitation(newJudgeEmail, "Current Hackathon");
-    
+    const judgeInvitation = composeJudgeInvitation(
+      newJudgeEmail,
+      hackathonName
+    );
+
     appendJudge({
       email: judgeInvitation.email,
-      status: judgeInvitation.status as "waiting",
+      status: "pending",
     });
 
     setNewJudgeEmail("");
