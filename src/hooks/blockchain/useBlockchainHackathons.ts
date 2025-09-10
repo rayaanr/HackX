@@ -1,10 +1,10 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { prepareContractCall } from "thirdweb";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { prepareContractCall, readContract } from "thirdweb";
 import { useSendTransaction, useActiveAccount } from "thirdweb/react";
 import { useWeb3 } from "@/providers/web3-provider";
-import { useHackathonIPFSUpload } from "@/hooks/ipfs/useIPFS";
+import { useHackathonIPFSUpload, useIPFSView } from "@/hooks/ipfs/useIPFS";
 import type { HackathonFormData } from "@/types/hackathon";
 
 // Helper function to convert form data to IPFS metadata
@@ -70,6 +70,116 @@ function formatHackathonMetadata(formData: HackathonFormData) {
 // Helper function to convert dates to Unix timestamps
 function dateToUnixTimestamp(date?: Date): number {
   return date ? Math.floor(date.getTime() / 1000) : 0;
+}
+
+// Helper function to fetch hackathons from blockchain
+async function fetchBlockchainHackathons(contract: any) {
+  try {
+    console.log("Fetching hackathons from blockchain...");
+    
+    // Get the total number of hackathons
+    const hackathonCounter = await readContract({
+      contract,
+      method: "function hackathonCounter() view returns (uint256)",
+    });
+
+    console.log("Total hackathons:", hackathonCounter.toString());
+
+    if (hackathonCounter === BigInt(0)) {
+      return [];
+    }
+
+    // Fetch all hackathons
+    const hackathons = [];
+    for (let i = BigInt(1); i <= hackathonCounter; i++) {
+      try {
+        const hackathon = await readContract({
+          contract,
+          method: "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline, uint256 participantCount, uint256 projectCount, bool active))",
+          params: [i],
+        });
+
+        console.log(`Hackathon ${i}:`, hackathon);
+        hackathons.push(hackathon);
+      } catch (hackathonError) {
+        console.error(`Error fetching hackathon ${i}:`, hackathonError);
+        // Continue with other hackathons
+      }
+    }
+
+    return hackathons;
+  } catch (error) {
+    console.error("Error fetching hackathons from blockchain:", error);
+    throw new Error("Failed to fetch hackathons from blockchain");
+  }
+}
+
+// Hook for fetching hackathons with IPFS metadata
+export function useAllBlockchainHackathons() {
+  const { contract } = useWeb3();
+  const viewIPFS = useIPFSView();
+  
+  return useQuery({
+    queryKey: ["hackathons", "blockchain", "all"],
+    queryFn: async () => {
+      // First fetch blockchain data
+      const blockchainHackathons = await fetchBlockchainHackathons(contract);
+      
+      // Then fetch IPFS metadata for each hackathon
+      const hackathonsWithMetadata = [];
+      
+      for (const hackathon of blockchainHackathons) {
+        try {
+          console.log(`Fetching IPFS metadata for hackathon ${hackathon.id}: ${hackathon.ipfsHash}`);
+          
+          // Fetch IPFS metadata
+          const ipfsData = await viewIPFS.mutateAsync(`ipfs://${hackathon.ipfsHash}`);
+          
+          // Combine blockchain data with IPFS metadata
+          const combinedHackathon = {
+            id: hackathon.id.toString(),
+            // Blockchain fields
+            organizer: hackathon.organizer,
+            registrationDeadline: hackathon.registrationDeadline,
+            submissionDeadline: hackathon.submissionDeadline,
+            judgingDeadline: hackathon.judgingDeadline,
+            participantCount: hackathon.participantCount,
+            projectCount: hackathon.projectCount,
+            active: hackathon.active,
+            ipfsHash: hackathon.ipfsHash,
+            // IPFS metadata fields
+            ...ipfsData.data,
+          };
+          
+          hackathonsWithMetadata.push(combinedHackathon);
+        } catch (error) {
+          console.error(`Failed to fetch IPFS metadata for hackathon ${hackathon.id}:`, error);
+          
+          // Still include the hackathon with just blockchain data
+          hackathonsWithMetadata.push({
+            id: hackathon.id.toString(),
+            organizer: hackathon.organizer,
+            registrationDeadline: hackathon.registrationDeadline,
+            submissionDeadline: hackathon.submissionDeadline,
+            judgingDeadline: hackathon.judgingDeadline,
+            participantCount: hackathon.participantCount,
+            projectCount: hackathon.projectCount,
+            active: hackathon.active,
+            ipfsHash: hackathon.ipfsHash,
+            name: `Hackathon #${hackathon.id}`, // Fallback name
+            shortDescription: "Metadata unavailable",
+            error: "Failed to load metadata",
+          });
+        }
+      }
+      
+      return hackathonsWithMetadata;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount) => failureCount < 2,
+    enabled: !!contract, // Only run when contract is available
+  });
 }
 
 // Custom hook for creating hackathons using blockchain
