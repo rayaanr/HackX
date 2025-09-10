@@ -4,6 +4,7 @@
     "": {
       "name": "web3",
       "dependencies": {
+        "@nomicfoundation/hardhat-viem": "^3.0.0",
         "@openzeppelin/contracts": "^5.4.0",
       },
       "devDependencies": {

@@ -18,6 +18,7 @@
     "viem": "^2.37.5"
   },
   "dependencies": {
+    "@nomicfoundation/hardhat-viem": "^3.0.0",
     "@openzeppelin/contracts": "^5.4.0"
   }
 }
