@@ -12,6 +12,7 @@ function createDate(daysFromNow: number, hoursOffset = 0): Date {
 export const mockHackathons: HackathonFormData[] = [
   {
     name: "AI Revolution Hackathon",
+    visual: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=400&fit=crop",
     shortDescription: "Build the next generation of AI-powered applications that will transform how we work and live.",
     fullDescription: `Join us for the AI Revolution Hackathon, where developers, designers, and innovators come together to create groundbreaking AI applications. This 48-hour intensive event will challenge participants to leverage cutting-edge AI technologies including machine learning, natural language processing, and computer vision.
 
@@ -116,6 +117,7 @@ The event features workshops on prompt engineering, fine-tuning models, and depl
   },
   {
     name: "DeFi Summer Hackathon",
+    visual: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop",
     shortDescription: "Build the future of decentralized finance with cutting-edge blockchain technology.",
     fullDescription: `The DeFi Summer Hackathon is the premier event for blockchain developers and financial innovators. Over 3 days, teams will compete to build revolutionary DeFi protocols, trading bots, yield farming strategies, and financial infrastructure.
 
@@ -213,6 +215,7 @@ Focus areas include: automated market makers, lending protocols, cross-chain bri
   },
   {
     name: "Climate Tech Innovation Challenge",
+    visual: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=400&fit=crop",
     shortDescription: "Develop technology solutions to combat climate change and build a sustainable future.",
     fullDescription: `The Climate Tech Innovation Challenge brings together developers, scientists, and entrepreneurs to build impactful solutions for our planet's most pressing environmental challenges.
 
@@ -280,6 +283,7 @@ This hackathon partners with leading climate organizations, offering winners the
   },
   {
     name: "Gaming Metaverse Builders",
+    visual: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
     shortDescription: "Create immersive gaming experiences and metaverse applications using the latest tech.",
     fullDescription: `Enter the Gaming Metaverse Builders hackathon and create the next generation of gaming experiences. Build multiplayer games, virtual worlds, NFT-based gaming economies, or AR/VR experiences that will define the future of digital entertainment.
 
@@ -361,6 +365,7 @@ Special tracks include: play-to-earn mechanics, social gaming features, cross-pl
   },
   {
     name: "HealthTech Innovation Lab",
+    visual: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&h=400&fit=crop",
     shortDescription: "Transform healthcare through technology - build solutions that save lives and improve wellbeing.",
     fullDescription: `The HealthTech Innovation Lab focuses on creating technology solutions that address critical healthcare challenges. From telemedicine platforms to AI-powered diagnostics, from mental health apps to medical device integrations - this hackathon covers the full spectrum of digital health innovation.
 
@@ -428,6 +433,7 @@ Key focus areas: remote patient monitoring, health data analytics, personalized 
   },
   {
     name: "EdTech Learning Revolution",
+    visual: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&h=400&fit=crop",
     shortDescription: "Revolutionize education with innovative technology that makes learning accessible and engaging.",
     fullDescription: `The EdTech Learning Revolution hackathon challenges participants to build the future of education. Create platforms, tools, and experiences that make learning more effective, accessible, and enjoyable for learners of all ages.
 

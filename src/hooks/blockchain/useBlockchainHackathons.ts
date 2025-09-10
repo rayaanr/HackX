@@ -7,14 +7,59 @@ import { useWeb3 } from "@/providers/web3-provider";
 import { useHackathonIPFSUpload, useIPFSView } from "@/hooks/ipfs/useIPFS";
 import type { HackathonFormData } from "@/types/hackathon";
 
+// Helper function to upload visual to IPFS if it's a URL
+async function uploadVisualToIPFS(visual: string | undefined): Promise<string | null> {
+  if (!visual) return null;
+  
+  // If it's already an IPFS URI, return as-is
+  if (visual.startsWith('ipfs://')) return visual;
+  
+  // If it's a URL, upload it to IPFS
+  if (visual.startsWith('http')) {
+    try {
+      console.log("Uploading visual to IPFS:", visual);
+      const response = await fetch('/api/ipfs/upload-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: visual,
+          keyValues: {
+            type: "hackathon-visual",
+            originalUrl: visual,
+          }
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Visual uploaded to IPFS:", result.ipfsUri);
+        return result.ipfsUri;
+      } else {
+        console.error("Failed to upload visual to IPFS");
+        return visual; // Fall back to original URL
+      }
+    } catch (error) {
+      console.error("Error uploading visual to IPFS:", error);
+      return visual; // Fall back to original URL
+    }
+  }
+  
+  return visual;
+}
+
 // Helper function to convert form data to IPFS metadata
-function formatHackathonMetadata(formData: HackathonFormData) {
+async function formatHackathonMetadata(formData: HackathonFormData) {
+  // Upload visual to IPFS if needed
+  const visualUri = await uploadVisualToIPFS(formData.visual);
+  
   return {
     name: formData.name,
     shortDescription: formData.shortDescription,
     fullDescription: formData.fullDescription,
     location: formData.location,
-    visual: formData.visual || null,
+    visual: visualUri,
     techStack: formData.techStack,
     experienceLevel: formData.experienceLevel,
     socialLinks: formData.socialLinks || {},
@@ -202,7 +247,7 @@ export function useCreateHackathon() {
     console.log("Uploading hackathon metadata to IPFS...");
     
     // Step 1: Upload metadata to IPFS using the specialized hook
-    const metadata = formatHackathonMetadata(formData);
+    const metadata = await formatHackathonMetadata(formData);
     const ipfsResponse = await uploadHackathonMetadata(metadata, formData.name);
 
     console.log("IPFS upload successful:", ipfsResponse);

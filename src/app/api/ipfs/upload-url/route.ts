@@ -11,23 +11,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    if (!body.data) {
+    if (!body.url) {
       return NextResponse.json(
-        { error: "JSON data is required" },
+        { error: "Image URL is required" },
         { status: 400 }
       );
     }
 
-    const fileName = body.name || "data.json";
+    console.log("Uploading image from URL:", body.url);
 
-    // Create a File object from JSON data
-    const jsonString = JSON.stringify(body.data, null, 2);
-    const file = new File([jsonString], fileName, { type: "application/json" });
-
-    // Prepare keyvalues - limit to 9 keys maximum to respect Pinata's limit
+    // Prepare keyvalues with a maximum of 9 keys to respect Pinata's limit
     const defaultKeys = {
       uploadedBy: "hackx-platform",
-      description: "Uploaded via HackX platform",
+      type: "hackathon-visual",
       timestamp: new Date().toISOString(),
     };
 
@@ -36,12 +32,14 @@ export async function POST(request: NextRequest) {
 
     // Limit to 9 keys maximum and ensure all values are strings
     const keyEntries = Object.entries(allKeys);
-    const keyvalues: Record<string, string> = Object.fromEntries(
+    const limitedKeys: Record<string, string> = Object.fromEntries(
       keyEntries.slice(0, 9).map(([key, value]) => [key, String(value)])
     );
 
-    // Upload file to IPFS using Pinata with limited metadata
-    const upload = await pinata.upload.public.file(file).keyvalues(keyvalues);
+    // Upload URL to IPFS using Pinata
+    const upload = await pinata.upload.public
+      .url(body.url)
+      .keyvalues(limitedKeys);
 
     console.log("Uploaded to IPFS:", upload);
 
@@ -50,15 +48,14 @@ export async function POST(request: NextRequest) {
       success: true,
       ipfsUri: `ipfs://${upload.cid}`,
       cid: upload.cid,
-      fileName,
-      data: body.data,
       size: upload.size,
+      originalUrl: body.url,
     });
   } catch (error) {
-    console.error("IPFS Upload Error:", error);
+    console.error("IPFS URL Upload Error:", error);
     return NextResponse.json(
       {
-        error: "Failed to upload to IPFS",
+        error: "Failed to upload URL to IPFS",
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
