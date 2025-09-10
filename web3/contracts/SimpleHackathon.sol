@@ -11,12 +11,21 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  */
 contract SimpleHackathon is Ownable, ReentrancyGuard {
     // Enums
-    enum Phase { REGISTRATION, SUBMISSION, JUDGING, COMPLETED }
+    enum Phase {
+        REGISTRATION,
+        SUBMISSION,
+        JUDGING,
+        COMPLETED
+    }
 
     // Events
     event ParticipantRegistered(address indexed participant);
     event PhaseChanged(Phase newPhase);
-    event WinnerDesignated(uint256 indexed categoryId, address indexed winner, uint256 projectId);
+    event WinnerDesignated(
+        uint256 indexed categoryId,
+        address indexed winner,
+        uint256 projectId
+    );
     event JudgeAdded(address indexed judge);
     event HackathonPaused();
     event HackathonUnpaused();
@@ -26,13 +35,13 @@ contract SimpleHackathon is Ownable, ReentrancyGuard {
     string public ipfsHash;
     Phase public currentPhase;
     bool public isPaused;
-    
+
     // Mappings
     mapping(address => bool) public participants;
     mapping(uint256 => address) public winners; // categoryId => winner address
     mapping(uint256 => uint256) public winningProjects; // categoryId => projectId
     mapping(address => bool) public judges;
-    
+
     // Arrays
     address[] public participantsList;
     address[] public judgesList;
@@ -77,17 +86,17 @@ contract SimpleHackathon is Ownable, ReentrancyGuard {
     /**
      * @dev Register as a participant in the hackathon
      */
-    function registerParticipant() 
-        external 
-        nonReentrant 
-        whenNotPaused 
-        inPhase(Phase.REGISTRATION) 
+    function registerParticipant()
+        external
+        nonReentrant
+        whenNotPaused
+        inPhase(Phase.REGISTRATION)
     {
         require(!participants[msg.sender], "Already registered");
-        
+
         participants[msg.sender] = true;
         participantsList.push(msg.sender);
-        
+
         emit ParticipantRegistered(msg.sender);
     }
 
@@ -95,17 +104,13 @@ contract SimpleHackathon is Ownable, ReentrancyGuard {
      * @dev Add a judge to the hackathon (organizer only)
      * @param judge Address of the judge to add
      */
-    function addJudge(address judge) 
-        external 
-        onlyOwner 
-        nonReentrant 
-    {
+    function addJudge(address judge) external onlyOwner nonReentrant {
         require(judge != address(0), "Invalid judge address");
         require(!judges[judge], "Judge already added");
-        
+
         judges[judge] = true;
         judgesList.push(judge);
-        
+
         emit JudgeAdded(judge);
     }
 
@@ -114,7 +119,7 @@ contract SimpleHackathon is Ownable, ReentrancyGuard {
      */
     function nextPhase() external onlyOwner {
         require(currentPhase != Phase.COMPLETED, "Hackathon already completed");
-        
+
         if (currentPhase == Phase.REGISTRATION) {
             currentPhase = Phase.SUBMISSION;
         } else if (currentPhase == Phase.SUBMISSION) {
@@ -122,7 +127,7 @@ contract SimpleHackathon is Ownable, ReentrancyGuard {
         } else if (currentPhase == Phase.JUDGING) {
             currentPhase = Phase.COMPLETED;
         }
-        
+
         emit PhaseChanged(currentPhase);
     }
 
@@ -136,17 +141,16 @@ contract SimpleHackathon is Ownable, ReentrancyGuard {
         uint256 categoryId,
         address winner,
         uint256 projectId
-    ) 
-        external 
-        onlyOwner 
-        inPhase(Phase.JUDGING) 
-    {
+    ) external onlyOwner inPhase(Phase.JUDGING) {
         require(participants[winner], "Winner must be a participant");
-        require(winners[categoryId] == address(0), "Winner already designated for this category");
-        
+        require(
+            winners[categoryId] == address(0),
+            "Winner already designated for this category"
+        );
+
         winners[categoryId] = winner;
         winningProjects[categoryId] = projectId;
-        
+
         emit WinnerDesignated(categoryId, winner, projectId);
     }
 
@@ -201,7 +205,9 @@ contract SimpleHackathon is Ownable, ReentrancyGuard {
      * @return winner Winner address
      * @return projectId Winning project ID
      */
-    function getWinner(uint256 categoryId) external view returns (address winner, uint256 projectId) {
+    function getWinner(
+        uint256 categoryId
+    ) external view returns (address winner, uint256 projectId) {
         return (winners[categoryId], winningProjects[categoryId]);
     }
 

@@ -55,12 +55,19 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
 
     // Modifiers
     modifier onlyInvitedJudge(uint256 hackathonId) {
-        require(isJudgeInvited(hackathonId, msg.sender), "Not an invited judge");
+        require(
+            isJudgeInvited(hackathonId, msg.sender),
+            "Not an invited judge"
+        );
         _;
     }
 
     modifier onlyAcceptedJudge(uint256 hackathonId) {
-        require(judges[msg.sender].isAccepted && isJudgeInvited(hackathonId, msg.sender), "Not an accepted judge");
+        require(
+            judges[msg.sender].isAccepted &&
+                isJudgeInvited(hackathonId, msg.sender),
+            "Not an accepted judge"
+        );
         _;
     }
 
@@ -74,7 +81,10 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @param _projectRegistry Address of SimpleProjectRegistry contract
      */
     function setProjectRegistry(address _projectRegistry) external onlyOwner {
-        require(_projectRegistry != address(0), "Invalid project registry address");
+        require(
+            _projectRegistry != address(0),
+            "Invalid project registry address"
+        );
         projectRegistry = _projectRegistry;
     }
 
@@ -83,10 +93,10 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @param hackathonId Hackathon identifier
      * @param hackathonContract Address of hackathon contract
      */
-    function registerHackathon(uint256 hackathonId, address hackathonContract) 
-        external 
-        onlyOwner 
-    {
+    function registerHackathon(
+        uint256 hackathonId,
+        address hackathonContract
+    ) external onlyOwner {
         require(hackathonContract != address(0), "Invalid hackathon contract");
         hackathonContracts[hackathonId] = hackathonContract;
     }
@@ -96,17 +106,25 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @param hackathonId Hackathon identifier
      * @param judge Address of judge to invite
      */
-    function inviteJudge(uint256 hackathonId, address judge) 
-        external 
-        nonReentrant 
-    {
+    function inviteJudge(
+        uint256 hackathonId,
+        address judge
+    ) external nonReentrant {
         require(judge != address(0), "Invalid judge address");
-        require(hackathonContracts[hackathonId] != address(0), "Hackathon not registered");
-        
+        require(
+            hackathonContracts[hackathonId] != address(0),
+            "Hackathon not registered"
+        );
+
         // Verify caller is hackathon organizer
-        SimpleHackathon hackathon = SimpleHackathon(hackathonContracts[hackathonId]);
-        require(hackathon.owner() == msg.sender, "Only hackathon organizer can invite judges");
-        
+        SimpleHackathon hackathon = SimpleHackathon(
+            hackathonContracts[hackathonId]
+        );
+        require(
+            hackathon.owner() == msg.sender,
+            "Only hackathon organizer can invite judges"
+        );
+
         require(!isJudgeInvited(hackathonId, judge), "Judge already invited");
 
         hackathonJudges[hackathonId].push(judge);
@@ -117,18 +135,18 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @dev Accept judge invitation
      * @param hackathonId Hackathon identifier
      */
-    function acceptJudgeInvitation(uint256 hackathonId) 
-        external 
-        nonReentrant 
-        onlyInvitedJudge(hackathonId) 
-    {
+    function acceptJudgeInvitation(
+        uint256 hackathonId
+    ) external nonReentrant onlyInvitedJudge(hackathonId) {
         require(!judges[msg.sender].isAccepted, "Already accepted invitation");
 
         judges[msg.sender].wallet = msg.sender;
         judges[msg.sender].isAccepted = true;
 
         // Add judge to hackathon contract
-        SimpleHackathon hackathon = SimpleHackathon(hackathonContracts[hackathonId]);
+        SimpleHackathon hackathon = SimpleHackathon(
+            hackathonContracts[hackathonId]
+        );
         hackathon.addJudge(msg.sender);
 
         emit JudgeAccepted(hackathonId, msg.sender);
@@ -146,16 +164,17 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
         uint256 projectId,
         uint256 score,
         string memory ipfsFeedbackHash
-    ) 
-        external 
-        nonReentrant 
-        onlyAcceptedJudge(hackathonId) 
-    {
+    ) external nonReentrant onlyAcceptedJudge(hackathonId) {
         require(score >= 1 && score <= 100, "Score must be between 1 and 100");
-        require(bytes(ipfsFeedbackHash).length > 0, "Feedback hash cannot be empty");
-        
+        require(
+            bytes(ipfsFeedbackHash).length > 0,
+            "Feedback hash cannot be empty"
+        );
+
         // Verify hackathon is in judging phase
-        SimpleHackathon hackathon = SimpleHackathon(hackathonContracts[hackathonId]);
+        SimpleHackathon hackathon = SimpleHackathon(
+            hackathonContracts[hackathonId]
+        );
         require(
             hackathon.currentPhase() == SimpleHackathon.Phase.JUDGING,
             "Hackathon not in judging phase"
@@ -163,17 +182,29 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
 
         // Verify project exists and is submitted
         SimpleProjectRegistry registry = SimpleProjectRegistry(projectRegistry);
-        require(registry.isProjectSubmitted(projectId), "Project not submitted");
+        require(
+            registry.isProjectSubmitted(projectId),
+            "Project not submitted"
+        );
 
         // Check if judge already scored this project
-        require(judges[msg.sender].scores[hackathonId][projectId] == 0, "Already scored this project");
+        require(
+            judges[msg.sender].scores[hackathonId][projectId] == 0,
+            "Already scored this project"
+        );
 
         // Record score
         judges[msg.sender].scores[hackathonId][projectId] = score;
         projectScores[hackathonId][projectId] += score;
         projectJudgeCount[hackathonId][projectId]++;
 
-        emit ScoreSubmitted(hackathonId, projectId, msg.sender, score, ipfsFeedbackHash);
+        emit ScoreSubmitted(
+            hackathonId,
+            projectId,
+            msg.sender,
+            score,
+            ipfsFeedbackHash
+        );
     }
 
     /**
@@ -181,13 +212,18 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @param hackathonId Hackathon identifier
      * @param categoryId Category identifier
      */
-    function calculateWinner(uint256 hackathonId, uint256 categoryId) 
-        external 
-        nonReentrant 
-    {
+    function calculateWinner(
+        uint256 hackathonId,
+        uint256 categoryId
+    ) external nonReentrant {
         // Verify caller is hackathon organizer
-        SimpleHackathon hackathon = SimpleHackathon(hackathonContracts[hackathonId]);
-        require(hackathon.owner() == msg.sender, "Only hackathon organizer can calculate winners");
+        SimpleHackathon hackathon = SimpleHackathon(
+            hackathonContracts[hackathonId]
+        );
+        require(
+            hackathon.owner() == msg.sender,
+            "Only hackathon organizer can calculate winners"
+        );
         require(
             hackathon.currentPhase() == SimpleHackathon.Phase.JUDGING,
             "Hackathon not in judging phase"
@@ -195,8 +231,10 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
 
         // Get all submitted projects for this hackathon
         SimpleProjectRegistry registry = SimpleProjectRegistry(projectRegistry);
-        uint256[] memory submittedProjects = registry.getSubmittedProjects(hackathonId);
-        
+        uint256[] memory submittedProjects = registry.getSubmittedProjects(
+            hackathonId
+        );
+
         require(submittedProjects.length > 0, "No submitted projects");
 
         uint256 winningProjectId = 0;
@@ -208,16 +246,17 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
             uint256 projectId = submittedProjects[i];
             uint256 totalScore = projectScores[hackathonId][projectId];
             uint256 judgeCount = projectJudgeCount[hackathonId][projectId];
-            
+
             if (judgeCount > 0) {
                 uint256 averageScore = totalScore / judgeCount;
-                
+
                 if (averageScore > highestAverageScore) {
                     highestAverageScore = averageScore;
                     winningProjectId = projectId;
-                    
+
                     // Get project creator as winner
-                    (SimpleProjectRegistry.Project memory project) = registry.getProject(projectId);
+                    SimpleProjectRegistry.Project memory project = registry
+                        .getProject(projectId);
                     winner = project.creator;
                 }
             }
@@ -228,7 +267,13 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
         // Designate winner in hackathon contract
         hackathon.designateWinner(categoryId, winner, winningProjectId);
 
-        emit WinnerCalculated(hackathonId, categoryId, winningProjectId, winner, highestAverageScore);
+        emit WinnerCalculated(
+            hackathonId,
+            categoryId,
+            winningProjectId,
+            winner,
+            highestAverageScore
+        );
     }
 
     // View functions
@@ -239,7 +284,10 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @param judge Address to check
      * @return True if judge is invited
      */
-    function isJudgeInvited(uint256 hackathonId, address judge) public view returns (bool) {
+    function isJudgeInvited(
+        uint256 hackathonId,
+        address judge
+    ) public view returns (bool) {
         address[] memory judgeList = hackathonJudges[hackathonId];
         for (uint i = 0; i < judgeList.length; i++) {
             if (judgeList[i] == judge) {
@@ -281,10 +329,13 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @return judgeCount Number of judges who scored
      * @return averageScore Average score
      */
-    function getProjectScore(uint256 hackathonId, uint256 projectId) 
-        external 
-        view 
-        returns (uint256 totalScore, uint256 judgeCount, uint256 averageScore) 
+    function getProjectScore(
+        uint256 hackathonId,
+        uint256 projectId
+    )
+        external
+        view
+        returns (uint256 totalScore, uint256 judgeCount, uint256 averageScore)
     {
         totalScore = projectScores[hackathonId][projectId];
         judgeCount = projectJudgeCount[hackathonId][projectId];
@@ -296,7 +347,9 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @param hackathonId Hackathon identifier
      * @return Array of judge addresses
      */
-    function getHackathonJudges(uint256 hackathonId) external view returns (address[] memory) {
+    function getHackathonJudges(
+        uint256 hackathonId
+    ) external view returns (address[] memory) {
         return hackathonJudges[hackathonId];
     }
 
@@ -305,22 +358,22 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @param hackathonId Hackathon identifier
      * @return results Array of judging results
      */
-    function getJudgingResults(uint256 hackathonId) 
-        external 
-        view 
-        returns (JudgingResult[] memory results) 
-    {
+    function getJudgingResults(
+        uint256 hackathonId
+    ) external view returns (JudgingResult[] memory results) {
         SimpleProjectRegistry registry = SimpleProjectRegistry(projectRegistry);
-        uint256[] memory submittedProjects = registry.getSubmittedProjects(hackathonId);
-        
+        uint256[] memory submittedProjects = registry.getSubmittedProjects(
+            hackathonId
+        );
+
         results = new JudgingResult[](submittedProjects.length);
-        
+
         for (uint i = 0; i < submittedProjects.length; i++) {
             uint256 projectId = submittedProjects[i];
             uint256 totalScore = projectScores[hackathonId][projectId];
             uint256 judgeCount = projectJudgeCount[hackathonId][projectId];
             uint256 averageScore = judgeCount > 0 ? totalScore / judgeCount : 0;
-            
+
             results[i] = JudgingResult({
                 projectId: projectId,
                 totalScore: totalScore,
@@ -336,7 +389,10 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
      * @param hackathonId Hackathon identifier
      * @return True if judge has completed evaluation
      */
-    function hasJudgeEvaluated(address judge, uint256 hackathonId) external view returns (bool) {
+    function hasJudgeEvaluated(
+        address judge,
+        uint256 hackathonId
+    ) external view returns (bool) {
         return judges[judge].hasEvaluated[hackathonId];
     }
 }
