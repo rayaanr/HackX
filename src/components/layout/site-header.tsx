@@ -3,6 +3,7 @@ import { NavUser } from "@/components/layout/nav-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "./theme-toggle";
+import { WalletConnect } from "./wallet-connect";
 import { useAuth } from "@/providers/auth-provider";
 import Link from "next/link";
 
@@ -20,6 +21,7 @@ export function SiteHeader() {
 
         {/* Right side icons and user */}
         <div className="ml-auto flex items-center gap-2">
+          <WalletConnect />
           <ThemeToggle />
           {user ? (
             <>
