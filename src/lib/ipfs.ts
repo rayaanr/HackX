@@ -1,6 +1,7 @@
 export interface IPFSUploadOptions {
   data: Record<string, any>
   name?: string
+  keyValues?: Record<string, string> // Add keyValues for Pinata filtering
 }
 
 export interface IPFSUploadResponse {

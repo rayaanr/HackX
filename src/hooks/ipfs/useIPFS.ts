@@ -120,12 +120,85 @@ export function useIPFS() {
   };
 }
 
+// Helper function to create filtering key-values for Pinata
+function createFilteringKeyValues(metadata: Record<string, any>) {
+  const keyValues: Record<string, string> = {};
+  
+  // Add techStack filters (convert array to comma-separated string)
+  if (metadata.techStack && Array.isArray(metadata.techStack) && metadata.techStack.length > 0) {
+    keyValues.techStack = metadata.techStack.join(',');
+  }
+  
+  // Add experienceLevel filter
+  if (metadata.experienceLevel) {
+    keyValues.experienceLevel = metadata.experienceLevel;
+  }
+  
+  // Add location filter
+  if (metadata.location) {
+    keyValues.location = metadata.location.toLowerCase();
+  }
+  
+  // Add date range filters for easy filtering
+  if (metadata.registrationPeriod?.registrationStartDate) {
+    keyValues.registrationStart = metadata.registrationPeriod.registrationStartDate;
+  }
+  if (metadata.registrationPeriod?.registrationEndDate) {
+    keyValues.registrationEnd = metadata.registrationPeriod.registrationEndDate;
+  }
+  if (metadata.hackathonPeriod?.hackathonStartDate) {
+    keyValues.hackathonStart = metadata.hackathonPeriod.hackathonStartDate;
+  }
+  if (metadata.hackathonPeriod?.hackathonEndDate) {
+    keyValues.hackathonEnd = metadata.hackathonPeriod.hackathonEndDate;
+  }
+  
+  // Add prizeCohorts information for filtering
+  if (metadata.prizeCohorts && Array.isArray(metadata.prizeCohorts) && metadata.prizeCohorts.length > 0) {
+    // Extract all unique prize cohort names
+    const cohortNames = metadata.prizeCohorts.map((cohort: any) => cohort.name).join(',');
+    keyValues.prizeCohorts = cohortNames;
+    
+    // Add total prize pool for filtering
+    const totalPrizePool = metadata.prizeCohorts.reduce((sum: number, cohort: any) => {
+      const amount = typeof cohort.prizeAmount === 'string' ? parseInt(cohort.prizeAmount) : cohort.prizeAmount;
+      return sum + (amount || 0);
+    }, 0);
+    keyValues.totalPrizePool = totalPrizePool.toString();
+  }
+  
+  // Add hackathon status for filtering
+  const now = new Date().toISOString();
+  let status = 'upcoming';
+  
+  if (metadata.registrationPeriod?.registrationEndDate && now > metadata.registrationPeriod.registrationEndDate) {
+    if (metadata.hackathonPeriod?.hackathonEndDate && now > metadata.hackathonPeriod.hackathonEndDate) {
+      if (metadata.votingPeriod?.votingEndDate && now > metadata.votingPeriod.votingEndDate) {
+        status = 'completed';
+      } else {
+        status = 'judging';
+      }
+    } else {
+      status = 'active';
+    }
+  } else if (metadata.registrationPeriod?.registrationStartDate && now > metadata.registrationPeriod.registrationStartDate) {
+    status = 'registration_open';
+  }
+  
+  keyValues.status = status;
+  
+  return keyValues;
+}
+
 // Specialized hook for hackathon metadata upload
 export function useHackathonIPFSUpload() {
   const upload = useIPFSUpload();
 
   const uploadHackathonMetadata = async (metadata: Record<string, any>, hackathonName: string) => {
     const fileName = `hackathon-${hackathonName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+    
+    // Create filtering key-values for Pinata
+    const filteringKeyValues = createFilteringKeyValues(metadata);
     
     return upload.mutateAsync({
       data: {
@@ -136,6 +209,7 @@ export function useHackathonIPFSUpload() {
         type: "hackathon-metadata",
       },
       name: fileName,
+      keyValues: filteringKeyValues, // Add key-values for filtering
     });
   };
 

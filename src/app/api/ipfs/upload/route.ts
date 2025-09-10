@@ -24,11 +24,16 @@ export async function POST(request: NextRequest) {
     const jsonString = JSON.stringify(body.data, null, 2);
     const file = new File([jsonString], fileName, { type: "application/json" });
 
-    // Upload file to IPFS using Pinata
-    const upload = await pinata.upload.public.file(file).keyvalues({
-      uploadedBy: "your-username", // Optional metadata
-      description: "Uploaded via Next.js API route",
-    });
+    // Prepare keyvalues - merge custom ones with defaults
+    const keyvalues = {
+      uploadedBy: "hackx-platform", // Default metadata
+      description: "Uploaded via HackX platform",
+      timestamp: new Date().toISOString(),
+      ...(body.keyValues || {}), // Spread custom keyValues from request
+    };
+
+    // Upload file to IPFS using Pinata with filtering metadata
+    const upload = await pinata.upload.public.file(file).keyvalues(keyvalues);
 
     console.log("Uploaded to IPFS:", upload);
 
