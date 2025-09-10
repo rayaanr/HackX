@@ -425,6 +425,193 @@ export function useUIBlockchainHackathons() {
   });
 }
 
+// Hook for fetching a single hackathon by ID from blockchain
+export function useBlockchainHackathonById(hackathonId: string) {
+  const { contract } = useWeb3();
+  const viewIPFS = useIPFSView();
+
+  return useQuery({
+    queryKey: ["hackathon", "blockchain", hackathonId],
+    queryFn: async (): Promise<UIHackathon | null> => {
+      if (!hackathonId || hackathonId === "0") {
+        throw new Error("Invalid hackathon ID");
+      }
+
+      console.log(`Fetching hackathon ${hackathonId} from blockchain...`);
+
+      try {
+        // Fetch hackathon basic data
+        const hackathon = await readContract({
+          contract,
+          method:
+            "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint8 currentPhase, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
+          params: [BigInt(hackathonId)],
+        });
+
+        // Fetch participants count
+        let participantCount = 0;
+        try {
+          const participants = await readContract({
+            contract,
+            method:
+              "function getHackathonParticipants(uint256 hackathonId) view returns (address[])",
+            params: [BigInt(hackathonId)],
+          });
+          participantCount = participants.length;
+        } catch (participantError) {
+          console.warn(
+            `Could not fetch participants for hackathon ${hackathonId}:`,
+            participantError
+          );
+        }
+
+        // Fetch project count
+        let projectCount = 0;
+        try {
+          const projects = await readContract({
+            contract,
+            method:
+              "function getHackathonProjects(uint256 hackathonId) view returns (uint256[])",
+            params: [BigInt(hackathonId)],
+          });
+          projectCount = projects.length;
+        } catch (projectError) {
+          console.warn(
+            `Could not fetch projects for hackathon ${hackathonId}:`,
+            projectError
+          );
+        }
+
+        // Fetch IPFS metadata
+        let ipfsData = { data: {} };
+        try {
+          ipfsData = await viewIPFS.mutateAsync(`ipfs://${hackathon.ipfsHash}`);
+        } catch (error) {
+          console.error(
+            `Failed to fetch IPFS metadata for hackathon ${hackathonId}:`,
+            error
+          );
+        }
+
+        // Combine all data
+        const blockchainHackathon = {
+          ...hackathon,
+          participantCount,
+          projectCount,
+          active: hackathon.isActive,
+          ...ipfsData.data,
+        };
+
+        console.log(
+          `Successfully fetched hackathon ${hackathonId}:`,
+          blockchainHackathon
+        );
+
+        return transformBlockchainToUI(blockchainHackathon);
+      } catch (error) {
+        console.error(`Error fetching hackathon ${hackathonId}:`, error);
+        throw new Error(
+          `Failed to fetch hackathon: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount) => failureCount < 2,
+    enabled: !!contract && !!hackathonId && hackathonId !== "0", // Only run when contract and valid ID are available
+  });
+}
+
+// Hook for fetching participants of a hackathon
+export function useHackathonParticipants(hackathonId: string) {
+  const { contract } = useWeb3();
+
+  return useQuery({
+    queryKey: ["hackathon", "participants", hackathonId],
+    queryFn: async (): Promise<string[]> => {
+      if (!hackathonId || hackathonId === "0") {
+        throw new Error("Invalid hackathon ID");
+      }
+
+      console.log(`Fetching participants for hackathon ${hackathonId}...`);
+
+      try {
+        const participants = await readContract({
+          contract,
+          method:
+            "function getHackathonParticipants(uint256 hackathonId) view returns (address[])",
+          params: [BigInt(hackathonId)],
+        });
+
+        console.log(
+          `Found ${participants.length} participants for hackathon ${hackathonId}`
+        );
+        return [...participants]; // Convert readonly array to mutable array
+      } catch (error) {
+        console.error(
+          `Error fetching participants for hackathon ${hackathonId}:`,
+          error
+        );
+        throw new Error(
+          `Failed to fetch participants: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
+    },
+    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount) => failureCount < 2,
+    enabled: !!contract && !!hackathonId && hackathonId !== "0",
+  });
+}
+
+// Hook for fetching projects of a hackathon
+export function useHackathonProjects(hackathonId: string) {
+  const { contract } = useWeb3();
+
+  return useQuery({
+    queryKey: ["hackathon", "projects", hackathonId],
+    queryFn: async (): Promise<number[]> => {
+      if (!hackathonId || hackathonId === "0") {
+        throw new Error("Invalid hackathon ID");
+      }
+
+      console.log(`Fetching projects for hackathon ${hackathonId}...`);
+
+      try {
+        const projects = await readContract({
+          contract,
+          method:
+            "function getHackathonProjects(uint256 hackathonId) view returns (uint256[])",
+          params: [BigInt(hackathonId)],
+        });
+
+        console.log(
+          `Found ${projects.length} projects for hackathon ${hackathonId}`
+        );
+        return projects.map((p) => Number(p));
+      } catch (error) {
+        console.error(
+          `Error fetching projects for hackathon ${hackathonId}:`,
+          error
+        );
+        throw new Error(
+          `Failed to fetch projects: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
+    },
+    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount) => failureCount < 2,
+    enabled: !!contract && !!hackathonId && hackathonId !== "0",
+  });
+}
+
 // Custom hook for creating hackathons using blockchain
 export function useCreateHackathon() {
   const queryClient = useQueryClient();

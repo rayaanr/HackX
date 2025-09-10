@@ -7,8 +7,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useHackathonById } from "@/hooks/queries/use-hackathons";
-import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
+import { useBlockchainHackathonById } from "@/hooks/blockchain/useBlockchainHackathons";
 import { PrizeAndJudgeTab } from "../../../components/hackathon/display/hackathon-prizes-judges-tab";
 import { ScheduleTab } from "../../../components/hackathon/display/hackathon-schedule-tab";
 import { SubmittedProjectsTab } from "../../../components/hackathon/display/hackathon-projects-gallery-tab";
@@ -24,10 +23,10 @@ export default function HackathonPage() {
   const id = params.id as string;
 
   const {
-    data: hackathonData,
+    data: hackathon,
     isLoading: loading,
     error,
-  } = useHackathonById(id);
+  } = useBlockchainHackathonById(id);
 
   if (loading) {
     return (
@@ -73,7 +72,7 @@ export default function HackathonPage() {
     );
   }
 
-  if (error || !hackathonData) {
+  if (error || !hackathon) {
     return (
       <div className="bg-background text-foreground">
         <div className="container mx-auto">
@@ -99,8 +98,6 @@ export default function HackathonPage() {
       </div>
     );
   }
-
-  const hackathon = transformDatabaseToUI(hackathonData);
 
   return (
     <div className="bg-background text-foreground">
@@ -206,9 +203,49 @@ export default function HackathonPage() {
                         ],
                         ALLOWED_ATTR: ["href", "target"],
                         FORBID_ATTR: ["style"],
-                      },
-                    ),
+                      }
+                    )
                   )}
+                </div>
+              </div>
+
+              {/* Blockchain Information */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Blockchain Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Hackathon ID</h4>
+                    <p className="text-sm text-muted-foreground">
+                      #{hackathon.id}
+                    </p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Participants</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {hackathon.participantCount || 0} registered
+                    </p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Total Prizes</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {hackathon.prizeCohorts
+                        ?.reduce((sum, cohort) => {
+                          const amount =
+                            typeof cohort.prizeAmount === "string"
+                              ? parseInt(cohort.prizeAmount)
+                              : cohort.prizeAmount;
+                          return sum + (amount || 0);
+                        }, 0)
+                        ?.toLocaleString() || "TBD"}
+                    </p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Tech Stack</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {hackathon.techStack?.slice(0, 3).join(", ") ||
+                        "Not specified"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
