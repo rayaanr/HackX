@@ -41,7 +41,7 @@ contract HackathonFactoryTest is Test {
         organizer2 = address(0x2);
         nonOwner = address(0x3);
 
-        factory = new HackathonFactory();
+        factory = new HackathonFactory(address(0x99)); // Mock JudgeRegistry for tests
     }
 
     // Test constructor

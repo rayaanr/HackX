@@ -22,7 +22,7 @@ contract ProjectRegistryTest is Test {
         user3 = address(0x3);
         
         // Deploy factory (deployer is automatically added as organizer)
-        factory = new HackathonFactory();
+        factory = new HackathonFactory(address(0x99)); // Mock JudgeRegistry for tests
         
         (uint256 returnedId, address returnedAddress) = factory.createHackathon(
             "QmTestHackathonHash",     // ipfsHash

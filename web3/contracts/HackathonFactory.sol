@@ -29,6 +29,7 @@ contract HackathonFactory is Ownable, ReentrancyGuard, Pausable {
 
     // State variables
     uint256 public hackathonCounter;
+    address public judgeRegistry;
 
     // Mappings
     mapping(uint256 => address) public hackathons;
@@ -49,10 +50,13 @@ contract HackathonFactory is Ownable, ReentrancyGuard, Pausable {
 
     /**
      * @dev Constructor sets the contract owner and initializes OpenZeppelin contracts
+     * @param _judgeRegistry Address of the JudgeRegistry contract
      */
-    constructor() Ownable(msg.sender) {
+    constructor(address _judgeRegistry) Ownable(msg.sender) {
+        require(_judgeRegistry != address(0), "HackathonFactory: judge registry cannot be zero address");
         // Owner is automatically set by Ownable constructor
         authorizedOrganizers[msg.sender] = true;
+        judgeRegistry = _judgeRegistry;
     }
 
     /**
@@ -120,7 +124,8 @@ contract HackathonFactory is Ownable, ReentrancyGuard, Pausable {
             _hackathonStart,
             _hackathonEnd,
             _judgingEnd,
-            _maxParticipants
+            _maxParticipants,
+            judgeRegistry
         );
 
         hackathonAddress = address(newHackathon);
@@ -261,6 +266,15 @@ contract HackathonFactory is Ownable, ReentrancyGuard, Pausable {
 
         emit OrganizerRemoved(previousOwner, newOwner);
         emit OrganizerAdded(newOwner, newOwner);
+    }
+
+    /**
+     * @dev Update the judge registry address
+     * @param _judgeRegistry New judge registry address
+     */
+    function setJudgeRegistry(address _judgeRegistry) external onlyOwner {
+        require(_judgeRegistry != address(0), "HackathonFactory: judge registry cannot be zero address");
+        judgeRegistry = _judgeRegistry;
     }
 
     /**

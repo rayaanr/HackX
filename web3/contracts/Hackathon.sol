@@ -4,6 +4,22 @@ pragma solidity ^0.8.28;
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
+interface IJudgeRegistry {
+    function calculateWinners(
+        uint256 _hackathonId,
+        uint256[] memory _projectIds
+    ) external view returns (
+        uint256[] memory categoryIds,
+        uint256[] memory winners,
+        uint256[] memory scores
+    );
+    
+    function verifyJudgingComplete(
+        uint256 _hackathonId,
+        uint256[] memory _projectIds
+    ) external view returns (bool isComplete, bool[] memory completionDetails);
+}
+
 /**
  * @title Hackathon
  * @dev Individual hackathon contract with event management
@@ -44,6 +60,7 @@ contract Hackathon is ReentrancyGuard, Pausable {
     address public organizer;
     string public ipfsHash;
     Phase public currentPhase;
+    IJudgeRegistry public judgeRegistry;
 
     // Timestamps
     uint256 public registrationStart;
@@ -113,7 +130,8 @@ contract Hackathon is ReentrancyGuard, Pausable {
         uint256 _hackathonStart,
         uint256 _hackathonEnd,
         uint256 _judgingEnd,
-        uint256 _maxParticipants
+        uint256 _maxParticipants,
+        address _judgeRegistry
     ) {
         hackathonId = _hackathonId;
         organizer = _organizer;
@@ -124,6 +142,7 @@ contract Hackathon is ReentrancyGuard, Pausable {
         hackathonEnd = _hackathonEnd;
         judgingEnd = _judgingEnd;
         maxParticipants = _maxParticipants;
+        judgeRegistry = IJudgeRegistry(_judgeRegistry);
 
         // Set initial phase based on current time
         if (block.timestamp < _registrationStart) {
@@ -290,14 +309,72 @@ contract Hackathon is ReentrancyGuard, Pausable {
     }
 
     /**
-     * @dev Set winner for a prize category (only organizer, during judging phase)
+     * @dev Calculate and set winners automatically using JudgeRegistry
+     * @param _projectIds Array of all project IDs participating in this hackathon
+     * @param _projectOwners Array of project owner addresses (must match _projectIds order)
+     */
+    function calculateAndSetWinners(
+        uint256[] memory _projectIds,
+        address[] memory _projectOwners
+    ) external onlyOrganizer onlyAfterPhase(Phase.Judging) nonReentrant {
+        require(_projectIds.length == _projectOwners.length, "Hackathon: arrays length mismatch");
+        require(address(judgeRegistry) != address(0), "Hackathon: judge registry not set");
+        
+        // Verify judging is complete before calculating winners
+        (bool isComplete, ) = judgeRegistry.verifyJudgingComplete(hackathonId, _projectIds);
+        require(isComplete, "Hackathon: judging not complete");
+
+        // Get winners from JudgeRegistry
+        (
+            uint256[] memory categoryIds,
+            uint256[] memory winningProjectIds,
+            
+        ) = judgeRegistry.calculateWinners(hackathonId, _projectIds);
+
+        // Set winners for each category
+        for (uint256 i = 0; i < categoryIds.length; i++) {
+            uint256 categoryId = categoryIds[i];
+            uint256 winningProjectId = winningProjectIds[i];
+            
+            // Skip categories with no winners (type(uint256).max indicates no winner)
+            if (winningProjectId == type(uint256).max) {
+                continue;
+            }
+            
+            require(categoryId < prizeCategories, "Hackathon: invalid category ID");
+            require(
+                prizePool[categoryId].winner == address(0),
+                "Hackathon: winner already set for this category"
+            );
+
+            // Find the project owner address
+            address winner = address(0);
+            for (uint256 j = 0; j < _projectIds.length; j++) {
+                if (_projectIds[j] == winningProjectId) {
+                    winner = _projectOwners[j];
+                    break;
+                }
+            }
+            
+            require(winner != address(0), "Hackathon: winner address not found");
+            require(participants[winner], "Hackathon: winner must be a participant");
+
+            prizePool[categoryId].winner = winner;
+            participantWinnings[winner] += prizePool[categoryId].amount;
+
+            emit WinnerSet(categoryId, winner, prizePool[categoryId].amount);
+        }
+    }
+
+    /**
+     * @dev Legacy function for manual winner setting (emergency only)
      * @param _categoryId Prize category ID
      * @param _winner Winner address
      */
-    function setWinner(
+    function setWinnerManual(
         uint256 _categoryId,
         address _winner
-    ) external onlyOrganizer inPhase(Phase.Judging) nonReentrant {
+    ) external onlyOrganizer onlyAfterPhase(Phase.Judging) nonReentrant {
         require(
             _categoryId < prizeCategories,
             "Hackathon: invalid category ID"

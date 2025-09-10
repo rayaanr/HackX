@@ -43,7 +43,8 @@ contract HackathonTest is Test {
             HACK_START,
             HACK_END,
             JUDGING_END,
-            MAX_PARTICIPANTS
+            MAX_PARTICIPANTS,
+            address(0x99) // Mock JudgeRegistry address for basic tests
         );
     }
 
@@ -361,7 +362,7 @@ contract HackathonTest is Test {
 
         // Set winner
         vm.prank(organizer);
-        hackathon.setWinner(0, participant1);
+        hackathon.setWinnerManual(0, participant1);
 
         (, , address winner, ) = hackathon.getPrizeCategory(0);
         assertEq(winner, participant1);
@@ -382,13 +383,13 @@ contract HackathonTest is Test {
 
         vm.prank(participant1);
         vm.expectRevert("Hackathon: caller is not the organizer");
-        hackathon.setWinner(0, participant1);
+        hackathon.setWinnerManual(0, participant1);
     }
 
     function test_SetWinner_RevertWhenNotJudgingPhase() public {
         vm.prank(organizer);
         vm.expectRevert("Hackathon: function called in wrong phase");
-        hackathon.setWinner(0, participant1);
+        hackathon.setWinnerManual(0, participant1);
     }
 
     function test_SetWinner_RevertWhenNotParticipant() public {
@@ -401,7 +402,7 @@ contract HackathonTest is Test {
 
         vm.prank(organizer);
         vm.expectRevert("Hackathon: winner must be a participant");
-        hackathon.setWinner(0, participant1);
+        hackathon.setWinnerManual(0, participant1);
     }
 
     function test_DistributePrize() public {
@@ -422,7 +423,7 @@ contract HackathonTest is Test {
         hackathon.updatePhase();
 
         vm.prank(organizer);
-        hackathon.setWinner(0, participant1);
+        hackathon.setWinnerManual(0, participant1);
 
         // Move to completed phase
         vm.warp(JUDGING_END + 100);
@@ -471,7 +472,7 @@ contract HackathonTest is Test {
         hackathon.updatePhase();
 
         vm.prank(organizer);
-        hackathon.setWinner(0, participant1);
+        hackathon.setWinnerManual(0, participant1);
 
         vm.warp(JUDGING_END + 100);
         vm.prank(organizer);
