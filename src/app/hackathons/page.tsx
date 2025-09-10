@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-// import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
-// import { FeaturedCarousel } from "@/components/hackathon/widgets/featured-carousel";
+import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
+import { FeaturedCarousel } from "@/components/hackathon/widgets/featured-carousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,17 +11,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAllBlockchainHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+import { useUIBlockchainHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 export default function ExplorePage() {
   const {
-    data: blockchainHackathons = [],
+    data: hackathonData,
     isLoading: loading,
     error,
-  } = useAllBlockchainHackathons();
+  } = useUIBlockchainHackathons();
 
   // Filter state
   const [filters, setFilters] = useState({
@@ -30,76 +30,81 @@ export default function ExplorePage() {
     status: "",
   });
 
-  // Helper function to get hackathon status based on dates
-  const getHackathonStatus = (hackathon: any) => {
-    const now = Date.now() / 1000; // Current time in Unix timestamp
+  // Get data with fallbacks
+  const allHackathons = hackathonData?.allHackathons || [];
+  const initialLiveHackathons = hackathonData?.liveHackathons || [];
+  const initialPastHackathons = hackathonData?.pastHackathons || [];
 
-    if (hackathon.registrationDeadline && now < Number(hackathon.registrationDeadline)) {
+  // Helper function to get hackathon status based on dates (for filtering)
+  const getHackathonStatus = (hackathon: any) => {
+    const now = new Date();
+
+    if (
+      hackathon.registrationPeriod?.registrationEndDate &&
+      now < hackathon.registrationPeriod.registrationEndDate
+    ) {
       return "Registration Open";
-    } else if (hackathon.submissionDeadline && now < Number(hackathon.submissionDeadline)) {
+    } else if (
+      hackathon.hackathonPeriod?.hackathonEndDate &&
+      now < hackathon.hackathonPeriod.hackathonEndDate
+    ) {
       return "Live";
-    } else if (hackathon.judgingDeadline && now < Number(hackathon.judgingDeadline)) {
+    } else if (
+      hackathon.votingPeriod?.votingEndDate &&
+      now < hackathon.votingPeriod.votingEndDate
+    ) {
       return "Voting";
     } else {
       return "Ended";
     }
   };
 
-  // Process and filter hackathons
-  const { allHackathons, liveHackathons, pastHackathons } = useMemo(() => {
-    if (!blockchainHackathons || blockchainHackathons.length === 0) {
-      return { allHackathons: [], liveHackathons: [], pastHackathons: [] };
-    }
+  // Apply additional filters on top of the pre-filtered data
+  const { liveHackathons, pastHackathons } = useMemo(() => {
+    const applyFilters = (hackathons: any[]) => {
+      return hackathons.filter((hackathon) => {
+        // Prize range filter
+        if (filters.prizeRange) {
+          const totalPrizePool =
+            hackathon.prizeCohorts?.reduce((sum: number, cohort: any) => {
+              const amount =
+                typeof cohort.prizeAmount === "string"
+                  ? parseInt(cohort.prizeAmount)
+                  : cohort.prizeAmount;
+              return sum + (amount || 0);
+            }, 0) || 0;
 
-    // Apply filters
-    let filteredHackathons = blockchainHackathons.filter((hackathon: any) => {
-      // Prize range filter
-      if (filters.prizeRange) {
-        const totalPrizePool = hackathon.prizeCohorts?.reduce((sum: number, cohort: any) => {
-          const amount = typeof cohort.prizeAmount === 'string' ? parseInt(cohort.prizeAmount) : cohort.prizeAmount;
-          return sum + (amount || 0);
-        }, 0) || 0;
-
-        const minPrize = parseInt(filters.prizeRange.replace(/[^0-9]/g, ''));
-        if (totalPrizePool < minPrize) return false;
-      }
-
-      // Tech stack filter
-      if (filters.techStack) {
-        const hackathonTechStack = hackathon.techStack || [];
-        if (!hackathonTechStack.some((tech: string) => 
-          tech.toLowerCase().includes(filters.techStack.toLowerCase())
-        )) {
-          return false;
+          const minPrize = parseInt(filters.prizeRange.replace(/[^0-9]/g, ""));
+          if (totalPrizePool < minPrize) return false;
         }
-      }
 
-      // Status filter
-      if (filters.status) {
-        const currentStatus = getHackathonStatus(hackathon);
-        if (filters.status !== currentStatus) return false;
-      }
+        // Tech stack filter
+        if (filters.techStack) {
+          const hackathonTechStack = hackathon.techStack || [];
+          if (
+            !hackathonTechStack.some((tech: string) =>
+              tech.toLowerCase().includes(filters.techStack.toLowerCase())
+            )
+          ) {
+            return false;
+          }
+        }
 
-      return true;
-    });
+        // Status filter
+        if (filters.status) {
+          const currentStatus = getHackathonStatus(hackathon);
+          if (filters.status !== currentStatus) return false;
+        }
 
-    // Categorize hackathons
-    const live = filteredHackathons.filter((hackathon: any) => {
-      const status = getHackathonStatus(hackathon);
-      return ["Registration Open", "Live", "Voting"].includes(status);
-    });
-
-    const past = filteredHackathons.filter((hackathon: any) => {
-      const status = getHackathonStatus(hackathon);
-      return status === "Ended";
-    });
+        return true;
+      });
+    };
 
     return {
-      allHackathons: filteredHackathons,
-      liveHackathons: live,
-      pastHackathons: past,
+      liveHackathons: applyFilters(initialLiveHackathons),
+      pastHackathons: applyFilters(initialPastHackathons),
     };
-  }, [blockchainHackathons, filters]);
+  }, [initialLiveHackathons, initialPastHackathons, filters]);
 
   useEffect(() => {
     if (error) {
@@ -111,8 +116,8 @@ export default function ExplorePage() {
 
   return (
     <div>
-      {/* Featured Hackathon Carousel - TODO: Update to work with blockchain data */}
-      {/* <FeaturedCarousel hackathons={allHackathons} /> */}
+      {/* Featured Hackathon Carousel */}
+      <FeaturedCarousel hackathons={liveHackathons} />
 
       {/* Explore Section */}
       <div className="flex justify-between items-center mb-6">
@@ -134,53 +139,93 @@ export default function ExplorePage() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
-              {filters.prizeRange || "Total Prize"} <ChevronDown className="ml-2" />
+              {filters.prizeRange || "Total Prize"}{" "}
+              <ChevronDown className="ml-2" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, prizeRange: "" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, prizeRange: "" }))
+              }
+            >
               All Prizes
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, prizeRange: "$10,000+" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, prizeRange: "$10,000+" }))
+              }
+            >
               $10,000+
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, prizeRange: "$50,000+" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, prizeRange: "$50,000+" }))
+              }
+            >
               $50,000+
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, prizeRange: "$100,000+" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, prizeRange: "$100,000+" }))
+              }
+            >
               $100,000+
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
-              {filters.techStack || "Tech Stack"} <ChevronDown className="ml-2" />
+              {filters.techStack || "Tech Stack"}{" "}
+              <ChevronDown className="ml-2" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, techStack: "" }))}>
+            <DropdownMenuItem
+              onClick={() => setFilters((prev) => ({ ...prev, techStack: "" }))}
+            >
               All Tech
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, techStack: "AI" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, techStack: "AI" }))
+              }
+            >
               AI
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, techStack: "Web3" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, techStack: "Web3" }))
+              }
+            >
               Web3
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, techStack: "React" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, techStack: "React" }))
+              }
+            >
               React
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, techStack: "TypeScript" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, techStack: "TypeScript" }))
+              }
+            >
               TypeScript
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, techStack: "Mobile" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, techStack: "Mobile" }))
+              }
+            >
               Mobile
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
@@ -188,19 +233,37 @@ export default function ExplorePage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, status: "" }))}>
+            <DropdownMenuItem
+              onClick={() => setFilters((prev) => ({ ...prev, status: "" }))}
+            >
               All Status
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, status: "Registration Open" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, status: "Registration Open" }))
+              }
+            >
               Registration Open
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, status: "Live" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, status: "Live" }))
+              }
+            >
               Live
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, status: "Voting" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, status: "Voting" }))
+              }
+            >
               Voting
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilters(prev => ({ ...prev, status: "Ended" }))}>
+            <DropdownMenuItem
+              onClick={() =>
+                setFilters((prev) => ({ ...prev, status: "Ended" }))
+              }
+            >
               Ended
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -208,7 +271,7 @@ export default function ExplorePage() {
       </div>
 
       {/* Hackathon Grid */}
-      <div className="grid gap-8">
+      <div className="space-y-6">
         {loading ? (
           // Loading skeleton
           Array.from({ length: 3 }).map((_, i) => (
@@ -237,50 +300,14 @@ export default function ExplorePage() {
           <div className="text-center py-12">
             <h3 className="text-lg font-semibold mb-2">No active hackathons</h3>
             <p className="text-muted-foreground">
-              {blockchainHackathons.length === 0
+              {allHackathons.length === 0
                 ? "No hackathons have been created yet."
                 : "All hackathons have ended or haven't started yet."}
             </p>
           </div>
         ) : (
-          liveHackathons.map((hackathon: any) => (
-            <div key={hackathon.id} className="border rounded-lg p-6">
-              <div className="flex">
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-4">
-                    <h3 className="text-xl font-bold">{hackathon.name || `Hackathon #${hackathon.id}`}</h3>
-                    <Badge variant="secondary">
-                      {hackathon.active ? "Active" : "Inactive"}
-                    </Badge>
-                  </div>
-                  <p className="text-muted-foreground">
-                    {hackathon.shortDescription || "No description available"}
-                  </p>
-                  <div className="grid grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <div className="font-medium">Organizer</div>
-                      <div className="text-muted-foreground">
-                        {hackathon.organizer ? `${hackathon.organizer.slice(0, 6)}...${hackathon.organizer.slice(-4)}` : "Unknown"}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Participants</div>
-                      <div className="text-muted-foreground">{hackathon.participantCount?.toString() || "0"}</div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Projects</div>
-                      <div className="text-muted-foreground">{hackathon.projectCount?.toString() || "0"}</div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Tech Stack</div>
-                      <div className="text-muted-foreground">
-                        {hackathon.techStack?.slice(0, 2).join(", ") || "Not specified"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          liveHackathons.map((hackathon) => (
+            <HackathonCard key={hackathon.id} hackathon={hackathon} />
           ))
         )}
       </div>
@@ -288,7 +315,7 @@ export default function ExplorePage() {
       {/* Past Hackathons */}
       <div className="mt-16">
         <h2 className="text-2xl font-bold mb-6">Past Hackathons</h2>
-        <div className="grid gap-8">
+        <div className="space-y-6">
           {loading ? (
             Array.from({ length: 2 }).map((_, i) => (
               <div key={i} className="border rounded-lg p-6">
@@ -311,45 +338,8 @@ export default function ExplorePage() {
               </p>
             </div>
           ) : (
-            pastHackathons.map((hackathon: any) => (
-              <div key={hackathon.id} className="border rounded-lg p-6">
-                <div className="flex">
-                  <div className="flex-1 space-y-4">
-                    <div className="flex items-center gap-4">
-                      <h3 className="text-xl font-bold">{hackathon.name || `Hackathon #${hackathon.id}`}</h3>
-                      <Badge variant="secondary">Ended</Badge>
-                    </div>
-                    <p className="text-muted-foreground">
-                      {hackathon.shortDescription || "No description available"}
-                    </p>
-                    <div className="grid grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <div className="font-medium">Organizer</div>
-                        <div className="text-muted-foreground">
-                          {hackathon.organizer ? `${hackathon.organizer.slice(0, 6)}...${hackathon.organizer.slice(-4)}` : "Unknown"}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-medium">Participants</div>
-                        <div className="text-muted-foreground">{hackathon.participantCount?.toString() || "0"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium">Projects</div>
-                        <div className="text-muted-foreground">{hackathon.projectCount?.toString() || "0"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium">Total Prize</div>
-                        <div className="text-muted-foreground">
-                          {hackathon.prizeCohorts?.reduce((sum: number, cohort: any) => {
-                            const amount = typeof cohort.prizeAmount === 'string' ? parseInt(cohort.prizeAmount) : cohort.prizeAmount;
-                            return sum + (amount || 0);
-                          }, 0).toLocaleString() || "TBD"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            pastHackathons.map((hackathon) => (
+              <HackathonCard key={hackathon.id} hackathon={hackathon} />
             ))
           )}
         </div>
