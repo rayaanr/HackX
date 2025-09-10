@@ -1,12 +1,8 @@
 "use client";
 
-import { createThirdwebClient } from "thirdweb";
 import { ConnectButton } from "thirdweb/react";
 import { inAppWallet, createWallet } from "thirdweb/wallets";
-
-const client = createThirdwebClient({
-  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
-});
+import { useWeb3 } from "@/providers/web3-provider";
 
 const wallets = [
   inAppWallet({
@@ -31,6 +27,8 @@ const wallets = [
 ];
 
 export function WalletConnect() {
+  const { client } = useWeb3();
+  
   return (
     <ConnectButton
       client={client}

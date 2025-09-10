@@ -25,7 +25,10 @@ export async function POST(request: NextRequest) {
     const file = new File([jsonString], fileName, { type: "application/json" });
 
     // Upload file to IPFS using Pinata
-    const upload = await pinata.upload.public.file(file);
+    const upload = await pinata.upload.public.file(file).keyvalues({
+      uploadedBy: "your-username", // Optional metadata
+      description: "Uploaded via Next.js API route",
+    });
 
     console.log("Uploaded to IPFS:", upload);
 
