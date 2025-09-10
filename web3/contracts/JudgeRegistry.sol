@@ -3,15 +3,15 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./SimpleHackathon.sol";
-import "./SimpleProjectRegistry.sol";
+import "./Hackathon.sol";
+import "./ProjectRegistry.sol";
 
 /**
- * @title SimpleJudgeRegistry
+ * @title JudgeRegistry
  * @dev Simplified judge management and scoring system
  * @author HackX Team
  */
-contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
+contract JudgeRegistry is ReentrancyGuard, Ownable {
     // Structs
     struct Judge {
         address wallet;
@@ -78,7 +78,7 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
 
     /**
      * @dev Set project registry address (owner only)
-     * @param _projectRegistry Address of SimpleProjectRegistry contract
+     * @param _projectRegistry Address of ProjectRegistry contract
      */
     function setProjectRegistry(address _projectRegistry) external onlyOwner {
         require(
@@ -117,7 +117,7 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
         );
 
         // Verify caller is hackathon organizer
-        SimpleHackathon hackathon = SimpleHackathon(
+        Hackathon hackathon = Hackathon(
             hackathonContracts[hackathonId]
         );
         require(
@@ -144,7 +144,7 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
         judges[msg.sender].isAccepted = true;
 
         // Add judge to hackathon contract
-        SimpleHackathon hackathon = SimpleHackathon(
+        Hackathon hackathon = Hackathon(
             hackathonContracts[hackathonId]
         );
         hackathon.addJudge(msg.sender);
@@ -172,16 +172,16 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
         );
 
         // Verify hackathon is in judging phase
-        SimpleHackathon hackathon = SimpleHackathon(
+        Hackathon hackathon = Hackathon(
             hackathonContracts[hackathonId]
         );
         require(
-            hackathon.currentPhase() == SimpleHackathon.Phase.JUDGING,
+            hackathon.currentPhase() == Hackathon.Phase.JUDGING,
             "Hackathon not in judging phase"
         );
 
         // Verify project exists and is submitted
-        SimpleProjectRegistry registry = SimpleProjectRegistry(projectRegistry);
+        ProjectRegistry registry = ProjectRegistry(projectRegistry);
         require(
             registry.isProjectSubmitted(projectId),
             "Project not submitted"
@@ -217,7 +217,7 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
         uint256 categoryId
     ) external nonReentrant {
         // Verify caller is hackathon organizer
-        SimpleHackathon hackathon = SimpleHackathon(
+        Hackathon hackathon = Hackathon(
             hackathonContracts[hackathonId]
         );
         require(
@@ -225,12 +225,12 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
             "Only hackathon organizer can calculate winners"
         );
         require(
-            hackathon.currentPhase() == SimpleHackathon.Phase.JUDGING,
+            hackathon.currentPhase() == Hackathon.Phase.JUDGING,
             "Hackathon not in judging phase"
         );
 
         // Get all submitted projects for this hackathon
-        SimpleProjectRegistry registry = SimpleProjectRegistry(projectRegistry);
+        ProjectRegistry registry = ProjectRegistry(projectRegistry);
         uint256[] memory submittedProjects = registry.getSubmittedProjects(
             hackathonId
         );
@@ -255,7 +255,7 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
                     winningProjectId = projectId;
 
                     // Get project creator as winner
-                    SimpleProjectRegistry.Project memory project = registry
+                    ProjectRegistry.Project memory project = registry
                         .getProject(projectId);
                     winner = project.creator;
                 }
@@ -361,7 +361,7 @@ contract SimpleJudgeRegistry is ReentrancyGuard, Ownable {
     function getJudgingResults(
         uint256 hackathonId
     ) external view returns (JudgingResult[] memory results) {
-        SimpleProjectRegistry registry = SimpleProjectRegistry(projectRegistry);
+        ProjectRegistry registry = ProjectRegistry(projectRegistry);
         uint256[] memory submittedProjects = registry.getSubmittedProjects(
             hackathonId
         );

@@ -3,14 +3,14 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./SimpleHackathon.sol";
+import "./Hackathon.sol";
 
 /**
- * @title SimpleProjectRegistry
+ * @title ProjectRegistry
  * @dev Simplified registry for hackathon project submissions with IPFS metadata
  * @author HackX Team
  */
-contract SimpleProjectRegistry is ReentrancyGuard, Ownable {
+contract ProjectRegistry is ReentrancyGuard, Ownable {
     // Structs
     struct Project {
         uint256 id;
@@ -94,7 +94,7 @@ contract SimpleProjectRegistry is ReentrancyGuard, Ownable {
         );
 
         // Verify creator is a participant in the hackathon
-        SimpleHackathon hackathon = SimpleHackathon(
+        Hackathon hackathon = Hackathon(
             hackathonContracts[hackathonId]
         );
         require(
@@ -136,11 +136,11 @@ contract SimpleProjectRegistry is ReentrancyGuard, Ownable {
         require(!project.isSubmitted, "Project already submitted");
 
         // Check hackathon is in submission phase
-        SimpleHackathon hackathon = SimpleHackathon(
+        Hackathon hackathon = Hackathon(
             hackathonContracts[project.hackathonId]
         );
         require(
-            hackathon.currentPhase() == SimpleHackathon.Phase.SUBMISSION,
+            hackathon.currentPhase() == Hackathon.Phase.SUBMISSION,
             "Hackathon not in submission phase"
         );
 
@@ -173,7 +173,7 @@ contract SimpleProjectRegistry is ReentrancyGuard, Ownable {
         }
 
         // Verify member is a participant in the hackathon
-        SimpleHackathon hackathon = SimpleHackathon(
+        Hackathon hackathon = Hackathon(
             hackathonContracts[project.hackathonId]
         );
         require(

@@ -3,14 +3,14 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./SimpleHackathon.sol";
+import "./Hackathon.sol";
 
 /**
- * @title SimpleHackathonFactory
- * @dev Simplified factory contract for creating hackathons with IPFS metadata
+ * @title HackathonFactory
+ * @dev Factory contract for creating hackathons with IPFS metadata
  * @author HackX Team
  */
-contract SimpleHackathonFactory is Ownable, ReentrancyGuard {
+contract HackathonFactory is Ownable, ReentrancyGuard {
     // Events
     event HackathonCreated(
         address indexed hackathonAddress,
@@ -49,8 +49,8 @@ contract SimpleHackathonFactory is Ownable, ReentrancyGuard {
 
         hackathonId = hackathonCounter++;
 
-        // Deploy new SimpleHackathon contract
-        SimpleHackathon hackathon = new SimpleHackathon(
+        // Deploy new Hackathon contract
+        Hackathon hackathon = new Hackathon(
             hackathonId,
             msg.sender,
             ipfsHash

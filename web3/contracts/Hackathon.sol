@@ -5,11 +5,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
- * @title SimpleHackathon
- * @dev Simplified hackathon contract with basic phase management
+ * @title Hackathon
+ * @dev Hackathon contract with basic phase management
  * @author HackX Team
  */
-contract SimpleHackathon is Ownable, ReentrancyGuard {
+contract Hackathon is Ownable, ReentrancyGuard {
     // Enums
     enum Phase {
         REGISTRATION,
