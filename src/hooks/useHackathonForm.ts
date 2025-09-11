@@ -7,7 +7,7 @@ import {
   HackathonFormData,
   validateDateConsistency,
 } from "@/lib/schemas/hackathon-schema";
-import { useCreateHackathon } from "@/hooks/supabase/useSupabaseHackathons";
+import { useCreateHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -45,8 +45,8 @@ const getDefaultHackathonFormValues = (): HackathonFormData => ({
 
 // Form submission handlers
 function createSuccessHandler(router: any) {
-  return () => {
-    toast.success("Hackathon created successfully!");
+  return (data: { hackathonId: number; ipfsHash: string; transactionHash: string }) => {
+    toast.success(`Hackathon created successfully! Transaction: ${data.transactionHash.slice(0, 10)}...`);
     router.push("/dashboard");
   };
 }
@@ -55,10 +55,21 @@ function createErrorHandler(router: any) {
   return (error: Error) => {
     console.error("Error creating hackathon:", error);
 
-    // Handle authentication errors
-    if (error.message.includes("Authentication")) {
-      toast.error("Please log in to create a hackathon");
-      router.push("/login");
+    // Handle wallet connection errors
+    if (error.message.includes("Wallet not connected")) {
+      toast.error("Please connect your wallet to create a hackathon");
+      return;
+    }
+
+    // Handle transaction rejection
+    if (error.message.includes("Transaction was rejected")) {
+      toast.error("Transaction rejected. Please approve the transaction to create your hackathon.");
+      return;
+    }
+
+    // Handle insufficient funds
+    if (error.message.includes("insufficient funds")) {
+      toast.error("Insufficient funds for gas fees. Please add ETH to your wallet.");
       return;
     }
 

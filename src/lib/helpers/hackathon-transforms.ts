@@ -7,7 +7,7 @@ import type {
 
 // Transform database hackathon to UI hackathon format
 export function transformDatabaseToUI(
-  dbHackathon: HackathonWithRelations,
+  dbHackathon: HackathonWithRelations
 ): UIHackathon {
   return {
     id: dbHackathon.id,
@@ -91,7 +91,7 @@ export function transformDatabaseToUI(
 
 // Get hackathon status based on dates
 export function getHackathonStatus(
-  hackathon: UIHackathon | HackathonWithRelations,
+  hackathon: UIHackathon | HackathonWithRelations
 ): HackathonStatus {
   const now = new Date();
 
@@ -134,7 +134,7 @@ export function getHackathonStatus(
 
 // Get status variant for badge styling
 export function getStatusVariant(
-  status: HackathonStatus,
+  status: HackathonStatus
 ):
   | "default"
   | "secondary"
@@ -163,7 +163,7 @@ export function getStatusVariant(
 
 // Calculate total prize amount for a hackathon
 export function calculateTotalPrizeAmount(
-  hackathon: HackathonWithRelations,
+  hackathon: HackathonWithRelations
 ): string {
   if (!hackathon.prize_cohorts || hackathon.prize_cohorts.length === 0) {
     return "$0";
@@ -184,7 +184,7 @@ export function calculateTotalPrizeAmount(
 
 // Format date for display
 export function formatDateForDisplay(
-  date: string | Date | null | undefined,
+  date: string | Date | null | undefined
 ): string {
   if (!date) return "TBD";
 
@@ -216,7 +216,7 @@ export function formatExperienceLevel(level: string): string {
 
 // Helper functions to map database enums to UI types
 function mapDbExperienceLevel(
-  level: string,
+  level: string
 ): "beginner" | "intermediate" | "advanced" | "all" {
   switch (level.toLowerCase()) {
     case "beginner":
@@ -273,4 +273,105 @@ function mapDbJudgeStatus(status: string): JudgeStatus {
     default:
       return "waiting";
   }
+}
+
+// Transform blockchain hackathon to UI hackathon format
+export function transformBlockchainToUI(blockchainHackathon: any): UIHackathon {
+  // Convert Unix timestamps to Date objects
+  const convertUnixToDate = (
+    timestamp: bigint | number | string | undefined
+  ): Date | undefined => {
+    if (!timestamp) return undefined;
+    const ts =
+      typeof timestamp === "bigint" ? Number(timestamp) : Number(timestamp);
+    return ts > 0 ? new Date(ts * 1000) : undefined;
+  };
+
+  return {
+    id: blockchainHackathon.id?.toString() || "",
+    name:
+      blockchainHackathon.name ||
+      `Hackathon #${blockchainHackathon.id || "Unknown"}`,
+    visual: blockchainHackathon.visual || null,
+    shortDescription:
+      blockchainHackathon.shortDescription || "No description available",
+    fullDescription: blockchainHackathon.fullDescription || "",
+    participantCount: blockchainHackathon.participantCount || 0,
+    location: blockchainHackathon.location || "TBD",
+    techStack: blockchainHackathon.techStack || [],
+    experienceLevel: blockchainHackathon.experienceLevel || "all",
+    registrationPeriod: {
+      registrationStartDate:
+        convertUnixToDate(
+          blockchainHackathon.registrationPeriod?.registrationStartDate
+        ) ||
+        (blockchainHackathon.registrationStartDate
+          ? convertUnixToDate(blockchainHackathon.registrationStartDate)
+          : undefined),
+      registrationEndDate:
+        convertUnixToDate(
+          blockchainHackathon.registrationPeriod?.registrationEndDate
+        ) || convertUnixToDate(blockchainHackathon.registrationDeadline),
+    },
+    hackathonPeriod: {
+      hackathonStartDate:
+        convertUnixToDate(
+          blockchainHackathon.hackathonPeriod?.hackathonStartDate
+        ) || convertUnixToDate(blockchainHackathon.registrationDeadline), // Fallback to registration end
+      hackathonEndDate:
+        convertUnixToDate(
+          blockchainHackathon.hackathonPeriod?.hackathonEndDate
+        ) || convertUnixToDate(blockchainHackathon.submissionDeadline),
+    },
+    votingPeriod: {
+      votingStartDate:
+        convertUnixToDate(blockchainHackathon.votingPeriod?.votingStartDate) ||
+        convertUnixToDate(blockchainHackathon.submissionDeadline), // Fallback to submission end
+      votingEndDate:
+        convertUnixToDate(blockchainHackathon.votingPeriod?.votingEndDate) ||
+        convertUnixToDate(blockchainHackathon.judgingDeadline),
+    },
+    socialLinks: blockchainHackathon.socialLinks || {},
+    prizeCohorts: (blockchainHackathon.prizeCohorts || []).map(
+      (cohort: any, index: number) => ({
+        id: cohort.id || index.toString(),
+        name: cohort.name || `Prize ${index + 1}`,
+        numberOfWinners: cohort.numberOfWinners || 1,
+        prizeAmount: cohort.prizeAmount?.toString() || "0",
+        description: cohort.description || "",
+        judgingMode: cohort.judgingMode || "manual",
+        votingMode: cohort.votingMode || "judges_only",
+        maxVotesPerJudge: cohort.maxVotesPerJudge || 1,
+        evaluationCriteria: (cohort.evaluationCriteria || []).map(
+          (criteria: any, critIndex: number) => ({
+            name: criteria.name || `Criteria ${critIndex + 1}`,
+            points: criteria.points || 10,
+            description: criteria.description || "",
+          })
+        ),
+      })
+    ),
+    judges: (blockchainHackathon.judges || []).map((judge: any) => ({
+      email: judge.email || "",
+      status: judge.status || "waiting",
+    })),
+    schedule: (blockchainHackathon.schedule || []).map((slot: any) => ({
+      name: slot.name || "Event",
+      description: slot.description || "",
+      startDateTime: slot.startDateTime
+        ? new Date(slot.startDateTime)
+        : new Date(),
+      endDateTime: slot.endDateTime ? new Date(slot.endDateTime) : new Date(),
+      hasSpeaker: slot.hasSpeaker || false,
+      speaker: slot.speaker
+        ? {
+            name: slot.speaker.name || "",
+            position: slot.speaker.position,
+            xName: slot.speaker.xName,
+            xHandle: slot.speaker.xHandle,
+            picture: slot.speaker.picture,
+          }
+        : undefined,
+    })),
+  };
 }

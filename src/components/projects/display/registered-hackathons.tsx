@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRegisteredHackathons } from "@/hooks/queries/use-projects";
 import { getDaysLeft, formatDisplayDate } from "@/lib/helpers/date";
+import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -254,7 +255,7 @@ export function RegisteredHackathons() {
 
                   <div className="relative w-1/3 min-h-[200px]">
                     <Image
-                      src={hackathon.visual || "/placeholder.svg"}
+                      src={resolveIPFSToHttp(hackathon.visual)}
                       alt={hackathon.name}
                       fill
                       className="object-cover rounded-r-lg"

@@ -9,6 +9,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { safeToDate } from "@/lib/helpers/date";
 
 interface ScheduleTabProps {
   hackathon: UIHackathon;
@@ -72,19 +73,15 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
   const schedulePhases: SchedulePhase[] = [];
 
   // Registration Phase
-  if (
-    hackathon.registrationPeriod?.registrationStartDate &&
-    hackathon.registrationPeriod?.registrationEndDate
-  ) {
-    const status = getEventStatus(
-      hackathon.registrationPeriod.registrationStartDate,
-      hackathon.registrationPeriod.registrationEndDate,
-    );
+  const regStartDate = safeToDate(hackathon.registrationPeriod?.registrationStartDate);
+  const regEndDate = safeToDate(hackathon.registrationPeriod?.registrationEndDate);
+  if (regStartDate && regEndDate) {
+    const status = getEventStatus(regStartDate, regEndDate);
     schedulePhases.push({
       name: "Registration",
       status,
-      startDate: hackathon.registrationPeriod.registrationStartDate,
-      endDate: hackathon.registrationPeriod.registrationEndDate,
+      startDate: regStartDate,
+      endDate: regEndDate,
       isPhase: true,
     });
   }
@@ -92,51 +89,47 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
   // Individual schedule events
   if (hackathon.schedule && hackathon.schedule.length > 0) {
     hackathon.schedule.forEach((event) => {
-      const status = getEventStatus(event.startDateTime, event.endDateTime);
-      schedulePhases.push({
-        name: event.name,
-        status,
-        startDate: event.startDateTime,
-        endDate: event.endDateTime,
-        isPhase: false,
-        description: event.description,
-        speaker: event.speaker,
-      });
+      const eventStartDate = safeToDate(event.startDateTime);
+      const eventEndDate = safeToDate(event.endDateTime);
+      if (eventStartDate && eventEndDate) {
+        const status = getEventStatus(eventStartDate, eventEndDate);
+        schedulePhases.push({
+          name: event.name,
+          status,
+          startDate: eventStartDate,
+          endDate: eventEndDate,
+          isPhase: false,
+          description: event.description,
+          speaker: event.speaker,
+        });
+      }
     });
   }
 
   // Submission Phase
-  if (
-    hackathon.hackathonPeriod?.hackathonStartDate &&
-    hackathon.hackathonPeriod?.hackathonEndDate
-  ) {
-    const status = getEventStatus(
-      hackathon.hackathonPeriod.hackathonStartDate,
-      hackathon.hackathonPeriod.hackathonEndDate,
-    );
+  const hackStartDate = safeToDate(hackathon.hackathonPeriod?.hackathonStartDate);
+  const hackEndDate = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+  if (hackStartDate && hackEndDate) {
+    const status = getEventStatus(hackStartDate, hackEndDate);
     schedulePhases.push({
       name: "Submission",
       status,
-      startDate: hackathon.hackathonPeriod.hackathonStartDate,
-      endDate: hackathon.hackathonPeriod.hackathonEndDate,
+      startDate: hackStartDate,
+      endDate: hackEndDate,
       isPhase: true,
     });
   }
 
   // Voting/Reward Phase
-  if (
-    hackathon.votingPeriod?.votingStartDate &&
-    hackathon.votingPeriod?.votingEndDate
-  ) {
-    const status = getEventStatus(
-      hackathon.votingPeriod.votingStartDate,
-      hackathon.votingPeriod.votingEndDate,
-    );
+  const votingStartDate = safeToDate(hackathon.votingPeriod?.votingStartDate);
+  const votingEndDate = safeToDate(hackathon.votingPeriod?.votingEndDate);
+  if (votingStartDate && votingEndDate) {
+    const status = getEventStatus(votingStartDate, votingEndDate);
     schedulePhases.push({
       name: "Reward Announcement",
       status,
-      startDate: hackathon.votingPeriod.votingStartDate,
-      endDate: hackathon.votingPeriod.votingEndDate,
+      startDate: votingStartDate,
+      endDate: votingEndDate,
       isPhase: true,
     });
   }

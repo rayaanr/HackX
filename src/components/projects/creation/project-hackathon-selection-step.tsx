@@ -18,7 +18,7 @@ import {
 } from "@/components/projects/display/hackathon-card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useMemo } from "react";
-import { useAllHackathons } from "@/hooks/queries/use-hackathons";
+import { useBlockchainHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import {
   getHackathonStatus,
   calculateTotalPrizeAmount,
@@ -28,9 +28,18 @@ import type { HackathonWithRelations } from "@/types/hackathon";
 
 // Transform hackathon data to match ProjectHackathonCardProps interface
 function transformHackathonToCardProps(
-  hackathon: HackathonWithRelations,
+  hackathon: any, // Blockchain hackathon with combined contract + IPFS data
 ): ProjectHackathonCardProps {
-  const status = getHackathonStatus(hackathon);
+  // For blockchain hackathons, we need to create a compatible object for getHackathonStatus
+  // The blockchain hackathon has different field names than database hackathons
+  const compatibleHackathon = {
+    ...hackathon,
+    hackathon_start_date: hackathon.hackathonPeriod?.hackathonStartDate || hackathon.hackathon_start_date,
+    short_description: hackathon.shortDescription || hackathon.short_description,
+    participant_count: hackathon.participantCount || hackathon.participant_count || 0,
+  };
+
+  const status = getHackathonStatus(compatibleHackathon);
 
   // Map status to card status with improved logic
   let cardStatus: "live" | "upcoming" | "completed";
@@ -47,40 +56,39 @@ function transformHackathonToCardProps(
   }
 
   return {
-    id: hackathon.id,
-    name: hackathon.name,
-    date: formatDateForDisplay(hackathon.hackathon_start_date),
-    theme: hackathon.short_description,
-    prize: calculateTotalPrizeAmount(hackathon),
-    participants: hackathon.participant_count || 0,
+    id: hackathon.id?.toString() || hackathon.blockchainId?.toString(),
+    name: hackathon.name || "Untitled Hackathon",
+    date: formatDateForDisplay(hackathon.hackathonPeriod?.hackathonStartDate || hackathon.hackathon_start_date),
+    theme: hackathon.shortDescription || hackathon.short_description || "",
+    prize: calculateTotalPrizeAmount(compatibleHackathon),
+    participants: hackathon.participantCount || hackathon.participant_count || 0,
     status: cardStatus,
   };
 }
 
 export function HackathonSelectionStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormData>();
-  const { data: hackathonData, isLoading, error } = useAllHackathons();
+  // Updated to use blockchain hackathons instead of database hackathons
+  // This ensures we only show hackathons stored on blockchain with IPFS metadata
+  const { hackathons: hackathonData, isLoadingHackathons: isLoading, hackathonsError: error } = useBlockchainHackathons();
 
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");
   const selectedHackathonIds = watch("hackathonIds") || [];
 
-  // Transform hackathon data to card props format
-  const hackathons = useMemo(() => {
-    if (!hackathonData) return [];
-    return hackathonData.map(transformHackathonToCardProps);
-  }, [hackathonData]);
-
-  const [filteredHackathons, setFilteredHackathons] = useState<
-    ProjectHackathonCardProps[]
-  >([]);
-
-  useEffect(() => {
-    if (filter === "all") {
-      setFilteredHackathons(hackathons);
-    } else {
-      setFilteredHackathons(hackathons.filter((h) => h.status === filter));
-    }
-  }, [filter, hackathons]);
+  // Transform and filter hackathon data to card props format
+  const { hackathons, filteredHackathons } = useMemo(() => {
+    if (!hackathonData) return { hackathons: [], filteredHackathons: [] };
+    
+    const transformedHackathons = hackathonData.map(transformHackathonToCardProps);
+    const filtered = filter === "all" 
+      ? transformedHackathons 
+      : transformedHackathons.filter((h) => h.status === filter);
+    
+    return { 
+      hackathons: transformedHackathons, 
+      filteredHackathons: filtered 
+    };
+  }, [hackathonData, filter]);
 
   const toggleHackathonSelection = (id: string) => {
     const newSelectedIds = selectedHackathonIds.includes(id)
@@ -143,35 +151,49 @@ export function HackathonSelectionStep() {
                     ) : (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {filteredHackathons.map((hackathon) => (
-                            <div key={hackathon.id} className="relative">
-                              <ProjectHackathonCard {...hackathon} />
-                              <div className="absolute top-2 right-2">
-                                <Checkbox
-                                  checked={selectedHackathonIds.includes(
-                                    hackathon.id,
-                                  )}
-                                  onCheckedChange={(checked) => {
-                                    const isChecked = checked === true;
-                                    const next = isChecked
-                                      ? Array.from(
-                                          new Set([
-                                            ...selectedHackathonIds,
-                                            hackathon.id,
-                                          ]),
-                                        )
-                                      : selectedHackathonIds.filter(
-                                          (x: string) => x !== hackathon.id,
-                                        );
-                                    setValue("hackathonIds", next, {
-                                      shouldValidate: true,
-                                      shouldDirty: true,
-                                    });
-                                  }}
-                                />
+                          {filteredHackathons.map((hackathon) => {
+                            const isSubmissionPhase = hackathon.status === "live";
+                            return (
+                              <div key={hackathon.id} className="relative">
+                                <div className={`${!isSubmissionPhase ? 'opacity-60' : ''}`}>
+                                  <ProjectHackathonCard {...hackathon} />
+                                </div>
+                                {!isSubmissionPhase && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                                    <div className="bg-white dark:bg-gray-900 px-3 py-1 rounded-md text-sm font-medium">
+                                      Not accepting submissions
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="absolute top-2 right-2">
+                                  <Checkbox
+                                    checked={selectedHackathonIds.includes(
+                                      hackathon.id,
+                                    )}
+                                    disabled={!isSubmissionPhase}
+                                    onCheckedChange={(checked) => {
+                                      if (!isSubmissionPhase) return; // Prevent selection of non-submission phase hackathons
+                                      const isChecked = checked === true;
+                                      const next = isChecked
+                                        ? Array.from(
+                                            new Set([
+                                              ...selectedHackathonIds,
+                                              hackathon.id,
+                                            ]),
+                                          )
+                                        : selectedHackathonIds.filter(
+                                            (x: string) => x !== hackathon.id,
+                                          );
+                                      setValue("hackathonIds", next, {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                      });
+                                    }}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
 
                         {filteredHackathons.length === 0 && !isLoading && (
@@ -184,7 +206,7 @@ export function HackathonSelectionStep() {
                   </div>
                 </FormControl>
                 <FormDescription>
-                  Select the hackathons you want to submit your project to
+                  Select the hackathons you want to submit your project to. Only hackathons in the "Live" submission phase can be selected.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

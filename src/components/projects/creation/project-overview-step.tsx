@@ -20,6 +20,9 @@ import {
 import { LexicalEditor } from "@/components/ui/rich-text-editor";
 import { FileUploadField } from "@/components/ui/file-upload";
 import MultipleSelector, { Option } from "@/components/ui/multiselect";
+import { Button } from "@/components/ui/button";
+import { Shuffle } from "lucide-react";
+import { MOCK_PROJECT_DATA, getRandomMockProject } from "@/constants/mock-project-data";
 
 const SECTOR_OPTIONS: Option[] = [
   { value: "ai-ml", label: "AI/ML" },
@@ -41,11 +44,64 @@ const SECTOR_OPTIONS: Option[] = [
 export function OverviewStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormData>();
 
+  const loadMockData = (mockData: ProjectFormData) => {
+    // Load all the mock data into the form
+    setValue("logo", mockData.logo);
+    setValue("name", mockData.name);
+    setValue("intro", mockData.intro);
+    setValue("itchVideo", mockData.itchVideo);
+    setValue("sector", mockData.sector);
+    setValue("progress", mockData.progress);
+    setValue("fundraisingStatus", mockData.fundraisingStatus);
+    setValue("description", mockData.description);
+  };
+
+  const loadRandomMockData = () => {
+    const randomProject = getRandomMockProject();
+    loadMockData(randomProject);
+  };
+
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>Project Overview</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Project Overview</CardTitle>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={loadRandomMockData}
+                className="flex items-center gap-2"
+              >
+                <Shuffle className="w-4 h-4" />
+                Load Random
+              </Button>
+              <div className="relative">
+                <select
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      const mockData = MOCK_PROJECT_DATA[parseInt(e.target.value)];
+                      loadMockData(mockData);
+                      e.target.value = ""; // Reset select
+                    }
+                  }}
+                >
+                  <option value="">Choose specific...</option>
+                  {MOCK_PROJECT_DATA.map((project, index) => (
+                    <option key={index} value={index}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+                <Button type="button" variant="outline" size="sm">
+                  Load Specific
+                </Button>
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

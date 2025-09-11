@@ -8,6 +8,8 @@ import {
   getHackathonStatus,
   getStatusVariant,
 } from "@/lib/helpers/hackathon-transforms";
+import { safeToDate } from "@/lib/helpers/date";
+import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import { format } from "date-fns";
 import { Calendar, Code, Trophy, Award } from "lucide-react";
 
@@ -21,12 +23,13 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
   const deadline = hackathon.registrationPeriod?.registrationEndDate;
 
   // Calculate days left until deadline
-  const daysLeft = deadline
-    ? Math.max(
-        0,
-        Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
-      )
-    : 0;
+  const daysLeft = (() => {
+    const deadlineDate = safeToDate(deadline);
+    return deadlineDate ? Math.max(
+      0,
+      Math.ceil((deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    ) : 0;
+  })();
 
   // Create sample avatar images for participants
   const participantAvatars = [
@@ -104,7 +107,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
             <Image
               height={200}
               width={300}
-              src={hackathon.visual || "/placeholder.svg"}
+              src={resolveIPFSToHttp(hackathon.visual)}
               alt={hackathon.name}
               className="h-full w-full object-cover rounded-lg"
               unoptimized
