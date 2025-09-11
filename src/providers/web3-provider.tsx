@@ -16,7 +16,7 @@ export const client = createThirdwebClient({
 export const chain = defineChain(84532);
 
 // Contract configuration
-export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x22fd552dBFBee69260A65e02499211A8b103d05D";
+export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 
 // Get contract instance
 export const contract = getContract({

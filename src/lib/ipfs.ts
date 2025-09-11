@@ -54,7 +54,7 @@ export async function viewFromIPFS(uri: string): Promise<IPFSViewResponse> {
   }
 
   // Use Pinata gateway directly
-  const gatewayUrl = `https://${PINATA_GATEWAY}/ipfs/${cid}`
+  const gatewayUrl = `https://dweb.link/ipfs/${cid}`
   
   const response = await fetch(gatewayUrl)
   
