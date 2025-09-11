@@ -17,6 +17,7 @@ import { ShareDialog } from "@/components/share-dialog";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { Separator } from "@/components/ui/separator";
+import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 
 export default function HackathonPage() {
   const params = useParams();
@@ -26,7 +27,11 @@ export default function HackathonPage() {
     data: hackathon,
     isLoading: loading,
     error,
-  } = useBlockchainHackathonById(id);
+  } = useBlockchainHackathonById(id) as { 
+    data: any, 
+    isLoading: boolean, 
+    error: any 
+  };
 
   if (loading) {
     return (
@@ -112,9 +117,9 @@ export default function HackathonPage() {
           </Link>
           <div className="space-y-2">
             <div className="text-center">
-              <h1 className="text-4xl font-bold">{hackathon.name}</h1>
+              <h1 className="text-4xl font-bold">{hackathon?.name || "Loading..."}</h1>
               <p className="text-muted-foreground text-lg">
-                {hackathon.shortDescription}
+                {hackathon?.shortDescription || ""}
               </p>
             </div>
             <div className="text-center">
@@ -157,8 +162,8 @@ export default function HackathonPage() {
               <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
                 <div className="relative aspect-video">
                   <Image
-                    src={hackathon.visual || "/placeholder.svg"}
-                    alt={hackathon.name}
+                    src={resolveIPFSToHttp(hackathon?.visual)}
+                    alt={hackathon?.name || "Hackathon"}
                     fill
                     className="object-cover"
                     priority
@@ -167,7 +172,7 @@ export default function HackathonPage() {
                   <div className="absolute inset-0 bg-black/20 flex items-end">
                     <div className="p-6 text-white">
                       <h2 className="text-2xl font-bold drop-shadow-lg">
-                        {hackathon.name}
+                        {hackathon?.name || "Loading..."}
                       </h2>
                     </div>
                   </div>
@@ -180,8 +185,8 @@ export default function HackathonPage() {
                 <div className="prose prose-sm prose-zinc dark:prose-invert max-w-none">
                   {parse(
                     DOMPurify.sanitize(
-                      hackathon.fullDescription ||
-                        hackathon.shortDescription ||
+                      hackathon?.fullDescription ||
+                        hackathon?.shortDescription ||
                         "",
                       {
                         ALLOWED_TAGS: [
@@ -216,23 +221,23 @@ export default function HackathonPage() {
                   <div className="p-4 border rounded-lg">
                     <h4 className="font-medium mb-2">Hackathon ID</h4>
                     <p className="text-sm text-muted-foreground">
-                      #{hackathon.id}
+                      #{hackathon?.id || "..."}
                     </p>
                   </div>
                   <div className="p-4 border rounded-lg">
                     <h4 className="font-medium mb-2">Participants</h4>
                     <p className="text-sm text-muted-foreground">
-                      {hackathon.participantCount || 0} registered
+                      {hackathon?.participantCount || 0} registered
                     </p>
                   </div>
                   <div className="p-4 border rounded-lg">
                     <h4 className="font-medium mb-2">Total Prizes</h4>
                     <p className="text-sm text-muted-foreground">
-                      {hackathon.prizeCohorts
-                        ?.reduce((sum, cohort) => {
+                      {hackathon?.prizeCohorts
+                        ?.reduce((sum: number, cohort: any) => {
                           const amount =
                             typeof cohort.prizeAmount === "string"
-                              ? parseInt(cohort.prizeAmount)
+                              ? parseInt(cohort.prizeAmount, 10)
                               : cohort.prizeAmount;
                           return sum + (amount || 0);
                         }, 0)
@@ -242,7 +247,7 @@ export default function HackathonPage() {
                   <div className="p-4 border rounded-lg">
                     <h4 className="font-medium mb-2">Tech Stack</h4>
                     <p className="text-sm text-muted-foreground">
-                      {hackathon.techStack?.slice(0, 3).join(", ") ||
+                      {hackathon?.techStack?.slice(0, 3).join(", ") ||
                         "Not specified"}
                     </p>
                   </div>

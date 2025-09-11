@@ -18,9 +18,9 @@ import Link from "next/link";
 
 export default function ExplorePage() {
   const {
-    data: hackathonData,
-    isLoading: loading,
-    error,
+    hackathons: hackathonData,
+    isLoadingHackathons: loading,
+    hackathonsError: error,
   } = useUIBlockchainHackathons();
 
   // Filter state
@@ -30,10 +30,10 @@ export default function ExplorePage() {
     status: "",
   });
 
-  // Get data with fallbacks
-  const allHackathons = hackathonData?.allHackathons || [];
-  const initialLiveHackathons = hackathonData?.liveHackathons || [];
-  const initialPastHackathons = hackathonData?.pastHackathons || [];
+  // Get data with fallbacks - hackathonData is now the direct array
+  const allHackathons = hackathonData || [];
+  const initialLiveHackathons = hackathonData || [];
+  const initialPastHackathons = hackathonData || [];
 
   // Helper function to get hackathon status based on dates (for filtering)
   const getHackathonStatus = (hackathon: any) => {

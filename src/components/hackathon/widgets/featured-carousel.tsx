@@ -16,6 +16,8 @@ import {
   getHackathonStatus,
   getStatusVariant,
 } from "@/lib/helpers/hackathon-transforms";
+import { safeToDate } from "@/lib/helpers/date";
+import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import React, { useEffect, useState, useRef } from "react";
 
@@ -150,14 +152,13 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
             const deadline = hackathon.registrationPeriod?.registrationEndDate;
 
             // Calculate days left until deadline
-            const daysLeft = deadline
-              ? Math.max(
-                  0,
-                  Math.ceil(
-                    (deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-                  ),
-                )
-              : 0;
+            const daysLeft = (() => {
+              const deadlineDate = safeToDate(deadline);
+              return deadlineDate ? Math.max(
+                0,
+                Math.ceil((deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+              ) : 0;
+            })();
 
             return (
               <CarouselItem key={hackathon.id}>
@@ -165,7 +166,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
                   <div
                     className="relative rounded-xl overflow-hidden text-white h-[250px] sm:h-[300px] flex items-end hover:scale-[1.02] transition-transform duration-300"
                     style={{
-                      background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${hackathon.visual || "/placeholder.svg"})`,
+                      background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${resolveIPFSToHttp(hackathon.visual)})`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}
