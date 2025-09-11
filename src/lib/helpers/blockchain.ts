@@ -9,7 +9,7 @@ import type { HackathonFormData } from "@/types/hackathon";
  */
 
 // BigInt serialization utility
-function serializeBigInts(obj: any): any {
+export function serializeBigInts(obj: any): any {
   if (obj === null || obj === undefined) return obj;
   if (typeof obj === 'bigint') return Number(obj);
   if (Array.isArray(obj)) return obj.map(serializeBigInts);
