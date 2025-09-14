@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useUserHackathons } from "@/hooks/queries/use-hackathons";
+import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import type { DashboardStats, HackathonWithRelations } from "@/types/hackathon";
 
 // Calculate dashboard statistics from hackathons data
 function calculateDashboardStats(
-  hackathons: HackathonWithRelations[],
+  hackathons: HackathonWithRelations[]
 ): DashboardStats {
   const now = new Date();
 
@@ -49,10 +49,10 @@ function calculateDashboardStats(
 // Dashboard stats hook
 export function useDashboardStats() {
   const {
-    data: hackathons = [],
+    hackathons = [],
     isLoading: hackathonsLoading,
     error: hackathonsError,
-  } = useUserHackathons();
+  } = useAllHackathons();
 
   const [stats, setStats] = useState<DashboardStats>({
     totalHackathons: 0,
@@ -91,11 +91,11 @@ export function useDashboardStats() {
 // Combined dashboard data hook for convenience
 export function useDashboardData() {
   const {
-    data: hackathons = [],
+    hackathons = [],
     isLoading: hackathonsLoading,
     error: hackathonsError,
     refetch: refetchHackathons,
-  } = useUserHackathons();
+  } = useAllHackathons();
 
   const {
     data: stats = {

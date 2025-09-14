@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useHackathonById } from "@/hooks/queries/use-hackathons";
+import { useHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
 import { useSubmittedProjectsByHackathon } from "@/hooks/queries/use-projects";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { notFound } from "next/navigation";
@@ -22,7 +22,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
     data: dbHackathon,
     isLoading: hackathonLoading,
     error: hackathonError,
-  } = useHackathonById(id);
+  } = useHackathon(id);
   const {
     data: submittedProjects = [],
     isLoading: projectsLoading,
@@ -88,7 +88,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                     {new Date(project.updated_at).toLocaleDateString()} (
                     {Math.ceil(
                       (Date.now() - new Date(project.updated_at).getTime()) /
-                        (1000 * 60 * 60 * 24),
+                        (1000 * 60 * 60 * 24)
                     )}{" "}
                     days ago)
                   </p>

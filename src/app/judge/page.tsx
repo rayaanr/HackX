@@ -3,14 +3,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAllHackathons } from "@/hooks/queries/use-hackathons";
+import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import { useActiveAccount } from "thirdweb/react";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { ArrowRight, Calendar, MapPin, Users, Award } from "lucide-react";
 import Link from "next/link";
 
 export default function JudgeDashboardPage() {
-  const { data: dbHackathons = [], isLoading, error } = useAllHackathons();
+  const {
+    hackathons: dbHackathons = [],
+    isLoading,
+    error,
+  } = useAllHackathons();
   const account = useActiveAccount();
 
   // Transform and filter hackathons where the current wallet is assigned as a judge

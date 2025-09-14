@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useUIBlockchainHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -20,8 +20,8 @@ export default function ExplorePage() {
   const {
     hackathons: hackathonData,
     isLoadingHackathons: loading,
-    hackathonsError: error,
-  } = useUIBlockchainHackathons();
+    error,
+  } = useAllHackathons();
 
   // Filter state
   const [filters, setFilters] = useState({
@@ -83,7 +83,7 @@ export default function ExplorePage() {
           const hackathonTechStack = hackathon.techStack || [];
           if (
             !hackathonTechStack.some((tech: string) =>
-              tech.toLowerCase().includes(filters.techStack.toLowerCase()),
+              tech.toLowerCase().includes(filters.techStack.toLowerCase())
             )
           ) {
             return false;

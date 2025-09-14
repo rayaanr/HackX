@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useBlockchainHackathonById } from "@/hooks/blockchain/useBlockchainHackathons";
+import { useHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
 import { PrizeAndJudgeTab } from "../../../components/hackathon/display/hackathon-prizes-judges-tab";
 import { ScheduleTab } from "../../../components/hackathon/display/hackathon-schedule-tab";
 import { SubmittedProjectsTab } from "../../../components/hackathon/display/hackathon-projects-gallery-tab";
@@ -23,15 +23,7 @@ export default function HackathonPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const {
-    data: hackathon,
-    isLoading: loading,
-    error,
-  } = useBlockchainHackathonById(id) as {
-    data: any;
-    isLoading: boolean;
-    error: any;
-  };
+  const { data: hackathon, isLoading: loading, error } = useHackathon(id);
 
   if (loading) {
     return (
@@ -210,8 +202,8 @@ export default function HackathonPage() {
                         ],
                         ALLOWED_ATTR: ["href", "target"],
                         FORBID_ATTR: ["style"],
-                      },
-                    ),
+                      }
+                    )
                   )}
                 </div>
               </div>

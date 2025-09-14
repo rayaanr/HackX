@@ -47,6 +47,8 @@ export function useAllHackathons() {
     hackathonQueries.forEach((query) => query.refetch());
   };
 
+  console.log("Fetched hackathons:", hackathons);
+
   return {
     hackathons,
     totalHackathons,

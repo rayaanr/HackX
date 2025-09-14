@@ -1,6 +1,6 @@
 "use client";
 
-import { useHackathonByIdPublic } from "@/hooks/queries/use-hackathons";
+import { useHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
 import {
   useProjectById,
   useProjectHackathons,
@@ -27,7 +27,7 @@ export default function ProjectReviewPage() {
     data: dbHackathon,
     isLoading: hackathonLoading,
     error: hackathonError,
-  } = useHackathonByIdPublic(hackathonId);
+  } = useHackathon(hackathonId);
   const {
     data: project,
     isLoading: projectLoading,
@@ -39,10 +39,10 @@ export default function ProjectReviewPage() {
 
   // State for form data and selected cohort
   const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(
-    null,
+    null
   );
   const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(
-    undefined,
+    undefined
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
