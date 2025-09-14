@@ -57,6 +57,10 @@ export function OverviewStep() {
     setValue("progress", mockData.progress);
     setValue("fundraisingStatus", mockData.fundraisingStatus);
     setValue("description", mockData.description);
+    setValue("githubLink", mockData.githubLink);
+    setValue("demoVideo", mockData.demoVideo);
+    setValue("techStack", mockData.techStack);
+    setValue("hackathonIds", mockData.hackathonIds);
   };
 
   const loadRandomMockData = () => {
