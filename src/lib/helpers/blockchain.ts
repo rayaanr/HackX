@@ -114,6 +114,39 @@ export async function getHackathonProjects(
   }
 }
 
+// Check if user is registered for a hackathon
+export async function isUserRegistered(
+  contract: ThirdwebContract,
+  hackathonId: string | number,
+  userAddress: string
+): Promise<boolean> {
+  try {
+    const isRegistered = await readContract({
+      contract,
+      method: "function isRegistered(uint256, address) view returns (bool)",
+      params: [BigInt(hackathonId), userAddress],
+    });
+    return Boolean(isRegistered);
+  } catch (error) {
+    console.error("Failed to check registration status:", error);
+    return false;
+  }
+}
+
+// Register for hackathon
+export function prepareRegisterForHackathonTransaction(
+  contract: ThirdwebContract,
+  hackathonId: string | number,
+  participantIpfsHash: string
+) {
+  return prepareContractCall({
+    contract,
+    method:
+      "function registerForHackathon(uint256 hackathonId, string participantIpfsHash)",
+    params: [BigInt(hackathonId), participantIpfsHash],
+  });
+}
+
 // Fetch metadata from IPFS
 export async function fetchIPFSMetadata(
   client: ThirdwebClient,

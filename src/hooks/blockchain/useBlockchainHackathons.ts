@@ -9,6 +9,8 @@ import {
   getTotalHackathons,
   getHackathonParticipants,
   getHackathonProjects,
+  isUserRegistered,
+  prepareRegisterForHackathonTransaction,
 } from "@/lib/helpers/blockchain";
 import { useCreateHackathon } from "./use-create-hackathon";
 
@@ -163,4 +165,41 @@ export function useHackathonProjects(hackathonId: string | number) {
     enabled: !!contract && !!hackathonId,
     staleTime: 2 * 60 * 1000,
   });
+}
+
+/**
+ * Hook for checking if user is registered for a hackathon
+ */
+export function useHackathonRegistration(hackathonId: string | number) {
+  const { contract } = useWeb3();
+  const activeAccount = useActiveAccount();
+
+  return useQuery({
+    queryKey: ["hackathon-registration", hackathonId, activeAccount?.address],
+    queryFn: () =>
+      activeAccount?.address
+        ? isUserRegistered(contract, hackathonId, activeAccount.address)
+        : false,
+    enabled: !!contract && !!hackathonId && !!activeAccount?.address,
+    staleTime: 30 * 1000, // 30 seconds - registration status can change
+  });
+}
+
+/**
+ * Hook for registering to a hackathon
+ */
+export function useRegisterForHackathon() {
+  const { contract } = useWeb3();
+
+  return {
+    prepareTransaction: (
+      hackathonId: string | number,
+      participantIpfsHash: string = ""
+    ) =>
+      prepareRegisterForHackathonTransaction(
+        contract,
+        hackathonId,
+        participantIpfsHash
+      ),
+  };
 }
