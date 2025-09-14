@@ -118,11 +118,12 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     /**
      * @dev Create hackathon with comprehensive validation
      */
-    function createHackathon(
+     function createHackathon(
         string memory ipfsHash,
         uint256 registrationDeadline,
         uint256 submissionDeadline,
-        uint256 judgingDeadline
+        uint256 judgingDeadline,
+        address[] memory initialJudges
     ) external 
         validIpfsHash(ipfsHash)
         validDeadlines(registrationDeadline, submissionDeadline, judgingDeadline)
@@ -130,6 +131,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     {
         uint256 hackathonId = nextHackathonId++;
         
+        // Create hackathon first
         hackathons[hackathonId] = Hackathon({
             id: hackathonId,
             ipfsHash: ipfsHash,
@@ -140,12 +142,36 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
             judgingDeadline: judgingDeadline,
             isActive: true
         });
+
+        // Validate and add initial judges with duplicate prevention
+        for (uint256 i = 0; i < initialJudges.length; i++) {
+            address judge = initialJudges[i];
+            
+            // Basic validations
+            require(judge != address(0), "HackathonPlatform: Invalid judge address");
+            require(judge != msg.sender, "HackathonPlatform: Organizer cannot be judge");
+            
+            // Skip duplicates (gas efficient approach) - don't revert
+            if (isJudge[hackathonId][judge]) {
+                continue; // Skip duplicate, don't waste gas on revert
+            }
+            
+            // Add judge
+            isJudge[hackathonId][judge] = true;
+            hackathonJudges[hackathonId].push(judge);
+            judgeAssignments[judge].push(hackathonId);
+            
+            // Emit event for each judge
+            emit JudgeAdded(hackathonId, msg.sender, judge);
+        }
         
         organizerHackathons[msg.sender].push(hackathonId);
         
         emit HackathonCreated(hackathonId, msg.sender, ipfsHash);
         return hackathonId;
     }
+
+
     
     /**
      * @dev Update hackathon metadata with enhanced validation
