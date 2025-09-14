@@ -17,6 +17,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         address organizer;
         Phase currentPhase;
         uint256 registrationDeadline;
+        uint256 submissionStartDate;
         uint256 submissionDeadline;
         uint256 judgingDeadline;
         bool isActive;
@@ -36,7 +37,8 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     event HackathonCreated(uint256 indexed hackathonId, address indexed organizer, string ipfsHash);
     event HackathonMetadataUpdated(uint256 indexed hackathonId, address indexed organizer, string newIpfsHash);
     event HackathonDeactivated(uint256 indexed hackathonId, address indexed organizer);
-    event ParticipantRegistered(uint256 indexed hackathonId, address indexed participant, string ipfsHash);
+    event HackathonDeleted(uint256 indexed hackathonId, address indexed owner, address indexed organizer);
+    event ParticipantRegistered(uint256 indexed hackathonId, address indexed participant);
     event ProjectCreated(uint256 indexed projectId, address indexed creator, string ipfsHash);
     event ProjectMetadataUpdated(uint256 indexed projectId, address indexed creator, string newIpfsHash);
     event ProjectSubmittedToHackathon(uint256 indexed hackathonId, uint256 indexed projectId, address indexed submitter);
@@ -108,9 +110,10 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         _;
     }
     
-    modifier validDeadlines(uint256 registration, uint256 submission, uint256 judging) {
+    modifier validDeadlines(uint256 registration, uint256 submissionStart, uint256 submission, uint256 judging) {
         require(registration > block.timestamp + MIN_DEADLINE_BUFFER, "HackathonPlatform: Registration deadline must be at least 1 hour in the future");
-        require(submission > registration + MIN_DEADLINE_BUFFER, "HackathonPlatform: Submission deadline must be at least 1 hour after registration");
+        require(submissionStart > registration + MIN_DEADLINE_BUFFER, "HackathonPlatform: Submission start must be at least 1 hour after registration");
+        require(submission > submissionStart + MIN_DEADLINE_BUFFER, "HackathonPlatform: Submission deadline must be at least 1 hour after submission start");
         require(judging > submission + MIN_DEADLINE_BUFFER, "HackathonPlatform: Judging deadline must be at least 1 hour after submission");
         _;
     }
@@ -118,15 +121,16 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     /**
      * @dev Create hackathon with comprehensive validation
      */
-     function createHackathon(
+    function createHackathon(
         string memory ipfsHash,
         uint256 registrationDeadline,
+        uint256 submissionStartDate,
         uint256 submissionDeadline,
         uint256 judgingDeadline,
         address[] memory initialJudges
     ) external 
         validIpfsHash(ipfsHash)
-        validDeadlines(registrationDeadline, submissionDeadline, judgingDeadline)
+        validDeadlines(registrationDeadline, submissionStartDate, submissionDeadline, judgingDeadline)
         returns (uint256) 
     {
         uint256 hackathonId = nextHackathonId++;
@@ -138,6 +142,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
             organizer: msg.sender,
             currentPhase: Phase.REGISTRATION,
             registrationDeadline: registrationDeadline,
+            submissionStartDate: submissionStartDate,
             submissionDeadline: submissionDeadline,
             judgingDeadline: judgingDeadline,
             isActive: true
@@ -170,8 +175,6 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         emit HackathonCreated(hackathonId, msg.sender, ipfsHash);
         return hackathonId;
     }
-
-
     
     /**
      * @dev Update hackathon metadata with enhanced validation
@@ -215,7 +218,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Deactivate hackathon
+     * @dev Deactivate hackathon (organizer can deactivate their own hackathon)
      */
     function deactivateHackathon(uint256 hackathonId) 
         external 
@@ -226,6 +229,77 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         
         hackathons[hackathonId].isActive = false;
         emit HackathonDeactivated(hackathonId, msg.sender);
+    }
+    
+    /**
+     * @dev Delete hackathon completely (only contract owner can delete any hackathon)
+     * This is an administrative function for moderation purposes
+     */
+    function deleteHackathon(uint256 hackathonId) 
+        external 
+        onlyOwner
+        hackathonExists(hackathonId) 
+    {
+        Hackathon storage hackathon = hackathons[hackathonId];
+        address organizer = hackathon.organizer;
+        
+        // Clear all hackathon data
+        delete hackathons[hackathonId];
+        
+        // Remove from organizer's hackathons list
+        uint256[] storage orgHackathons = organizerHackathons[organizer];
+        for (uint256 i = 0; i < orgHackathons.length; i++) {
+            if (orgHackathons[i] == hackathonId) {
+                orgHackathons[i] = orgHackathons[orgHackathons.length - 1];
+                orgHackathons.pop();
+                break;
+            }
+        }
+        
+        // Clear participants data
+        address[] storage participants = hackathonParticipants[hackathonId];
+        for (uint256 i = 0; i < participants.length; i++) {
+            address participant = participants[i];
+            isRegistered[hackathonId][participant] = false;
+            
+            // Remove hackathon from user's participation list
+            uint256[] storage userHackathonList = userHackathons[participant];
+            for (uint256 j = 0; j < userHackathonList.length; j++) {
+                if (userHackathonList[j] == hackathonId) {
+                    userHackathonList[j] = userHackathonList[userHackathonList.length - 1];
+                    userHackathonList.pop();
+                    break;
+                }
+            }
+        }
+        delete hackathonParticipants[hackathonId];
+        
+        // Clear judges data
+        address[] storage judges = hackathonJudges[hackathonId];
+        for (uint256 i = 0; i < judges.length; i++) {
+            address judge = judges[i];
+            isJudge[hackathonId][judge] = false;
+            
+            // Remove hackathon from judge's assignments
+            uint256[] storage assignments = judgeAssignments[judge];
+            for (uint256 j = 0; j < assignments.length; j++) {
+                if (assignments[j] == hackathonId) {
+                    assignments[j] = assignments[assignments.length - 1];
+                    assignments.pop();
+                    break;
+                }
+            }
+        }
+        delete hackathonJudges[hackathonId];
+        
+        // Clear project submissions (but don't delete the projects themselves)
+        uint256[] storage submittedProjects = hackathonProjects[hackathonId];
+        for (uint256 i = 0; i < submittedProjects.length; i++) {
+            isProjectSubmitted[hackathonId][submittedProjects[i]] = false;
+        }
+        delete hackathonProjects[hackathonId];
+        
+        emit HackathonDeleted(hackathonId, msg.sender, organizer);
     }
     
     /**
@@ -288,11 +362,10 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     /**
      * @dev Register for hackathon with enhanced validation
      */
-    function registerForHackathon(uint256 hackathonId, string memory participantIpfsHash) 
+    function registerForHackathon(uint256 hackathonId) 
         external 
         nonReentrant 
         hackathonExists(hackathonId)
-        validIpfsHash(participantIpfsHash)
     {
         require(hackathons[hackathonId].isActive, "HackathonPlatform: Cannot register for inactive hackathon");
         require(hackathons[hackathonId].currentPhase == Phase.REGISTRATION, "HackathonPlatform: Registration phase is not active");
@@ -304,7 +377,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         hackathonParticipants[hackathonId].push(msg.sender);
         userHackathons[msg.sender].push(hackathonId);
         
-        emit ParticipantRegistered(hackathonId, msg.sender, participantIpfsHash);
+        emit ParticipantRegistered(hackathonId, msg.sender);
     }
     
     /**
@@ -416,6 +489,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     {
         require(hackathons[hackathonId].isActive, "HackathonPlatform: Cannot submit to inactive hackathon");
         require(hackathons[hackathonId].currentPhase == Phase.SUBMISSION, "HackathonPlatform: Submission phase is not active");
+        require(block.timestamp >= hackathons[hackathonId].submissionStartDate, "HackathonPlatform: Submission period has not started yet");
         require(block.timestamp <= hackathons[hackathonId].submissionDeadline, "HackathonPlatform: Submission deadline has passed");
         require(isRegistered[hackathonId][msg.sender], "HackathonPlatform: Must be registered for hackathon to submit projects");
         require(!isProjectSubmitted[hackathonId][projectId], "HackathonPlatform: Project already submitted to this hackathon");
@@ -636,6 +710,10 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         
         if (hackathons[hackathonId].currentPhase != Phase.SUBMISSION) {
             return (false, "Submission phase is not active");
+        }
+        
+        if (block.timestamp < hackathons[hackathonId].submissionStartDate) {
+            return (false, "Submission period has not started yet");
         }
         
         if (block.timestamp > hackathons[hackathonId].submissionDeadline) {
