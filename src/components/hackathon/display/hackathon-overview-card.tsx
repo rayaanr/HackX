@@ -10,7 +10,6 @@ import {
 } from "@/lib/helpers/hackathon-transforms";
 import { safeToDate } from "@/lib/helpers/date";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
-import { format } from "date-fns";
 import { Calendar, Code, Trophy, Award } from "lucide-react";
 
 interface HackathonCardProps {

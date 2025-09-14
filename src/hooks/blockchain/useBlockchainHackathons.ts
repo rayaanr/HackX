@@ -3,6 +3,7 @@
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { useActiveAccount } from "thirdweb/react";
 import { useWeb3 } from "@/providers/web3-provider";
+import { useMemo, useCallback } from "react";
 import {
   getHackathonById,
   getTotalHackathons,
@@ -26,38 +27,63 @@ export function useAllHackathons() {
   });
 
   // Use useQueries for better individual caching of hackathons
-  const hackathonQueries = useQueries({
-    queries: Array.from({ length: totalHackathons }, (_, i) => ({
+  const queries = useMemo(() => {
+    if (totalHackathons <= 0) return [];
+
+    return Array.from({ length: totalHackathons }, (_, i) => ({
       queryKey: ["hackathon", i + 1],
       queryFn: () => getHackathonById(contract, client, i + 1),
-      enabled: !!contract && !!client && totalHackathons > 0,
+      enabled: !!contract && !!client,
       staleTime: 2 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
-    })),
+    }));
+  }, [totalHackathons, contract, client]);
+
+  const hackathonQueries = useQueries({
+    queries,
   });
 
   // Process the results from useQueries
-  const hackathons = hackathonQueries
-    .map((query) => query.data)
-    .filter(Boolean);
+  const hackathons = useMemo(
+    () => hackathonQueries.map((query) => query.data).filter(Boolean),
+    [hackathonQueries]
+  );
+
   const isLoadingHackathons = hackathonQueries.some((query) => query.isLoading);
   const hackathonsError = hackathonQueries.find((query) => query.error)?.error;
 
-  const refetchHackathons = () => {
+  const refetchHackathons = useCallback(() => {
     hackathonQueries.forEach((query) => query.refetch());
-  };
+  }, [hackathonQueries]);
 
-  console.log("Fetched hackathons:", hackathons);
+  // Only log when data actually changes
+  useMemo(() => {
+    if (hackathons.length > 0) {
+      console.log("✅ Fetched hackathons:", hackathons.length);
+    } else if (!isLoadingHackathons && !isLoadingTotal) {
+      console.log("📭 No hackathons found");
+    }
+  }, [hackathons.length, isLoadingHackathons, isLoadingTotal]);
 
-  return {
-    hackathons,
-    totalHackathons,
-    isLoading: isLoadingHackathons || isLoadingTotal,
-    isLoadingHackathons,
-    isLoadingTotal,
-    error: hackathonsError,
-    refetch: refetchHackathons,
-  };
+  return useMemo(
+    () => ({
+      hackathons,
+      totalHackathons,
+      isLoading: isLoadingHackathons || isLoadingTotal,
+      isLoadingHackathons,
+      isLoadingTotal,
+      error: hackathonsError,
+      refetch: refetchHackathons,
+    }),
+    [
+      hackathons,
+      totalHackathons,
+      isLoadingHackathons,
+      isLoadingTotal,
+      hackathonsError,
+      refetchHackathons,
+    ]
+  );
 }
 
 /**
