@@ -5,22 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import { useActiveAccount } from "thirdweb/react";
-import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { ArrowRight, Calendar, MapPin, Users, Award } from "lucide-react";
 import Link from "next/link";
 
 export default function JudgeDashboardPage() {
   const {
-    hackathons: dbHackathons = [],
-    isLoading,
+    hackathons = [],
+    isLoadingHackathons: isLoading,
     error,
   } = useAllHackathons();
   const account = useActiveAccount();
 
-  // Transform and filter hackathons where the current wallet is assigned as a judge
+  // Filter hackathons where the current wallet is assigned as a judge
   // Note: For now, showing all hackathons until judge assignment is updated to use wallet addresses
-  const hackathonsToJudge = account
-    ? dbHackathons.map(transformDatabaseToUI)
+  const hackathonsToJudge = account && hackathons
+    ? hackathons.filter(hackathon =>
+        hackathon.judges?.some((judge: any) =>
+          judge.address?.toLowerCase() === account.address?.toLowerCase()
+        )
+      )
     : [];
 
   if (isLoading) {
@@ -104,7 +107,7 @@ export default function JudgeDashboardPage() {
                         Tech stack:
                       </span>
                       <div className="flex flex-wrap gap-1">
-                        {hackathon.techStack?.slice(0, 3).map((tech) => (
+                        {hackathon.techStack?.slice(0, 3).map((tech: string) => (
                           <Badge
                             key={tech}
                             variant="secondary"

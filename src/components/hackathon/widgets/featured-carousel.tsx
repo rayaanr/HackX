@@ -12,11 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { UIHackathon } from "@/types/hackathon";
-import {
-  getHackathonStatus,
-  getStatusVariant,
-} from "@/lib/helpers/hackathon-transforms";
-import { safeToDate } from "@/lib/helpers/date";
+import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
+import { safeToDate, getDaysLeft, getUIHackathonStatus } from "@/lib/helpers/date";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import React, { useEffect, useState, useRef } from "react";
@@ -28,7 +25,10 @@ interface FeaturedCarouselProps {
 export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
   // Filter for live hackathons (Registration Open, Registration Closed, Live, Voting)
   const liveHackathons = hackathons.filter((hackathon) => {
-    const status = getHackathonStatus(hackathon);
+    const status = getUIHackathonStatus({
+      ...hackathon,
+      votingPeriod: hackathon.votingPeriod || undefined,
+    });
     return (
       status === "Registration Open" ||
       status === "Registration Closed" ||
@@ -147,23 +147,15 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
         <CarouselContent>
           {liveHackathons.map((hackathon) => {
             const totalPrize = calculateTotalPrize(hackathon);
-            const status = getHackathonStatus(hackathon);
+            const status = getUIHackathonStatus({
+              ...hackathon,
+              votingPeriod: hackathon.votingPeriod || undefined,
+            });
             const statusVariant = getStatusVariant(status);
             const deadline = hackathon.registrationPeriod?.registrationEndDate;
 
             // Calculate days left until deadline
-            const daysLeft = (() => {
-              const deadlineDate = safeToDate(deadline);
-              return deadlineDate
-                ? Math.max(
-                    0,
-                    Math.ceil(
-                      (deadlineDate.getTime() - Date.now()) /
-                        (1000 * 60 * 60 * 24),
-                    ),
-                  )
-                : 0;
-            })();
+            const daysLeft = deadline ? getDaysLeft(deadline) : 0;
 
             return (
               <CarouselItem key={hackathon.id}>

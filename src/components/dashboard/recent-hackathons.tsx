@@ -4,16 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import { Plus } from "lucide-react";
-import type { HackathonWithRelations } from "@/types/hackathon";
-import {
-  getHackathonStatus,
-  getStatusVariant,
-  calculateTotalPrizeAmount,
-} from "@/lib/helpers/hackathon-transforms";
+import type { UIHackathon } from "@/types/hackathon";
+import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
+import { getUIHackathonStatus } from "@/lib/helpers/date";
+import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import { format } from "date-fns";
 
 interface RecentHackathonsProps {
-  hackathons: HackathonWithRelations[];
+  hackathons: UIHackathon[];
   loading?: boolean;
 }
 
@@ -52,8 +50,8 @@ export function RecentHackathons({
   const recentHackathons = [...hackathons]
     .sort(
       (a, b) =>
-        new Date(b.created_at || 0).getTime() -
-        new Date(a.created_at || 0).getTime(),
+        new Date(b.hackathonPeriod?.hackathonStartDate || 0).getTime() -
+        new Date(a.hackathonPeriod?.hackathonStartDate || 0).getTime(),
     )
     .slice(0, 5);
 
@@ -86,9 +84,12 @@ export function RecentHackathons({
         ) : (
           <div className="space-y-4">
             {recentHackathons.map((hackathon) => {
-              const status = getHackathonStatus(hackathon);
+              const status = getUIHackathonStatus({
+                ...hackathon,
+                votingPeriod: hackathon.votingPeriod || undefined,
+              });
               const variant = getStatusVariant(status);
-              const totalPrize = calculateTotalPrizeAmount(hackathon);
+              const totalPrize = calculateTotalPrizeAmount(hackathon.prizeCohorts || []);
 
               return (
                 <Link key={hackathon.id} href={`/hackathons/${hackathon.id}`}>
@@ -111,9 +112,9 @@ export function RecentHackathons({
                         <span>{hackathon.location}</span>
                         <span>{totalPrize}</span>
                         <span>
-                          {hackathon.hackathon_start_date
+                          {hackathon.hackathonPeriod?.hackathonStartDate
                             ? format(
-                                new Date(hackathon.hackathon_start_date),
+                                hackathon.hackathonPeriod.hackathonStartDate,
                                 "dd MMM yyyy",
                               )
                             : "TBD"}

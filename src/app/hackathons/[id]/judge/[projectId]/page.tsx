@@ -6,7 +6,7 @@ import {
   useProjectHackathons,
 } from "@/hooks/queries/use-projects";
 import { useActiveAccount } from "thirdweb/react";
-import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
+// Database transforms removed - using blockchain data directly
 import { notFound } from "next/navigation";
 import { useState } from "react";
 import { useParams } from "next/navigation";
@@ -15,9 +15,8 @@ import { ProjectDetailsSection } from "@/components/judge/project-details-viewer
 import { JudgingInterface } from "@/components/judge/project-evaluation-form";
 import { ReviewActions } from "@/components/judge/evaluation-submit-actions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
+import type { JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
-import { Button } from "@/components/ui/button";
 
 export default function ProjectReviewPage() {
   const { id, projectId } = useParams<{ id: string; projectId: string }>();
@@ -49,7 +48,7 @@ export default function ProjectReviewPage() {
   // Transform data safely
   const hackathon =
     dbHackathon && dbHackathon.length > 0
-      ? transformDatabaseToUI(dbHackathon[0])
+      ? dbHackathon[0]
       : null;
 
   if (hackathonLoading || projectLoading || projectHackathonsLoading) {

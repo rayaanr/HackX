@@ -2,33 +2,34 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
-import type { DashboardStats, HackathonWithRelations } from "@/types/hackathon";
+import type { DashboardStats, UIHackathon } from "@/types/hackathon";
+import { getUIHackathonStatus } from "@/lib/helpers/date";
 
 // Calculate dashboard statistics from hackathons data
 function calculateDashboardStats(
-  hackathons: HackathonWithRelations[]
+  hackathons: UIHackathon[]
 ): DashboardStats {
-  const now = new Date();
-
   const activeHackathons = hackathons.filter((h) => {
-    const hackathonEnd = h.hackathon_end_date
-      ? new Date(h.hackathon_end_date)
-      : null;
-    return hackathonEnd && hackathonEnd > now;
+    const status = getUIHackathonStatus({
+      ...h,
+      votingPeriod: h.votingPeriod || undefined,
+    });
+    return status !== "Ended";
   }).length;
 
   const completedHackathons = hackathons.filter((h) => {
-    const hackathonEnd = h.hackathon_end_date
-      ? new Date(h.hackathon_end_date)
-      : null;
-    return hackathonEnd && hackathonEnd <= now;
+    const status = getUIHackathonStatus({
+      ...h,
+      votingPeriod: h.votingPeriod || undefined,
+    });
+    return status === "Ended";
   }).length;
 
   const totalPrizeValue = hackathons.reduce((total, hackathon) => {
     const hackathonTotal =
-      hackathon.prize_cohorts?.reduce((sum, cohort) => {
+      hackathon.prizeCohorts?.reduce((sum, cohort) => {
         const amount =
-          parseFloat(cohort.prize_amount.replace(/[^0-9.-]+/g, "")) || 0;
+          parseFloat(cohort.prizeAmount.replace(/[^0-9.-]+/g, "")) || 0;
         return sum + amount;
       }, 0) || 0;
     return total + hackathonTotal;

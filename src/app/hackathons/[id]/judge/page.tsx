@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
 import { useSubmittedProjectsByHackathon } from "@/hooks/queries/use-projects";
-import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
+// Database transforms removed - using blockchain data directly
 import { notFound } from "next/navigation";
 import { use } from "react";
 import Image from "next/image";
@@ -37,7 +37,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
     notFound();
   }
 
-  const hackathon = transformDatabaseToUI(dbHackathon[0]);
+  const hackathon = dbHackathon;
 
   return (
     <div className="space-y-6">

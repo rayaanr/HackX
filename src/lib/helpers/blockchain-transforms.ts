@@ -10,7 +10,6 @@ import type {
 import type {
   UIHackathon,
   UIProject,
-  HackathonWithRelations,
 } from "@/types/hackathon";
 
 /**

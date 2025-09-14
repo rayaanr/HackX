@@ -120,3 +120,49 @@ export function isToday(dateString: string | Date): boolean {
   const today = new Date();
   return date.toDateString() === today.toDateString();
 }
+
+/**
+ * Get hackathon status based on current time and phase deadlines
+ * Works with blockchain-transformed UIHackathon data
+ */
+export function getUIHackathonStatus(hackathon: {
+  registrationPeriod?: {
+    registrationEndDate?: string | Date | number | null | undefined;
+    registrationStartDate?: string | Date | number | null | undefined;
+  };
+  hackathonPeriod?: {
+    hackathonStartDate?: string | Date | number | null | undefined;
+    hackathonEndDate?: string | Date | number | null | undefined;
+  };
+  votingPeriod?: {
+    votingStartDate?: string | Date | number | null | undefined;
+    votingEndDate?: string | Date | number | null | undefined;
+  };
+}): "Registration Open" | "Registration Closed" | "Live" | "Voting" | "Ended" {
+  const now = new Date();
+
+  // Check registration phase
+  const registrationEnd = safeToDate(hackathon.registrationPeriod?.registrationEndDate);
+  if (registrationEnd && now < registrationEnd) {
+    return "Registration Open";
+  }
+
+  // Check hackathon phase
+  const hackathonEnd = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+  if (hackathonEnd && now < hackathonEnd) {
+    // If we're past registration but before hackathon end
+    const hackathonStart = safeToDate(hackathon.hackathonPeriod?.hackathonStartDate);
+    if (hackathonStart && now < hackathonStart) {
+      return "Registration Closed";
+    }
+    return "Live";
+  }
+
+  // Check voting phase
+  const votingEnd = safeToDate(hackathon.votingPeriod?.votingEndDate);
+  if (votingEnd && now < votingEnd) {
+    return "Voting";
+  }
+
+  return "Ended";
+}

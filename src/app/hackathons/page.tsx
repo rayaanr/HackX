@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+import { safeToDate, getUIHackathonStatus } from "@/lib/helpers/date";
 import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -35,29 +36,7 @@ export default function ExplorePage() {
   const initialLiveHackathons = hackathonData || [];
   const initialPastHackathons = hackathonData || [];
 
-  // Helper function to get hackathon status based on dates (for filtering)
-  const getHackathonStatus = (hackathon: any) => {
-    const now = new Date();
-
-    if (
-      hackathon.registrationPeriod?.registrationEndDate &&
-      now < hackathon.registrationPeriod.registrationEndDate
-    ) {
-      return "Registration Open";
-    } else if (
-      hackathon.hackathonPeriod?.hackathonEndDate &&
-      now < hackathon.hackathonPeriod.hackathonEndDate
-    ) {
-      return "Live";
-    } else if (
-      hackathon.votingPeriod?.votingEndDate &&
-      now < hackathon.votingPeriod.votingEndDate
-    ) {
-      return "Voting";
-    } else {
-      return "Ended";
-    }
-  };
+  // Use shared helper function for consistent status calculation
 
   // Apply additional filters on top of the pre-filtered data
   const { liveHackathons, pastHackathons } = useMemo(() => {
@@ -92,7 +71,7 @@ export default function ExplorePage() {
 
         // Status filter
         if (filters.status) {
-          const currentStatus = getHackathonStatus(hackathon);
+          const currentStatus = getUIHackathonStatus(hackathon);
           if (filters.status !== currentStatus) return false;
         }
 

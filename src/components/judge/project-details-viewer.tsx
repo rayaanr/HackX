@@ -8,7 +8,7 @@ import type {
   HackathonComponentProps,
   ProjectComponentProps,
 } from "@/types/hackathon";
-import { getHackathonStatus } from "@/lib/helpers/hackathon-transforms";
+import { getUIHackathonStatus } from "@/lib/helpers/date";
 
 interface ProjectHackathon {
   hackathon: {
@@ -29,18 +29,7 @@ interface ProjectHackathon {
   status: string;
 }
 
-// Helper function to normalize hackathon data for getHackathonStatus
-function normalizeHackathonForStatus(hackathon: ProjectHackathon["hackathon"]) {
-  // Create a minimal object that matches what getHackathonStatus expects for DB format
-  return {
-    registration_start_date: hackathon.registration_start_date || null,
-    registration_end_date: hackathon.registration_end_date || null,
-    hackathon_start_date: hackathon.hackathon_start_date,
-    hackathon_end_date: hackathon.hackathon_end_date,
-    voting_start_date: hackathon.voting_start_date || null,
-    voting_end_date: hackathon.voting_end_date || null,
-  } as const;
-}
+// Helper function removed - using UIHackathon format directly now
 
 interface ProjectDetailsSectionProps {
   project: ProjectComponentProps;
@@ -320,9 +309,20 @@ export function ProjectDetailsSection({
               <Card key={hackathonData.id} className="relative">
                 <div className="absolute top-3 right-3">
                   <Badge variant="default">
-                    {getHackathonStatus(
-                      normalizeHackathonForStatus(hackathonData) as any,
-                    )}
+                    {getUIHackathonStatus({
+                      registrationPeriod: {
+                        registrationStartDate: hackathonData.registration_start_date,
+                        registrationEndDate: hackathonData.registration_end_date,
+                      },
+                      hackathonPeriod: {
+                        hackathonStartDate: hackathonData.hackathon_start_date,
+                        hackathonEndDate: hackathonData.hackathon_end_date,
+                      },
+                      votingPeriod: {
+                        votingStartDate: hackathonData.voting_start_date,
+                        votingEndDate: hackathonData.voting_end_date,
+                      },
+                    })}
                   </Badge>
                 </div>
 

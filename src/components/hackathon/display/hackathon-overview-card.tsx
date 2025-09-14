@@ -4,11 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AvatarList } from "@/components/ui/avatar-list";
 import type { UIHackathon } from "@/types/hackathon";
-import {
-  getHackathonStatus,
-  getStatusVariant,
-} from "@/lib/helpers/hackathon-transforms";
-import { safeToDate } from "@/lib/helpers/date";
+import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
+import { safeToDate, getDaysLeft, getUIHackathonStatus } from "@/lib/helpers/date";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import { Calendar, Code, Trophy, Award } from "lucide-react";
 
@@ -17,22 +14,32 @@ interface HackathonCardProps {
 }
 
 export function HackathonCard({ hackathon }: HackathonCardProps) {
-  const status = getHackathonStatus(hackathon);
+  // Get hackathon status using shared helper
+  const status = getUIHackathonStatus({
+    ...hackathon,
+    votingPeriod: hackathon.votingPeriod || undefined,
+  });
   const statusVariant = getStatusVariant(status);
-  const deadline = hackathon.registrationPeriod?.registrationEndDate;
+
+  // Get the relevant deadline based on current status
+  const deadline = (() => {
+    switch (status) {
+      case "Registration Open":
+        return safeToDate(hackathon.registrationPeriod?.registrationEndDate);
+      case "Registration Closed":
+        return safeToDate(hackathon.hackathonPeriod?.hackathonStartDate);
+      case "Live":
+        return safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+      case "Voting":
+        return safeToDate(hackathon.votingPeriod?.votingEndDate);
+      case "Ended":
+      default:
+        return null; // No active deadline for ended hackathons
+    }
+  })();
 
   // Calculate days left until deadline
-  const daysLeft = (() => {
-    const deadlineDate = safeToDate(deadline);
-    return deadlineDate
-      ? Math.max(
-          0,
-          Math.ceil(
-            (deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-          ),
-        )
-      : 0;
-  })();
+  const daysLeft = deadline ? getDaysLeft(deadline) : 0;
 
   // Create sample avatar images for participants
   const participantAvatars = [
@@ -61,9 +68,16 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                 <div>
                   <h6 className="flex items-center">
                     <Calendar className="size-4 mr-1" />
-                    Days Left
+                    {status === "Ended" ? "Status" : "Days Left"}
                   </h6>
-                  <p>{deadline ? `${daysLeft} days` : "TBD"}</p>
+                  <p>
+                    {status === "Ended"
+                      ? "Completed"
+                      : deadline
+                        ? `${daysLeft} days`
+                        : "TBD"
+                    }
+                  </p>
                 </div>
                 <div>
                   <h6 className="flex items-center">

@@ -20,30 +20,18 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState, useMemo } from "react";
 import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import {
-  getHackathonStatus,
   calculateTotalPrizeAmount,
   formatDateForDisplay,
-} from "@/lib/helpers/hackathon-transforms";
-import type { HackathonWithRelations } from "@/types/hackathon";
+} from "@/lib/helpers/blockchain-transforms";
+import { getUIHackathonStatus } from "@/lib/helpers/date";
+import type { UIHackathon } from "@/types/hackathon";
 
 // Transform hackathon data to match ProjectHackathonCardProps interface
 function transformHackathonToCardProps(
   hackathon: any // Blockchain hackathon with combined contract + IPFS data
 ): ProjectHackathonCardProps {
-  // For blockchain hackathons, we need to create a compatible object for getHackathonStatus
-  // The blockchain hackathon has different field names than database hackathons
-  const compatibleHackathon = {
-    ...hackathon,
-    hackathon_start_date:
-      hackathon.hackathonPeriod?.hackathonStartDate ||
-      hackathon.hackathon_start_date,
-    short_description:
-      hackathon.shortDescription || hackathon.short_description,
-    participant_count:
-      hackathon.participantCount || hackathon.participant_count || 0,
-  };
-
-  const status = getHackathonStatus(compatibleHackathon);
+  // Use the shared UI hackathon status helper
+  const status = getUIHackathonStatus(hackathon);
 
   // Map status to card status with improved logic
   let cardStatus: "live" | "upcoming" | "completed";
@@ -60,16 +48,12 @@ function transformHackathonToCardProps(
   }
 
   return {
-    id: hackathon.id?.toString() || hackathon.blockchainId?.toString(),
+    id: hackathon.id?.toString(),
     name: hackathon.name || "Untitled Hackathon",
-    date: formatDateForDisplay(
-      hackathon.hackathonPeriod?.hackathonStartDate ||
-        hackathon.hackathon_start_date
-    ),
-    theme: hackathon.shortDescription || hackathon.short_description || "",
-    prize: calculateTotalPrizeAmount(compatibleHackathon),
-    participants:
-      hackathon.participantCount || hackathon.participant_count || 0,
+    date: formatDateForDisplay(hackathon.hackathonPeriod?.hackathonStartDate),
+    theme: hackathon.shortDescription || "",
+    prize: calculateTotalPrizeAmount(hackathon.prizeCohorts || []),
+    participants: hackathon.participantCount || 0,
     status: cardStatus,
   };
 }
