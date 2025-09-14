@@ -5,8 +5,8 @@ import { useActiveAccount, useReadContract } from "thirdweb/react";
 import { readContract } from "thirdweb";
 import { useWeb3 } from "@/providers/web3-provider";
 import {
-  fetchSingleHackathon,
   batchFetchHackathons,
+  getHackathonById,
 } from "@/lib/helpers/blockchain";
 import { useCreateHackathon } from "./use-create-hackathon";
 
@@ -46,10 +46,13 @@ export function useBlockchainHackathons() {
   const fetchHackathon = (hackathonId: string | number) =>
     useQuery({
       queryKey: ["hackathon", hackathonId],
-      queryFn: () => fetchSingleHackathon(contract, client, hackathonId),
+      queryFn: () => getHackathonById(contract, client, hackathonId),
       enabled: !!contract && !!client && !!hackathonId,
       staleTime: 2 * 60 * 1000, // 2 minutes
     });
+
+  console.log("Total hackathons fetched:", hackathons.length);
+  console.log("Hackathons data:", hackathons);
 
   return {
     // Data
@@ -83,7 +86,7 @@ export function useHackathon(hackathonId: string | number) {
 
   return useQuery({
     queryKey: ["hackathon", hackathonId],
-    queryFn: () => fetchSingleHackathon(contract, client, hackathonId),
+    queryFn: () => getHackathonById(contract, client, hackathonId),
     enabled: !!contract && !!client && !!hackathonId,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
