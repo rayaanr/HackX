@@ -157,9 +157,15 @@ export async function getHackathonById(
     params: [id],
   });
   const metadata = await fetchIPFSMetadata(client, hackathon.ipfsHash);
+
+  // Flatten the data structure - if metadata has a 'data' property, spread it at root level
+  const flattenedData = metadata.data ? metadata.data : metadata;
+
   return {
     ...serializeBigInts(hackathon),
     active: hackathon.isActive,
-    ...metadata,
+    ...flattenedData,
+    // Keep original metadata structure for backward compatibility
+    metadata: metadata,
   };
 }
