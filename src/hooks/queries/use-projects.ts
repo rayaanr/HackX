@@ -1,371 +1,373 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useEffect } from "react";
+import { useActiveAccount } from "thirdweb/react";
 import type {
   ProjectWithHackathon,
   UIProject,
   HackathonRegistrationWithHackathon,
+  BlockchainProject,
 } from "@/types/hackathon";
-import { transformProjectToUI } from "@/lib/helpers/project";
+import { transformBlockchainProjectToUI } from "@/lib/helpers/blockchain-transforms";
+import {
+  useUserProjects as useBlockchainUserProjects,
+  useProjectById as useBlockchainProjectById,
+  useSubmitProject as useBlockchainSubmitProject,
+  useProjectsByHackathon as useBlockchainProjectsByHackathon,
+} from "@/hooks/blockchain";
 
-// Fetch projects by hackathon ID directly from Supabase
-async function fetchProjectsByHackathon(
-  hackathonId: string,
-): Promise<UIProject[]> {
-  const supabase = createClient();
-
-  const { data: projects, error } = await supabase
-    .from("projects")
-    .select(
-      `
-      *,
-      hackathon:hackathons(*)
-    `,
-    )
-    .eq("hackathon_id", hackathonId)
-    .order("updated_at", { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch projects: ${error.message}`);
-  }
-
-  return (projects || []).map(transformProjectToUI);
-}
-
-// Get projects by hackathon ID
-export function useProjectsByHackathon(hackathonId: string) {
-  return useQuery({
-    queryKey: ["projects", "by-hackathon", hackathonId],
-    queryFn: () => fetchProjectsByHackathon(hackathonId),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: 3,
-    enabled: !!hackathonId, // Only run when hackathonId is available
-  });
-}
-
-// Fetch submitted projects by hackathon ID directly from Supabase
-async function fetchSubmittedProjectsByHackathon(
-  hackathonId: string,
-): Promise<UIProject[]> {
-  const supabase = createClient();
-
-  const { data: projects, error } = await supabase
-    .from("projects")
-    .select(
-      `
-      *,
-      hackathon:hackathons(*)
-    `,
-    )
-    .eq("hackathon_id", hackathonId)
-    .eq("status", "submitted")
-    .order("updated_at", { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch submitted projects: ${error.message}`);
-  }
-
-  return (projects || []).map(transformProjectToUI);
-}
-
-// Get submitted projects by hackathon ID
-export function useSubmittedProjectsByHackathon(hackathonId: string) {
-  return useQuery({
-    queryKey: ["projects", "submitted", "by-hackathon", hackathonId],
-    queryFn: () => fetchSubmittedProjectsByHackathon(hackathonId),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: 3,
-    enabled: !!hackathonId, // Only run when hackathonId is available
-  });
-}
-
-// Fetch project by ID directly from Supabase
-async function fetchProjectById(projectId: string): Promise<UIProject> {
-  const supabase = createClient();
-
-  const { data: project, error } = await supabase
-    .from("projects")
-    .select(
-      `
-      *,
-      hackathon:hackathons(*)
-    `,
-    )
-    .eq("id", projectId)
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") {
-      throw new Error("Project not found");
-    }
-    throw new Error(`Failed to fetch project: ${error.message}`);
-  }
-
-  return transformProjectToUI(project);
-}
-
-// Get project by ID
-export function useProjectById(projectId: string) {
-  return useQuery({
-    queryKey: ["projects", "by-id", projectId],
-    queryFn: () => fetchProjectById(projectId),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on not found errors
-      if (error?.message?.includes("not found")) {
-        return false;
-      }
-      return failureCount < 3;
+// Mock data for projects
+const MOCK_PROJECTS: ProjectWithHackathon[] = [
+  {
+    id: "1",
+    name: "DeFi Portfolio Tracker",
+    description:
+      "A decentralized application for tracking DeFi investments across multiple protocols",
+    hackathon_id: "1",
+    tech_stack: ["React", "Web3", "Solidity", "The Graph"],
+    status: "submitted",
+    repository_url: "https://github.com/user/defi-tracker",
+    demo_url: "https://defi-tracker.example.com",
+    team_members: [
+      { name: "Alice Developer", role: "Frontend" },
+      { name: "Bob Blockchain", role: "Smart Contracts" },
+    ],
+    created_by: "0x1234567890123456789012345678901234567890",
+    created_at: "2024-12-15T00:00:00Z",
+    updated_at: "2024-12-15T12:00:00Z",
+    totalScore: 85,
+    judgeCount: 3,
+    averageScore: 28.3,
+    hackathon: {
+      id: "1",
+      name: "Web3 Innovation Challenge",
+      short_description:
+        "Build the next generation of decentralized applications",
+      location: "Virtual",
+      experience_level: "intermediate",
+      hackathon_start_date: null,
+      hackathon_end_date: "2025-01-31",
+      tech_stack: ["React", "Solidity", "Web3", "IPFS"],
+      registration_start_date: null,
+      registration_end_date: "2024-12-31",
+      voting_start_date: null,
+      voting_end_date: "2025-02-07",
     },
-    enabled: !!projectId, // Only run when projectId is available
-  });
-}
+  },
+];
 
-// Fetch user's projects directly from Supabase
-async function fetchUserProjects(): Promise<UIProject[]> {
-  const supabase = createClient();
-
-  const { data: projects, error } = await supabase
-    .from("projects")
-    .select(
-      `
-      *,
-      hackathon:hackathons(*)
-    `,
-    )
-    .order("updated_at", { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch projects: ${error.message}`);
-  }
-
-  return (projects || []).map(transformProjectToUI);
-}
-
-// Get user's projects
-export function useUserProjects() {
-  return useQuery({
-    queryKey: ["projects", "user"],
-    queryFn: fetchUserProjects,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on auth errors - safely check error message
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-
-      if (
-        errorMessage.includes("401") ||
-        errorMessage.includes("Authentication")
-      ) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-  });
-}
-
-// Fetch user's registered hackathons directly from Supabase
-async function fetchRegisteredHackathons(): Promise<
-  HackathonRegistrationWithHackathon[]
-> {
-  const supabase = createClient();
-
-  const { data: registrations, error } = await supabase
-    .from("hackathon_registrations")
-    .select(
-      `
-      *,
-      hackathon:hackathons(*)
-    `,
-    )
-    .order("registered_at", { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch registered hackathons: ${error.message}`);
-  }
-
-  return registrations || [];
-}
-
-// Get user's registered hackathons
-export function useRegisteredHackathons() {
-  return useQuery({
-    queryKey: ["hackathons", "registered"],
-    queryFn: fetchRegisteredHackathons,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on auth errors - safely check error message
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-
-      if (
-        errorMessage.includes("401") ||
-        errorMessage.includes("Authentication")
-      ) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-  });
-}
-
-// Create a new project directly in Supabase
-async function createProject(
-  projectData: Partial<UIProject>,
-): Promise<ProjectWithHackathon> {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error("Authentication required to create project");
-  }
-
-  const { data: project, error } = await supabase
-    .from("projects")
-    .insert({
-      name: projectData.name!,
-      description: projectData.description || null,
-      hackathon_id: projectData.hackathon_id || null,
-      tech_stack: projectData.tech_stack || [],
-      status: projectData.status || "draft",
-      repository_url: projectData.repository_url || null,
-      demo_url: projectData.demo_url || null,
-      team_members: projectData.team_members || null,
-      created_by: user.id,
-    })
-    .select(
-      `
-      *,
-      hackathon:hackathons(*)
-    `,
-    )
-    .single();
-
-  if (error) {
-    throw new Error(`Failed to create project: ${error.message}`);
-  }
-
-  return project;
-}
-
-// Hook for creating projects
-export function useCreateProject() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: createProject,
-    onSuccess: () => {
-      // Invalidate and refetch projects
-      queryClient.invalidateQueries({ queryKey: ["projects", "user"] });
-    },
-    onError: (error) => {
-      console.error("Failed to create project:", error);
-    },
-  });
-}
-
-// Register for a hackathon directly in Supabase
-async function registerForHackathon(hackathonId: string): Promise<void> {
-  const supabase = createClient();
-
-  if (!hackathonId?.trim()) {
-    throw new Error("hackathonId is required");
-  }
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error("Authentication required to register for hackathon");
-  }
-
-  const { error } = await supabase.from("hackathon_registrations").insert({
-    user_id: user.id,
-    hackathon_id: hackathonId,
+const MOCK_REGISTERED_HACKATHONS: HackathonRegistrationWithHackathon[] = [
+  {
+    id: "1",
+    user_id: "0x1234567890123456789012345678901234567890",
+    hackathon_id: "1",
     status: "registered",
-  });
+    registered_at: "2024-12-01T00:00:00Z",
+    hackathon: {
+      id: "1",
+      name: "Web3 Innovation Challenge",
+      short_description:
+        "Build the next generation of decentralized applications",
+      location: "Virtual",
+      experience_level: "intermediate",
+      hackathon_start_date: null,
+      hackathon_end_date: "2025-01-31",
+      tech_stack: ["React", "Solidity", "Web3", "IPFS"],
+      registration_start_date: null,
+      registration_end_date: "2024-12-31",
+      voting_start_date: null,
+      voting_end_date: "2025-02-07",
+    },
+  },
+];
 
-  if (error) {
-    // Handle duplicate registration gracefully
-    if (error.code === "23505") {
-      throw new Error("You are already registered for this hackathon");
+interface UseProjectsResult {
+  data: ProjectWithHackathon[];
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
+}
+
+interface UseProjectResult {
+  data: ProjectWithHackathon | null;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+interface UseRegisteredHackathonsResult {
+  data: HackathonRegistrationWithHackathon[];
+  isLoading: boolean;
+  error: Error | null;
+}
+
+// Get all projects for the current user
+export function useUserProjects(userAddress?: string): UseProjectsResult {
+  const blockchainResult = useBlockchainUserProjects(userAddress);
+
+  // Transform blockchain data to legacy format for backward compatibility
+  const transformedData = blockchainResult.data.map(
+    (project): ProjectWithHackathon => {
+      const uiProject = transformBlockchainProjectToUI(project);
+      return {
+        ...uiProject,
+        // Ensure required fields are present with proper defaults
+        hackathon_id: uiProject.hackathon_id || project.hackathonId.toString(),
+        repository_url: uiProject.repository_url || null,
+        demo_url: uiProject.demo_url || null,
+        team_members: uiProject.team_members || null,
+        // Convert to legacy format fields
+        hackathon: project.hackathonMetadata
+          ? {
+              id: project.hackathonId.toString(),
+              name: project.hackathonMetadata.name,
+              short_description: project.hackathonMetadata.shortDescription,
+              location: project.hackathonMetadata.location,
+              experience_level: project.hackathonMetadata.experienceLevel,
+              hackathon_start_date:
+                project.hackathonMetadata.hackathonPeriod?.hackathonStartDate ||
+                null,
+              hackathon_end_date:
+                project.hackathonMetadata.hackathonPeriod?.hackathonEndDate ||
+                "",
+              tech_stack: project.hackathonMetadata.techStack,
+              registration_start_date:
+                project.hackathonMetadata.registrationPeriod
+                  ?.registrationStartDate || null,
+              registration_end_date:
+                project.hackathonMetadata.registrationPeriod
+                  ?.registrationEndDate || null,
+              voting_start_date:
+                project.hackathonMetadata.votingPeriod?.votingStartDate || null,
+              voting_end_date:
+                project.hackathonMetadata.votingPeriod?.votingEndDate || null,
+            }
+          : null,
+      };
+    },
+  );
+
+  return {
+    data: transformedData,
+    isLoading: blockchainResult.isLoading,
+    error: blockchainResult.error,
+    refetch: blockchainResult.refetch,
+  };
+}
+
+// Get a single project by ID
+export function useProjectById(projectId: string): UseProjectResult {
+  const [data, setData] = useState<ProjectWithHackathon | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        const project = MOCK_PROJECTS.find((p) => p.id === projectId);
+        setData(project || null);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (projectId) {
+      fetchData();
     }
-    throw new Error(`Failed to register for hackathon: ${error.message}`);
-  }
+  }, [projectId]);
+
+  return { data, isLoading, error };
 }
 
-// Hook for registering for hackathons
+// Get projects for a specific hackathon
+export function useProjectHackathons(projectId: string): UseProjectsResult {
+  const [data, setData] = useState<ProjectWithHackathon[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        const project = MOCK_PROJECTS.find((p) => p.id === projectId);
+        setData(project ? [project] : []);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (projectId) {
+      fetchData();
+    }
+  }, [projectId]);
+
+  const refetch = () => {
+    const project = MOCK_PROJECTS.find((p) => p.id === projectId);
+    setData(project ? [project] : []);
+  };
+
+  return { data, isLoading, error, refetch };
+}
+
+// Get registered hackathons for the current user
+export function useRegisteredHackathons(
+  userAddress?: string,
+): UseRegisteredHackathonsResult {
+  const account = useActiveAccount();
+  const [data, setData] = useState<HackathonRegistrationWithHackathon[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        const targetAddress = userAddress || account?.address;
+        if (targetAddress) {
+          const userRegistrations = MOCK_REGISTERED_HACKATHONS.filter(
+            (r) => r.user_id === targetAddress,
+          );
+          setData(userRegistrations);
+        } else {
+          setData([]);
+        }
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [userAddress, account?.address]);
+
+  return { data, isLoading, error };
+}
+
+// Submit/create a new project
+export function useSubmitProject() {
+  const blockchainSubmit = useBlockchainSubmitProject();
+
+  const submitProject = async (projectData: any) => {
+    try {
+      // Extract hackathon ID from project data or require it to be passed
+      const hackathonId = projectData.hackathonId || projectData.hackathon_id;
+      if (!hackathonId) {
+        throw new Error("Hackathon ID is required to submit a project");
+      }
+
+      const result = await blockchainSubmit.submitProject(
+        hackathonId.toString(),
+        projectData,
+      );
+
+      if (result.success) {
+        return {
+          success: true,
+          data: {
+            id: result.projectId?.toString() || "",
+            name: projectData.name,
+            created_at: new Date().toISOString(),
+            description: projectData.description,
+            tech_stack: projectData.techStack || projectData.tech_stack || [],
+            status: "submitted",
+            created_by: "", // Will be filled by the contract
+            updated_at: new Date().toISOString(),
+            hackathon_id: hackathonId.toString(),
+          },
+        };
+      } else {
+        return {
+          success: false,
+          error: result.error || "Unknown error",
+        };
+      }
+    } catch (error) {
+      console.error("Error submitting project:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  };
+
+  return { submitProject, isSubmitting: blockchainSubmit.isSubmitting };
+}
+
+// Register for a hackathon
 export function useRegisterForHackathon() {
-  const queryClient = useQueryClient();
+  const [isRegistering, setIsRegistering] = useState(false);
 
-  return useMutation({
-    mutationFn: registerForHackathon,
-    onSuccess: () => {
-      // Invalidate and refetch registered hackathons
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "registered"] });
-    },
-    onError: (error) => {
-      console.error("Failed to register for hackathon:", error);
-    },
-  });
+  const registerForHackathon = async (hackathonId: string) => {
+    setIsRegistering(true);
+    try {
+      // TODO: Replace with actual smart contract call
+      console.log("Registering for hackathon:", hackathonId);
+
+      // Simulate registration
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      return { success: true };
+    } catch (error) {
+      console.error("Error registering for hackathon:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  return { registerForHackathon, isRegistering };
 }
 
-// Fetch hackathons that a project was submitted to
-async function fetchProjectHackathons(projectId: string): Promise<any[]> {
-  const supabase = createClient();
+// Get submitted projects for a specific hackathon
+export function useSubmittedProjectsByHackathon(
+  hackathonId: string,
+): UseProjectsResult {
+  const [data, setData] = useState<ProjectWithHackathon[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  const { data: submissions, error } = await supabase
-    .from("project_hackathon_submissions")
-    .select(
-      `
-      *,
-      hackathon:hackathons(
-        id,
-        name,
-        short_description,
-        location,
-        experience_level,
-        hackathon_start_date,
-        hackathon_end_date,
-        tech_stack,
-        prize_cohorts(
-          name,
-          prize_amount,
-          description
-        )
-      )
-    `,
-    )
-    .eq("project_id", projectId)
-    .order("submitted_at", { ascending: false });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
-  if (error) {
-    throw new Error(`Failed to fetch project hackathons: ${error.message}`);
-  }
+        const hackathonProjects = MOCK_PROJECTS.filter(
+          (p) => p.hackathon_id === hackathonId,
+        );
+        setData(hackathonProjects);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  return submissions || [];
-}
+    if (hackathonId) {
+      fetchData();
+    }
+  }, [hackathonId]);
 
-// Hook to get hackathons that a project was submitted to
-export function useProjectHackathons(projectId: string) {
-  return useQuery({
-    queryKey: ["projects", "hackathons", projectId],
-    queryFn: () => fetchProjectHackathons(projectId),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: 3,
-    enabled: !!projectId, // Only run when projectId is available
-  });
+  const refetch = () => {
+    const hackathonProjects = MOCK_PROJECTS.filter(
+      (p) => p.hackathon_id === hackathonId,
+    );
+    setData(hackathonProjects);
+  };
+
+  return { data, isLoading, error, refetch };
 }

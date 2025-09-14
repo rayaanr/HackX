@@ -45,8 +45,14 @@ const getDefaultHackathonFormValues = (): HackathonFormData => ({
 
 // Form submission handlers
 function createSuccessHandler(router: any) {
-  return (data: { hackathonId: number; ipfsHash: string; transactionHash: string }) => {
-    toast.success(`Hackathon created successfully! Transaction: ${data.transactionHash.slice(0, 10)}...`);
+  return (data: {
+    hackathonId: number;
+    ipfsHash: string;
+    transactionHash: string;
+  }) => {
+    toast.success(
+      `Hackathon created successfully! Transaction: ${data.transactionHash.slice(0, 10)}...`,
+    );
     router.push("/dashboard");
   };
 }
@@ -63,13 +69,17 @@ function createErrorHandler(router: any) {
 
     // Handle transaction rejection
     if (error.message.includes("Transaction was rejected")) {
-      toast.error("Transaction rejected. Please approve the transaction to create your hackathon.");
+      toast.error(
+        "Transaction rejected. Please approve the transaction to create your hackathon.",
+      );
       return;
     }
 
     // Handle insufficient funds
     if (error.message.includes("insufficient funds")) {
-      toast.error("Insufficient funds for gas fees. Please add ETH to your wallet.");
+      toast.error(
+        "Insufficient funds for gas fees. Please add ETH to your wallet.",
+      );
       return;
     }
 

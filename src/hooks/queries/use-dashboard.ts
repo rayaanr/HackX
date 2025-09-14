@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useMemo } from "react";
 import { useUserHackathons } from "@/hooks/queries/use-hackathons";
 import type { DashboardStats, HackathonWithRelations } from "@/types/hackathon";
 
@@ -54,18 +54,38 @@ export function useDashboardStats() {
     error: hackathonsError,
   } = useUserHackathons();
 
-  return useQuery({
-    queryKey: ["dashboard", "stats"],
-    queryFn: () => calculateDashboardStats(hackathons),
-    enabled: !hackathonsLoading && !!hackathons,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
-    select: (data) => data,
+  const [stats, setStats] = useState<DashboardStats>({
+    totalHackathons: 0,
+    activeHackathons: 0,
+    completedHackathons: 0,
+    totalPrizeValue: "$0",
+  });
+
+  const calculatedStats = useMemo(() => {
+    if (hackathonsLoading || hackathons.length === 0) {
+      return {
+        totalHackathons: 0,
+        activeHackathons: 0,
+        completedHackathons: 0,
+        totalPrizeValue: "$0",
+      };
+    }
+    return calculateDashboardStats(hackathons);
+  }, [hackathons, hackathonsLoading]);
+
+  useEffect(() => {
+    setStats(calculatedStats);
+  }, [calculatedStats]);
+
+  return {
+    data: stats,
+    isLoading: hackathonsLoading,
+    error: hackathonsError,
     meta: {
       hackathonsLoading,
       hackathonsError,
     },
-  });
+  };
 }
 
 // Combined dashboard data hook for convenience

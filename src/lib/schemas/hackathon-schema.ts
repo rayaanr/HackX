@@ -29,7 +29,7 @@ const prizeCohortSchema = z.object({
 // Define the judge schema
 const judgeSchema = z.object({
   id: z.string().optional(),
-  email: z.email("Invalid email address"),
+  address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid EVM address"),
   status: z.enum(["waiting", "invited", "pending", "accepted", "declined"]),
 });
 

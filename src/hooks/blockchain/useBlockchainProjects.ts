@@ -1,7 +1,11 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSendTransaction, useActiveAccount, useReadContract } from "thirdweb/react";
+import {
+  useSendTransaction,
+  useActiveAccount,
+  useReadContract,
+} from "thirdweb/react";
 import { readContract, prepareContractCall } from "thirdweb";
 import { useWeb3 } from "@/providers/web3-provider";
 import { upload, download } from "thirdweb/storage";
@@ -42,19 +46,20 @@ export function useBlockchainProjects() {
         activeAccount: activeAccount?.address,
         contractAddress,
       });
-      
+
       if (!contract || !activeAccount) {
         console.log("⚠️ Missing contract or account for project IDs fetch");
         return [];
       }
-      
+
       try {
         const projectIds = await readContract({
           contract,
-          method: "function getUserProjects(address user) view returns (uint256[])",
+          method:
+            "function getUserProjects(address user) view returns (uint256[])",
           params: [activeAccount.address],
         });
-        
+
         const ids = (projectIds || []).map((id: any) => Number(id));
         console.log("✅ Fetched user project IDs:", ids);
         return ids;
@@ -82,9 +87,11 @@ export function useBlockchainProjects() {
         client: !!client,
         userProjectIds,
       });
-      
+
       if (!contract || !client || userProjectIds.length === 0) {
-        console.log("⚠️ Missing requirements for detailed projects fetch or no project IDs");
+        console.log(
+          "⚠️ Missing requirements for detailed projects fetch or no project IDs",
+        );
         return [];
       }
 
@@ -94,7 +101,8 @@ export function useBlockchainProjects() {
           try {
             const project = await readContract({
               contract,
-              method: "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
+              method:
+                "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
               params: [BigInt(projectId)],
             });
 
@@ -109,7 +117,10 @@ export function useBlockchainProjects() {
                 metadata = await file.json();
               }
             } catch (error) {
-              console.warn(`Failed to fetch metadata for project ${projectId}:`, error);
+              console.warn(
+                `Failed to fetch metadata for project ${projectId}:`,
+                error,
+              );
             }
 
             return {
@@ -151,7 +162,9 @@ export function useBlockchainProjects() {
       }
 
       if (!contractAddress) {
-        throw new Error("Contract not configured. Please check your environment variables.");
+        throw new Error(
+          "Contract not configured. Please check your environment variables.",
+        );
       }
 
       console.log("🚀 Submitting project to blockchain...");
@@ -180,10 +193,12 @@ export function useBlockchainProjects() {
 
       const uris = await upload({
         client,
-        files: [{
-          name: fileName,
-          data: metadata,
-        }],
+        files: [
+          {
+            name: fileName,
+            data: metadata,
+          },
+        ],
       });
 
       const ipfsUri = uris[0];
@@ -193,7 +208,8 @@ export function useBlockchainProjects() {
       // Step 3: Prepare blockchain transaction
       const transaction = prepareContractCall({
         contract,
-        method: "function submitProject(uint256 hackathonId, string projectIpfsHash) returns (uint256)",
+        method:
+          "function submitProject(uint256 hackathonId, string projectIpfsHash) returns (uint256)",
         params: [BigInt(hackathonId), cid],
       });
 
@@ -222,16 +238,36 @@ export function useBlockchainProjects() {
           },
           onError: (error) => {
             console.error("❌ Transaction failed:", error);
-            const message = error instanceof Error ? error.message.toLowerCase() : "";
+            const message =
+              error instanceof Error ? error.message.toLowerCase() : "";
 
-            if (message.includes("user denied") || message.includes("rejected")) {
-              reject(new Error("Transaction was cancelled. Please approve the transaction to submit your project."));
+            if (
+              message.includes("user denied") ||
+              message.includes("rejected")
+            ) {
+              reject(
+                new Error(
+                  "Transaction was cancelled. Please approve the transaction to submit your project.",
+                ),
+              );
             } else if (message.includes("insufficient funds")) {
-              reject(new Error("Insufficient funds for gas fees. Please add ETH to your wallet and try again."));
+              reject(
+                new Error(
+                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again.",
+                ),
+              );
             } else if (message.includes("network")) {
-              reject(new Error("Network error. Please check your internet connection and try again."));
+              reject(
+                new Error(
+                  "Network error. Please check your internet connection and try again.",
+                ),
+              );
             } else {
-              reject(new Error(`Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`));
+              reject(
+                new Error(
+                  `Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+                ),
+              );
             }
           },
         });
@@ -241,7 +277,9 @@ export function useBlockchainProjects() {
       console.log("🎉 Project submitted successfully!", data);
       // Invalidate and refetch user projects
       queryClient.invalidateQueries({ queryKey: ["blockchain-user-projects"] });
-      queryClient.invalidateQueries({ queryKey: ["blockchain-user-projects-detailed"] });
+      queryClient.invalidateQueries({
+        queryKey: ["blockchain-user-projects-detailed"],
+      });
     },
     onError: (error) => {
       console.error("❌ Project submission failed:", error);
@@ -257,7 +295,8 @@ export function useBlockchainProjects() {
         try {
           const project = await readContract({
             contract,
-            method: "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
+            method:
+              "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
             params: [BigInt(projectId)],
           });
 
@@ -272,7 +311,10 @@ export function useBlockchainProjects() {
               metadata = await file.json();
             }
           } catch (error) {
-            console.warn(`Failed to fetch metadata for project ${projectId}:`, error);
+            console.warn(
+              `Failed to fetch metadata for project ${projectId}:`,
+              error,
+            );
           }
 
           return {
@@ -295,23 +337,23 @@ export function useBlockchainProjects() {
     totalProjects: Number(totalProjects),
     userProjectIds,
     userProjects,
-    
+
     // Loading states
     isLoadingUserProjectIds,
     isLoadingUserProjects,
     isSubmittingProject: submitProjectMutation.isPending,
-    
+
     // Error states
     userProjectIdsError,
     userProjectsError,
     submitProjectError: submitProjectMutation.error,
-    
+
     // Actions
     submitProject: submitProjectMutation.mutate,
     refetchUserProjectIds,
     refetchUserProjects,
     fetchProject,
-    
+
     // Utils
     isConnected: !!activeAccount,
     userAddress: activeAccount?.address,
@@ -323,7 +365,7 @@ export function useBlockchainProjects() {
  */
 export function useBlockchainProject(projectId: string | number) {
   const { contract, client } = useWeb3();
-  
+
   return useQuery({
     queryKey: ["blockchain-project", projectId],
     queryFn: async () => {
@@ -331,7 +373,8 @@ export function useBlockchainProject(projectId: string | number) {
       try {
         const project = await readContract({
           contract,
-          method: "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
+          method:
+            "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
           params: [BigInt(projectId)],
         });
 
@@ -346,7 +389,10 @@ export function useBlockchainProject(projectId: string | number) {
             metadata = await file.json();
           }
         } catch (error) {
-          console.warn(`Failed to fetch metadata for project ${projectId}:`, error);
+          console.warn(
+            `Failed to fetch metadata for project ${projectId}:`,
+            error,
+          );
         }
 
         return {
@@ -367,16 +413,22 @@ export function useBlockchainProject(projectId: string | number) {
 
 // Legacy exports for backward compatibility
 export const useSubmitProject = () => {
-  const { submitProject, isSubmittingProject, submitProjectError } = useBlockchainProjects();
-  return { 
-    mutate: submitProject, 
-    isPending: isSubmittingProject, 
-    error: submitProjectError 
+  const { submitProject, isSubmittingProject, submitProjectError } =
+    useBlockchainProjects();
+  return {
+    mutate: submitProject,
+    isPending: isSubmittingProject,
+    error: submitProjectError,
   };
 };
 
 export const useUserBlockchainProjects = () => {
-  const { userProjects, isLoadingUserProjects, userProjectsError, refetchUserProjects } = useBlockchainProjects();
+  const {
+    userProjects,
+    isLoadingUserProjects,
+    userProjectsError,
+    refetchUserProjects,
+  } = useBlockchainProjects();
   return {
     data: userProjects,
     isLoading: isLoadingUserProjects,

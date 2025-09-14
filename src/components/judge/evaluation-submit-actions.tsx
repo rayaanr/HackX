@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
 import { type JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
 
@@ -9,7 +8,7 @@ interface ReviewActionsProps {
   projectId: string;
   hackathonId: string;
   selectedCohort: PrizeCohort | undefined;
-  judgeEmail: string;
+  judgeEmail: string; // Will be wallet address when passed from parent
   formData: JudgeEvaluationFormData | null;
   isSubmitting: boolean;
   setIsSubmitting: (submitting: boolean) => void;
@@ -42,8 +41,6 @@ export function ReviewActions({
     setIsSubmitting(true);
 
     try {
-      const supabase = createClient();
-
       // Calculate total score and max score from form data
       const scores = Object.fromEntries(
         Object.entries(formData.criteriaEvaluations).map(
@@ -71,34 +68,27 @@ export function ReviewActions({
         0,
       );
 
-      const { error } = await supabase
-        .from("evaluations")
-        .upsert(
-          {
-            project_id: projectId,
-            hackathon_id: hackathonId,
-            prize_cohort_id: formData.selectedPrizeCohortId,
-            judge_email: judgeEmail,
-            scores: scores,
-            feedback: feedback,
-            overall_feedback: formData.overallFeedback,
-            total_score: totalScore,
-            max_possible_score: maxScore,
-          },
-          {
-            onConflict: "project_id,hackathon_id,prize_cohort_id,judge_email",
-          },
-        )
-        .select("id");
+      // TODO: Replace with smart contract call to submit evaluation
+      // For now, just simulate the submission
+      const evaluationData = {
+        project_id: projectId,
+        hackathon_id: hackathonId,
+        prize_cohort_id: formData.selectedPrizeCohortId,
+        judge_address: judgeEmail, // This is now a wallet address
+        scores: scores,
+        feedback: feedback,
+        overall_feedback: formData.overallFeedback,
+        total_score: totalScore,
+        max_possible_score: maxScore,
+      };
 
-      if (error) {
-        console.error("Error submitting evaluation:", error);
-        const errorMessage = error.message || "Unknown error occurred";
-        alert(
-          `Failed to submit evaluation: ${errorMessage}. Please try again.`,
-        );
-        return;
-      }
+      console.log(
+        "Evaluation data to be submitted to blockchain:",
+        evaluationData,
+      );
+
+      // Simulate successful submission
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       alert("Evaluation submitted successfully!");
       onSubmitSuccess?.();

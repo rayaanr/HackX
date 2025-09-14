@@ -11,8 +11,12 @@ import Link from "next/link";
 import { useMemo } from "react";
 
 export function ActiveProjects() {
-  const { data: blockchainProjects = [], isLoading: loading, error } = useUserBlockchainProjects();
-  
+  const {
+    data: blockchainProjects = [],
+    isLoading: loading,
+    error,
+  } = useUserBlockchainProjects();
+
   // Debug logging
   console.log("🔍 ActiveProjects Debug:", {
     blockchainProjects: blockchainProjects.length,
@@ -22,26 +26,29 @@ export function ActiveProjects() {
 
   // Transform blockchain projects to UI format
   const allProjects = useMemo(() => {
-    const projects = blockchainProjects.map(project => ({
+    const projects = blockchainProjects.map((project) => ({
       id: project.blockchainId?.toString() || `blockchain-${Date.now()}`,
-      name: project.name || 'Untitled Project',
+      name: project.name || "Untitled Project",
       description: project.description || project.intro || null,
-      hackathon_name: project.hackathonId ? `Hackathon #${project.hackathonId}` : undefined,
+      hackathon_name: project.hackathonId
+        ? `Hackathon #${project.hackathonId}`
+        : undefined,
       hackathon_id: project.hackathonId?.toString(),
       tech_stack: project.techStack || [],
-      status: project.isSubmitted ? 'submitted' : 'draft' as const,
+      status: project.isSubmitted ? "submitted" : ("draft" as const),
       updated_at: project.createdAt || new Date().toISOString(),
       repository_url: project.githubLink,
       demo_url: project.demoVideo,
       team_members: [],
-      source: 'blockchain' as const,
+      source: "blockchain" as const,
       key: `blockchain-${project.blockchainId}`,
       totalScore: project.totalScore,
       judgeCount: project.judgeCount,
     }));
 
-    return projects.sort((a, b) => 
-      new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    return projects.sort(
+      (a, b) =>
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
     );
   }, [blockchainProjects]);
 
@@ -79,7 +86,10 @@ export function ActiveProjects() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">Active Projects</h2>
         <div className="flex gap-2 text-sm">
-          <Badge variant={blockchainProjects.length > 0 ? "default" : "outline"} className="text-xs">
+          <Badge
+            variant={blockchainProjects.length > 0 ? "default" : "outline"}
+            className="text-xs"
+          >
             <Wallet className="w-3 h-3 mr-1" />
             Blockchain: {blockchainProjects.length}
           </Badge>

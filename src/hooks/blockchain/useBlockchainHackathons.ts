@@ -1,7 +1,11 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSendTransaction, useActiveAccount, useReadContract } from "thirdweb/react";
+import {
+  useSendTransaction,
+  useActiveAccount,
+  useReadContract,
+} from "thirdweb/react";
 import { readContract } from "thirdweb";
 import { useWeb3 } from "@/providers/web3-provider";
 import { upload } from "thirdweb/storage";
@@ -54,7 +58,9 @@ export function useBlockchainHackathons() {
       }
 
       if (!contractAddress) {
-        throw new Error("Contract not configured. Please check your environment variables.");
+        throw new Error(
+          "Contract not configured. Please check your environment variables.",
+        );
       }
 
       console.log("=� Creating hackathon with optimized flow...");
@@ -70,16 +76,24 @@ export function useBlockchainHackathons() {
         experienceLevel: formData.experienceLevel,
         socialLinks: formData.socialLinks || {},
         registrationPeriod: {
-          registrationStartDate: formData.registrationPeriod?.registrationStartDate?.toISOString() || null,
-          registrationEndDate: formData.registrationPeriod?.registrationEndDate?.toISOString() || null,
+          registrationStartDate:
+            formData.registrationPeriod?.registrationStartDate?.toISOString() ||
+            null,
+          registrationEndDate:
+            formData.registrationPeriod?.registrationEndDate?.toISOString() ||
+            null,
         },
         hackathonPeriod: {
-          hackathonStartDate: formData.hackathonPeriod?.hackathonStartDate?.toISOString() || null,
-          hackathonEndDate: formData.hackathonPeriod?.hackathonEndDate?.toISOString() || null,
+          hackathonStartDate:
+            formData.hackathonPeriod?.hackathonStartDate?.toISOString() || null,
+          hackathonEndDate:
+            formData.hackathonPeriod?.hackathonEndDate?.toISOString() || null,
         },
         votingPeriod: {
-          votingStartDate: formData.votingPeriod?.votingStartDate?.toISOString() || null,
-          votingEndDate: formData.votingPeriod?.votingEndDate?.toISOString() || null,
+          votingStartDate:
+            formData.votingPeriod?.votingStartDate?.toISOString() || null,
+          votingEndDate:
+            formData.votingPeriod?.votingEndDate?.toISOString() || null,
         },
         prizeCohorts: formData.prizeCohorts,
         judges: formData.judges,
@@ -95,13 +109,15 @@ export function useBlockchainHackathons() {
       // Step 2: Upload to IPFS using Thirdweb
       console.log("=� Uploading metadata to IPFS...");
       const fileName = `hackathon-${formData.name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}.json`;
-      
+
       const uris = await upload({
         client,
-        files: [{
-          name: fileName,
-          data: metadata,
-        }],
+        files: [
+          {
+            name: fileName,
+            data: metadata,
+          },
+        ],
       });
 
       const ipfsUri = uris[0];
@@ -109,7 +125,11 @@ export function useBlockchainHackathons() {
       console.log(" Metadata uploaded:", { uri: ipfsUri, cid });
 
       // Step 3: Prepare and send transaction
-      const transaction = prepareCreateHackathonTransaction(contract, cid, formData);
+      const transaction = prepareCreateHackathonTransaction(
+        contract,
+        cid,
+        formData,
+      );
       console.log("= Contract transaction prepared");
 
       return new Promise<{
@@ -135,16 +155,36 @@ export function useBlockchainHackathons() {
           },
           onError: (error) => {
             console.error("L Transaction failed:", error);
-            const message = error instanceof Error ? error.message.toLowerCase() : "";
-            
-            if (message.includes("user denied") || message.includes("rejected")) {
-              reject(new Error("Transaction was cancelled. Please approve the transaction to create your hackathon."));
+            const message =
+              error instanceof Error ? error.message.toLowerCase() : "";
+
+            if (
+              message.includes("user denied") ||
+              message.includes("rejected")
+            ) {
+              reject(
+                new Error(
+                  "Transaction was cancelled. Please approve the transaction to create your hackathon.",
+                ),
+              );
             } else if (message.includes("insufficient funds")) {
-              reject(new Error("Insufficient funds for gas fees. Please add ETH to your wallet and try again."));
+              reject(
+                new Error(
+                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again.",
+                ),
+              );
             } else if (message.includes("network")) {
-              reject(new Error("Network error. Please check your internet connection and try again."));
+              reject(
+                new Error(
+                  "Network error. Please check your internet connection and try again.",
+                ),
+              );
             } else {
-              reject(new Error(`Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`));
+              reject(
+                new Error(
+                  `Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+                ),
+              );
             }
           },
         });
@@ -172,20 +212,20 @@ export function useBlockchainHackathons() {
     // Data
     hackathons,
     totalHackathons: Number(totalHackathons),
-    
+
     // Loading states
     isLoadingHackathons,
     isCreatingHackathon: createHackathonMutation.isPending,
-    
+
     // Error states
     hackathonsError,
     createHackathonError: createHackathonMutation.error,
-    
+
     // Actions
     createHackathon: createHackathonMutation.mutate,
     refetchHackathons,
     fetchHackathon,
-    
+
     // Utils
     isConnected: !!activeAccount,
     userAddress: activeAccount?.address,
@@ -197,7 +237,7 @@ export function useBlockchainHackathons() {
  */
 export function useHackathon(hackathonId: string | number) {
   const { contract, client } = useWeb3();
-  
+
   return useQuery({
     queryKey: ["hackathon", hackathonId],
     queryFn: () => fetchSingleHackathon(contract, client, hackathonId),
@@ -209,11 +249,12 @@ export function useHackathon(hackathonId: string | number) {
 
 // Legacy exports for backward compatibility
 export const useCreateHackathon = () => {
-  const { createHackathon, isCreatingHackathon, createHackathonError } = useBlockchainHackathons();
-  return { 
-    mutate: createHackathon, 
-    isPending: isCreatingHackathon, 
-    error: createHackathonError 
+  const { createHackathon, isCreatingHackathon, createHackathonError } =
+    useBlockchainHackathons();
+  return {
+    mutate: createHackathon,
+    isPending: isCreatingHackathon,
+    error: createHackathonError,
   };
 };
 
@@ -223,7 +264,7 @@ export const useBlockchainHackathonById = useHackathon;
 // Additional hooks for participants and projects
 export function useHackathonParticipants(hackathonId: string | number) {
   const { contract } = useWeb3();
-  
+
   return useQuery({
     queryKey: ["hackathon-participants", hackathonId],
     queryFn: async () => {
@@ -231,11 +272,14 @@ export function useHackathonParticipants(hackathonId: string | number) {
       try {
         const participants = await readContract({
           contract,
-          method: "function getHackathonParticipants(uint256 hackathonId) view returns (address[])",
+          method:
+            "function getHackathonParticipants(uint256 hackathonId) view returns (address[])",
           params: [BigInt(hackathonId)],
         });
         // Convert any BigInt values to strings to avoid serialization issues
-        return (participants || []).map((p: any) => typeof p === 'bigint' ? p.toString() : p);
+        return (participants || []).map((p: any) =>
+          typeof p === "bigint" ? p.toString() : p,
+        );
       } catch (error) {
         console.error("Failed to fetch participants:", error);
         return [];
@@ -248,7 +292,7 @@ export function useHackathonParticipants(hackathonId: string | number) {
 
 export function useHackathonProjects(hackathonId: string | number) {
   const { contract } = useWeb3();
-  
+
   return useQuery({
     queryKey: ["hackathon-projects", hackathonId],
     queryFn: async () => {
@@ -256,11 +300,14 @@ export function useHackathonProjects(hackathonId: string | number) {
       try {
         const projects = await readContract({
           contract,
-          method: "function getHackathonProjects(uint256 hackathonId) view returns (uint256[])",
+          method:
+            "function getHackathonProjects(uint256 hackathonId) view returns (uint256[])",
           params: [BigInt(hackathonId)],
         });
         // Convert BigInt values to numbers to avoid serialization issues
-        return (projects || []).map((p: any) => typeof p === 'bigint' ? Number(p) : p);
+        return (projects || []).map((p: any) =>
+          typeof p === "bigint" ? Number(p) : p,
+        );
       } catch (error) {
         console.error("Failed to fetch projects:", error);
         return [];

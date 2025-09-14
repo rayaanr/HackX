@@ -27,10 +27,10 @@ export default function HackathonPage() {
     data: hackathon,
     isLoading: loading,
     error,
-  } = useBlockchainHackathonById(id) as { 
-    data: any, 
-    isLoading: boolean, 
-    error: any 
+  } = useBlockchainHackathonById(id) as {
+    data: any;
+    isLoading: boolean;
+    error: any;
   };
 
   if (loading) {
@@ -117,7 +117,9 @@ export default function HackathonPage() {
           </Link>
           <div className="space-y-2">
             <div className="text-center">
-              <h1 className="text-4xl font-bold">{hackathon?.name || "Loading..."}</h1>
+              <h1 className="text-4xl font-bold">
+                {hackathon?.name || "Loading..."}
+              </h1>
               <p className="text-muted-foreground text-lg">
                 {hackathon?.shortDescription || ""}
               </p>
@@ -208,8 +210,8 @@ export default function HackathonPage() {
                         ],
                         ALLOWED_ATTR: ["href", "target"],
                         FORBID_ATTR: ["style"],
-                      }
-                    )
+                      },
+                    ),
                   )}
                 </div>
               </div>

@@ -73,8 +73,12 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
   const schedulePhases: SchedulePhase[] = [];
 
   // Registration Phase
-  const regStartDate = safeToDate(hackathon.registrationPeriod?.registrationStartDate);
-  const regEndDate = safeToDate(hackathon.registrationPeriod?.registrationEndDate);
+  const regStartDate = safeToDate(
+    hackathon.registrationPeriod?.registrationStartDate,
+  );
+  const regEndDate = safeToDate(
+    hackathon.registrationPeriod?.registrationEndDate,
+  );
   if (regStartDate && regEndDate) {
     const status = getEventStatus(regStartDate, regEndDate);
     schedulePhases.push({
@@ -107,7 +111,9 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
   }
 
   // Submission Phase
-  const hackStartDate = safeToDate(hackathon.hackathonPeriod?.hackathonStartDate);
+  const hackStartDate = safeToDate(
+    hackathon.hackathonPeriod?.hackathonStartDate,
+  );
   const hackEndDate = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
   if (hackStartDate && hackEndDate) {
     const status = getEventStatus(hackStartDate, hackEndDate);

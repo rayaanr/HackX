@@ -4,34 +4,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAllHackathons } from "@/hooks/queries/use-hackathons";
-import { useCurrentUser } from "@/hooks/supabase/useSupabaseAuth";
+import { useActiveAccount } from "thirdweb/react";
 import { transformDatabaseToUI } from "@/lib/helpers/hackathon-transforms";
 import { ArrowRight, Calendar, MapPin, Users, Award } from "lucide-react";
 import Link from "next/link";
 
 export default function JudgeDashboardPage() {
   const { data: dbHackathons = [], isLoading, error } = useAllHackathons();
-  const { data: currentUser, isLoading: userLoading } = useCurrentUser();
+  const account = useActiveAccount();
 
-  // Transform and filter hackathons where the current user is assigned as a judge
-  const hackathonsToJudge = currentUser?.email
-    ? dbHackathons
-        .map(transformDatabaseToUI)
-        .filter((hackathon) =>
-          hackathon.judges?.some(
-            (judge) =>
-              (judge.email ?? "").toLowerCase() ===
-              (currentUser.email ?? "").toLowerCase(),
-          ),
-        )
-    : []; // Return empty array if no user email available
+  // Transform and filter hackathons where the current wallet is assigned as a judge
+  // Note: For now, showing all hackathons until judge assignment is updated to use wallet addresses
+  const hackathonsToJudge = account
+    ? dbHackathons.map(transformDatabaseToUI)
+    : [];
 
-  if (isLoading || userLoading) {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!currentUser) {
-    return <div>Authentication required to view judge dashboard.</div>;
+  if (!account) {
+    return <div>Please connect your wallet to view judge dashboard.</div>;
   }
   return (
     <div className="space-y-6">
@@ -107,7 +100,7 @@ export default function JudgeDashboardPage() {
                         Tech stack:
                       </span>
                       <div className="flex flex-wrap gap-1">
-                        {hackathon.techStack.slice(0, 3).map((tech) => (
+                        {hackathon.techStack?.slice(0, 3).map((tech) => (
                           <Badge
                             key={tech}
                             variant="secondary"

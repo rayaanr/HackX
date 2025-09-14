@@ -33,11 +33,11 @@ export default function JudgingPage({ params }: JudgingPageProps) {
     return <div>Loading...</div>;
   }
 
-  if (hackathonError || !dbHackathon) {
+  if (hackathonError || !dbHackathon || dbHackathon.length === 0) {
     notFound();
   }
 
-  const hackathon = transformDatabaseToUI(dbHackathon);
+  const hackathon = transformDatabaseToUI(dbHackathon[0]);
 
   return (
     <div className="space-y-6">

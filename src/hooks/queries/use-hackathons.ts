@@ -1,672 +1,289 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useEffect } from "react";
+import { useActiveAccount } from "thirdweb/react";
 import type {
   HackathonWithRelations,
   HackathonFormData,
+  BlockchainHackathon,
 } from "@/types/hackathon";
-import { EXPERIENCE_LEVEL_MAP } from "@/constants/hackathon";
+import { transformBlockchainToUI } from "@/lib/helpers/blockchain-transforms";
+import {
+  useActiveHackathons as useBlockchainActiveHackathons,
+  useUserHackathons as useBlockchainUserHackathons,
+  useHackathonById as useBlockchainHackathonById,
+  useCreateHackathon as useBlockchainCreateHackathon,
+} from "@/hooks/blockchain";
 
-// Helper function to insert related data for a hackathon
-async function insertHackathonRelatedData(
-  supabase: any,
-  hackathonId: string,
-  formData: HackathonFormData,
-) {
-  // Insert prize cohorts
-  for (const cohort of formData.prizeCohorts) {
-    const { data: cohortData, error: cohortError } = await supabase
-      .from("prize_cohorts")
-      .insert({
-        hackathon_id: hackathonId,
+// Mock data for now - will be replaced with smart contract calls
+const MOCK_HACKATHONS: HackathonWithRelations[] = [
+  {
+    id: "1",
+    name: "Web3 Innovation Challenge",
+    visual: null,
+    short_description:
+      "Build the next generation of decentralized applications",
+    full_description:
+      "This hackathon focuses on creating innovative Web3 applications using blockchain technology.",
+    location: "Virtual",
+    tech_stack: ["React", "Solidity", "Web3", "IPFS"],
+    experience_level: "intermediate",
+    registration_start_date: null,
+    registration_end_date: "2024-12-31",
+    hackathon_start_date: null,
+    hackathon_end_date: "2025-01-31",
+    voting_start_date: null,
+    voting_end_date: "2025-02-07",
+    social_links: {},
+    created_by: "0x1234567890123456789012345678901234567890",
+    created_at: "2024-12-01T00:00:00Z",
+    updated_at: "2024-12-01T00:00:00Z",
+    participant_count: 150,
+    prize_cohorts: [
+      {
+        id: "1",
+        name: "Grand Prize",
+        number_of_winners: 1,
+        prize_amount: "10000",
+        description: "The best overall project",
+        judging_mode: "manual",
+        voting_mode: "judges_only",
+        max_votes_per_judge: 1,
+        evaluation_criteria: [
+          {
+            name: "Innovation",
+            points: 25,
+            description: "How innovative is the solution?",
+          },
+          {
+            name: "Technical Excellence",
+            points: 25,
+            description: "Quality of technical implementation",
+          },
+          {
+            name: "User Experience",
+            points: 25,
+            description: "How good is the user experience?",
+          },
+          {
+            name: "Impact",
+            points: 25,
+            description: "Potential impact of the solution",
+          },
+        ],
+      },
+    ],
+    judges: [
+      {
+        address: "0x1234567890123456789012345678901234567890",
+        status: "accepted",
+      },
+    ],
+    schedule_slots: [],
+    currentPhase: 1,
+    isActive: true,
+  },
+];
+
+interface UseHackathonsResult {
+  data: HackathonWithRelations[];
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
+}
+
+// Get all hackathons
+export function useAllHackathons(): UseHackathonsResult {
+  const blockchainResult = useBlockchainActiveHackathons();
+
+  // Transform blockchain data to legacy format for backward compatibility
+  const transformedData = blockchainResult.data.map((hackathon) => {
+    const uiHackathon = transformBlockchainToUI(hackathon);
+    return {
+      ...uiHackathon,
+      // Convert to legacy format fields
+      short_description: uiHackathon.shortDescription,
+      full_description: uiHackathon.fullDescription,
+      tech_stack: uiHackathon.techStack,
+      experience_level: uiHackathon.experienceLevel,
+      registration_start_date:
+        uiHackathon.registrationPeriod.registrationStartDate?.toISOString() ||
+        null,
+      registration_end_date:
+        uiHackathon.registrationPeriod.registrationEndDate?.toISOString() || "",
+      hackathon_start_date:
+        uiHackathon.hackathonPeriod.hackathonStartDate?.toISOString() || null,
+      hackathon_end_date:
+        uiHackathon.hackathonPeriod.hackathonEndDate?.toISOString() || "",
+      voting_start_date:
+        uiHackathon.votingPeriod?.votingStartDate?.toISOString() || null,
+      voting_end_date:
+        uiHackathon.votingPeriod?.votingEndDate?.toISOString() || "",
+      social_links: uiHackathon.socialLinks,
+      created_by: hackathon.organizer,
+      created_at: hackathon.metadata?.createdAt || new Date().toISOString(),
+      updated_at: hackathon.metadata?.uploadedAt || new Date().toISOString(),
+      participant_count: hackathon.participantCount || null,
+      prize_cohorts: uiHackathon.prizeCohorts.map((cohort) => ({
+        id: cohort.id,
         name: cohort.name,
         number_of_winners: cohort.numberOfWinners,
         prize_amount: cohort.prizeAmount,
         description: cohort.description,
-        judging_mode: cohort.judgingMode.toUpperCase(),
-        voting_mode: cohort.votingMode.toUpperCase(),
+        judging_mode: cohort.judgingMode,
+        voting_mode: cohort.votingMode,
         max_votes_per_judge: cohort.maxVotesPerJudge,
-      })
-      .select()
-      .single();
+        evaluation_criteria: cohort.evaluationCriteria,
+      })),
+      judges: uiHackathon.judges,
+      schedule_slots: uiHackathon.schedule.map((slot) => ({
+        name: slot.name,
+        description: slot.description,
+        start_date_time: slot.startDateTime.toISOString(),
+        end_date_time: slot.endDateTime.toISOString(),
+        has_speaker: slot.hasSpeaker,
+        speaker: slot.speaker,
+      })),
+      currentPhase: hackathon.currentPhase,
+      isActive: hackathon.isActive,
+    } as HackathonWithRelations;
+  });
 
-    if (cohortError) {
-      throw cohortError;
-    }
+  return {
+    data: transformedData,
+    isLoading: blockchainResult.isLoading,
+    error: blockchainResult.error,
+    refetch: blockchainResult.refetch,
+  };
+}
 
-    // Insert evaluation criteria
-    for (const criteria of cohort.evaluationCriteria) {
-      const { error: criteriaError } = await supabase
-        .from("evaluation_criteria")
-        .insert({
-          prize_cohort_id: cohortData.id,
-          name: criteria.name,
-          points: criteria.points,
-          description: criteria.description,
-        });
+// Get hackathons for a specific user
+export function useUserHackathons(userAddress?: string): UseHackathonsResult {
+  const account = useActiveAccount();
+  const [data, setData] = useState<HackathonWithRelations[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-      if (criteriaError) {
-        throw criteriaError;
-      }
-    }
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-  // Insert judges
-  for (const judge of formData.judges) {
-    const { error: judgeError } = await supabase.from("judges").insert({
-      hackathon_id: hackathonId,
-      email: judge.email,
-      status: judge.status.toUpperCase(),
-    });
-
-    if (judgeError) {
-      throw judgeError;
-    }
-  }
-
-  // Insert schedule slots with speakers
-  for (const slot of formData.schedule) {
-    let speakerId = null;
-
-    // Create speaker if has speaker
-    if (slot.hasSpeaker && slot.speaker) {
-      const { data: speakerData, error: speakerError } = await supabase
-        .from("speakers")
-        .insert({
-          name: slot.speaker.name,
-          position: slot.speaker.position || null,
-          x_name: slot.speaker.xName || null,
-          x_handle: slot.speaker.xHandle || null,
-          picture: slot.speaker.picture || null,
-        })
-        .select()
-        .single();
-
-      if (speakerError) {
-        throw speakerError;
-      }
-
-      speakerId = speakerData.id;
-    }
-
-    // Create schedule slot
-    const { error: slotError } = await supabase.from("schedule_slots").insert({
-      hackathon_id: hackathonId,
-      name: slot.name,
-      description: slot.description,
-      start_date_time: slot.startDateTime.toISOString(),
-      end_date_time: slot.endDateTime.toISOString(),
-      has_speaker: slot.hasSpeaker || false,
-      speaker_id: speakerId,
-    });
-
-    if (slotError) {
-      // If slot insert failed and we created a speaker, clean up the orphaned speaker
-      if (speakerId) {
-        const { error: deleteError } = await supabase
-          .from("speakers")
-          .delete()
-          .eq("id", speakerId);
-
-        if (deleteError) {
-          console.error("Failed to delete orphaned speaker:", deleteError);
+        if (account?.address || userAddress) {
+          // Filter hackathons created by the user
+          const userHackathons = MOCK_HACKATHONS.filter(
+            (h) => h.created_by === (userAddress || account?.address),
+          );
+          setData(userHackathons);
+        } else {
+          setData([]);
         }
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
       }
-      throw slotError;
+    };
+
+    fetchData();
+  }, [userAddress, account?.address]);
+
+  const refetch = () => {
+    if (account?.address || userAddress) {
+      const userHackathons = MOCK_HACKATHONS.filter(
+        (h) => h.created_by === (userAddress || account?.address),
+      );
+      setData(userHackathons);
+    } else {
+      setData([]);
     }
-  }
+  };
+
+  return { data, isLoading, error, refetch };
 }
 
-// Fetch user's hackathons directly from Supabase
-async function fetchUserHackathons(): Promise<HackathonWithRelations[]> {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error("Authentication required to fetch hackathons");
-  }
-
-  const { data: hackathons, error } = await supabase
-    .from("hackathons")
-    .select(
-      `
-        *,
-        prize_cohorts:prize_cohorts!hackathon_id (
-          *,
-          evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
-        ),
-        judges:judges!hackathon_id (*),
-        schedule_slots:schedule_slots!hackathon_id (
-          *,
-          speaker:speakers (*)
-        )
-      `,
-    )
-    .eq("created_by", user.id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch hackathons: ${error.message}`);
-  }
-
-  return hackathons || [];
+// Get a single hackathon by ID (alias)
+export function useHackathonById(hackathonId: string): UseHackathonsResult {
+  return useHackathonByIdPublic(hackathonId);
 }
 
-// Get user's hackathons
-export function useUserHackathons() {
-  return useQuery({
-    queryKey: ["hackathons", "user"],
-    queryFn: fetchUserHackathons,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on auth errors
-      if (
-        error.message.includes("401") ||
-        error.message.includes("Authentication")
-      ) {
-        return false;
+// Get a single hackathon by ID
+export function useHackathonByIdPublic(
+  hackathonId: string,
+): UseHackathonsResult {
+  const [data, setData] = useState<HackathonWithRelations[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        const hackathon = MOCK_HACKATHONS.find((h) => h.id === hackathonId);
+        setData(hackathon ? [hackathon] : []);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
       }
-      return failureCount < 3;
-    },
-  });
-}
+    };
 
-// Fetch all hackathons (for explore page) directly from Supabase
-async function fetchAllHackathons(): Promise<HackathonWithRelations[]> {
-  const supabase = createClient();
-
-  const { data: hackathons, error } = await supabase
-    .from("hackathons")
-    .select(
-      `
-        *,
-        prize_cohorts:prize_cohorts!hackathon_id (
-          *,
-          evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
-        ),
-        judges:judges!hackathon_id (*),
-        schedule_slots:schedule_slots!hackathon_id (
-          *,
-          speaker:speakers (*)
-        )
-      `,
-    )
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch all hackathons: ${error.message}`);
-  }
-
-  return hackathons || [];
-}
-
-// Get all hackathons
-export function useAllHackathons() {
-  return useQuery({
-    queryKey: ["hackathons", "all"],
-    queryFn: fetchAllHackathons,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      return failureCount < 3;
-    },
-  });
-}
-
-// Fetch single hackathon by ID directly from Supabase
-async function fetchHackathonById(id: string): Promise<HackathonWithRelations> {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error("Authentication required to fetch hackathon");
-  }
-
-  const { data: hackathon, error } = await supabase
-    .from("hackathons")
-    .select(
-      `
-        *,
-        prize_cohorts:prize_cohorts!hackathon_id (
-          *,
-          evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
-        ),
-        judges:judges!hackathon_id (*),
-        schedule_slots:schedule_slots!hackathon_id (
-          *,
-          speaker:speakers (*)
-        )
-      `,
-    )
-    .eq("id", id)
-    .eq("created_by", user.id)
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") {
-      throw new Error("Hackathon not found");
+    if (hackathonId) {
+      fetchData();
     }
-    throw new Error(`Failed to fetch hackathon: ${error.message}`);
-  }
+  }, [hackathonId]);
 
-  return hackathon;
+  const refetch = () => {
+    const hackathon = MOCK_HACKATHONS.find((h) => h.id === hackathonId);
+    setData(hackathon ? [hackathon] : []);
+  };
+
+  return { data, isLoading, error, refetch };
 }
 
-// Fetch single hackathon by ID for public access (judges, participants, etc.)
-async function fetchHackathonByIdPublic(
-  id: string,
-): Promise<HackathonWithRelations> {
-  const supabase = createClient();
-
-  const { data: hackathon, error } = await supabase
-    .from("hackathons")
-    .select(
-      `
-        *,
-        prize_cohorts:prize_cohorts!hackathon_id (
-          *,
-          evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
-        ),
-        judges:judges!hackathon_id (*),
-        schedule_slots:schedule_slots!hackathon_id (
-          *,
-          speaker:speakers (*)
-        )
-      `,
-    )
-    .eq("id", id)
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") {
-      throw new Error("Hackathon not found");
-    }
-    throw new Error(`Failed to fetch hackathon: ${error.message}`);
-  }
-
-  return hackathon;
-}
-
-// Get single hackathon by ID
-export function useHackathonById(id: string) {
-  return useQuery({
-    queryKey: ["hackathons", "by-id", id],
-    queryFn: () => fetchHackathonById(id),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on auth errors or not found errors
-      if (
-        error.message.includes("401") ||
-        error.message.includes("Authentication") ||
-        error.message.includes("not found")
-      ) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-  });
-}
-
-// Get single hackathon by ID for public access (judges, participants, etc.)
-export function useHackathonByIdPublic(id: string) {
-  return useQuery({
-    queryKey: ["hackathons", "public", "by-id", id],
-    queryFn: () => fetchHackathonByIdPublic(id),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on not found errors
-      if (error?.message?.includes("not found")) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-    enabled: !!id, // Only run when id is available
-  });
-}
-
-// Create a new hackathon directly in Supabase
-async function createHackathon(
-  formData: HackathonFormData,
-): Promise<HackathonWithRelations> {
-  const supabase = createClient();
-  let hackathonId: string | null = null;
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error("Authentication required to create hackathon");
-  }
-
-  try {
-    // Insert hackathon
-    const { data: hackathonData, error: hackathonError } = await supabase
-      .from("hackathons")
-      .insert({
-        name: formData.name,
-        visual: formData.visual || null,
-        short_description: formData.shortDescription,
-        full_description: formData.fullDescription,
-        location: formData.location,
-        tech_stack: formData.techStack,
-        experience_level: EXPERIENCE_LEVEL_MAP[formData.experienceLevel],
-        registration_start_date:
-          formData.registrationPeriod?.registrationStartDate?.toISOString() ||
-          null,
-        registration_end_date:
-          formData.registrationPeriod?.registrationEndDate?.toISOString() ||
-          null,
-        hackathon_start_date:
-          formData.hackathonPeriod?.hackathonStartDate?.toISOString() || null,
-        hackathon_end_date:
-          formData.hackathonPeriod?.hackathonEndDate?.toISOString() || null,
-        voting_start_date:
-          formData.votingPeriod?.votingStartDate?.toISOString() || null,
-        voting_end_date:
-          formData.votingPeriod?.votingEndDate?.toISOString() || null,
-        social_links: formData.socialLinks || {},
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (hackathonError) {
-      throw hackathonError;
-    }
-
-    hackathonId = hackathonData.id;
-
-    // Insert related data using helper function
-    if (!hackathonId) {
-      throw new Error("Failed to get hackathon ID");
-    }
-
-    await insertHackathonRelatedData(supabase, hackathonId, formData);
-
-    // Fetch the complete hackathon with relations
-    const { data: completeHackathon, error: fetchError } = await supabase
-      .from("hackathons")
-      .select(
-        `
-          *,
-          prize_cohorts:prize_cohorts!hackathon_id (
-            *,
-            evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
-          ),
-          judges:judges!hackathon_id (*),
-          schedule_slots:schedule_slots!hackathon_id (
-            *,
-            speaker:speakers (*)
-          )
-        `,
-      )
-      .eq("id", hackathonId)
-      .single();
-
-    if (fetchError) {
-      throw fetchError;
-    }
-
-    return completeHackathon;
-  } catch (error) {
-    console.error("Error creating hackathon:", error);
-    // Best-effort rollback
-    try {
-      if (hackathonId) {
-        await supabase.from("hackathons").delete().eq("id", hackathonId);
-      }
-    } catch (_) {}
-    throw new Error(
-      error instanceof Error ? error.message : "Failed to create hackathon",
-    );
-  }
-}
-
-// Hook for creating hackathons
+// Create a new hackathon
 export function useCreateHackathon() {
-  const queryClient = useQueryClient();
+  const blockchainCreate = useBlockchainCreateHackathon();
 
-  return useMutation({
-    mutationFn: createHackathon,
-    onSuccess: () => {
-      // Invalidate and refetch hackathons
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "user"] });
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "all"] });
-    },
-    onError: (error) => {
-      console.error("Failed to create hackathon:", error);
-    },
-  });
-}
+  const createHackathon = async (data: HackathonFormData) => {
+    try {
+      const result = await blockchainCreate.createHackathon(data);
 
-// Update a hackathon directly in Supabase
-async function updateHackathon({
-  hackathonId,
-  formData,
-}: {
-  hackathonId: string;
-  formData: HackathonFormData;
-}): Promise<HackathonWithRelations> {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error("Authentication required to update hackathon");
-  }
-
-  try {
-    // First check if user owns this hackathon
-    const { data: existingHackathon, error: checkError } = await supabase
-      .from("hackathons")
-      .select("id")
-      .eq("id", hackathonId)
-      .eq("created_by", user.id)
-      .single();
-
-    if (checkError || !existingHackathon) {
-      throw new Error("Hackathon not found or access denied");
-    }
-
-    // Update hackathon basic info
-    const { data: updatedHackathon, error: updateError } = await supabase
-      .from("hackathons")
-      .update({
-        name: formData.name,
-        visual: formData.visual || null,
-        short_description: formData.shortDescription,
-        full_description: formData.fullDescription,
-        location: formData.location,
-        tech_stack: formData.techStack,
-        experience_level: EXPERIENCE_LEVEL_MAP[formData.experienceLevel],
-        registration_start_date:
-          formData.registrationPeriod?.registrationStartDate?.toISOString() ||
-          null,
-        registration_end_date:
-          formData.registrationPeriod?.registrationEndDate?.toISOString() ||
-          null,
-        hackathon_start_date:
-          formData.hackathonPeriod?.hackathonStartDate?.toISOString() || null,
-        hackathon_end_date:
-          formData.hackathonPeriod?.hackathonEndDate?.toISOString() || null,
-        voting_start_date:
-          formData.votingPeriod?.votingStartDate?.toISOString() || null,
-        voting_end_date:
-          formData.votingPeriod?.votingEndDate?.toISOString() || null,
-        social_links: formData.socialLinks || {},
-      })
-      .eq("id", hackathonId)
-      .select()
-      .single();
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    // Delete existing related records
-    // Get prize cohort IDs first
-    const { data: prizeCohortIds } = await supabase
-      .from("prize_cohorts")
-      .select("id")
-      .eq("hackathon_id", hackathonId);
-
-    if (prizeCohortIds && prizeCohortIds.length > 0) {
-      const cohortIds = prizeCohortIds.map((pc) => pc.id);
-      await supabase
-        .from("evaluation_criteria")
-        .delete()
-        .in("prize_cohort_id", cohortIds);
-    }
-
-    await supabase
-      .from("prize_cohorts")
-      .delete()
-      .eq("hackathon_id", hackathonId);
-    await supabase.from("judges").delete().eq("hackathon_id", hackathonId);
-
-    // Get speaker IDs from schedule slots before deleting them
-    const { data: speakerIds } = await supabase
-      .from("schedule_slots")
-      .select("speaker_id")
-      .eq("hackathon_id", hackathonId);
-
-    if (speakerIds && speakerIds.length > 0) {
-      // Deduplicate and filter out nulls
-      const validSpeakerIds = [
-        ...new Set(
-          speakerIds.map((slot) => slot.speaker_id).filter((id) => id !== null),
-        ),
-      ];
-
-      // Delete speakers if any valid IDs exist
-      if (validSpeakerIds.length > 0) {
-        await supabase.from("speakers").delete().in("id", validSpeakerIds);
+      if (result.success) {
+        return {
+          success: true,
+          data: {
+            id: result.hackathonId?.toString() || "",
+            name: data.name,
+            created_at: new Date().toISOString(),
+            // Add other required fields for backward compatibility
+            short_description: data.shortDescription,
+            location: data.location,
+            tech_stack: data.techStack,
+            experience_level: data.experienceLevel,
+            created_by: "", // Will be filled by the contract
+            updated_at: new Date().toISOString(),
+          },
+        };
+      } else {
+        return {
+          success: false,
+          error: result.error || "Unknown error",
+        };
       }
+    } catch (error) {
+      console.error("Error creating hackathon:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
     }
+  };
 
-    await supabase
-      .from("schedule_slots")
-      .delete()
-      .eq("hackathon_id", hackathonId);
-
-    // Recreate prize cohorts, judges, and schedule slots using helper function
-    await insertHackathonRelatedData(supabase, hackathonId, formData);
-
-    // Fetch the complete updated hackathon with relations
-    const { data: completeHackathon, error: fetchError } = await supabase
-      .from("hackathons")
-      .select(
-        `
-          *,
-          prize_cohorts:prize_cohorts!hackathon_id (
-            *,
-            evaluation_criteria:evaluation_criteria!prize_cohort_id (*)
-          ),
-          judges:judges!hackathon_id (*),
-          schedule_slots:schedule_slots!hackathon_id (
-            *,
-            speaker:speakers (*)
-          )
-        `,
-      )
-      .eq("id", hackathonId)
-      .single();
-
-    if (fetchError) {
-      throw fetchError;
-    }
-
-    return completeHackathon;
-  } catch (error) {
-    console.error("Error updating hackathon:", error);
-    throw new Error(
-      error instanceof Error ? error.message : "Failed to update hackathon",
-    );
-  }
-}
-
-// Hook for updating hackathons
-export function useUpdateHackathon() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: updateHackathon,
-    onSuccess: (data) => {
-      // Invalidate and refetch hackathons
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "user"] });
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "all"] });
-      queryClient.invalidateQueries({
-        queryKey: ["hackathons", "by-id", data.id],
-      });
-    },
-    onError: (error) => {
-      console.error("Failed to update hackathon:", error);
-    },
-  });
-}
-
-// Delete a hackathon directly in Supabase
-async function deleteHackathon(hackathonId: string): Promise<void> {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error("Authentication required to delete hackathon");
-  }
-
-  const { data: deletedHackathon, error } = await supabase
-    .from("hackathons")
-    .delete()
-    .eq("id", hackathonId)
-    .eq("created_by", user.id)
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(
-      error instanceof Error ? error.message : "Failed to delete hackathon",
-    );
-  }
-
-  if (!deletedHackathon) {
-    throw new Error("Hackathon not found or access denied");
-  }
-}
-
-// Hook for deleting hackathons
-export function useDeleteHackathon() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: deleteHackathon,
-    onSuccess: () => {
-      // Invalidate and refetch hackathons
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "user"] });
-      queryClient.invalidateQueries({ queryKey: ["hackathons", "all"] });
-    },
-    onError: (error) => {
-      console.error("Failed to delete hackathon:", error);
-    },
-  });
+  return { createHackathon, isSubmitting: blockchainCreate.isCreating };
 }

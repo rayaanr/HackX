@@ -154,10 +154,15 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
             // Calculate days left until deadline
             const daysLeft = (() => {
               const deadlineDate = safeToDate(deadline);
-              return deadlineDate ? Math.max(
-                0,
-                Math.ceil((deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-              ) : 0;
+              return deadlineDate
+                ? Math.max(
+                    0,
+                    Math.ceil(
+                      (deadlineDate.getTime() - Date.now()) /
+                        (1000 * 60 * 60 * 24),
+                    ),
+                  )
+                : 0;
             })();
 
             return (

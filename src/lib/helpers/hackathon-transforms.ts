@@ -7,7 +7,7 @@ import type {
 
 // Transform database hackathon to UI hackathon format
 export function transformDatabaseToUI(
-  dbHackathon: HackathonWithRelations
+  dbHackathon: HackathonWithRelations,
 ): UIHackathon {
   return {
     id: dbHackathon.id,
@@ -66,7 +66,7 @@ export function transformDatabaseToUI(
       })) || [],
     judges:
       dbHackathon.judges?.map((judge) => ({
-        email: judge.email,
+        address: judge.address,
         status: mapDbJudgeStatus(judge.status),
       })) || [],
     schedule:
@@ -91,7 +91,7 @@ export function transformDatabaseToUI(
 
 // Get hackathon status based on dates
 export function getHackathonStatus(
-  hackathon: UIHackathon | HackathonWithRelations
+  hackathon: UIHackathon | HackathonWithRelations,
 ): HackathonStatus {
   const now = new Date();
 
@@ -134,7 +134,7 @@ export function getHackathonStatus(
 
 // Get status variant for badge styling
 export function getStatusVariant(
-  status: HackathonStatus
+  status: HackathonStatus,
 ):
   | "default"
   | "secondary"
@@ -163,7 +163,7 @@ export function getStatusVariant(
 
 // Calculate total prize amount for a hackathon
 export function calculateTotalPrizeAmount(
-  hackathon: HackathonWithRelations
+  hackathon: HackathonWithRelations,
 ): string {
   if (!hackathon.prize_cohorts || hackathon.prize_cohorts.length === 0) {
     return "$0";
@@ -184,7 +184,7 @@ export function calculateTotalPrizeAmount(
 
 // Format date for display
 export function formatDateForDisplay(
-  date: string | Date | null | undefined
+  date: string | Date | null | undefined,
 ): string {
   if (!date) return "TBD";
 
@@ -216,7 +216,7 @@ export function formatExperienceLevel(level: string): string {
 
 // Helper functions to map database enums to UI types
 function mapDbExperienceLevel(
-  level: string
+  level: string,
 ): "beginner" | "intermediate" | "advanced" | "all" {
   switch (level.toLowerCase()) {
     case "beginner":
@@ -279,7 +279,7 @@ function mapDbJudgeStatus(status: string): JudgeStatus {
 export function transformBlockchainToUI(blockchainHackathon: any): UIHackathon {
   // Convert Unix timestamps to Date objects
   const convertUnixToDate = (
-    timestamp: bigint | number | string | undefined
+    timestamp: bigint | number | string | undefined,
   ): Date | undefined => {
     if (!timestamp) return undefined;
     const ts =
@@ -303,24 +303,24 @@ export function transformBlockchainToUI(blockchainHackathon: any): UIHackathon {
     registrationPeriod: {
       registrationStartDate:
         convertUnixToDate(
-          blockchainHackathon.registrationPeriod?.registrationStartDate
+          blockchainHackathon.registrationPeriod?.registrationStartDate,
         ) ||
         (blockchainHackathon.registrationStartDate
           ? convertUnixToDate(blockchainHackathon.registrationStartDate)
           : undefined),
       registrationEndDate:
         convertUnixToDate(
-          blockchainHackathon.registrationPeriod?.registrationEndDate
+          blockchainHackathon.registrationPeriod?.registrationEndDate,
         ) || convertUnixToDate(blockchainHackathon.registrationDeadline),
     },
     hackathonPeriod: {
       hackathonStartDate:
         convertUnixToDate(
-          blockchainHackathon.hackathonPeriod?.hackathonStartDate
+          blockchainHackathon.hackathonPeriod?.hackathonStartDate,
         ) || convertUnixToDate(blockchainHackathon.registrationDeadline), // Fallback to registration end
       hackathonEndDate:
         convertUnixToDate(
-          blockchainHackathon.hackathonPeriod?.hackathonEndDate
+          blockchainHackathon.hackathonPeriod?.hackathonEndDate,
         ) || convertUnixToDate(blockchainHackathon.submissionDeadline),
     },
     votingPeriod: {
@@ -347,12 +347,12 @@ export function transformBlockchainToUI(blockchainHackathon: any): UIHackathon {
             name: criteria.name || `Criteria ${critIndex + 1}`,
             points: criteria.points || 10,
             description: criteria.description || "",
-          })
+          }),
         ),
-      })
+      }),
     ),
     judges: (blockchainHackathon.judges || []).map((judge: any) => ({
-      email: judge.email || "",
+      address: judge.address || "",
       status: judge.status || "waiting",
     })),
     schedule: (blockchainHackathon.schedule || []).map((slot: any) => ({

@@ -28,7 +28,7 @@ const wallets = [
 
 export function WalletConnect() {
   const { client } = useWeb3();
-  
+
   return (
     <ConnectButton
       client={client}

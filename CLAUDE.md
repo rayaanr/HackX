@@ -23,16 +23,15 @@ This is a Next.js 15 hackathon management application with Supabase backend inte
 - **UI Components**: shadcn/ui (Radix UI primitives) with "new-york" style
 - **Icons**: Lucide React and Tabler Icons
 - **Linting/Formatting**: Biome (replaces ESLint + Prettier)
-- **State Management**: TanStack Query for server state, React Context for client state
-- **Authentication**: Supabase Auth with custom AuthProvider
+- **State Management**: Blockchain hooks with TanStack Query for contract data, React Context for client state
+- **Authentication**: Thirdweb Auth with wallet-based authentication
 - **Form Handling**: react-hook-form with Zod validation
 - **Rich Text**: Lexical editor with HTML/Markdown support
 
 ### Key Architectural Patterns
 
-**Provider Architecture**: 
-- `AuthProvider` - Authentication state management
-- `QueryProvider` - TanStack Query configuration
+**Provider Architecture**:
+- `Web3Provider` - Blockchain integration and wallet state management
 - `ThemeProvider` - Dark/light mode theming
 - `SidebarProvider` - Sidebar state management
 
@@ -42,11 +41,11 @@ This is a Next.js 15 hackathon management application with Supabase backend inte
 - `SiteHeader` - Top header component
 - Auth pages (`/login`, `/signup`) and home page (`/`) use full-width layout
 
-**Database Integration**:
-- Supabase client/server setup in `src/lib/supabase/`
-- Database types generated in `src/types/supabase.ts`
-- Comprehensive type mapping between database and UI types in `src/types/hackathon.ts`
-- API middleware for authentication in `src/lib/api/auth-middleware.ts`
+**Blockchain Integration**:
+- Smart contract integration with Thirdweb SDK
+- Contract deployment and interaction in `src/lib/helpers/blockchain.ts`
+- IPFS metadata storage with Pinata integration
+- Comprehensive type mapping between blockchain and UI types in `src/types/blockchain.ts`
 
 **Form & Validation System**:
 - Complex multi-step forms using react-hook-form
@@ -54,10 +53,10 @@ This is a Next.js 15 hackathon management application with Supabase backend inte
 - `hackathon-schema.ts` includes comprehensive validation for hackathon creation with date consistency checks
 
 **Code Organization Rules**:
-- Components: `src/components/{feature}/` - Group by feature with creation/display subdirectories  
-- Hooks: `src/hooks/queries/` for TanStack Query, `src/hooks/supabase/` for direct DB operations
+- Components: `src/components/{feature}/` - Group by feature with creation/display subdirectories
+- Hooks: `src/hooks/blockchain/` for blockchain operations, `src/hooks/queries/` for data transformations
 - Utils: `src/lib/helpers/` for transformations, `src/lib/schemas/` for Zod validation
-- Types: `src/types/supabase.ts` (generated), `src/types/hackathon.ts` (UI mappings)
+- Types: `src/types/blockchain.ts` (blockchain), `src/types/hackathon.ts` (UI mappings)
 - Constants: `src/constants/` for static data and configuration options
 
 **Routing Structure**:
@@ -79,11 +78,11 @@ This is a Next.js 15 hackathon management application with Supabase backend inte
 
 ### Type System
 
-The application uses a dual-type system:
-- **Database types**: Generated from Supabase (`DatabaseHackathon`, `DatabaseProject`, etc.)
+The application uses a multi-type system:
+- **Blockchain types**: Smart contract data structures (`BlockchainHackathon`, `BlockchainProject`, etc.)
 - **UI types**: Application-specific interfaces (`UIHackathon`, `UIProject`, etc.)
 - **Form types**: Zod-inferred types from schemas (`HackathonFormData`, etc.)
-- **API types**: Response wrappers (`HackathonsResponse`, `CreateHackathonResponse`, etc.)
+- **Legacy types**: Backward compatibility types (`HackathonWithRelations`, etc.)
 
 ### Key Features
 
@@ -98,7 +97,7 @@ The application uses a dual-type system:
 
 When making changes:
 - Use existing Zod schemas for validation and extend them as needed
-- Follow the database/UI type mapping patterns
+- Follow the blockchain/UI type mapping patterns
 - Maintain the provider hierarchy in `src/app/providers.tsx`
-- Use TanStack Query for server state management
+- Use blockchain hooks for contract interactions and TanStack Query for data caching
 - Follow shadcn/ui component patterns with class-variance-authority

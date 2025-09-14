@@ -22,7 +22,10 @@ import { FileUploadField } from "@/components/ui/file-upload";
 import MultipleSelector, { Option } from "@/components/ui/multiselect";
 import { Button } from "@/components/ui/button";
 import { Shuffle } from "lucide-react";
-import { MOCK_PROJECT_DATA, getRandomMockProject } from "@/constants/mock-project-data";
+import {
+  MOCK_PROJECT_DATA,
+  getRandomMockProject,
+} from "@/constants/mock-project-data";
 
 const SECTOR_OPTIONS: Option[] = [
   { value: "ai-ml", label: "AI/ML" },
@@ -83,7 +86,8 @@ export function OverviewStep() {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   onChange={(e) => {
                     if (e.target.value) {
-                      const mockData = MOCK_PROJECT_DATA[parseInt(e.target.value)];
+                      const mockData =
+                        MOCK_PROJECT_DATA[parseInt(e.target.value)];
                       loadMockData(mockData);
                       e.target.value = ""; // Reset select
                     }

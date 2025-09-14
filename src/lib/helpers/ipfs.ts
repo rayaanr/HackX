@@ -9,12 +9,12 @@
  */
 export function resolveIPFSToHttp(uri: string | undefined | null): string {
   if (!uri) return "/placeholder.svg";
-  
+
   if (uri.startsWith("ipfs://")) {
     const cid = uri.replace("ipfs://", "");
     return `https://ipfs.io/ipfs/${cid}`;
   }
-  
+
   return uri;
 }
 

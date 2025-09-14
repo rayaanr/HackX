@@ -7,26 +7,27 @@
  * @param value - Date string, timestamp number, or Date object
  * @returns Date object or null if invalid
  */
-export function safeToDate(value: string | number | Date | null | undefined): Date | null {
+export function safeToDate(
+  value: string | number | Date | null | undefined,
+): Date | null {
   if (!value) return null;
-  
+
   if (value instanceof Date) return value;
-  
-  if (typeof value === 'string') {
+
+  if (typeof value === "string") {
     const date = new Date(value);
     return !isNaN(date.getTime()) ? date : null;
   }
-  
-  if (typeof value === 'number') {
+
+  if (typeof value === "number") {
     // Handle both Unix timestamps (seconds) and milliseconds
     const timestamp = value > 1e12 ? value : value * 1000;
     const date = new Date(timestamp);
     return !isNaN(date.getTime()) ? date : null;
   }
-  
+
   return null;
 }
-
 
 /**
  * Calculate days left until a given date

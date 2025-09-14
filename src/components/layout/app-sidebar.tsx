@@ -29,6 +29,7 @@ import {
   SidebarGroupContent,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { NavUser } from "@/components/layout/nav-user";
 import Link from "next/link";
 import Image from "next/image";
 import { ComponentProps } from "react";
@@ -172,6 +173,9 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           ),
         )}
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser />
+      </SidebarFooter>
     </Sidebar>
   );
 }

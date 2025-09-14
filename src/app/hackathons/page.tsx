@@ -83,7 +83,7 @@ export default function ExplorePage() {
           const hackathonTechStack = hackathon.techStack || [];
           if (
             !hackathonTechStack.some((tech: string) =>
-              tech.toLowerCase().includes(filters.techStack.toLowerCase())
+              tech.toLowerCase().includes(filters.techStack.toLowerCase()),
             )
           ) {
             return false;

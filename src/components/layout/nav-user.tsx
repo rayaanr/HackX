@@ -24,35 +24,37 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/providers/auth-provider";
+import {
+  useActiveAccount,
+  useDisconnect,
+  useActiveWallet,
+} from "thirdweb/react";
 
 export function NavUser({
   variant = "sidebar",
 }: {
   variant?: "sidebar" | "header";
 }) {
-  const { user, signOut } = useAuth();
+  const account = useActiveAccount();
+  const wallet = useActiveWallet();
+  const { disconnect } = useDisconnect();
   const { isMobile } = useSidebar();
 
-  if (!user) {
+  if (!account) {
     return null;
   }
 
   const userDisplayName =
-    user.user_metadata?.firstName && user.user_metadata?.lastName
-      ? `${user.user_metadata.firstName} ${user.user_metadata.lastName}`
-      : user.email?.split("@")[0] || "User";
+    account.address.slice(0, 6) + "..." + account.address.slice(-4);
+  const userInitials = account.address.slice(2, 4).toUpperCase();
 
-  const userInitials =
-    user.user_metadata?.firstName && user.user_metadata?.lastName
-      ? `${user.user_metadata.firstName[0]}${user.user_metadata.lastName[0]}`
-      : user.email?.[0]?.toUpperCase() || "U";
-
-  const handleSignOut = async () => {
+  const handleDisconnect = async () => {
     try {
-      await signOut();
+      if (wallet) {
+        await disconnect(wallet);
+      }
     } catch (error) {
-      // Error handling is done in the auth provider
+      console.error("Failed to disconnect wallet:", error);
     }
   };
 
@@ -66,10 +68,6 @@ export function NavUser({
             className="relative rounded-full bg-muted"
           >
             <Avatar className="h-8 w-8">
-              <AvatarImage
-                src={user.user_metadata?.avatar_url}
-                alt={userDisplayName}
-              />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
           </Button>
@@ -83,10 +81,6 @@ export function NavUser({
           <DropdownMenuLabel className="p-0 font-normal">
             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage
-                  src={user.user_metadata?.avatar_url}
-                  alt={userDisplayName}
-                />
                 <AvatarFallback className="rounded-lg">
                   {userInitials}
                 </AvatarFallback>
@@ -94,7 +88,7 @@ export function NavUser({
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{userDisplayName}</span>
                 <span className="text-muted-foreground truncate text-xs">
-                  {user.email}
+                  {account.address}
                 </span>
               </div>
             </div>
@@ -115,9 +109,9 @@ export function NavUser({
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut}>
+          <DropdownMenuItem onClick={handleDisconnect}>
             <IconLogout />
-            Log out
+            Disconnect
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -134,10 +128,6 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="size-8 rounded-lg grayscale">
-                <AvatarImage
-                  src={user.user_metadata?.avatar_url}
-                  alt={userDisplayName}
-                />
                 <AvatarFallback className="rounded-lg">
                   {userInitials}
                 </AvatarFallback>
@@ -153,10 +143,6 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage
-                    src={user.user_metadata?.avatar_url}
-                    alt={userDisplayName}
-                  />
                   <AvatarFallback className="rounded-lg">
                     {userInitials}
                   </AvatarFallback>
@@ -166,7 +152,7 @@ export function NavUser({
                     {userDisplayName}
                   </span>
                   <span className="text-muted-foreground truncate text-xs">
-                    {user.email}
+                    {account.address}
                   </span>
                 </div>
               </div>
@@ -187,9 +173,9 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut}>
+            <DropdownMenuItem onClick={handleDisconnect}>
               <IconLogout />
-              Log out
+              Disconnect
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

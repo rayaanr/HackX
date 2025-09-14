@@ -11,9 +11,9 @@ import type { HackathonFormData } from "@/types/hackathon";
 // BigInt serialization utility
 export function serializeBigInts(obj: any): any {
   if (obj === null || obj === undefined) return obj;
-  if (typeof obj === 'bigint') return Number(obj);
+  if (typeof obj === "bigint") return Number(obj);
   if (Array.isArray(obj)) return obj.map(serializeBigInts);
-  if (typeof obj === 'object') {
+  if (typeof obj === "object") {
     const serialized: any = {};
     for (const [key, value] of Object.entries(obj)) {
       serialized[key] = serializeBigInts(value);
@@ -28,9 +28,12 @@ export function dateToUnixTimestamp(date?: Date): number {
   return date ? Math.floor(date.getTime() / 1000) : 0;
 }
 
-export function unixTimestampToDate(timestamp: bigint | number | string | undefined): Date | undefined {
+export function unixTimestampToDate(
+  timestamp: bigint | number | string | undefined,
+): Date | undefined {
   if (!timestamp) return undefined;
-  const ts = typeof timestamp === "bigint" ? Number(timestamp) : Number(timestamp);
+  const ts =
+    typeof timestamp === "bigint" ? Number(timestamp) : Number(timestamp);
   return ts > 0 ? new Date(ts * 1000) : undefined;
 }
 
@@ -43,15 +46,22 @@ export function extractCID(uri: string): string {
 export function prepareCreateHackathonTransaction(
   contract: ThirdwebContract,
   cid: string,
-  formData: HackathonFormData
+  formData: HackathonFormData,
 ) {
-  const registrationDeadline = dateToUnixTimestamp(formData.registrationPeriod?.registrationEndDate);
-  const submissionDeadline = dateToUnixTimestamp(formData.hackathonPeriod?.hackathonEndDate);
-  const judgingDeadline = dateToUnixTimestamp(formData.votingPeriod?.votingEndDate);
+  const registrationDeadline = dateToUnixTimestamp(
+    formData.registrationPeriod?.registrationEndDate,
+  );
+  const submissionDeadline = dateToUnixTimestamp(
+    formData.hackathonPeriod?.hackathonEndDate,
+  );
+  const judgingDeadline = dateToUnixTimestamp(
+    formData.votingPeriod?.votingEndDate,
+  );
 
   return prepareContractCall({
     contract,
-    method: "function createHackathon(string ipfsHash, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline) returns (uint256)",
+    method:
+      "function createHackathon(string ipfsHash, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline) returns (uint256)",
     params: [
       cid,
       BigInt(registrationDeadline),
@@ -66,30 +76,33 @@ export async function batchFetchHackathons(
   contract: ThirdwebContract,
   client: ThirdwebClient,
   startId: number = 1,
-  count?: number
+  count?: number,
 ) {
   try {
     // Get total hackathons if count not specified
-    const totalHackathons = count ? BigInt(count) : await readContract({
-      contract,
-      method: "function getTotalHackathons() view returns (uint256)",
-    });
+    const totalHackathons = count
+      ? BigInt(count)
+      : await readContract({
+          contract,
+          method: "function getTotalHackathons() view returns (uint256)",
+        });
 
     if (totalHackathons === BigInt(0)) {
       return [];
     }
 
     const endId = count ? startId + count - 1 : Number(totalHackathons);
-    
+
     // Batch fetch basic hackathon data first
     const hackathonPromises = [];
     for (let i = startId; i <= endId; i++) {
       hackathonPromises.push(
         readContract({
           contract,
-          method: "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint8 currentPhase, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
+          method:
+            "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint8 currentPhase, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
           params: [BigInt(i)],
-        }).catch(() => null)
+        }).catch(() => null),
       );
     }
 
@@ -113,7 +126,10 @@ export async function batchFetchHackathons(
         const metadata = await file.json();
         return { hackathon, metadata };
       } catch (error) {
-        console.warn(`Failed to fetch metadata for hackathon ${hackathon.id}:`, error);
+        console.warn(
+          `Failed to fetch metadata for hackathon ${hackathon.id}:`,
+          error,
+        );
         return { hackathon, metadata: {} };
       }
     });
@@ -138,18 +154,19 @@ export async function batchFetchHackathons(
 export async function fetchSingleHackathon(
   contract: ThirdwebContract,
   client: ThirdwebClient,
-  hackathonId: string | number
+  hackathonId: string | number,
 ) {
   try {
     const id = BigInt(hackathonId);
-    
+
     // Fetch basic hackathon data
     const hackathon = await readContract({
       contract,
-      method: "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint8 currentPhase, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
+      method:
+        "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint8 currentPhase, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
       params: [id],
     });
-    
+
     // Fetch metadata from IPFS
     let metadata = {};
     try {
@@ -159,7 +176,10 @@ export async function fetchSingleHackathon(
       });
       metadata = await file.json();
     } catch (error) {
-      console.warn(`Failed to fetch metadata for hackathon ${hackathonId}:`, error);
+      console.warn(
+        `Failed to fetch metadata for hackathon ${hackathonId}:`,
+        error,
+      );
     }
 
     return {

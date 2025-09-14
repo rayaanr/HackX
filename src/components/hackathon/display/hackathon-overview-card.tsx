@@ -25,10 +25,14 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
   // Calculate days left until deadline
   const daysLeft = (() => {
     const deadlineDate = safeToDate(deadline);
-    return deadlineDate ? Math.max(
-      0,
-      Math.ceil((deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    ) : 0;
+    return deadlineDate
+      ? Math.max(
+          0,
+          Math.ceil(
+            (deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+          ),
+        )
+      : 0;
   })();
 
   // Create sample avatar images for participants
@@ -67,7 +71,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                     <Code className="size-4 mr-1" />
                     Tech Stack
                   </h6>
-                  <p>{hackathon.techStack.slice(0, 2).join(", ")}...</p>
+                  <p>{hackathon.techStack?.slice(0, 2).join(", ")}...</p>
                 </div>
                 <div>
                   <h6 className="flex items-center">
@@ -96,8 +100,8 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Trophy className="h-4 w-4 mr-1" />
                   <span>
-                    {hackathon.prizeCohorts.length} Prize
-                    {hackathon.prizeCohorts.length !== 1 ? "s" : ""}
+                    {hackathon.prizeCohorts?.length} Prize
+                    {hackathon.prizeCohorts?.length !== 1 ? "s" : ""}
                   </span>
                 </div>
               </div>
