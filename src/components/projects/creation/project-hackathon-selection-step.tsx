@@ -18,7 +18,9 @@ import {
 } from "@/components/projects/display/hackathon-card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useMemo } from "react";
-import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import {
   calculateTotalPrizeAmount,
   formatDateForDisplay,
@@ -60,9 +62,13 @@ function transformHackathonToCardProps(
 
 export function HackathonSelectionStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormData>();
-  // Updated to use blockchain hackathons instead of database hackathons
-  // This ensures we only show hackathons stored on blockchain with IPFS metadata
-  const { hackathons: hackathonData, isLoading, error } = useAllHackathons();
+  // Updated to use registered hackathons only
+  const {
+    hackathons: hackathonData,
+    isLoading,
+    error,
+    isConnected,
+  } = useRegisteredHackathons();
 
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");
   const selectedHackathonIds = watch("hackathonIds") || [];
@@ -108,45 +114,49 @@ export function HackathonSelectionStep() {
                 <FormLabel>Hackathon Selection *</FormLabel>
                 <FormControl>
                   <div className="space-y-4">
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant={filter === "all" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilter("all")}
-                      >
-                        All Hackathons
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={filter === "live" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilter("live")}
-                      >
-                        Live
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={filter === "upcoming" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilter("upcoming")}
-                      >
-                        Upcoming
-                      </Button>
-                    </div>
+                    {/* Removed filter buttons since we only show registered hackathons */}
 
                     {isLoading ? (
                       <div className="text-center py-8 text-muted-foreground">
-                        Loading hackathons...
+                        Loading registered hackathons...
                       </div>
                     ) : error ? (
                       <div className="text-center py-8 text-destructive">
                         Failed to load hackathons. Please try again.
                       </div>
+                    ) : !isConnected ? (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground mb-4">
+                          Connect your wallet to see registered hackathons
+                        </p>
+                      </div>
+                    ) : hackathonData.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="max-w-sm mx-auto">
+                          <div className="mb-4">
+                            <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4 flex items-center justify-center">
+                              <ExternalLink className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">
+                              No Registered Hackathons
+                            </h3>
+                            <p className="text-muted-foreground mb-6">
+                              You haven't registered for any hackathons yet.
+                              Register for a hackathon to submit your project.
+                            </p>
+                          </div>
+                          <Link href="/hackathons">
+                            <Button className="w-full">
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              Explore Hackathons
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
                     ) : (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {filteredHackathons.map((hackathon) => {
+                          {filteredHackathons.map((hackathon: any) => {
                             const isSubmissionPhase =
                               hackathon.status === "live";
                             return (

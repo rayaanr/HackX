@@ -203,3 +203,63 @@ export function useRegisterForHackathon() {
       ),
   };
 }
+
+/**
+ * Hook for fetching only hackathons the user is registered for
+ */
+export function useRegisteredHackathons() {
+  const { contract, client } = useWeb3();
+  const activeAccount = useActiveAccount();
+
+  // First get total hackathons
+  const { data: totalHackathons = 0 } = useQuery({
+    queryKey: ["total-hackathons"],
+    queryFn: () => getTotalHackathons(contract),
+    enabled: !!contract,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Get all hackathons and their registration status
+  const hackathonQueries = useQueries({
+    queries: Array.from({ length: totalHackathons }, (_, i) => ({
+      queryKey: ["hackathon-with-registration", i + 1, activeAccount?.address],
+      queryFn: async () => {
+        const hackathon = await getHackathonById(contract, client, i + 1);
+        const isRegistered = activeAccount?.address
+          ? await isUserRegistered(contract, i + 1, activeAccount.address)
+          : false;
+
+        return { ...hackathon, isRegistered };
+      },
+      enabled:
+        !!contract &&
+        !!client &&
+        totalHackathons > 0 &&
+        !!activeAccount?.address,
+      staleTime: 2 * 60 * 1000,
+    })),
+  });
+
+  // Filter only registered hackathons
+  const registeredHackathons = useMemo(
+    () =>
+      hackathonQueries
+        .map((query) => query.data)
+        .filter(Boolean)
+        .filter((hackathon) => hackathon.isRegistered),
+    [hackathonQueries]
+  );
+
+  const isLoading = hackathonQueries.some((query) => query.isLoading);
+  const error = hackathonQueries.find((query) => query.error)?.error;
+
+  return useMemo(
+    () => ({
+      hackathons: registeredHackathons,
+      isLoading: !activeAccount ? false : isLoading,
+      error,
+      isConnected: !!activeAccount,
+    }),
+    [registeredHackathons, isLoading, error, activeAccount]
+  );
+}
