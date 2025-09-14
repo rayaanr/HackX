@@ -24,22 +24,8 @@ export function serializeBigInts(obj: any): any {
 }
 
 // Date conversion utilities
-export function dateToUnixTimestamp(date?: Date): number {
+function dateToUnixTimestamp(date?: Date): number {
   return date ? Math.floor(date.getTime() / 1000) : 0;
-}
-
-export function unixTimestampToDate(
-  timestamp: bigint | number | string | undefined,
-): Date | undefined {
-  if (!timestamp) return undefined;
-  const ts =
-    typeof timestamp === "bigint" ? Number(timestamp) : Number(timestamp);
-  return ts > 0 ? new Date(ts * 1000) : undefined;
-}
-
-// IPFS utility
-export function extractCID(uri: string): string {
-  return uri.replace("ipfs://", "");
 }
 
 // Contract transaction preparation
@@ -58,15 +44,19 @@ export function prepareCreateHackathonTransaction(
     formData.votingPeriod?.votingEndDate,
   );
 
+  // Extract judge addresses from the form data
+  const initialJudges = formData.judges?.map(judge => judge.address) || [];
+
   return prepareContractCall({
     contract,
     method:
-      "function createHackathon(string ipfsHash, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline) returns (uint256)",
+      "function createHackathon(string ipfsHash, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline, address[] initialJudges) returns (uint256)",
     params: [
       cid,
       BigInt(registrationDeadline),
       BigInt(submissionDeadline),
       BigInt(judgingDeadline),
+      initialJudges,
     ],
   });
 }
