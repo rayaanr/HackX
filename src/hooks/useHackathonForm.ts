@@ -7,7 +7,7 @@ import {
   HackathonFormData,
   validateDateConsistency,
 } from "@/lib/schemas/hackathon-schema";
-import { useCreateHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
+import { useCreateHackathon } from "@/hooks/blockchain/use-create-hackathon";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -47,11 +47,11 @@ const getDefaultHackathonFormValues = (): HackathonFormData => ({
 function createSuccessHandler(router: any) {
   return (data: {
     hackathonId: number;
-    ipfsHash: string;
+    cid: string;
     transactionHash: string;
   }) => {
     toast.success(
-      `Hackathon created successfully! Transaction: ${data.transactionHash.slice(0, 10)}...`,
+      `Hackathon created successfully! IPFS: ${data.cid.slice(0, 10)}... TX: ${data.transactionHash.slice(0, 10)}...`,
     );
     router.push("/dashboard");
   };
@@ -121,8 +121,8 @@ export function useHackathonForm() {
 
   const { handleSubmit, setError, clearErrors } = methods;
 
-  // Create hackathon mutation
-  const createHackathonMutation = useCreateHackathon();
+  // Create hackathon hook
+  const { createHackathon, isCreating, error } = useCreateHackathon();
 
   // Success and error handlers
   const handleCreateSuccess = createSuccessHandler(router);
@@ -138,10 +138,22 @@ export function useHackathonForm() {
     }
 
     console.log("Creating hackathon...");
-    createHackathonMutation.mutate(data, {
-      onSuccess: handleCreateSuccess,
-      onError: handleCreateError,
-    });
+
+    try {
+      const result = await createHackathon(data);
+
+      if (result.success) {
+        handleCreateSuccess({
+          hackathonId: result.hackathonId!,
+          cid: result.cid!,
+          transactionHash: result.transactionHash!,
+        });
+      } else {
+        handleCreateError(new Error(result.error || "Unknown error"));
+      }
+    } catch (err) {
+      handleCreateError(err as Error);
+    }
   };
 
   // Form reset handler
@@ -157,7 +169,7 @@ export function useHackathonForm() {
   return {
     methods,
     onSubmit: handleSubmit(onSubmit),
-    isSubmitting: createHackathonMutation.isPending,
+    isSubmitting: isCreating,
     isFormValid,
     resetForm,
     formState: methods.formState,
