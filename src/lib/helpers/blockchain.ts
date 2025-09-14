@@ -72,6 +72,48 @@ export async function getTotalHackathons(
   return Number(result);
 }
 
+// Fetch hackathon participants
+export async function getHackathonParticipants(
+  contract: ThirdwebContract,
+  hackathonId: string | number
+): Promise<string[]> {
+  try {
+    const participants = await readContract({
+      contract,
+      method:
+        "function getHackathonParticipants(uint256 hackathonId) view returns (address[])",
+      params: [BigInt(hackathonId)],
+    });
+    return (participants || []).map((p: any) =>
+      typeof p === "bigint" ? p.toString() : p
+    );
+  } catch (error) {
+    console.error("Failed to fetch participants:", error);
+    return [];
+  }
+}
+
+// Fetch hackathon projects
+export async function getHackathonProjects(
+  contract: ThirdwebContract,
+  hackathonId: string | number
+): Promise<number[]> {
+  try {
+    const projects = await readContract({
+      contract,
+      method:
+        "function getHackathonProjects(uint256 hackathonId) view returns (uint256[])",
+      params: [BigInt(hackathonId)],
+    });
+    return (projects || []).map((p: any) =>
+      typeof p === "bigint" ? Number(p) : p
+    );
+  } catch (error) {
+    console.error("Failed to fetch projects:", error);
+    return [];
+  }
+}
+
 // Fetch metadata from IPFS
 export async function fetchIPFSMetadata(
   client: ThirdwebClient,
@@ -120,29 +162,4 @@ export async function getHackathonById(
     active: hackathon.isActive,
     ...metadata,
   };
-}
-
-// Optimized batch fetch utility for hackathons
-export async function batchFetchHackathons(
-  contract: ThirdwebContract,
-  client: ThirdwebClient,
-  startId: number = 1,
-  count?: number
-) {
-  try {
-    // Get total hackathons if count not specified
-    const totalHackathons = count || (await getTotalHackathons(contract));
-    const fetchCount = Math.min(totalHackathons, count || totalHackathons);
-    const fetchPromises = [];
-
-    for (let i = 0; i < fetchCount; i++) {
-      const hackathonId = startId + i;
-      fetchPromises.push(getHackathonById(contract, client, hackathonId));
-    }
-
-    return await Promise.all(fetchPromises);
-  } catch (error) {
-    console.error("Error batch fetching hackathons:", error);
-    return [];
-  }
 }
