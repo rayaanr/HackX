@@ -9,9 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
 import { RegistrationButton } from "@/components/hackathon/widgets/registration-button";
-import { PrizeAndJudgeTab } from "../../../components/hackathon/display/hackathon-prizes-judges-tab";
-import { ScheduleTab } from "../../../components/hackathon/display/hackathon-schedule-tab";
-import { SubmittedProjectsTab } from "../../../components/hackathon/display/hackathon-projects-gallery-tab";
 import { SubmissionCountdown } from "@/components/hackathon/widgets/submission-countdown";
 import { ToDoList } from "@/components/hackathon/widgets/todo-list";
 import { ShareDialog } from "@/components/share-dialog";
@@ -19,6 +16,9 @@ import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { Separator } from "@/components/ui/separator";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
+import { PrizeAndJudgeTab } from "@/components/hackathon/display/hackathon-prizes-judges-tab";
+import { ScheduleTab } from "@/components/hackathon/display/hackathon-schedule-tab";
+import { SubmittedProjectsTab } from "@/components/hackathon/display/hackathon-projects-gallery-tab";
 
 export default function HackathonPage() {
   const params = useParams();

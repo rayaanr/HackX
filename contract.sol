@@ -72,7 +72,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     mapping(address => uint256[]) public organizerHackathons; // Organizer's created hackathons
     
     // Constants for validation
-    uint256 private constant MIN_DEADLINE_BUFFER = 1 hours;
+    uint256 private constant MIN_DEADLINE_BUFFER = 1 minutes;
     uint256 private constant MAX_SCORE = 100;
     uint256 private constant MIN_SCORE = 1;
     
@@ -111,10 +111,10 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     modifier validDeadlines(uint256 registration, uint256 submissionStart, uint256 submission, uint256 judging) {
-        require(registration > block.timestamp + MIN_DEADLINE_BUFFER, "HackathonPlatform: Registration deadline must be at least 1 hour in the future");
-        require(submissionStart > registration + MIN_DEADLINE_BUFFER, "HackathonPlatform: Submission start must be at least 1 hour after registration");
-        require(submission > submissionStart + MIN_DEADLINE_BUFFER, "HackathonPlatform: Submission deadline must be at least 1 hour after submission start");
-        require(judging > submission + MIN_DEADLINE_BUFFER, "HackathonPlatform: Judging deadline must be at least 1 hour after submission");
+        require(registration > block.timestamp + MIN_DEADLINE_BUFFER, "HackathonPlatform: Registration deadline must be at least 1 min in the future");
+        require(submissionStart > block.timestamp, "HackathonPlatform: Submission start must be in the future");
+        require(submission > submissionStart + MIN_DEADLINE_BUFFER, "HackathonPlatform: Submission deadline must be at least 1 min after submission start");
+        require(judging > submission + MIN_DEADLINE_BUFFER, "HackathonPlatform: Judging deadline must be at least 1 min after submission");
         _;
     }
     
