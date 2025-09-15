@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import type { DashboardStats, UIHackathon } from "@/types/hackathon";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 
 // Calculate dashboard statistics from hackathons data
-function calculateDashboardStats(
-  hackathons: UIHackathon[]
-): DashboardStats {
+function calculateDashboardStats(hackathons: UIHackathon[]): DashboardStats {
   const activeHackathons = hackathons.filter((h) => {
     const status = getUIHackathonStatus({
       ...h,
@@ -55,14 +53,7 @@ export function useDashboardStats() {
     error: hackathonsError,
   } = useAllHackathons();
 
-  const [stats, setStats] = useState<DashboardStats>({
-    totalHackathons: 0,
-    activeHackathons: 0,
-    completedHackathons: 0,
-    totalPrizeValue: "$0",
-  });
-
-  const calculatedStats = useMemo(() => {
+  const stats = useMemo(() => {
     if (hackathonsLoading || hackathons.length === 0) {
       return {
         totalHackathons: 0,
@@ -73,10 +64,6 @@ export function useDashboardStats() {
     }
     return calculateDashboardStats(hackathons);
   }, [hackathons, hackathonsLoading]);
-
-  useEffect(() => {
-    setStats(calculatedStats);
-  }, [calculatedStats]);
 
   return {
     data: stats,
