@@ -6,7 +6,7 @@ import {
   useActiveAccount,
   useReadContract,
 } from "thirdweb/react";
-import { readContract, prepareContractCall } from "thirdweb";
+import { readContract, prepareContractCall, waitForReceipt } from "thirdweb";
 import { useWeb3 } from "@/providers/web3-provider";
 import { upload, download } from "thirdweb/storage";
 import type { ProjectFormData } from "@/lib/schemas/project-schema";
@@ -90,7 +90,7 @@ export function useBlockchainProjects() {
 
       if (!contract || !client || userProjectIds.length === 0) {
         console.log(
-          "⚠️ Missing requirements for detailed projects fetch or no project IDs",
+          "⚠️ Missing requirements for detailed projects fetch or no project IDs"
         );
         return [];
       }
@@ -119,7 +119,7 @@ export function useBlockchainProjects() {
             } catch (error) {
               console.warn(
                 `Failed to fetch metadata for project ${projectId}:`,
-                error,
+                error
               );
             }
 
@@ -163,7 +163,7 @@ export function useBlockchainProjects() {
 
       if (!contractAddress) {
         throw new Error(
-          "Contract not configured. Please check your environment variables.",
+          "Contract not configured. Please check your environment variables."
         );
       }
 
@@ -189,7 +189,9 @@ export function useBlockchainProjects() {
 
       // Step 2: Upload to IPFS using Thirdweb
       console.log("📁 Uploading project metadata to IPFS...");
-      const fileName = `project-${projectData.name.toLowerCase().replace(/\\s+/g, "-")}-${Date.now()}.json`;
+      const fileName = `project-${projectData.name
+        .toLowerCase()
+        .replace(/\\s+/g, "-")}-${Date.now()}.json`;
 
       const uris = await upload({
         client,
@@ -205,15 +207,15 @@ export function useBlockchainProjects() {
       const cid = ipfsUri.replace("ipfs://", "");
       console.log("✅ Metadata uploaded:", { uri: ipfsUri, cid });
 
-      // Step 3: Prepare blockchain transaction
-      const transaction = prepareContractCall({
+      // Step 3: Create the project on blockchain first
+      const createProjectTransaction = prepareContractCall({
         contract,
         method:
-          "function submitProject(uint256 hackathonId, string projectIpfsHash) returns (uint256)",
-        params: [BigInt(hackathonId), cid],
+          "function createProject(string projectIpfsHash) returns (uint256)",
+        params: [cid],
       });
 
-      console.log("🔗 Contract transaction prepared");
+      console.log("🔗 Create project transaction prepared");
 
       return new Promise<{
         projectId: number;
@@ -221,20 +223,66 @@ export function useBlockchainProjects() {
         transactionHash: string;
         metadataUri: string;
       }>((resolve, reject) => {
-        sendTransaction(transaction, {
-          onSuccess: (result) => {
-            console.log("🎉 Project submission successful!");
-            console.log("Transaction hash:", result.transactionHash);
+        sendTransaction(createProjectTransaction, {
+          onSuccess: async (createResult) => {
+            console.log("🎉 Project created successfully!");
+            console.log(
+              "Create transaction hash:",
+              createResult.transactionHash
+            );
 
-            // TODO: Parse transaction logs to get exact project ID
-            const projectId = Date.now();
+            try {
+              // Wait for the transaction receipt
+              const receipt = await waitForReceipt(createResult);
+              console.log("📋 Transaction receipt:", receipt);
 
-            resolve({
-              projectId,
-              ipfsHash: cid,
-              transactionHash: result.transactionHash,
-              metadataUri: ipfsUri,
-            });
+              let projectId: number;
+              if (receipt.logs && receipt.logs.length > 0) {
+                // Look for ProjectCreated event in logs
+                const projectCreatedLog = receipt.logs.find((log: any) => {
+                  // Check if this log could be the ProjectCreated event
+                  return log.topics && log.topics.length > 1;
+                });
+
+                if (projectCreatedLog && projectCreatedLog.topics[1]) {
+                  // Extract project ID from the indexed parameter (topics[1])
+                  projectId = parseInt(projectCreatedLog.topics[1], 16);
+                  console.log(
+                    "✅ Extracted project ID from receipt:",
+                    projectId
+                  );
+                } else {
+                  console.warn(
+                    "⚠️ Could not find ProjectCreated event, using fallback"
+                  );
+                  projectId = Date.now();
+                }
+              } else {
+                console.warn("⚠️ No logs in receipt, using fallback");
+                projectId = Date.now();
+              }
+
+              resolve({
+                projectId,
+                ipfsHash: cid,
+                transactionHash: createResult.transactionHash,
+                metadataUri: ipfsUri,
+              });
+            } catch (receiptError) {
+              console.warn(
+                "⚠️ Could not get transaction receipt:",
+                receiptError
+              );
+
+              // Fallback
+              const projectId = Date.now();
+              resolve({
+                projectId,
+                ipfsHash: cid,
+                transactionHash: createResult.transactionHash,
+                metadataUri: ipfsUri,
+              });
+            }
           },
           onError: (error) => {
             console.error("❌ Transaction failed:", error);
@@ -247,26 +295,28 @@ export function useBlockchainProjects() {
             ) {
               reject(
                 new Error(
-                  "Transaction was cancelled. Please approve the transaction to submit your project.",
-                ),
+                  "Transaction was cancelled. Please approve the transaction to submit your project."
+                )
               );
             } else if (message.includes("insufficient funds")) {
               reject(
                 new Error(
-                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again.",
-                ),
+                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again."
+                )
               );
             } else if (message.includes("network")) {
               reject(
                 new Error(
-                  "Network error. Please check your internet connection and try again.",
-                ),
+                  "Network error. Please check your internet connection and try again."
+                )
               );
             } else {
               reject(
                 new Error(
-                  `Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-                ),
+                  `Transaction failed: ${
+                    error instanceof Error ? error.message : "Unknown error"
+                  }`
+                )
               );
             }
           },
@@ -283,6 +333,104 @@ export function useBlockchainProjects() {
     },
     onError: (error) => {
       console.error("❌ Project submission failed:", error);
+    },
+  });
+
+  // Submit existing project to hackathon mutation
+  const submitToHackathonMutation = useMutation({
+    mutationFn: async ({
+      projectId,
+      hackathonId,
+    }: {
+      projectId: string | number;
+      hackathonId: string | number;
+    }) => {
+      if (!activeAccount) {
+        throw new Error("Please connect your wallet to submit to hackathon.");
+      }
+
+      if (!contractAddress) {
+        throw new Error(
+          "Contract not configured. Please check your environment variables."
+        );
+      }
+
+      console.log(
+        `🚀 Submitting project ${projectId} to hackathon ${hackathonId}...`
+      );
+
+      const submitToHackathonTransaction = prepareContractCall({
+        contract,
+        method:
+          "function submitProjectToHackathon(uint256 hackathonId, uint256 projectId)",
+        params: [BigInt(hackathonId), BigInt(projectId)],
+      });
+
+      return new Promise<{
+        projectId: string | number;
+        hackathonId: string | number;
+        transactionHash: string;
+      }>((resolve, reject) => {
+        sendTransaction(submitToHackathonTransaction, {
+          onSuccess: (result) => {
+            console.log("🎉 Project submitted to hackathon successfully!");
+            console.log("Transaction hash:", result.transactionHash);
+
+            resolve({
+              projectId,
+              hackathonId,
+              transactionHash: result.transactionHash,
+            });
+          },
+          onError: (error) => {
+            console.error("❌ Hackathon submission failed:", error);
+            const message =
+              error instanceof Error ? error.message.toLowerCase() : "";
+
+            if (
+              message.includes("user denied") ||
+              message.includes("rejected")
+            ) {
+              reject(
+                new Error(
+                  "Transaction was cancelled. Please approve the transaction to submit to hackathon."
+                )
+              );
+            } else if (message.includes("insufficient funds")) {
+              reject(
+                new Error(
+                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again."
+                )
+              );
+            } else if (message.includes("network")) {
+              reject(
+                new Error(
+                  "Network error. Please check your internet connection and try again."
+                )
+              );
+            } else {
+              reject(
+                new Error(
+                  `Hackathon submission failed: ${
+                    error instanceof Error ? error.message : "Unknown error"
+                  }`
+                )
+              );
+            }
+          },
+        });
+      });
+    },
+    onSuccess: (data) => {
+      console.log("🎉 Project submitted to hackathon successfully!", data);
+      // Invalidate and refetch user projects
+      queryClient.invalidateQueries({ queryKey: ["blockchain-user-projects"] });
+      queryClient.invalidateQueries({
+        queryKey: ["blockchain-user-projects-detailed"],
+      });
+    },
+    onError: (error) => {
+      console.error("❌ Hackathon submission failed:", error);
     },
   });
 
@@ -313,7 +461,7 @@ export function useBlockchainProjects() {
           } catch (error) {
             console.warn(
               `Failed to fetch metadata for project ${projectId}:`,
-              error,
+              error
             );
           }
 
@@ -342,14 +490,17 @@ export function useBlockchainProjects() {
     isLoadingUserProjectIds,
     isLoadingUserProjects,
     isSubmittingProject: submitProjectMutation.isPending,
+    isSubmittingToHackathon: submitToHackathonMutation.isPending,
 
     // Error states
     userProjectIdsError,
     userProjectsError,
     submitProjectError: submitProjectMutation.error,
+    submitToHackathonError: submitToHackathonMutation.error,
 
     // Actions
     submitProject: submitProjectMutation.mutate,
+    submitToHackathon: submitToHackathonMutation.mutate,
     refetchUserProjectIds,
     refetchUserProjects,
     fetchProject,
@@ -391,7 +542,7 @@ export function useBlockchainProject(projectId: string | number) {
         } catch (error) {
           console.warn(
             `Failed to fetch metadata for project ${projectId}:`,
-            error,
+            error
           );
         }
 

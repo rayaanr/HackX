@@ -15,7 +15,8 @@ export function CreateProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const { submitProject, isConnected } = useBlockchainProjects();
+  const { submitProject, submitToHackathon, isConnected } =
+    useBlockchainProjects();
 
   const form = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
@@ -43,113 +44,86 @@ export function CreateProjectForm() {
 
       // Only allow blockchain submission if wallet is connected
       if (!isConnected) {
-        throw new Error(
-          "Please connect your wallet to create and submit projects.",
-        );
+        throw new Error("Please connect your wallet to create projects.");
       }
 
-      // If user has hackathons selected, submit to blockchain
-      if (data.hackathonIds.length > 0) {
-        let blockchainResults = [];
-
-        // Submit to each selected hackathon on blockchain
-        for (const hackathonId of data.hackathonIds) {
-          try {
-            console.log(
-              `📤 Submitting to hackathon ${hackathonId} on blockchain...`,
-            );
-            const result = await new Promise((resolve, reject) => {
-              submitProject(
-                { projectData: data, hackathonId },
-                {
-                  onSuccess: resolve,
-                  onError: reject,
-                },
-              );
-            });
-            blockchainResults.push({ hackathonId, result, success: true });
-            console.log(
-              `✅ Successfully submitted to hackathon ${hackathonId}`,
-            );
-          } catch (error) {
-            console.error(
-              `❌ Failed to submit to hackathon ${hackathonId}:`,
-              error,
-            );
-
-            // Provide specific error messages for different failure scenarios
-            let errorMessage = `Failed to submit to hackathon ${hackathonId}`;
-            if (error instanceof Error) {
-              if (error.message.includes("Submission phase not active")) {
-                errorMessage = `Hackathon ${hackathonId} is not currently accepting submissions. Check the hackathon phase.`;
-              } else if (
-                error.message.includes("user denied") ||
-                error.message.includes("rejected")
-              ) {
-                errorMessage = `Transaction cancelled for hackathon ${hackathonId}`;
-              } else if (error.message.includes("insufficient funds")) {
-                errorMessage = `Insufficient funds for gas fees when submitting to hackathon ${hackathonId}`;
-              }
-            }
-
-            blockchainResults.push({
-              hackathonId,
-              error: errorMessage,
-              success: false,
-            });
+      // Step 1: Create the project on blockchain
+      console.log("📤 Creating project on blockchain...");
+      const createResult = await new Promise<{
+        projectId: number;
+        ipfsHash: string;
+        transactionHash: string;
+        metadataUri: string;
+      }>((resolve, reject) => {
+        submitProject(
+          { projectData: data, hackathonId: "0" }, // hackathonId not used in createProject
+          {
+            onSuccess: resolve,
+            onError: reject,
           }
-        }
-
-        // Check if at least one submission was successful
-        const successfulSubmissions = blockchainResults.filter(
-          (r) => r.success,
         );
-        const failedSubmissions = blockchainResults.filter((r) => !r.success);
+      });
 
-        if (successfulSubmissions.length > 0) {
+      console.log("✅ Project created successfully:", createResult);
+
+      // Step 2: If user has hackathons selected, submit to each one
+      if (data.hackathonIds && data.hackathonIds.length > 0) {
+        console.log(
+          `📤 Submitting to ${data.hackathonIds.length} hackathon(s)...`
+        );
+
+        // Submit to each selected hackathon
+        const submissionPromises = data.hackathonIds.map((hackathonId) => {
+          return new Promise((resolve, reject) => {
+            submitToHackathon(
+              {
+                projectId: createResult.projectId,
+                hackathonId: hackathonId,
+              },
+              {
+                onSuccess: resolve,
+                onError: reject,
+              }
+            );
+          });
+        });
+
+        try {
+          await Promise.all(submissionPromises);
+          console.log("✅ All hackathon submissions completed");
+
           toast.success(
-            `Project submitted to ${successfulSubmissions.length} hackathon(s) on blockchain!`,
+            `Project created and submitted to ${data.hackathonIds.length} hackathon(s)!`,
             {
-              description: `Successfully stored on IPFS and blockchain. ${
-                failedSubmissions.length > 0
-                  ? `${failedSubmissions.length} submission(s) failed.`
-                  : ""
-              }`,
-            },
+              description: "Successfully stored on IPFS and blockchain.",
+            }
           );
-
-          // Show specific errors for failed submissions
-          if (failedSubmissions.length > 0) {
-            failedSubmissions.forEach((result) => {
-              toast.error(`Submission failed`, {
-                description: result.error,
-              });
-            });
-          }
-        } else {
-          // Show all specific error messages
-          const errorMessages = failedSubmissions
-            .map((r) => r.error)
-            .join(", ");
-          throw new Error(
-            `All blockchain submissions failed: ${errorMessages}`,
+        } catch (submissionError) {
+          console.warn(
+            "⚠️ Some hackathon submissions failed:",
+            submissionError
           );
+          toast.success("Project created successfully!", {
+            description:
+              "Project is stored on blockchain, but some hackathon submissions may have failed.",
+          });
         }
       } else {
-        throw new Error(
-          "Please select at least one hackathon to submit your project to.",
-        );
+        toast.success("Project created successfully!", {
+          description:
+            "Your project is now stored on IPFS and blockchain. You can submit it to hackathons later.",
+        });
       }
 
       // Redirect to projects page
       router.push("/dashboard");
     } catch (error) {
-      console.error("Error submitting project:", error);
+      console.error("Error creating project:", error);
       toast.error(
         error instanceof Error
           ? error.message
           : "Error creating project. Please try again.",
-        { description: "Check console for details" },
+        { description: "Check console for details" }
       );
     } finally {
       setIsSubmitting(false);
@@ -165,21 +139,16 @@ export function CreateProjectForm() {
           <Button type="button" variant="outline">
             Save Draft
           </Button>
-          <Button
-            type="submit"
-            disabled={
-              isSubmitting ||
-              !isConnected ||
-              form.watch("hackathonIds")?.length === 0
-            }
-          >
+          <Button type="submit" disabled={isSubmitting || !isConnected}>
             {isSubmitting
-              ? "Submitting to Blockchain..."
+              ? "Creating Project..."
               : !isConnected
-                ? "Connect Wallet Required"
-                : form.watch("hackathonIds")?.length === 0
-                  ? "Select Hackathons"
-                  : "Submit to Blockchain"}
+              ? "Connect Wallet Required"
+              : form.watch("hackathonIds")?.length > 0
+              ? `Create & Submit to ${
+                  form.watch("hackathonIds")?.length
+                } Hackathon${form.watch("hackathonIds")?.length > 1 ? "s" : ""}`
+              : "Create Project"}
           </Button>
         </div>
 
@@ -188,7 +157,7 @@ export function CreateProjectForm() {
             <p className="text-sm text-red-800">
               🔒 <strong>Wallet connection required</strong> - All projects are
               stored on blockchain with IPFS metadata. Please connect your
-              wallet to create and submit projects.
+              wallet to create projects.
             </p>
           </div>
         )}
@@ -196,21 +165,25 @@ export function CreateProjectForm() {
         {form.watch("hackathonIds")?.length > 0 && isConnected && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
             <p className="text-sm text-green-800">
-              ✅ <strong>Ready for blockchain submission!</strong> Your project
-              will be submitted to {form.watch("hackathonIds")?.length}{" "}
-              hackathon(s) on the blockchain with IPFS metadata storage.
+              ✅ <strong>Ready for creation and submission!</strong> Your
+              project will be created and submitted to{" "}
+              {form.watch("hackathonIds")?.length} hackathon
+              {form.watch("hackathonIds")?.length > 1 ? "s" : ""} on blockchain.
             </p>
           </div>
         )}
 
-        {form.watch("hackathonIds")?.length === 0 && isConnected && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-            <p className="text-sm text-blue-800">
-              ℹ️ <strong>Select hackathons</strong> to submit your project to. At
-              least one hackathon selection is required.
-            </p>
-          </div>
-        )}
+        {(!form.watch("hackathonIds") ||
+          form.watch("hackathonIds")?.length === 0) &&
+          isConnected && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+              <p className="text-sm text-blue-800">
+                💡 <strong>Create project independently</strong> - Your project
+                will be created on blockchain. You can submit it to hackathons
+                later from your projects dashboard.
+              </p>
+            </div>
+          )}
       </form>
     </Form>
   );
