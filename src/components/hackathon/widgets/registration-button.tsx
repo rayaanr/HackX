@@ -37,19 +37,7 @@ export function RegistrationButton({ hackathonId }: RegistrationButtonProps) {
 
     try {
       setIsRegistering(true);
-      // Use a placeholder IPFS hash for basic participant info
-      // Since the contract requires an IPFS hash, we provide a minimal one
-      const participantData = JSON.stringify({
-        address: activeAccount.address,
-        registeredAt: Date.now(),
-        type: "participant",
-      });
-
-      // For now, use a placeholder hash until we implement proper IPFS upload
-      // The contract expects a non-empty string, so we provide one
-      const placeholderHash = "QmNLei78zWmzUdbeRB3CiUfAizWUrbeeZh5K1rhAQKCh51"; // placeholder
-
-      const transaction = prepareTransaction(hackathonId, placeholderHash);
+      const transaction = prepareTransaction(hackathonId);
       await sendTransaction(transaction);
       toast.success("Successfully registered for hackathon!");
       refetchRegistration(); // Refresh registration status

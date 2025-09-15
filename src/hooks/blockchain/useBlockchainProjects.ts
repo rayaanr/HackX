@@ -144,11 +144,11 @@ export function useBlockchainProjects() {
 
       // Step 1: Upload to IPFS using helper function
       console.log("📁 Uploading project metadata to IPFS...");
-      const { cid, uri: ipfsUri } = await uploadProjectToIPFS(
+      const { cid} = await uploadProjectToIPFS(
         client,
         projectData
       );
-      console.log("✅ Metadata uploaded:", { uri: ipfsUri, cid });
+      console.log("✅ Metadata uploaded:", { cid });
 
       // Step 2: Create the project on blockchain using helper function
       const createProjectTransaction = prepareCreateProjectTransaction(
@@ -161,7 +161,6 @@ export function useBlockchainProjects() {
         projectId: number;
         ipfsHash: string;
         transactionHash: string;
-        metadataUri: string;
       }>((resolve, reject) => {
         sendTransaction(createProjectTransaction, {
           onSuccess: async (createResult) => {
@@ -191,7 +190,6 @@ export function useBlockchainProjects() {
                 projectId,
                 ipfsHash: cid,
                 transactionHash: createResult.transactionHash,
-                metadataUri: ipfsUri,
               });
             } catch (receiptError) {
               console.warn(
@@ -205,7 +203,6 @@ export function useBlockchainProjects() {
                 projectId,
                 ipfsHash: cid,
                 transactionHash: createResult.transactionHash,
-                metadataUri: ipfsUri,
               });
             }
           },

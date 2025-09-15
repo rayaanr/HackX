@@ -212,7 +212,7 @@ export async function getHackathonById(
 export async function uploadProjectToIPFS(
   client: ThirdwebClient,
   projectData: ProjectFormData
-): Promise<{ cid: string; uri: string }> {
+): Promise<{ cid: string}> {
   const metadata = {
     name: projectData.name,
     intro: projectData.intro,
@@ -244,10 +244,9 @@ export async function uploadProjectToIPFS(
     ],
   });
 
-  const ipfsUri = uris[0];
-  const cid = ipfsUri.replace("ipfs://", "");
+  const cid = uris.replace("ipfs://", "");
 
-  return { cid, uri: ipfsUri };
+  return { cid };
 }
 
 // Prepare create project transaction

@@ -32,7 +32,7 @@ export function CreateProjectForm() {
       githubLink: "",
       demoVideo: "",
       techStack: [],
-      hackathonIds: [],
+      hackathonIds: [] ,
     },
   });
 
@@ -53,7 +53,6 @@ export function CreateProjectForm() {
         projectId: number;
         ipfsHash: string;
         transactionHash: string;
-        metadataUri: string;
       }>((resolve, reject) => {
         submitProject(
           { projectData: data, hackathonId: "0" }, // hackathonId not used in createProject
