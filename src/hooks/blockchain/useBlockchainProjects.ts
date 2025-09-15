@@ -14,7 +14,7 @@ import {
   prepareCreateProjectTransaction,
   prepareSubmitProjectToHackathonTransaction,
   extractProjectIdFromReceipt,
-  getUserProjects,
+  getUserProjectsWithDetails,
   getProjectById,
   getTotalProjects,
 } from "@/lib/helpers/blockchain";
@@ -38,87 +38,43 @@ export function useBlockchainProjects() {
     },
   });
 
-  // Get user's project IDs from blockchain
-  const {
-    data: userProjectIds = [],
-    isLoading: isLoadingUserProjectIds,
-    error: userProjectIdsError,
-    refetch: refetchUserProjectIds,
-  } = useQuery({
-    queryKey: ["blockchain-user-projects", activeAccount?.address],
-    queryFn: async () => {
-      console.log("🔗 Fetching user project IDs from blockchain...", {
-        contract: !!contract,
-        activeAccount: activeAccount?.address,
-        contractAddress,
-      });
-
-      if (!contract || !activeAccount) {
-        console.log("⚠️ Missing contract or account for project IDs fetch");
-        return [];
-      }
-
-      try {
-        const ids = await getUserProjects(contract, activeAccount.address);
-        console.log("✅ Fetched user project IDs:", ids);
-        return ids;
-      } catch (error) {
-        console.error("❌ Failed to fetch user project IDs:", error);
-        return [];
-      }
-    },
-    enabled: !!contract && !!activeAccount?.address,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  // Batch fetch user's projects from blockchain with metadata
+  // Get user's projects with full details from blockchain
   const {
     data: userProjects = [],
     isLoading: isLoadingUserProjects,
     error: userProjectsError,
     refetch: refetchUserProjects,
   } = useQuery({
-    queryKey: ["blockchain-user-projects-detailed", userProjectIds],
+    queryKey: ["blockchain-user-projects-detailed", activeAccount?.address],
     queryFn: async () => {
-      console.log("📊 Fetching detailed user projects...", {
+      console.log("� Fetching user projects with details...", {
         contract: !!contract,
         client: !!client,
-        userProjectIds,
+        activeAccount: activeAccount?.address,
+        contractAddress,
       });
 
-      if (!contract || !client || userProjectIds.length === 0) {
-        console.log(
-          "⚠️ Missing requirements for detailed projects fetch or no project IDs"
-        );
+      if (!contract || !client || !activeAccount?.address) {
+        console.log("⚠️ Missing requirements for projects fetch");
         return [];
       }
 
       try {
-        // Batch fetch project data using helper function
-        const projectPromises = userProjectIds.map(
-          async (projectId: number) => {
-            try {
-              return await getProjectById(contract, client, projectId);
-            } catch (error) {
-              console.warn(`Failed to fetch project ${projectId}:`, error);
-              return null;
-            }
-          }
+        const projects = await getUserProjectsWithDetails(
+          contract,
+          client,
+          activeAccount.address
         );
-
-        const projects = await Promise.all(projectPromises);
-        const filteredProjects = projects.filter(Boolean);
-        console.log("✅ Fetched detailed user projects:", filteredProjects);
-        return filteredProjects;
+        console.log("✅ Fetched user projects with details:", projects);
+        return projects;
       } catch (error) {
-        console.error("❌ Failed to fetch user projects:", error);
+        console.error("❌ Failed to fetch user projects with details:", error);
         return [];
       }
     },
-    enabled: !!contract && !!client && userProjectIds.length > 0,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    enabled: !!contract && !!client && !!activeAccount?.address,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Submit project to blockchain mutation
@@ -144,10 +100,7 @@ export function useBlockchainProjects() {
 
       // Step 1: Upload to IPFS using helper function
       console.log("📁 Uploading project metadata to IPFS...");
-      const { cid} = await uploadProjectToIPFS(
-        client,
-        projectData
-      );
+      const { cid } = await uploadProjectToIPFS(client, projectData);
       console.log("✅ Metadata uploaded:", { cid });
 
       // Step 2: Create the project on blockchain using helper function
@@ -378,17 +331,14 @@ export function useBlockchainProjects() {
   return {
     // Data
     totalProjects: Number(totalProjects),
-    userProjectIds,
     userProjects,
 
     // Loading states
-    isLoadingUserProjectIds,
     isLoadingUserProjects,
     isSubmittingProject: submitProjectMutation.isPending,
     isSubmittingToHackathon: submitToHackathonMutation.isPending,
 
     // Error states
-    userProjectIdsError,
     userProjectsError,
     submitProjectError: submitProjectMutation.error,
     submitToHackathonError: submitToHackathonMutation.error,
@@ -396,7 +346,6 @@ export function useBlockchainProjects() {
     // Actions
     submitProject: submitProjectMutation.mutate,
     submitToHackathon: submitToHackathonMutation.mutate,
-    refetchUserProjectIds,
     refetchUserProjects,
     fetchProject,
 

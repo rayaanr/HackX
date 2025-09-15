@@ -5,7 +5,26 @@ import type { HackathonFormData } from "@/types/hackathon";
 import type { ProjectFormData } from "@/lib/schemas/project-schema";
 
 /**
- * Core blockchain utility functions
+ * Core blockchain uti        // Debug logging
+        console.log(
+          `🔍 Processing project ID: ${projectId} (type: ${typeof projectId})`
+        );
+
+        const numericId = Number(projectId);
+        console.log(`🔢 Converted to numeric ID: ${numericId}`);
+
+        // Validate the numeric ID is reasonable
+        if (numericId < 0 || numericId > Number.MAX_SAFE_INTEGER || !Number.isFinite(numericId)) {
+          console.error(`❌ Invalid project ID: ${numericId} (original: ${projectId})`);
+          return null;
+        }
+        
+        // Additional check for the specific problematic value
+        const projectIdString = String(projectId);
+        if (projectIdString.includes('e+') || projectIdString.length > 20) {
+          console.error(`❌ Suspicious project ID format: ${projectIdString}`);
+          return null;
+        }nctions
  * Optimized to work with Thirdweb and eliminate duplication
  */
 
@@ -212,7 +231,7 @@ export async function getHackathonById(
 export async function uploadProjectToIPFS(
   client: ThirdwebClient,
   projectData: ProjectFormData
-): Promise<{ cid: string}> {
+): Promise<{ cid: string }> {
   const metadata = {
     name: projectData.name,
     intro: projectData.intro,
@@ -295,7 +314,7 @@ export function extractProjectIdFromReceipt(receipt: any): number | null {
   return null;
 }
 
-// Get user projects from blockchain
+// Get user project IDs only (lightweight version)
 export async function getUserProjects(
   contract: ThirdwebContract,
   userAddress: string
@@ -314,6 +333,189 @@ export async function getUserProjects(
   }
 }
 
+export async function getUserProjectsWithDetails(
+  contract: ThirdwebContract,
+  client: ThirdwebClient,
+  userAddress: string
+) {
+  try {
+    console.log("🔗 Fetching user projects with details...", { userAddress });
+
+    // Step 1: Get user's project IDs using the contract function
+    const rawProjectIds = await readContract({
+      contract,
+      method: "function getUserProjects(address user) view returns (uint256[])",
+      params: [userAddress],
+    });
+
+    console.log(
+      "📊 Raw project IDs from contract:",
+      rawProjectIds,
+      typeof rawProjectIds
+    );
+
+    // Additional debugging - log each project ID individually
+    if (rawProjectIds && Array.isArray(rawProjectIds)) {
+      rawProjectIds.forEach((id, index) => {
+        console.log(
+          `📋 Project ID[${index}]: ${id} (type: ${typeof id}, value: ${String(
+            id
+          )})`
+        );
+        console.log(
+          `📋 Project ID[${index}] BigInt conversion test: ${BigInt(id)}`
+        );
+      });
+    }
+
+    if (!rawProjectIds || rawProjectIds.length === 0) {
+      console.log("ℹ️ No projects found for user");
+      return [];
+    }
+
+    // Step 2: Fetch details for each project
+    const projectPromises = rawProjectIds.map(async (projectId: any) => {
+      try {
+        // Debug logging
+        console.log(
+          `🔍 Processing project ID: ${projectId} (type: ${typeof projectId})`
+        );
+
+        const numericId = Number(projectId);
+        console.log(`� Converted to numeric ID: ${numericId}`);
+
+        // Validate the numeric ID is reasonable
+        if (
+          numericId < 0 ||
+          numericId > Number.MAX_SAFE_INTEGER ||
+          !Number.isFinite(numericId)
+        ) {
+          console.error(
+            `❌ Invalid project ID: ${numericId} (original: ${projectId})`
+          );
+          return null;
+        }
+
+        // Additional check for the specific problematic value
+        const projectIdString = String(projectId);
+        if (projectIdString.includes("e+") || projectIdString.length > 20) {
+          console.error(`❌ Suspicious project ID format: ${projectIdString}`);
+          return null;
+        }
+
+        // Skip project ID 0 as it's often uninitialized in contracts
+        if (numericId === 0) {
+          console.log(`ℹ️ Skipping project ID 0 (likely uninitialized)`);
+          return null;
+        }
+
+        // Ensure projectId is properly converted to BigInt for contract call
+        let bigIntProjectId: bigint;
+        try {
+          bigIntProjectId =
+            typeof projectId === "bigint" ? projectId : BigInt(projectId);
+          console.log(`🔧 Using BigInt ID for contract: ${bigIntProjectId}`);
+        } catch (conversionError) {
+          console.error(
+            `❌ Failed to convert project ID to BigInt:`,
+            conversionError
+          );
+          return null;
+        }
+
+        // Get project details from contract using correct ABI
+        const project = await readContract({
+          contract,
+          method:
+            "function getProject(uint256 projectId) view returns ((uint256 id, string ipfsHash, address creator, address[] teamMembers, bool isCreated, uint256 totalScore, uint256 judgeCount))",
+          params: [bigIntProjectId],
+        });
+
+        console.log(`📄 Project ${numericId} contract data:`, project);
+
+        // Fetch metadata from IPFS
+        let metadata: any = {};
+        if (project.ipfsHash) {
+          try {
+            const rawMetadata = await fetchIPFSMetadata(
+              client,
+              project.ipfsHash
+            );
+            console.log(
+              `📁 Raw IPFS metadata for project ${numericId}:`,
+              rawMetadata
+            );
+
+            // Flatten nested metadata structure - check if data is nested under 'data' property
+            if (rawMetadata && typeof rawMetadata === "object") {
+              if (rawMetadata.data && typeof rawMetadata.data === "object") {
+                // Use nested data and merge with top-level properties
+                metadata = { ...rawMetadata, ...rawMetadata.data };
+                console.log(
+                  `📋 Flattened metadata for project ${numericId}:`,
+                  metadata
+                );
+              } else {
+                metadata = rawMetadata;
+              }
+            }
+
+            console.log(`📁 Project ${numericId} IPFS metadata processed`);
+          } catch (error) {
+            console.warn(
+              `Failed to fetch IPFS metadata for project ${numericId}:`,
+              error
+            );
+          }
+        }
+
+        return {
+          // Contract data (serialized for JSON compatibility)
+          id: numericId,
+          blockchainId: numericId,
+          ipfsHash: project.ipfsHash,
+          creator: project.creator,
+          teamMembers: project.teamMembers || [],
+          isCreated: project.isCreated,
+          totalScore: Number(project.totalScore),
+          judgeCount: Number(project.judgeCount),
+
+          // Flattened IPFS metadata (project details)
+          name: metadata.name || "Untitled Project",
+          description: metadata.description || metadata.intro || "",
+          intro: metadata.intro || "",
+          logo: metadata.logo || "",
+          sector: metadata.sector || [],
+          progress: metadata.progress || "",
+          fundraisingStatus: metadata.fundraisingStatus || "",
+          githubLink: metadata.githubLink || "",
+          demoVideo: metadata.demoVideo || "",
+          itchVideo: metadata.itchVideo || "",
+          techStack: metadata.techStack || [],
+          hackathonIds:
+            metadata.hackathonIds || metadata.submittedToHackathons || [],
+
+          // Version and timestamps
+          version: metadata.version || "1.0.0",
+          createdAt: metadata.createdAt || new Date().toISOString(),
+        };
+      } catch (error) {
+        console.error(`❌ Failed to fetch project ${projectId}:`, error);
+        return null;
+      }
+    });
+
+    const projects = await Promise.all(projectPromises);
+    const validProjects = projects.filter(Boolean);
+
+    console.log("✅ Successfully fetched user projects:", validProjects.length);
+    return validProjects;
+  } catch (error) {
+    console.error("❌ Failed to fetch user projects with details:", error);
+    return [];
+  }
+}
+
 // Get project details by ID
 export async function getProjectById(
   contract: ThirdwebContract,
@@ -323,24 +525,50 @@ export async function getProjectById(
   const project = await readContract({
     contract,
     method:
-      "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
+      "function getProject(uint256 projectId) view returns ((uint256 id, string ipfsHash, address creator, address[] teamMembers, bool isCreated, uint256 totalScore, uint256 judgeCount))",
     params: [BigInt(projectId)],
   });
 
-  // Fetch metadata from IPFS
-  let metadata = {};
+  // Fetch and flatten metadata from IPFS
+  let metadata: any = {};
   try {
     if (project.ipfsHash) {
-      metadata = await fetchIPFSMetadata(client, project.ipfsHash);
+      const rawMetadata = await fetchIPFSMetadata(client, project.ipfsHash);
+
+      // Flatten nested metadata structure - check if data is nested under 'data' property
+      if (rawMetadata && typeof rawMetadata === "object") {
+        if (rawMetadata.data && typeof rawMetadata.data === "object") {
+          // Use nested data and merge with top-level properties
+          metadata = { ...rawMetadata, ...rawMetadata.data };
+        } else {
+          metadata = rawMetadata;
+        }
+      }
     }
   } catch (error) {
     console.warn(`Failed to fetch metadata for project ${projectId}:`, error);
   }
 
   return {
+    // Contract data
     ...serializeBigInts(project),
-    ...metadata,
     blockchainId: Number(projectId),
+
+    // Flattened IPFS metadata
+    name: metadata.name || "Untitled Project",
+    description: metadata.description || metadata.intro || "",
+    intro: metadata.intro || "",
+    logo: metadata.logo || "",
+    sector: metadata.sector || [],
+    progress: metadata.progress || "",
+    fundraisingStatus: metadata.fundraisingStatus || "",
+    githubLink: metadata.githubLink || "",
+    demoVideo: metadata.demoVideo || "",
+    itchVideo: metadata.itchVideo || "",
+    techStack: metadata.techStack || [],
+    hackathonIds: metadata.hackathonIds || metadata.submittedToHackathons || [],
+    version: metadata.version || "1.0.0",
+    createdAt: metadata.createdAt || new Date().toISOString(),
   };
 }
 
