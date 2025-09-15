@@ -52,7 +52,7 @@ export function OverviewStep() {
     setValue("logo", mockData.logo);
     setValue("name", mockData.name);
     setValue("intro", mockData.intro);
-    setValue("itchVideo", mockData.itchVideo);
+    setValue("pitchVideo", mockData.pitchVideo);
     setValue("sector", mockData.sector);
     setValue("progress", mockData.progress);
     setValue("fundraisingStatus", mockData.fundraisingStatus);
@@ -171,7 +171,7 @@ export function OverviewStep() {
 
           <FormField
             control={control}
-            name="itchVideo"
+            name="pitchVideo"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Itch Video</FormLabel>

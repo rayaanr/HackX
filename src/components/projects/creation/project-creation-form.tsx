@@ -24,7 +24,7 @@ export function CreateProjectForm() {
       logo: "",
       name: "",
       intro: "",
-      itchVideo: "",
+      pitchVideo: "",
       sector: [],
       progress: "",
       fundraisingStatus: "",
@@ -32,7 +32,7 @@ export function CreateProjectForm() {
       githubLink: "",
       demoVideo: "",
       techStack: [],
-      hackathonIds: [] ,
+      hackathonIds: [],
     },
   });
 

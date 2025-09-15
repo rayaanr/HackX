@@ -6,7 +6,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "DeFi Lending Platform",
     intro:
       "A decentralized lending platform built on Ethereum with automated market makers and risk assessment.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["defi", "fintech"],
     progress:
       "MVP completed with smart contracts deployed on testnet. Frontend 80% complete with core lending and borrowing features implemented.",
@@ -24,7 +24,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "AI Code Assistant",
     intro:
       "An intelligent code completion and review tool powered by advanced machine learning models.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["ai-ml", "developer-tools"],
     progress:
       "Beta version released with 1000+ active users. Training new models on 50M+ lines of code from open source repositories.",
@@ -42,7 +42,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "Gaming Metaverse",
     intro:
       "A virtual world where players can build, trade, and compete in immersive blockchain-based games.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["gaming", "entertainment"],
     progress:
       "Alpha version with 3 mini-games launched. 5000+ NFT land parcels sold. Working on multiplayer infrastructure and VR integration.",
@@ -60,7 +60,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "HealthTech Analytics",
     intro:
       "Advanced health analytics platform using wearable data to predict and prevent chronic diseases.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["healthcare", "ai-ml"],
     progress:
       "Clinical trials completed with 95% accuracy in early disease detection. FDA approval process initiated for medical device classification.",
@@ -78,7 +78,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "EduChain Learning",
     intro:
       "Blockchain-based education platform with verifiable certificates and decentralized course creation.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["education", "defi"],
     progress:
       "Platform launched with 50+ courses and 2000+ students. Integration with major universities in progress for certificate verification.",
@@ -96,7 +96,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "Sustainable Supply Chain",
     intro:
       "IoT-powered supply chain tracking for sustainability and transparency in global trade.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["sustainability", "iot"],
     progress:
       "Pilot program with 3 major retailers completed. 100+ suppliers onboarded with IoT sensors tracking carbon footprint and authenticity.",
@@ -114,7 +114,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "Cybersecurity Shield",
     intro:
       "AI-powered cybersecurity platform providing real-time threat detection and automated response.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["cybersecurity", "ai-ml"],
     progress:
       "Enterprise version deployed across 50+ companies. AI models detecting 99.8% of threats with <0.1% false positive rate.",
@@ -132,7 +132,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "Social Impact Tracker",
     intro:
       "Platform connecting nonprofits with donors through transparent impact measurement and blockchain verification.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["social-impact", "fintech"],
     progress:
       "Live platform with 200+ nonprofits and $2M+ in verified donations. Impact data tracked for 10,000+ beneficiaries worldwide.",
@@ -150,7 +150,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "Productivity AI Suite",
     intro:
       "Comprehensive AI-powered productivity tools for teams including smart scheduling and task automation.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["productivity", "ai-ml"],
     progress:
       "SaaS platform with 10,000+ active users and $50K MRR. Enterprise features launched with Fortune 500 pilot programs.",
@@ -168,7 +168,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "E-commerce Revolution",
     intro:
       "Next-generation e-commerce platform with AR try-on, AI recommendations, and crypto payments.",
-    itchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
     sector: ["e-commerce", "ai-ml"],
     progress:
       "Beta platform with 500+ merchants and $1M+ GMV. AR technology achieving 60% reduction in return rates.",
