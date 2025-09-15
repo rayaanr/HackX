@@ -1,7 +1,8 @@
-import { download } from "thirdweb/storage";
-import { readContract, prepareContractCall } from "thirdweb";
+import { download, upload } from "thirdweb/storage";
+import { readContract, prepareContractCall, waitForReceipt } from "thirdweb";
 import type { ThirdwebContract, ThirdwebClient } from "thirdweb";
 import type { HackathonFormData } from "@/types/hackathon";
+import type { ProjectFormData } from "@/lib/schemas/project-schema";
 
 /**
  * Core blockchain utility functions
@@ -32,19 +33,19 @@ function dateToUnixTimestamp(date?: Date): number {
 export function prepareCreateHackathonTransaction(
   contract: ThirdwebContract,
   cid: string,
-  formData: HackathonFormData,
+  formData: HackathonFormData
 ) {
   const registrationDeadline = dateToUnixTimestamp(
-    formData.registrationPeriod?.registrationEndDate,
+    formData.registrationPeriod?.registrationEndDate
   );
   const submissionStartDate = dateToUnixTimestamp(
-    formData.hackathonPeriod?.hackathonStartDate,
+    formData.hackathonPeriod?.hackathonStartDate
   );
   const submissionDeadline = dateToUnixTimestamp(
-    formData.hackathonPeriod?.hackathonEndDate,
+    formData.hackathonPeriod?.hackathonEndDate
   );
   const judgingDeadline = dateToUnixTimestamp(
-    formData.votingPeriod?.votingEndDate,
+    formData.votingPeriod?.votingEndDate
   );
 
   // Extract judge addresses from the form data
@@ -67,7 +68,7 @@ export function prepareCreateHackathonTransaction(
 
 // Fetch total hackathons count
 export async function getTotalHackathons(
-  contract: ThirdwebContract,
+  contract: ThirdwebContract
 ): Promise<number> {
   const result = await readContract({
     contract,
@@ -79,7 +80,7 @@ export async function getTotalHackathons(
 // Fetch hackathon participants
 export async function getHackathonParticipants(
   contract: ThirdwebContract,
-  hackathonId: string | number,
+  hackathonId: string | number
 ): Promise<string[]> {
   try {
     const participants = await readContract({
@@ -89,7 +90,7 @@ export async function getHackathonParticipants(
       params: [BigInt(hackathonId)],
     });
     return (participants || []).map((p: any) =>
-      typeof p === "bigint" ? p.toString() : p,
+      typeof p === "bigint" ? p.toString() : p
     );
   } catch (error) {
     console.error("Failed to fetch participants:", error);
@@ -100,7 +101,7 @@ export async function getHackathonParticipants(
 // Fetch hackathon projects
 export async function getHackathonProjects(
   contract: ThirdwebContract,
-  hackathonId: string | number,
+  hackathonId: string | number
 ): Promise<number[]> {
   try {
     const projects = await readContract({
@@ -110,7 +111,7 @@ export async function getHackathonProjects(
       params: [BigInt(hackathonId)],
     });
     return (projects || []).map((p: any) =>
-      typeof p === "bigint" ? Number(p) : p,
+      typeof p === "bigint" ? Number(p) : p
     );
   } catch (error) {
     console.error("Failed to fetch projects:", error);
@@ -122,7 +123,7 @@ export async function getHackathonProjects(
 export async function isUserRegistered(
   contract: ThirdwebContract,
   hackathonId: string | number,
-  userAddress: string,
+  userAddress: string
 ): Promise<boolean> {
   try {
     const isRegistered = await readContract({
@@ -140,7 +141,7 @@ export async function isUserRegistered(
 // Register for hackathon
 export function prepareRegisterForHackathonTransaction(
   contract: ThirdwebContract,
-  hackathonId: string | number,
+  hackathonId: string | number
 ) {
   return prepareContractCall({
     contract,
@@ -152,7 +153,7 @@ export function prepareRegisterForHackathonTransaction(
 // Fetch metadata from IPFS
 export async function fetchIPFSMetadata(
   client: ThirdwebClient,
-  ipfsHash: string,
+  ipfsHash: string
 ) {
   try {
     const file = await download({
@@ -171,7 +172,7 @@ export async function fetchIPFSMetadata(
     } catch (fallbackError) {
       console.warn(
         `Failed to fetch metadata from both IPFS and dweb.link for hash ${ipfsHash}:`,
-        fallbackError,
+        fallbackError
       );
       return {};
     }
@@ -182,7 +183,7 @@ export async function fetchIPFSMetadata(
 export async function getHackathonById(
   contract: ThirdwebContract,
   client: ThirdwebClient,
-  hackathonId: string | number,
+  hackathonId: string | number
 ) {
   const id = BigInt(hackathonId);
   const hackathon = await readContract({
@@ -203,4 +204,154 @@ export async function getHackathonById(
     // Keep original metadata structure for backward compatibility
     metadata: metadata,
   };
+}
+
+// ===== PROJECT BLOCKCHAIN FUNCTIONS =====
+
+// Upload project metadata to IPFS
+export async function uploadProjectToIPFS(
+  client: ThirdwebClient,
+  projectData: ProjectFormData
+): Promise<{ cid: string; uri: string }> {
+  const metadata = {
+    name: projectData.name,
+    intro: projectData.intro,
+    description: projectData.description,
+    logo: projectData.logo || null,
+    sector: projectData.sector || [],
+    progress: projectData.progress,
+    fundraisingStatus: projectData.fundraisingStatus,
+    githubLink: projectData.githubLink || null,
+    demoVideo: projectData.demoVideo || null,
+    itchVideo: projectData.itchVideo || null,
+    techStack: projectData.techStack || [],
+    submittedToHackathons: projectData.hackathonIds || [],
+    createdAt: new Date().toISOString(),
+    version: "1.0.0",
+  };
+
+  const fileName = `project-${projectData.name
+    .toLowerCase()
+    .replace(/\\s+/g, "-")}-${Date.now()}.json`;
+
+  const uris = await upload({
+    client,
+    files: [
+      {
+        name: fileName,
+        data: metadata,
+      },
+    ],
+  });
+
+  const ipfsUri = uris[0];
+  const cid = ipfsUri.replace("ipfs://", "");
+
+  return { cid, uri: ipfsUri };
+}
+
+// Prepare create project transaction
+export function prepareCreateProjectTransaction(
+  contract: ThirdwebContract,
+  cid: string
+) {
+  return prepareContractCall({
+    contract,
+    method: "function createProject(string projectIpfsHash) returns (uint256)",
+    params: [cid],
+  });
+}
+
+// Prepare submit project to hackathon transaction
+export function prepareSubmitProjectToHackathonTransaction(
+  contract: ThirdwebContract,
+  hackathonId: string | number,
+  projectId: string | number
+) {
+  return prepareContractCall({
+    contract,
+    method:
+      "function submitProjectToHackathon(uint256 hackathonId, uint256 projectId)",
+    params: [BigInt(hackathonId), BigInt(projectId)],
+  });
+}
+
+// Extract project ID from transaction receipt
+export function extractProjectIdFromReceipt(receipt: any): number | null {
+  if (!receipt.logs || receipt.logs.length === 0) {
+    return null;
+  }
+
+  // Look for ProjectCreated event in logs
+  const projectCreatedLog = receipt.logs.find((log: any) => {
+    // Check if this log could be the ProjectCreated event
+    return log.topics && log.topics.length > 1;
+  });
+
+  if (projectCreatedLog && projectCreatedLog.topics[1]) {
+    // Extract project ID from the indexed parameter (topics[1])
+    return parseInt(projectCreatedLog.topics[1], 16);
+  }
+
+  return null;
+}
+
+// Get user projects from blockchain
+export async function getUserProjects(
+  contract: ThirdwebContract,
+  userAddress: string
+): Promise<number[]> {
+  try {
+    const projectIds = await readContract({
+      contract,
+      method: "function getUserProjects(address user) view returns (uint256[])",
+      params: [userAddress],
+    });
+
+    return (projectIds || []).map((id: any) => Number(id));
+  } catch (error) {
+    console.error("Failed to fetch user project IDs:", error);
+    return [];
+  }
+}
+
+// Get project details by ID
+export async function getProjectById(
+  contract: ThirdwebContract,
+  client: ThirdwebClient,
+  projectId: string | number
+) {
+  const project = await readContract({
+    contract,
+    method:
+      "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
+    params: [BigInt(projectId)],
+  });
+
+  // Fetch metadata from IPFS
+  let metadata = {};
+  try {
+    if (project.ipfsHash) {
+      metadata = await fetchIPFSMetadata(client, project.ipfsHash);
+    }
+  } catch (error) {
+    console.warn(`Failed to fetch metadata for project ${projectId}:`, error);
+  }
+
+  return {
+    ...serializeBigInts(project),
+    ...metadata,
+    blockchainId: Number(projectId),
+  };
+}
+
+// Get total projects count
+export async function getTotalProjects(
+  contract: ThirdwebContract
+): Promise<number> {
+  const result = await readContract({
+    contract,
+    method: "function getTotalProjects() view returns (uint256)",
+  });
+  return Number(result);
 }

@@ -6,16 +6,22 @@ import {
   useActiveAccount,
   useReadContract,
 } from "thirdweb/react";
-import { readContract, prepareContractCall, waitForReceipt } from "thirdweb";
+import { waitForReceipt } from "thirdweb";
 import { useWeb3 } from "@/providers/web3-provider";
-import { upload, download } from "thirdweb/storage";
 import type { ProjectFormData } from "@/lib/schemas/project-schema";
-import type { UIProject } from "@/types/hackathon";
-import { serializeBigInts } from "@/lib/helpers/blockchain";
+import {
+  uploadProjectToIPFS,
+  prepareCreateProjectTransaction,
+  prepareSubmitProjectToHackathonTransaction,
+  extractProjectIdFromReceipt,
+  getUserProjects,
+  getProjectById,
+  getTotalProjects,
+} from "@/lib/helpers/blockchain";
 
 /**
  * Unified hook for all project blockchain operations
- * Handles IPFS storage and smart contract interactions
+ * Uses blockchain helper functions and provides React Query integration
  */
 export function useBlockchainProjects() {
   const queryClient = useQueryClient();
@@ -53,14 +59,7 @@ export function useBlockchainProjects() {
       }
 
       try {
-        const projectIds = await readContract({
-          contract,
-          method:
-            "function getUserProjects(address user) view returns (uint256[])",
-          params: [activeAccount.address],
-        });
-
-        const ids = (projectIds || []).map((id: any) => Number(id));
+        const ids = await getUserProjects(contract, activeAccount.address);
         console.log("✅ Fetched user project IDs:", ids);
         return ids;
       } catch (error) {
@@ -96,43 +95,17 @@ export function useBlockchainProjects() {
       }
 
       try {
-        // Batch fetch project data
-        const projectPromises = userProjectIds.map(async (projectId) => {
-          try {
-            const project = await readContract({
-              contract,
-              method:
-                "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
-              params: [BigInt(projectId)],
-            });
-
-            // Fetch metadata from IPFS
-            let metadata = {};
+        // Batch fetch project data using helper function
+        const projectPromises = userProjectIds.map(
+          async (projectId: number) => {
             try {
-              if (project.ipfsHash) {
-                const file = await download({
-                  client,
-                  uri: `ipfs://${project.ipfsHash}`,
-                });
-                metadata = await file.json();
-              }
+              return await getProjectById(contract, client, projectId);
             } catch (error) {
-              console.warn(
-                `Failed to fetch metadata for project ${projectId}:`,
-                error
-              );
+              console.warn(`Failed to fetch project ${projectId}:`, error);
+              return null;
             }
-
-            return {
-              ...serializeBigInts(project),
-              ...metadata,
-              blockchainId: projectId,
-            };
-          } catch (error) {
-            console.warn(`Failed to fetch project ${projectId}:`, error);
-            return null;
           }
-        });
+        );
 
         const projects = await Promise.all(projectPromises);
         const filteredProjects = projects.filter(Boolean);
@@ -169,52 +142,19 @@ export function useBlockchainProjects() {
 
       console.log("🚀 Submitting project to blockchain...");
 
-      // Step 1: Prepare metadata for IPFS
-      const metadata = {
-        name: projectData.name,
-        intro: projectData.intro,
-        description: projectData.description,
-        logo: projectData.logo || null,
-        sector: projectData.sector || [],
-        progress: projectData.progress,
-        fundraisingStatus: projectData.fundraisingStatus,
-        githubLink: projectData.githubLink || null,
-        demoVideo: projectData.demoVideo || null,
-        itchVideo: projectData.itchVideo || null,
-        techStack: projectData.techStack || [],
-        submittedToHackathons: projectData.hackathonIds || [],
-        createdAt: new Date().toISOString(),
-        version: "1.0.0",
-      };
-
-      // Step 2: Upload to IPFS using Thirdweb
+      // Step 1: Upload to IPFS using helper function
       console.log("📁 Uploading project metadata to IPFS...");
-      const fileName = `project-${projectData.name
-        .toLowerCase()
-        .replace(/\\s+/g, "-")}-${Date.now()}.json`;
-
-      const uris = await upload({
+      const { cid, uri: ipfsUri } = await uploadProjectToIPFS(
         client,
-        files: [
-          {
-            name: fileName,
-            data: metadata,
-          },
-        ],
-      });
-
-      const ipfsUri = uris[0];
-      const cid = ipfsUri.replace("ipfs://", "");
+        projectData
+      );
       console.log("✅ Metadata uploaded:", { uri: ipfsUri, cid });
 
-      // Step 3: Create the project on blockchain first
-      const createProjectTransaction = prepareContractCall({
+      // Step 2: Create the project on blockchain using helper function
+      const createProjectTransaction = prepareCreateProjectTransaction(
         contract,
-        method:
-          "function createProject(string projectIpfsHash) returns (uint256)",
-        params: [cid],
-      });
-
+        cid
+      );
       console.log("🔗 Create project transaction prepared");
 
       return new Promise<{
@@ -236,30 +176,15 @@ export function useBlockchainProjects() {
               const receipt = await waitForReceipt(createResult);
               console.log("📋 Transaction receipt:", receipt);
 
-              let projectId: number;
-              if (receipt.logs && receipt.logs.length > 0) {
-                // Look for ProjectCreated event in logs
-                const projectCreatedLog = receipt.logs.find((log: any) => {
-                  // Check if this log could be the ProjectCreated event
-                  return log.topics && log.topics.length > 1;
-                });
-
-                if (projectCreatedLog && projectCreatedLog.topics[1]) {
-                  // Extract project ID from the indexed parameter (topics[1])
-                  projectId = parseInt(projectCreatedLog.topics[1], 16);
-                  console.log(
-                    "✅ Extracted project ID from receipt:",
-                    projectId
-                  );
-                } else {
-                  console.warn(
-                    "⚠️ Could not find ProjectCreated event, using fallback"
-                  );
-                  projectId = Date.now();
-                }
-              } else {
-                console.warn("⚠️ No logs in receipt, using fallback");
+              // Extract project ID using helper function
+              let projectId = extractProjectIdFromReceipt(receipt);
+              if (!projectId) {
+                console.warn(
+                  "⚠️ Could not extract project ID from receipt, using fallback"
+                );
                 projectId = Date.now();
+              } else {
+                console.log("✅ Extracted project ID from receipt:", projectId);
               }
 
               resolve({
@@ -359,12 +284,13 @@ export function useBlockchainProjects() {
         `🚀 Submitting project ${projectId} to hackathon ${hackathonId}...`
       );
 
-      const submitToHackathonTransaction = prepareContractCall({
-        contract,
-        method:
-          "function submitProjectToHackathon(uint256 hackathonId, uint256 projectId)",
-        params: [BigInt(hackathonId), BigInt(projectId)],
-      });
+      // Use helper function to prepare transaction
+      const submitToHackathonTransaction =
+        prepareSubmitProjectToHackathonTransaction(
+          contract,
+          hackathonId,
+          projectId
+        );
 
       return new Promise<{
         projectId: string | number;
@@ -441,35 +367,7 @@ export function useBlockchainProjects() {
       queryFn: async () => {
         if (!contract || !client) return null;
         try {
-          const project = await readContract({
-            contract,
-            method:
-              "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
-            params: [BigInt(projectId)],
-          });
-
-          // Fetch metadata from IPFS
-          let metadata = {};
-          try {
-            if (project.ipfsHash) {
-              const file = await download({
-                client,
-                uri: `ipfs://${project.ipfsHash}`,
-              });
-              metadata = await file.json();
-            }
-          } catch (error) {
-            console.warn(
-              `Failed to fetch metadata for project ${projectId}:`,
-              error
-            );
-          }
-
-          return {
-            ...serializeBigInts(project),
-            ...metadata,
-            blockchainId: Number(projectId),
-          };
+          return await getProjectById(contract, client, projectId);
         } catch (error) {
           console.error(`Failed to fetch project ${projectId}:`, error);
           throw error;
@@ -513,6 +411,7 @@ export function useBlockchainProjects() {
 
 /**
  * Hook for fetching a single project by blockchain ID
+ * Uses the helper function from blockchain.ts
  */
 export function useBlockchainProject(projectId: string | number) {
   const { contract, client } = useWeb3();
@@ -522,35 +421,7 @@ export function useBlockchainProject(projectId: string | number) {
     queryFn: async () => {
       if (!contract || !client) return null;
       try {
-        const project = await readContract({
-          contract,
-          method:
-            "function getProject(uint256 projectId) view returns ((uint256 id, uint256 hackathonId, string ipfsHash, address creator, bool isSubmitted, uint256 totalScore, uint256 judgeCount))",
-          params: [BigInt(projectId)],
-        });
-
-        // Fetch metadata from IPFS
-        let metadata = {};
-        try {
-          if (project.ipfsHash) {
-            const file = await download({
-              client,
-              uri: `ipfs://${project.ipfsHash}`,
-            });
-            metadata = await file.json();
-          }
-        } catch (error) {
-          console.warn(
-            `Failed to fetch metadata for project ${projectId}:`,
-            error
-          );
-        }
-
-        return {
-          ...serializeBigInts(project),
-          ...metadata,
-          blockchainId: Number(projectId),
-        };
+        return await getProjectById(contract, client, projectId);
       } catch (error) {
         console.error(`Failed to fetch project ${projectId}:`, error);
         throw error;
@@ -562,7 +433,13 @@ export function useBlockchainProject(projectId: string | number) {
   });
 }
 
-// Legacy exports for backward compatibility
+// ===== LEGACY COMPATIBILITY =====
+// These hooks are kept for backward compatibility but should be migrated to useBlockchainProjects
+
+/**
+ * @deprecated Use useBlockchainProjects().submitProject instead
+ * Legacy hook for submitting projects - kept for backward compatibility
+ */
 export const useSubmitProject = () => {
   const { submitProject, isSubmittingProject, submitProjectError } =
     useBlockchainProjects();
@@ -573,6 +450,10 @@ export const useSubmitProject = () => {
   };
 };
 
+/**
+ * @deprecated Use useBlockchainProjects().userProjects instead
+ * Legacy hook for fetching user projects - kept for backward compatibility
+ */
 export const useUserBlockchainProjects = () => {
   const {
     userProjects,

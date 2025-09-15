@@ -10,11 +10,10 @@ import type {
 } from "@/types/hackathon";
 import { transformBlockchainProjectToUI } from "@/lib/helpers/blockchain-transforms";
 import {
-  useUserProjects as useBlockchainUserProjects,
-  useProjectById as useBlockchainProjectById,
+  useBlockchainProjects,
+  useBlockchainProject,
   useSubmitProject as useBlockchainSubmitProject,
-  useProjectsByHackathon as useBlockchainProjectsByHackathon,
-} from "@/hooks/blockchain";
+} from "@/hooks/blockchain/useBlockchainProjects";
 
 // Mock data for projects
 const MOCK_PROJECTS: ProjectWithHackathon[] = [
@@ -102,23 +101,25 @@ interface UseRegisteredHackathonsResult {
 
 // Get all projects for the current user
 export function useUserProjects(userAddress?: string): UseProjectsResult {
-  const blockchainResult = useBlockchainUserProjects(userAddress);
+  const { userProjects, isLoadingUserProjects, userProjectsError } =
+    useBlockchainProjects();
 
   // Transform blockchain data to legacy format for backward compatibility
-  const transformedData = blockchainResult.data.map(
-    (project): ProjectWithHackathon => {
+  const transformedData = (userProjects || []).map(
+    (project: any): ProjectWithHackathon => {
       const uiProject = transformBlockchainProjectToUI(project);
       return {
         ...uiProject,
         // Ensure required fields are present with proper defaults
-        hackathon_id: uiProject.hackathon_id || project.hackathonId.toString(),
+        hackathon_id:
+          uiProject.hackathon_id || project.hackathonId?.toString() || "0",
         repository_url: uiProject.repository_url || null,
         demo_url: uiProject.demo_url || null,
         team_members: uiProject.team_members || null,
         // Convert to legacy format fields
         hackathon: project.hackathonMetadata
           ? {
-              id: project.hackathonId.toString(),
+              id: project.hackathonId?.toString() || "0",
               name: project.hackathonMetadata.name,
               short_description: project.hackathonMetadata.shortDescription,
               location: project.hackathonMetadata.location,
@@ -143,14 +144,14 @@ export function useUserProjects(userAddress?: string): UseProjectsResult {
             }
           : null,
       };
-    },
+    }
   );
 
   return {
     data: transformedData,
-    isLoading: blockchainResult.isLoading,
-    error: blockchainResult.error,
-    refetch: blockchainResult.refetch,
+    isLoading: isLoadingUserProjects,
+    error: userProjectsError,
+    refetch: () => {}, // TODO: Implement refetch if needed
   };
 }
 
@@ -219,7 +220,7 @@ export function useProjectHackathons(projectId: string): UseProjectsResult {
 
 // Get registered hackathons for the current user
 export function useRegisteredHackathons(
-  userAddress?: string,
+  userAddress?: string
 ): UseRegisteredHackathonsResult {
   const account = useActiveAccount();
   const [data, setData] = useState<HackathonRegistrationWithHackathon[]>([]);
@@ -235,7 +236,7 @@ export function useRegisteredHackathons(
         const targetAddress = userAddress || account?.address;
         if (targetAddress) {
           const userRegistrations = MOCK_REGISTERED_HACKATHONS.filter(
-            (r) => r.user_id === targetAddress,
+            (r) => r.user_id === targetAddress
           );
           setData(userRegistrations);
         } else {
@@ -266,32 +267,34 @@ export function useSubmitProject() {
         throw new Error("Hackathon ID is required to submit a project");
       }
 
-      const result = await blockchainSubmit.submitProject(
-        hackathonId.toString(),
-        projectData,
-      );
-
-      if (result.success) {
-        return {
-          success: true,
-          data: {
-            id: result.projectId?.toString() || "",
-            name: projectData.name,
-            created_at: new Date().toISOString(),
-            description: projectData.description,
-            tech_stack: projectData.techStack || projectData.tech_stack || [],
-            status: "submitted",
-            created_by: "", // Will be filled by the contract
-            updated_at: new Date().toISOString(),
-            hackathon_id: hackathonId.toString(),
+      // Use the mutate function directly
+      const result = await new Promise((resolve, reject) => {
+        blockchainSubmit.mutate(
+          {
+            projectData,
+            hackathonId: hackathonId.toString(),
           },
-        };
-      } else {
-        return {
-          success: false,
-          error: result.error || "Unknown error",
-        };
-      }
+          {
+            onSuccess: (data) => resolve({ success: true, ...data }),
+            onError: (error) => reject(error),
+          }
+        );
+      });
+
+      return {
+        success: true,
+        data: {
+          id: (result as any).projectId?.toString() || "",
+          name: projectData.name,
+          created_at: new Date().toISOString(),
+          description: projectData.description,
+          tech_stack: projectData.techStack || projectData.tech_stack || [],
+          status: "submitted",
+          created_by: "", // Will be filled by the contract
+          updated_at: new Date().toISOString(),
+          hackathon_id: hackathonId.toString(),
+        },
+      };
     } catch (error) {
       console.error("Error submitting project:", error);
       return {
@@ -301,7 +304,7 @@ export function useSubmitProject() {
     }
   };
 
-  return { submitProject, isSubmitting: blockchainSubmit.isSubmitting };
+  return { submitProject, isSubmitting: blockchainSubmit.isPending };
 }
 
 // Register for a hackathon
@@ -334,7 +337,7 @@ export function useRegisterForHackathon() {
 
 // Get submitted projects for a specific hackathon
 export function useSubmittedProjectsByHackathon(
-  hackathonId: string,
+  hackathonId: string
 ): UseProjectsResult {
   const [data, setData] = useState<ProjectWithHackathon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -347,7 +350,7 @@ export function useSubmittedProjectsByHackathon(
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         const hackathonProjects = MOCK_PROJECTS.filter(
-          (p) => p.hackathon_id === hackathonId,
+          (p) => p.hackathon_id === hackathonId
         );
         setData(hackathonProjects);
       } catch (err) {
@@ -364,7 +367,7 @@ export function useSubmittedProjectsByHackathon(
 
   const refetch = () => {
     const hackathonProjects = MOCK_PROJECTS.filter(
-      (p) => p.hackathon_id === hackathonId,
+      (p) => p.hackathon_id === hackathonId
     );
     setData(hackathonProjects);
   };
