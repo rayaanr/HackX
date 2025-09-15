@@ -378,20 +378,3 @@ export function useBlockchainProject(projectId: string | number) {
     gcTime: 5 * 60 * 1000,
   });
 }
-
-// ===== LEGACY COMPATIBILITY =====
-// These hooks are kept for backward compatibility but should be migrated to useBlockchainProjects
-
-/**
- * @deprecated Use useBlockchainProjects().submitProject instead
- * Legacy hook for submitting projects - kept for backward compatibility
- */
-export const useSubmitProject = () => {
-  const { submitProject, isSubmittingProject, submitProjectError } =
-    useBlockchainProjects();
-  return {
-    mutate: submitProject,
-    isPending: isSubmittingProject,
-    error: submitProjectError,
-  };
-};

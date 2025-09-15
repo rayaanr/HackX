@@ -4,15 +4,11 @@ import { useState, useEffect } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import type {
   ProjectWithHackathon,
-  UIProject,
   HackathonRegistrationWithHackathon,
-  BlockchainProject,
 } from "@/types/hackathon";
 import { transformBlockchainProjectToUI } from "@/lib/helpers/blockchain-transforms";
 import {
   useBlockchainProjects,
-  useBlockchainProject,
-  useSubmitProject as useBlockchainSubmitProject,
 } from "@/hooks/blockchain/useBlockchainProjects";
 
 // Mock data for projects
@@ -257,9 +253,10 @@ export function useRegisteredHackathons(
 
 // Submit/create a new project
 export function useSubmitProject() {
-  const blockchainSubmit = useBlockchainSubmitProject();
+  const { submitProject, isSubmittingProject, submitProjectError } =
+    useBlockchainProjects();
 
-  const submitProject = async (projectData: any) => {
+  const submitProjectWrapper = async (projectData: any) => {
     try {
       // Extract hackathon ID from project data or require it to be passed
       const hackathonId = projectData.hackathonId || projectData.hackathon_id;
@@ -269,14 +266,14 @@ export function useSubmitProject() {
 
       // Use the mutate function directly
       const result = await new Promise((resolve, reject) => {
-        blockchainSubmit.mutate(
+        submitProject(
           {
             projectData,
             hackathonId: hackathonId.toString(),
           },
           {
-            onSuccess: (data) => resolve({ success: true, ...data }),
-            onError: (error) => reject(error),
+            onSuccess: (data: any) => resolve({ success: true, ...data }),
+            onError: (error: any) => reject(error),
           }
         );
       });
@@ -304,7 +301,10 @@ export function useSubmitProject() {
     }
   };
 
-  return { submitProject, isSubmitting: blockchainSubmit.isPending };
+  return {
+    submitProject: submitProjectWrapper,
+    isSubmitting: isSubmittingProject,
+  };
 }
 
 // Register for a hackathon
