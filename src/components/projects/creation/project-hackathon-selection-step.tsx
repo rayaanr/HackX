@@ -157,18 +157,19 @@ export function HackathonSelectionStep() {
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {filteredHackathons.map((hackathon: any) => {
-                            const isSubmissionPhase =
+                            // Check if hackathon is accepting submissions
+                            const isAcceptingSubmissions =
                               hackathon.status === "live";
                             return (
                               <div key={hackathon.id} className="relative">
                                 <div
                                   className={`${
-                                    !isSubmissionPhase ? "opacity-60" : ""
+                                    !isAcceptingSubmissions ? "opacity-60" : ""
                                   }`}
                                 >
                                   <ProjectHackathonCard {...hackathon} />
                                 </div>
-                                {!isSubmissionPhase && (
+                                {!isAcceptingSubmissions && (
                                   <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
                                     <div className="bg-white dark:bg-gray-900 px-3 py-1 rounded-md text-sm font-medium">
                                       Not accepting submissions
@@ -180,9 +181,9 @@ export function HackathonSelectionStep() {
                                     checked={selectedHackathonIds.includes(
                                       hackathon.id,
                                     )}
-                                    disabled={!isSubmissionPhase}
+                                    disabled={!isAcceptingSubmissions}
                                     onCheckedChange={(checked) => {
-                                      if (!isSubmissionPhase) return; // Prevent selection of non-submission phase hackathons
+                                      if (!isAcceptingSubmissions) return; // Prevent selection of non-submission phase hackathons
                                       const isChecked = checked === true;
                                       const next = isChecked
                                         ? Array.from(

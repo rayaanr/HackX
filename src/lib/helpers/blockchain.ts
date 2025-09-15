@@ -37,6 +37,9 @@ export function prepareCreateHackathonTransaction(
   const registrationDeadline = dateToUnixTimestamp(
     formData.registrationPeriod?.registrationEndDate,
   );
+  const submissionStartDate = dateToUnixTimestamp(
+    formData.hackathonPeriod?.hackathonStartDate,
+  );
   const submissionDeadline = dateToUnixTimestamp(
     formData.hackathonPeriod?.hackathonEndDate,
   );
@@ -50,10 +53,11 @@ export function prepareCreateHackathonTransaction(
   return prepareContractCall({
     contract,
     method:
-      "function createHackathon(string ipfsHash, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline, address[] initialJudges) returns (uint256)",
+      "function createHackathon(string ipfsHash, uint256 registrationDeadline, uint256 submissionStartDate, uint256 submissionDeadline, uint256 judgingDeadline, address[] initialJudges) returns (uint256)",
     params: [
       cid,
       BigInt(registrationDeadline),
+      BigInt(submissionStartDate),
       BigInt(submissionDeadline),
       BigInt(judgingDeadline),
       initialJudges,
@@ -184,7 +188,7 @@ export async function getHackathonById(
   const hackathon = await readContract({
     contract,
     method:
-      "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint8 currentPhase, uint256 registrationDeadline, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
+      "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint8 currentPhase, uint256 registrationDeadline, uint256 submissionStartDate, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
     params: [id],
   });
   const metadata = await fetchIPFSMetadata(client, hackathon.ipfsHash);

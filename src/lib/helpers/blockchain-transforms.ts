@@ -36,9 +36,11 @@ export function transformBlockchainToUI(
       ),
     },
     hackathonPeriod: {
-      hackathonStartDate: metadata?.hackathonPeriod?.hackathonStartDate
-        ? new Date(metadata.hackathonPeriod.hackathonStartDate)
-        : new Date(Number(blockchainHackathon.registrationDeadline) * 1000), // Fallback to registration end
+      hackathonStartDate: blockchainHackathon.submissionStartDate
+        ? new Date(Number(blockchainHackathon.submissionStartDate) * 1000)
+        : metadata?.hackathonPeriod?.hackathonStartDate
+          ? new Date(metadata.hackathonPeriod.hackathonStartDate)
+          : new Date(Number(blockchainHackathon.registrationDeadline) * 1000), // Fallback to registration end
       hackathonEndDate: new Date(
         Number(blockchainHackathon.submissionDeadline) * 1000,
       ),
@@ -128,6 +130,7 @@ export function getHackathonStatus(
 
   const now = Date.now() / 1000; // Current timestamp in seconds
   const registrationDeadline = Number(hackathon.registrationDeadline);
+  const submissionStartDate = Number(hackathon.submissionStartDate);
   const submissionDeadline = Number(hackathon.submissionDeadline);
   const judgingDeadline = Number(hackathon.judgingDeadline);
 
@@ -140,6 +143,11 @@ export function getHackathonStatus(
       }
 
     case ContractPhase.SUBMISSION:
+      // Check if submissions haven't started yet
+      if (submissionStartDate && now < submissionStartDate) {
+        return "submission_not_started";
+      }
+      // Check if submissions are currently open
       if (now < submissionDeadline) {
         return "submission_open";
       } else {
@@ -283,6 +291,7 @@ export function getStatusVariant(
     case "judging_open":
       return "green";
     case "registration_closed":
+    case "submission_not_started":
     case "submission_closed":
     case "judging_closed":
       return "yellow";
@@ -374,10 +383,14 @@ export function canRegister(hackathon: BlockchainHackathon): boolean {
  */
 export function canSubmitProject(hackathon: BlockchainHackathon): boolean {
   const now = Date.now() / 1000;
+  const submissionStartDate = Number(hackathon.submissionStartDate);
+  const submissionDeadline = Number(hackathon.submissionDeadline);
+
   return (
     hackathon.isActive &&
     hackathon.currentPhase === ContractPhase.SUBMISSION &&
-    Number(hackathon.submissionDeadline) > now
+    now >= submissionStartDate &&
+    now < submissionDeadline
   );
 }
 

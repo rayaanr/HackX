@@ -22,6 +22,7 @@ export interface ContractHackathon {
   organizer: string; // address
   currentPhase: ContractPhase;
   registrationDeadline: bigint; // timestamp
+  submissionStartDate: bigint; // timestamp
   submissionDeadline: bigint; // timestamp
   judgingDeadline: bigint; // timestamp
   isActive: boolean;
@@ -314,6 +315,7 @@ export type HackathonPhaseStatus =
   | "upcoming"
   | "registration_open"
   | "registration_closed"
+  | "submission_not_started"
   | "submission_open"
   | "submission_closed"
   | "judging_open"
