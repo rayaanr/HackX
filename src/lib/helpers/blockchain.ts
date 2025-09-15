@@ -137,13 +137,12 @@ export async function isUserRegistered(
 export function prepareRegisterForHackathonTransaction(
   contract: ThirdwebContract,
   hackathonId: string | number,
-  participantIpfsHash: string
 ) {
   return prepareContractCall({
     contract,
     method:
-      "function registerForHackathon(uint256 hackathonId, string participantIpfsHash)",
-    params: [BigInt(hackathonId), participantIpfsHash],
+      "function registerForHackathon(uint256 hackathonId)",
+    params: [BigInt(hackathonId)],
   });
 }
 

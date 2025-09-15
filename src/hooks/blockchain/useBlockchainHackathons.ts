@@ -194,12 +194,10 @@ export function useRegisterForHackathon() {
   return {
     prepareTransaction: (
       hackathonId: string | number,
-      participantIpfsHash: string = ""
     ) =>
       prepareRegisterForHackathonTransaction(
         contract,
         hackathonId,
-        participantIpfsHash
       ),
   };
 }

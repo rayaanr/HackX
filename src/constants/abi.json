@@ -71,6 +71,31 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "organizer",
+        "type": "address"
+      }
+    ],
+    "name": "HackathonDeleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "hackathonId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "organizer",
         "type": "address"
       },
@@ -167,12 +192,6 @@
         "internalType": "address",
         "name": "participant",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "ipfsHash",
-        "type": "string"
       }
     ],
     "name": "ParticipantRegistered",
@@ -415,6 +434,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "submissionStartDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "submissionDeadline",
         "type": "uint256"
       },
@@ -453,6 +477,15 @@
     "type": "function"
   },
   {
+    "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" }
+    ],
+    "name": "deleteHackathon",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getActiveHackathons",
     "outputs": [
@@ -480,6 +513,11 @@
           {
             "internalType": "uint256",
             "name": "registrationDeadline",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "submissionStartDate",
             "type": "uint256"
           },
           {
@@ -725,6 +763,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "submissionStartDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "submissionDeadline",
         "type": "uint256"
       },
@@ -845,12 +888,7 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
-      {
-        "internalType": "string",
-        "name": "participantIpfsHash",
-        "type": "string"
-      }
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" }
     ],
     "name": "registerForHackathon",
     "outputs": [],

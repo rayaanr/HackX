@@ -1,24 +1,20 @@
 "use client";
 
-import { useActiveAccount } from "thirdweb/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { WalletConnect } from "@/components/layout/wallet-connect";
 
 export default function Home() {
-  const account = useActiveAccount();
-  const router = useRouter();
+  // const account = useActiveAccount();
+  // const router = useRouter();
 
-  useEffect(() => {
-    if (account) {
-      router.replace("/dashboard");
-    }
-  }, [account, router]);
+  // useEffect(() => {
+  //   if (account) {
+  //     router.replace("/dashboard");
+  //   }
+  // }, [account, router]);
 
-  if (account) {
-    return null; // Will redirect to dashboard
-  }
+  // if (account) {
+  //   return null; // Will redirect to dashboard
+  // }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-background/80">

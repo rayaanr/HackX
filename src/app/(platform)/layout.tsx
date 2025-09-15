@@ -1,24 +1,15 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-interface ConditionalLayoutProps {
+interface DashboardLayoutProps {
   children: ReactNode;
 }
 
-export function ConditionalLayout({ children }: ConditionalLayoutProps) {
-  const pathname = usePathname();
-  const isHomePage = pathname === "/";
-
-  // Home page doesn't use sidebar layout
-  if (isHomePage) {
-    return <>{children}</>;
-  }
-
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
