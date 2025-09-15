@@ -25,7 +25,7 @@ import { Shuffle } from "lucide-react";
 import {
   MOCK_PROJECT_DATA,
   getRandomMockProject,
-} from "@/constants/mock-project-data";
+} from "@/data/mock-project-data";
 
 const SECTOR_OPTIONS: Option[] = [
   { value: "ai-ml", label: "AI/ML" },
