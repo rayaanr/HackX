@@ -142,7 +142,9 @@ export function getUIHackathonStatus(hackathon: {
   const now = new Date();
 
   // Check registration phase
-  const registrationEnd = safeToDate(hackathon.registrationPeriod?.registrationEndDate);
+  const registrationEnd = safeToDate(
+    hackathon.registrationPeriod?.registrationEndDate,
+  );
   if (registrationEnd && now < registrationEnd) {
     return "Registration Open";
   }
@@ -151,7 +153,9 @@ export function getUIHackathonStatus(hackathon: {
   const hackathonEnd = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
   if (hackathonEnd && now < hackathonEnd) {
     // If we're past registration but before hackathon end
-    const hackathonStart = safeToDate(hackathon.hackathonPeriod?.hackathonStartDate);
+    const hackathonStart = safeToDate(
+      hackathon.hackathonPeriod?.hackathonStartDate,
+    );
     if (hackathonStart && now < hackathonStart) {
       return "Registration Closed";
     }

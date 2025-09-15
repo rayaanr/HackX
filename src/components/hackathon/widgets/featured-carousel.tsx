@@ -13,7 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { UIHackathon } from "@/types/hackathon";
 import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
-import { safeToDate, getDaysLeft, getUIHackathonStatus } from "@/lib/helpers/date";
+import {
+  safeToDate,
+  getDaysLeft,
+  getUIHackathonStatus,
+} from "@/lib/helpers/date";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import React, { useEffect, useState, useRef } from "react";

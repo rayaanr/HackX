@@ -48,7 +48,7 @@ export function useAllHackathons() {
   // Process the results from useQueries
   const hackathons = useMemo(
     () => hackathonQueries.map((query) => query.data).filter(Boolean),
-    [hackathonQueries]
+    [hackathonQueries],
   );
 
   const isLoadingHackathons = hackathonQueries.some((query) => query.isLoading);
@@ -84,7 +84,7 @@ export function useAllHackathons() {
       isLoadingTotal,
       hackathonsError,
       refetchHackathons,
-    ]
+    ],
   );
 }
 
@@ -192,13 +192,8 @@ export function useRegisterForHackathon() {
   const { contract } = useWeb3();
 
   return {
-    prepareTransaction: (
-      hackathonId: string | number,
-    ) =>
-      prepareRegisterForHackathonTransaction(
-        contract,
-        hackathonId,
-      ),
+    prepareTransaction: (hackathonId: string | number) =>
+      prepareRegisterForHackathonTransaction(contract, hackathonId),
   };
 }
 
@@ -245,7 +240,7 @@ export function useRegisteredHackathons() {
         .map((query) => query.data)
         .filter(Boolean)
         .filter((hackathon) => hackathon.isRegistered),
-    [hackathonQueries]
+    [hackathonQueries],
   );
 
   const isLoading = hackathonQueries.some((query) => query.isLoading);
@@ -258,6 +253,6 @@ export function useRegisteredHackathons() {
       error,
       isConnected: !!activeAccount,
     }),
-    [registeredHackathons, isLoading, error, activeAccount]
+    [registeredHackathons, isLoading, error, activeAccount],
   );
 }

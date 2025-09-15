@@ -201,8 +201,8 @@ export default function HackathonPage() {
                         ],
                         ALLOWED_ATTR: ["href", "target"],
                         FORBID_ATTR: ["style"],
-                      }
-                    )
+                      },
+                    ),
                   )}
                 </div>
               </div>

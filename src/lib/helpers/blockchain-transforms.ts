@@ -7,10 +7,7 @@ import type {
   HackathonPhaseStatus,
   ProjectStatus,
 } from "@/types/blockchain";
-import type {
-  UIHackathon,
-  UIProject,
-} from "@/types/hackathon";
+import type { UIHackathon, UIProject } from "@/types/hackathon";
 
 /**
  * Transform blockchain hackathon data to UI format

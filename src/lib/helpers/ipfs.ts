@@ -17,4 +17,3 @@ export function resolveIPFSToHttp(uri: string | undefined | null): string {
 
   return uri;
 }
-

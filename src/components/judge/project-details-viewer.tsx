@@ -311,8 +311,10 @@ export function ProjectDetailsSection({
                   <Badge variant="default">
                     {getUIHackathonStatus({
                       registrationPeriod: {
-                        registrationStartDate: hackathonData.registration_start_date,
-                        registrationEndDate: hackathonData.registration_end_date,
+                        registrationStartDate:
+                          hackathonData.registration_start_date,
+                        registrationEndDate:
+                          hackathonData.registration_end_date,
                       },
                       hackathonPeriod: {
                         hackathonStartDate: hackathonData.hackathon_start_date,

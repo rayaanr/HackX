@@ -88,7 +88,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                     {new Date(project.updated_at).toLocaleDateString()} (
                     {Math.ceil(
                       (Date.now() - new Date(project.updated_at).getTime()) /
-                        (1000 * 60 * 60 * 24)
+                        (1000 * 60 * 60 * 24),
                     )}{" "}
                     days ago)
                   </p>

@@ -5,7 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AvatarList } from "@/components/ui/avatar-list";
 import type { UIHackathon } from "@/types/hackathon";
 import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
-import { safeToDate, getDaysLeft, getUIHackathonStatus } from "@/lib/helpers/date";
+import {
+  safeToDate,
+  getDaysLeft,
+  getUIHackathonStatus,
+} from "@/lib/helpers/date";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import { Calendar, Code, Trophy, Award } from "lucide-react";
 
@@ -75,8 +79,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                       ? "Completed"
                       : deadline
                         ? `${daysLeft} days`
-                        : "TBD"
-                    }
+                        : "TBD"}
                   </p>
                 </div>
                 <div>

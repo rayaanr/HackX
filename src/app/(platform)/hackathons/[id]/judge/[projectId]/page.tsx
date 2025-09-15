@@ -38,18 +38,16 @@ export default function ProjectReviewPage() {
 
   // State for form data and selected cohort
   const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(
-    null
+    null,
   );
   const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(
-    undefined
+    undefined,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Transform data safely
   const hackathon =
-    dbHackathon && dbHackathon.length > 0
-      ? dbHackathon[0]
-      : null;
+    dbHackathon && dbHackathon.length > 0 ? dbHackathon[0] : null;
 
   if (hackathonLoading || projectLoading || projectHackathonsLoading) {
     return <div>Loading...</div>;

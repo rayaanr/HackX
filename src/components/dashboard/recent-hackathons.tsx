@@ -89,7 +89,9 @@ export function RecentHackathons({
                 votingPeriod: hackathon.votingPeriod || undefined,
               });
               const variant = getStatusVariant(status);
-              const totalPrize = calculateTotalPrizeAmount(hackathon.prizeCohorts || []);
+              const totalPrize = calculateTotalPrizeAmount(
+                hackathon.prizeCohorts || [],
+              );
 
               return (
                 <Link key={hackathon.id} href={`/hackathons/${hackathon.id}`}>

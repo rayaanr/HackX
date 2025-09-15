@@ -32,16 +32,16 @@ function dateToUnixTimestamp(date?: Date): number {
 export function prepareCreateHackathonTransaction(
   contract: ThirdwebContract,
   cid: string,
-  formData: HackathonFormData
+  formData: HackathonFormData,
 ) {
   const registrationDeadline = dateToUnixTimestamp(
-    formData.registrationPeriod?.registrationEndDate
+    formData.registrationPeriod?.registrationEndDate,
   );
   const submissionDeadline = dateToUnixTimestamp(
-    formData.hackathonPeriod?.hackathonEndDate
+    formData.hackathonPeriod?.hackathonEndDate,
   );
   const judgingDeadline = dateToUnixTimestamp(
-    formData.votingPeriod?.votingEndDate
+    formData.votingPeriod?.votingEndDate,
   );
 
   // Extract judge addresses from the form data
@@ -63,7 +63,7 @@ export function prepareCreateHackathonTransaction(
 
 // Fetch total hackathons count
 export async function getTotalHackathons(
-  contract: ThirdwebContract
+  contract: ThirdwebContract,
 ): Promise<number> {
   const result = await readContract({
     contract,
@@ -75,7 +75,7 @@ export async function getTotalHackathons(
 // Fetch hackathon participants
 export async function getHackathonParticipants(
   contract: ThirdwebContract,
-  hackathonId: string | number
+  hackathonId: string | number,
 ): Promise<string[]> {
   try {
     const participants = await readContract({
@@ -85,7 +85,7 @@ export async function getHackathonParticipants(
       params: [BigInt(hackathonId)],
     });
     return (participants || []).map((p: any) =>
-      typeof p === "bigint" ? p.toString() : p
+      typeof p === "bigint" ? p.toString() : p,
     );
   } catch (error) {
     console.error("Failed to fetch participants:", error);
@@ -96,7 +96,7 @@ export async function getHackathonParticipants(
 // Fetch hackathon projects
 export async function getHackathonProjects(
   contract: ThirdwebContract,
-  hackathonId: string | number
+  hackathonId: string | number,
 ): Promise<number[]> {
   try {
     const projects = await readContract({
@@ -106,7 +106,7 @@ export async function getHackathonProjects(
       params: [BigInt(hackathonId)],
     });
     return (projects || []).map((p: any) =>
-      typeof p === "bigint" ? Number(p) : p
+      typeof p === "bigint" ? Number(p) : p,
     );
   } catch (error) {
     console.error("Failed to fetch projects:", error);
@@ -118,7 +118,7 @@ export async function getHackathonProjects(
 export async function isUserRegistered(
   contract: ThirdwebContract,
   hackathonId: string | number,
-  userAddress: string
+  userAddress: string,
 ): Promise<boolean> {
   try {
     const isRegistered = await readContract({
@@ -140,8 +140,7 @@ export function prepareRegisterForHackathonTransaction(
 ) {
   return prepareContractCall({
     contract,
-    method:
-      "function registerForHackathon(uint256 hackathonId)",
+    method: "function registerForHackathon(uint256 hackathonId)",
     params: [BigInt(hackathonId)],
   });
 }
@@ -149,7 +148,7 @@ export function prepareRegisterForHackathonTransaction(
 // Fetch metadata from IPFS
 export async function fetchIPFSMetadata(
   client: ThirdwebClient,
-  ipfsHash: string
+  ipfsHash: string,
 ) {
   try {
     const file = await download({
@@ -168,7 +167,7 @@ export async function fetchIPFSMetadata(
     } catch (fallbackError) {
       console.warn(
         `Failed to fetch metadata from both IPFS and dweb.link for hash ${ipfsHash}:`,
-        fallbackError
+        fallbackError,
       );
       return {};
     }
@@ -179,7 +178,7 @@ export async function fetchIPFSMetadata(
 export async function getHackathonById(
   contract: ThirdwebContract,
   client: ThirdwebClient,
-  hackathonId: string | number
+  hackathonId: string | number,
 ) {
   const id = BigInt(hackathonId);
   const hackathon = await readContract({

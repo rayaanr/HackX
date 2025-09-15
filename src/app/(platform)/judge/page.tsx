@@ -18,13 +18,15 @@ export default function JudgeDashboardPage() {
 
   // Filter hackathons where the current wallet is assigned as a judge
   // Note: For now, showing all hackathons until judge assignment is updated to use wallet addresses
-  const hackathonsToJudge = account && hackathons
-    ? hackathons.filter(hackathon =>
-        hackathon.judges?.some((judge: any) =>
-          judge.address?.toLowerCase() === account.address?.toLowerCase()
+  const hackathonsToJudge =
+    account && hackathons
+      ? hackathons.filter((hackathon) =>
+          hackathon.judges?.some(
+            (judge: any) =>
+              judge.address?.toLowerCase() === account.address?.toLowerCase(),
+          ),
         )
-      )
-    : [];
+      : [];
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -107,15 +109,17 @@ export default function JudgeDashboardPage() {
                         Tech stack:
                       </span>
                       <div className="flex flex-wrap gap-1">
-                        {hackathon.techStack?.slice(0, 3).map((tech: string) => (
-                          <Badge
-                            key={tech}
-                            variant="secondary"
-                            className="text-xs"
-                          >
-                            {tech}
-                          </Badge>
-                        ))}
+                        {hackathon.techStack
+                          ?.slice(0, 3)
+                          .map((tech: string) => (
+                            <Badge
+                              key={tech}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {tech}
+                            </Badge>
+                          ))}
                         {hackathon.techStack.length > 3 && (
                           <Badge variant="outline" className="text-xs">
                             +{hackathon.techStack.length - 3} more

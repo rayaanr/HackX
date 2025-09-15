@@ -28,7 +28,9 @@ export function useCreateHackathon() {
   const { mutate: sendTransaction } = useSendTransaction();
   const { contract, client, contractAddress } = useWeb3();
 
-  const createHackathon = async (formData: HackathonFormData): Promise<CreateHackathonResult> => {
+  const createHackathon = async (
+    formData: HackathonFormData,
+  ): Promise<CreateHackathonResult> => {
     if (!activeAccount) {
       const errorMsg = "Please connect your wallet to create a hackathon.";
       setError(new Error(errorMsg));
@@ -36,7 +38,8 @@ export function useCreateHackathon() {
     }
 
     if (!contractAddress) {
-      const errorMsg = "Contract not configured. Please check your environment variables.";
+      const errorMsg =
+        "Contract not configured. Please check your environment variables.";
       setError(new Error(errorMsg));
       return { success: false, error: errorMsg };
     }
@@ -146,11 +149,14 @@ export function useCreateHackathon() {
               message.includes("user denied") ||
               message.includes("rejected")
             ) {
-              errorMessage = "Transaction was cancelled. Please approve the transaction to create your hackathon.";
+              errorMessage =
+                "Transaction was cancelled. Please approve the transaction to create your hackathon.";
             } else if (message.includes("insufficient funds")) {
-              errorMessage = "Insufficient funds for gas fees. Please add ETH to your wallet and try again.";
+              errorMessage =
+                "Insufficient funds for gas fees. Please add ETH to your wallet and try again.";
             } else if (message.includes("network")) {
-              errorMessage = "Network error. Please check your internet connection and try again.";
+              errorMessage =
+                "Network error. Please check your internet connection and try again.";
             } else {
               errorMessage = `Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`;
             }
@@ -164,7 +170,8 @@ export function useCreateHackathon() {
         });
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
       setError(new Error(errorMessage));
       return {
         success: false,
