@@ -23,10 +23,10 @@ export const projectSchema = z.object({
   // Hackathon selection step
   hackathonIds: z
     .array(z.string())
-    .min(1, "At least one hackathon must be selected")
+    .default([])
     .refine(
       (ids) => new Set(ids).size === ids.length,
-      "Duplicate hackathons are not allowed",
+      "Duplicate hackathons are not allowed"
     ),
 });
 

@@ -17,7 +17,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/defi-lending",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["Solidity", "React", "Node.js", "Web3.js"],
-    hackathonIds: ["1", "2"],
+    hackathonIds: [],
   },
   {
     logo: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=100&h=100&fit=crop&crop=center",
@@ -35,7 +35,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/ai-code-assistant",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["Python", "TensorFlow", "TypeScript", "Docker"],
-    hackathonIds: ["3"],
+    hackathonIds: [],
   },
   {
     logo: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop&crop=center",
@@ -53,7 +53,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/gaming-metaverse",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["Unity", "C#", "Solidity", "IPFS"],
-    hackathonIds: ["1", "3"],
+    hackathonIds: [],
   },
   {
     logo: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=100&h=100&fit=crop&crop=center",
@@ -71,7 +71,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/healthtech-analytics",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["Python", "TensorFlow", "React Native", "PostgreSQL"],
-    hackathonIds: ["2"],
+    hackathonIds: [],
   },
   {
     logo: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&h=100&fit=crop&crop=center",
@@ -89,7 +89,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/educhain",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["Next.js", "Solidity", "IPFS", "PostgreSQL"],
-    hackathonIds: ["1"],
+    hackathonIds: [],
   },
   {
     logo: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=100&h=100&fit=crop&crop=center",
@@ -107,7 +107,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/sustainable-supply",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["Python", "Arduino", "React", "Blockchain"],
-    hackathonIds: ["2", "3"],
+    hackathonIds: [],
   },
   {
     logo: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=100&h=100&fit=crop&crop=center",
@@ -125,7 +125,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/cybersecurity-shield",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["Python", "Kubernetes", "TensorFlow", "Go"],
-    hackathonIds: ["3"],
+    hackathonIds: [],
   },
   {
     logo: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=100&h=100&fit=crop&crop=center",
@@ -143,7 +143,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/social-impact",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["React", "Node.js", "Solidity", "MongoDB"],
-    hackathonIds: ["1", "2"],
+    hackathonIds: [],
   },
   {
     logo: "https://images.unsplash.com/photo-1563191911-e8e11be4b8e8?w=100&h=100&fit=crop&crop=center",
@@ -161,7 +161,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/productivity-ai",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["Vue.js", "Python", "FastAPI", "Redis"],
-    hackathonIds: ["2"],
+    hackathonIds: [],
   },
   {
     logo: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=100&h=100&fit=crop&crop=center",
@@ -179,7 +179,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     githubLink: "https://github.com/example/ecommerce-revolution",
     demoVideo: "https://youtu.be/dQw4w9WgXcQ",
     techStack: ["React", "ARCore", "Stripe", "Shopify API"],
-    hackathonIds: ["1", "3"],
+    hackathonIds: [],
   },
 ];
 
