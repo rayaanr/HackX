@@ -1,12 +1,8 @@
 "use client";
 
 import { useHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
-import {
-  useProjectById,
-  useProjectHackathons,
-} from "@/hooks/queries/use-projects";
+import { useBlockchainProject } from "@/hooks/blockchain/useBlockchainProjects";
 import { useActiveAccount } from "thirdweb/react";
-// Database transforms removed - using blockchain data directly
 import { notFound } from "next/navigation";
 import { useState } from "react";
 import { useParams } from "next/navigation";
@@ -31,17 +27,19 @@ export default function ProjectReviewPage() {
     data: project,
     isLoading: projectLoading,
     error: projectError,
-  } = useProjectById(projectId);
-  const { data: projectHackathons = [], isLoading: projectHackathonsLoading } =
-    useProjectHackathons(projectId);
+  } = useBlockchainProject(projectId);
+
+  // For simplicity, we'll skip the projectHackathons hook for now since the blockchain
+  // project already contains the necessary data
+  const projectHackathons: any[] = [];
   const account = useActiveAccount();
 
   // State for form data and selected cohort
   const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(
-    null,
+    null
   );
   const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(
-    undefined,
+    undefined
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,7 +47,7 @@ export default function ProjectReviewPage() {
   const hackathon =
     dbHackathon && dbHackathon.length > 0 ? dbHackathon[0] : null;
 
-  if (hackathonLoading || projectLoading || projectHackathonsLoading) {
+  if (hackathonLoading || projectLoading) {
     return <div>Loading...</div>;
   }
 

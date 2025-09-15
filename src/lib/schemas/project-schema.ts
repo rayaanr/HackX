@@ -25,7 +25,7 @@ export const projectSchema = z.object({
     .array(z.string())
     .refine(
       (ids) => new Set(ids).size === ids.length,
-      "Duplicate hackathons are not allowed"
+      "Duplicate hackathons are not allowed",
     ),
 });
 

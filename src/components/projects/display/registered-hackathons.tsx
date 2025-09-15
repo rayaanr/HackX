@@ -213,8 +213,8 @@ export function RegisteredHackathons() {
                               ? formatDisplayDate(
                                   new Date(
                                     Number(hackathon.registrationDeadline) *
-                                      1000
-                                  ).toISOString()
+                                      1000,
+                                  ).toISOString(),
                                 )
                               : "Registration TBD"}
                           </p>
@@ -267,8 +267,9 @@ export function RegisteredHackathons() {
                             {hackathon.submissionStartDate
                               ? formatDisplayDate(
                                   new Date(
-                                    Number(hackathon.submissionStartDate) * 1000
-                                  ).toISOString()
+                                    Number(hackathon.submissionStartDate) *
+                                      1000,
+                                  ).toISOString(),
                                 )
                               : "TBD"}
                           </span>{" "}
@@ -277,8 +278,8 @@ export function RegisteredHackathons() {
                             {hackathon.submissionDeadline
                               ? formatDisplayDate(
                                   new Date(
-                                    Number(hackathon.submissionDeadline) * 1000
-                                  ).toISOString()
+                                    Number(hackathon.submissionDeadline) * 1000,
+                                  ).toISOString(),
                                 )
                               : "TBD"}
                           </span>
@@ -290,7 +291,7 @@ export function RegisteredHackathons() {
                   <div className="relative w-1/3 min-h-[200px]">
                     <Image
                       src={resolveIPFSToHttp(
-                        hackathon.visual || hackathon.logo
+                        hackathon.visual || hackathon.logo,
                       )}
                       alt={
                         hackathon.title ||

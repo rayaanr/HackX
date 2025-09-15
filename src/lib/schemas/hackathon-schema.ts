@@ -72,7 +72,7 @@ const periodSchema = z
     {
       message: "End date must be after start date",
       path: ["registrationEndDate"],
-    }
+    },
   );
 
 const hackathonPeriodSchema = z
@@ -88,7 +88,7 @@ const hackathonPeriodSchema = z
     {
       message: "End date must be after start date",
       path: ["hackathonEndDate"],
-    }
+    },
   );
 
 const votingPeriodSchema = z
@@ -101,7 +101,7 @@ const votingPeriodSchema = z
       !data.votingStartDate ||
       !data.votingEndDate ||
       data.votingStartDate < data.votingEndDate,
-    { message: "End date must be after start date", path: ["votingEndDate"] }
+    { message: "End date must be after start date", path: ["votingEndDate"] },
   );
 
 // Define the main hackathon schema

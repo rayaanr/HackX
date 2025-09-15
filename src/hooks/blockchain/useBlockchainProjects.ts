@@ -63,7 +63,7 @@ export function useBlockchainProjects() {
         const projects = await getUserProjectsWithDetails(
           contract,
           client,
-          activeAccount.address
+          activeAccount.address,
         );
         console.log("✅ Fetched user projects with details:", projects);
         return projects;
@@ -92,7 +92,7 @@ export function useBlockchainProjects() {
 
       if (!contractAddress) {
         throw new Error(
-          "Contract not configured. Please check your environment variables."
+          "Contract not configured. Please check your environment variables.",
         );
       }
 
@@ -106,7 +106,7 @@ export function useBlockchainProjects() {
       // Step 2: Create the project on blockchain using helper function
       const createProjectTransaction = prepareCreateProjectTransaction(
         contract,
-        cid
+        cid,
       );
       console.log("🔗 Create project transaction prepared");
 
@@ -120,7 +120,7 @@ export function useBlockchainProjects() {
             console.log("🎉 Project created successfully!");
             console.log(
               "Create transaction hash:",
-              createResult.transactionHash
+              createResult.transactionHash,
             );
 
             try {
@@ -132,7 +132,7 @@ export function useBlockchainProjects() {
               let projectId = extractProjectIdFromReceipt(receipt);
               if (!projectId) {
                 console.warn(
-                  "⚠️ Could not extract project ID from receipt, using fallback"
+                  "⚠️ Could not extract project ID from receipt, using fallback",
                 );
                 projectId = Date.now();
               } else {
@@ -147,7 +147,7 @@ export function useBlockchainProjects() {
             } catch (receiptError) {
               console.warn(
                 "⚠️ Could not get transaction receipt:",
-                receiptError
+                receiptError,
               );
 
               // Fallback
@@ -170,28 +170,28 @@ export function useBlockchainProjects() {
             ) {
               reject(
                 new Error(
-                  "Transaction was cancelled. Please approve the transaction to submit your project."
-                )
+                  "Transaction was cancelled. Please approve the transaction to submit your project.",
+                ),
               );
             } else if (message.includes("insufficient funds")) {
               reject(
                 new Error(
-                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again."
-                )
+                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again.",
+                ),
               );
             } else if (message.includes("network")) {
               reject(
                 new Error(
-                  "Network error. Please check your internet connection and try again."
-                )
+                  "Network error. Please check your internet connection and try again.",
+                ),
               );
             } else {
               reject(
                 new Error(
                   `Transaction failed: ${
                     error instanceof Error ? error.message : "Unknown error"
-                  }`
-                )
+                  }`,
+                ),
               );
             }
           },
@@ -226,12 +226,12 @@ export function useBlockchainProjects() {
 
       if (!contractAddress) {
         throw new Error(
-          "Contract not configured. Please check your environment variables."
+          "Contract not configured. Please check your environment variables.",
         );
       }
 
       console.log(
-        `🚀 Submitting project ${projectId} to hackathon ${hackathonId}...`
+        `🚀 Submitting project ${projectId} to hackathon ${hackathonId}...`,
       );
 
       // Use helper function to prepare transaction
@@ -239,7 +239,7 @@ export function useBlockchainProjects() {
         prepareSubmitProjectToHackathonTransaction(
           contract,
           hackathonId,
-          projectId
+          projectId,
         );
 
       return new Promise<{
@@ -269,28 +269,28 @@ export function useBlockchainProjects() {
             ) {
               reject(
                 new Error(
-                  "Transaction was cancelled. Please approve the transaction to submit to hackathon."
-                )
+                  "Transaction was cancelled. Please approve the transaction to submit to hackathon.",
+                ),
               );
             } else if (message.includes("insufficient funds")) {
               reject(
                 new Error(
-                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again."
-                )
+                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again.",
+                ),
               );
             } else if (message.includes("network")) {
               reject(
                 new Error(
-                  "Network error. Please check your internet connection and try again."
-                )
+                  "Network error. Please check your internet connection and try again.",
+                ),
               );
             } else {
               reject(
                 new Error(
                   `Hackathon submission failed: ${
                     error instanceof Error ? error.message : "Unknown error"
-                  }`
-                )
+                  }`,
+                ),
               );
             }
           },

@@ -52,19 +52,19 @@ function dateToUnixTimestamp(date?: Date): number {
 export function prepareCreateHackathonTransaction(
   contract: ThirdwebContract,
   cid: string,
-  formData: HackathonFormData
+  formData: HackathonFormData,
 ) {
   const registrationDeadline = dateToUnixTimestamp(
-    formData.registrationPeriod?.registrationEndDate
+    formData.registrationPeriod?.registrationEndDate,
   );
   const submissionStartDate = dateToUnixTimestamp(
-    formData.hackathonPeriod?.hackathonStartDate
+    formData.hackathonPeriod?.hackathonStartDate,
   );
   const submissionDeadline = dateToUnixTimestamp(
-    formData.hackathonPeriod?.hackathonEndDate
+    formData.hackathonPeriod?.hackathonEndDate,
   );
   const judgingDeadline = dateToUnixTimestamp(
-    formData.votingPeriod?.votingEndDate
+    formData.votingPeriod?.votingEndDate,
   );
 
   // Extract judge addresses from the form data
@@ -87,7 +87,7 @@ export function prepareCreateHackathonTransaction(
 
 // Fetch total hackathons count
 export async function getTotalHackathons(
-  contract: ThirdwebContract
+  contract: ThirdwebContract,
 ): Promise<number> {
   const result = await readContract({
     contract,
@@ -99,7 +99,7 @@ export async function getTotalHackathons(
 // Fetch hackathon participants
 export async function getHackathonParticipants(
   contract: ThirdwebContract,
-  hackathonId: string | number
+  hackathonId: string | number,
 ): Promise<string[]> {
   try {
     const participants = await readContract({
@@ -109,7 +109,7 @@ export async function getHackathonParticipants(
       params: [BigInt(hackathonId)],
     });
     return (participants || []).map((p: any) =>
-      typeof p === "bigint" ? p.toString() : p
+      typeof p === "bigint" ? p.toString() : p,
     );
   } catch (error) {
     console.error("Failed to fetch participants:", error);
@@ -120,7 +120,7 @@ export async function getHackathonParticipants(
 // Fetch hackathon projects
 export async function getHackathonProjects(
   contract: ThirdwebContract,
-  hackathonId: string | number
+  hackathonId: string | number,
 ): Promise<number[]> {
   try {
     const projects = await readContract({
@@ -130,7 +130,7 @@ export async function getHackathonProjects(
       params: [BigInt(hackathonId)],
     });
     return (projects || []).map((p: any) =>
-      typeof p === "bigint" ? Number(p) : p
+      typeof p === "bigint" ? Number(p) : p,
     );
   } catch (error) {
     console.error("Failed to fetch projects:", error);
@@ -142,7 +142,7 @@ export async function getHackathonProjects(
 export async function isUserRegistered(
   contract: ThirdwebContract,
   hackathonId: string | number,
-  userAddress: string
+  userAddress: string,
 ): Promise<boolean> {
   try {
     const isRegistered = await readContract({
@@ -160,7 +160,7 @@ export async function isUserRegistered(
 // Register for hackathon
 export function prepareRegisterForHackathonTransaction(
   contract: ThirdwebContract,
-  hackathonId: string | number
+  hackathonId: string | number,
 ) {
   return prepareContractCall({
     contract,
@@ -172,7 +172,7 @@ export function prepareRegisterForHackathonTransaction(
 // Fetch metadata from IPFS
 export async function fetchIPFSMetadata(
   client: ThirdwebClient,
-  ipfsHash: string
+  ipfsHash: string,
 ) {
   try {
     const file = await download({
@@ -191,7 +191,7 @@ export async function fetchIPFSMetadata(
     } catch (fallbackError) {
       console.warn(
         `Failed to fetch metadata from both IPFS and dweb.link for hash ${ipfsHash}:`,
-        fallbackError
+        fallbackError,
       );
       return {};
     }
@@ -202,7 +202,7 @@ export async function fetchIPFSMetadata(
 export async function getHackathonById(
   contract: ThirdwebContract,
   client: ThirdwebClient,
-  hackathonId: string | number
+  hackathonId: string | number,
 ) {
   const id = BigInt(hackathonId);
   const hackathon = await readContract({
@@ -230,7 +230,7 @@ export async function getHackathonById(
 // Upload project metadata to IPFS
 export async function uploadProjectToIPFS(
   client: ThirdwebClient,
-  projectData: ProjectFormData
+  projectData: ProjectFormData,
 ): Promise<{ cid: string }> {
   const metadata = {
     name: projectData.name,
@@ -271,7 +271,7 @@ export async function uploadProjectToIPFS(
 // Prepare create project transaction
 export function prepareCreateProjectTransaction(
   contract: ThirdwebContract,
-  cid: string
+  cid: string,
 ) {
   return prepareContractCall({
     contract,
@@ -284,7 +284,7 @@ export function prepareCreateProjectTransaction(
 export function prepareSubmitProjectToHackathonTransaction(
   contract: ThirdwebContract,
   hackathonId: string | number,
-  projectId: string | number
+  projectId: string | number,
 ) {
   return prepareContractCall({
     contract,
@@ -317,7 +317,7 @@ export function extractProjectIdFromReceipt(receipt: any): number | null {
 // Get user project IDs only (lightweight version)
 export async function getUserProjects(
   contract: ThirdwebContract,
-  userAddress: string
+  userAddress: string,
 ): Promise<number[]> {
   try {
     const projectIds = await readContract({
@@ -336,7 +336,7 @@ export async function getUserProjects(
 export async function getUserProjectsWithDetails(
   contract: ThirdwebContract,
   client: ThirdwebClient,
-  userAddress: string
+  userAddress: string,
 ) {
   try {
     console.log("🔗 Fetching user projects with details...", { userAddress });
@@ -351,7 +351,7 @@ export async function getUserProjectsWithDetails(
     console.log(
       "📊 Raw project IDs from contract:",
       rawProjectIds,
-      typeof rawProjectIds
+      typeof rawProjectIds,
     );
 
     // Additional debugging - log each project ID individually
@@ -359,11 +359,11 @@ export async function getUserProjectsWithDetails(
       rawProjectIds.forEach((id, index) => {
         console.log(
           `📋 Project ID[${index}]: ${id} (type: ${typeof id}, value: ${String(
-            id
-          )})`
+            id,
+          )})`,
         );
         console.log(
-          `📋 Project ID[${index}] BigInt conversion test: ${BigInt(id)}`
+          `📋 Project ID[${index}] BigInt conversion test: ${BigInt(id)}`,
         );
       });
     }
@@ -378,7 +378,7 @@ export async function getUserProjectsWithDetails(
       try {
         // Debug logging
         console.log(
-          `🔍 Processing project ID: ${projectId} (type: ${typeof projectId})`
+          `🔍 Processing project ID: ${projectId} (type: ${typeof projectId})`,
         );
 
         const numericId = Number(projectId);
@@ -391,7 +391,7 @@ export async function getUserProjectsWithDetails(
           !Number.isFinite(numericId)
         ) {
           console.error(
-            `❌ Invalid project ID: ${numericId} (original: ${projectId})`
+            `❌ Invalid project ID: ${numericId} (original: ${projectId})`,
           );
           return null;
         }
@@ -418,7 +418,7 @@ export async function getUserProjectsWithDetails(
         } catch (conversionError) {
           console.error(
             `❌ Failed to convert project ID to BigInt:`,
-            conversionError
+            conversionError,
           );
           return null;
         }
@@ -439,11 +439,11 @@ export async function getUserProjectsWithDetails(
           try {
             const rawMetadata = await fetchIPFSMetadata(
               client,
-              project.ipfsHash
+              project.ipfsHash,
             );
             console.log(
               `📁 Raw IPFS metadata for project ${numericId}:`,
-              rawMetadata
+              rawMetadata,
             );
 
             // Flatten nested metadata structure - check if data is nested under 'data' property
@@ -453,7 +453,7 @@ export async function getUserProjectsWithDetails(
                 metadata = { ...rawMetadata, ...rawMetadata.data };
                 console.log(
                   `📋 Flattened metadata for project ${numericId}:`,
-                  metadata
+                  metadata,
                 );
               } else {
                 metadata = rawMetadata;
@@ -464,7 +464,7 @@ export async function getUserProjectsWithDetails(
           } catch (error) {
             console.warn(
               `Failed to fetch IPFS metadata for project ${numericId}:`,
-              error
+              error,
             );
           }
         }
@@ -520,7 +520,7 @@ export async function getUserProjectsWithDetails(
 export async function getProjectById(
   contract: ThirdwebContract,
   client: ThirdwebClient,
-  projectId: string | number
+  projectId: string | number,
 ) {
   const project = await readContract({
     contract,
@@ -574,7 +574,7 @@ export async function getProjectById(
 
 // Get total projects count
 export async function getTotalProjects(
-  contract: ThirdwebContract
+  contract: ThirdwebContract,
 ): Promise<number> {
   const result = await readContract({
     contract,

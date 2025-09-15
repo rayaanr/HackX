@@ -59,7 +59,7 @@ export function CreateProjectForm() {
           {
             onSuccess: resolve,
             onError: reject,
-          }
+          },
         );
       });
 
@@ -68,7 +68,7 @@ export function CreateProjectForm() {
       // Step 2: If user has hackathons selected, submit to each one
       if (data.hackathonIds && data.hackathonIds.length > 0) {
         console.log(
-          `📤 Submitting to ${data.hackathonIds.length} hackathon(s)...`
+          `📤 Submitting to ${data.hackathonIds.length} hackathon(s)...`,
         );
 
         // Submit to each selected hackathon
@@ -82,7 +82,7 @@ export function CreateProjectForm() {
               {
                 onSuccess: resolve,
                 onError: reject,
-              }
+              },
             );
           });
         });
@@ -95,13 +95,10 @@ export function CreateProjectForm() {
             `Project created and submitted to ${data.hackathonIds.length} hackathon(s)!`,
             {
               description: "Successfully stored on IPFS and blockchain.",
-            }
+            },
           );
         } catch (submissionError) {
-          console.warn(
-            "⚠️ Some hackathon submissions failed:",
-            submissionError
-          );
+          console.warn("⚠️ Some hackathon submissions failed:", submissionError);
           toast.success("Project created successfully!", {
             description:
               "Project is stored on blockchain, but some hackathon submissions may have failed.",
@@ -122,7 +119,7 @@ export function CreateProjectForm() {
         error instanceof Error
           ? error.message
           : "Error creating project. Please try again.",
-        { description: "Check console for details" }
+        { description: "Check console for details" },
       );
     } finally {
       setIsSubmitting(false);
@@ -142,12 +139,12 @@ export function CreateProjectForm() {
             {isSubmitting
               ? "Creating Project..."
               : !isConnected
-              ? "Connect Wallet Required"
-              : form.watch("hackathonIds")?.length > 0
-              ? `Create & Submit to ${
-                  form.watch("hackathonIds")?.length
-                } Hackathon${form.watch("hackathonIds")?.length > 1 ? "s" : ""}`
-              : "Create Project"}
+                ? "Connect Wallet Required"
+                : form.watch("hackathonIds")?.length > 0
+                  ? `Create & Submit to ${
+                      form.watch("hackathonIds")?.length
+                    } Hackathon${form.watch("hackathonIds")?.length > 1 ? "s" : ""}`
+                  : "Create Project"}
           </Button>
         </div>
 
