@@ -26,29 +26,34 @@ export function ActiveProjects() {
 
   // Transform blockchain projects to UI format
   const allProjects = useMemo(() => {
-    const projects = blockchainProjects.map((project) => ({
-      id: project.blockchainId?.toString() || `blockchain-${Date.now()}`,
-      name: project.name || "Untitled Project",
-      description: project.description || project.intro || null,
-      hackathon_name: project.hackathonId
-        ? `Hackathon #${project.hackathonId}`
-        : undefined,
-      hackathon_id: project.hackathonId?.toString(),
-      tech_stack: project.techStack || [],
-      status: project.isSubmitted ? "submitted" : ("draft" as const),
-      updated_at: project.createdAt || new Date().toISOString(),
-      repository_url: project.githubLink,
-      demo_url: project.demoVideo,
-      team_members: [],
-      source: "blockchain" as const,
-      key: `blockchain-${project.blockchainId}`,
-      totalScore: project.totalScore,
-      judgeCount: project.judgeCount,
-    }));
+    const projects = blockchainProjects
+      .filter((project) => project !== null && project !== undefined)
+      .map((project) => ({
+        id: project.blockchainId?.toString() || `blockchain-${Date.now()}`,
+        name: project.name || "Untitled Project",
+        description: project.description || project.intro || null,
+        hackathon_name:
+          project.hackathonIds && project.hackathonIds.length > 0
+            ? `Submitted to ${project.hackathonIds.length} hackathon${
+                project.hackathonIds.length > 1 ? "s" : ""
+              }`
+            : undefined,
+        hackathon_id: project.hackathonIds?.[0]?.toString(),
+        tech_stack: project.techStack || [],
+        status: project.isCreated ? "submitted" : ("draft" as const),
+        updated_at: project.createdAt || new Date().toISOString(),
+        repository_url: project.githubLink,
+        demo_url: project.demoVideo,
+        team_members: [],
+        source: "blockchain" as const,
+        key: `blockchain-${project.blockchainId}`,
+        totalScore: project.totalScore,
+        judgeCount: project.judgeCount,
+      }));
 
     return projects.sort(
       (a, b) =>
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
     );
   }, [blockchainProjects]);
 

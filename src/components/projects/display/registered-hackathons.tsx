@@ -22,7 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRegisteredHackathons } from "@/hooks/queries/use-projects";
+import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import { getDaysLeft, formatDisplayDate } from "@/lib/helpers/date";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
@@ -30,21 +30,22 @@ import Image from "next/image";
 
 export function RegisteredHackathons() {
   const {
-    data: registrations = [],
+    hackathons: registrations = [],
     isLoading: loading,
     error,
+    isConnected,
   } = useRegisteredHackathons();
 
   const getStatusBadge = (hackathon: any) => {
     const now = new Date();
-    const regEnd = hackathon.registration_end_date
-      ? new Date(hackathon.registration_end_date)
+    const regEnd = hackathon.registrationDeadline
+      ? new Date(Number(hackathon.registrationDeadline) * 1000)
       : null;
-    const hackStart = hackathon.hackathon_start_date
-      ? new Date(hackathon.hackathon_start_date)
+    const subStart = hackathon.submissionStartDate
+      ? new Date(Number(hackathon.submissionStartDate) * 1000)
       : null;
-    const hackEnd = hackathon.hackathon_end_date
-      ? new Date(hackathon.hackathon_end_date)
+    const subEnd = hackathon.submissionDeadline
+      ? new Date(Number(hackathon.submissionDeadline) * 1000)
       : null;
 
     if (regEnd && now < regEnd) {
@@ -53,14 +54,33 @@ export function RegisteredHackathons() {
           Registration Open
         </Badge>
       );
-    } else if (hackStart && hackEnd && now >= hackStart && now <= hackEnd) {
+    } else if (subStart && subEnd && now >= subStart && now <= subEnd) {
       return <Badge className="bg-green-500 hover:bg-green-600">Live</Badge>;
-    } else if (hackEnd && now > hackEnd) {
+    } else if (subEnd && now > subEnd) {
       return <Badge variant="secondary">Completed</Badge>;
     } else {
       return <Badge variant="outline">Upcoming</Badge>;
     }
   };
+
+  if (!isConnected) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
+        <Card>
+          <CardContent className="text-center py-12">
+            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Trophy className="w-12 h-12 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Connect Your Wallet</h3>
+            <p className="text-muted-foreground mb-4">
+              Connect your wallet to view your registered hackathons
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -130,8 +150,7 @@ export function RegisteredHackathons() {
         </Card>
       ) : (
         <div className="space-y-6">
-          {registrations.map((registration) => {
-            const hackathon = registration.hackathon;
+          {registrations.map((hackathon) => {
             return (
               <Card
                 key={hackathon.id}
@@ -143,7 +162,9 @@ export function RegisteredHackathons() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <CardTitle className="text-xl">
-                            {hackathon.name}
+                            {hackathon.title ||
+                              hackathon.name ||
+                              `Hackathon ${hackathon.id}`}
                           </CardTitle>
                           {getStatusBadge(hackathon)}
                         </div>
@@ -176,7 +197,9 @@ export function RegisteredHackathons() {
 
                     <CardContent className="p-0">
                       <p className="text-muted-foreground mb-6">
-                        {hackathon.short_description}
+                        {hackathon.description ||
+                          hackathon.short_description ||
+                          `Hackathon ${hackathon.id}`}
                       </p>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
@@ -186,10 +209,13 @@ export function RegisteredHackathons() {
                             Registration closes
                           </h6>
                           <p className="text-sm font-medium">
-                            {hackathon.registration_end_date
-                              ? `Registration ${getDaysLeft(
-                                  hackathon.registration_end_date,
-                                )} days left`
+                            {hackathon.registrationDeadline
+                              ? formatDisplayDate(
+                                  new Date(
+                                    Number(hackathon.registrationDeadline) *
+                                      1000
+                                  ).toISOString()
+                                )
                               : "Registration TBD"}
                           </p>
                         </div>
@@ -199,8 +225,8 @@ export function RegisteredHackathons() {
                             Tech stack
                           </h6>
                           <p className="text-sm font-medium">
-                            {hackathon.tech_stack &&
-                            hackathon.tech_stack.length > 0
+                            {hackathon.techStack &&
+                            hackathon.techStack.length > 0
                               ? "All tech stack"
                               : "Any"}
                           </p>
@@ -211,8 +237,8 @@ export function RegisteredHackathons() {
                             Level
                           </h6>
                           <p className="text-sm font-medium capitalize">
-                            {hackathon.experience_level
-                              ? hackathon.experience_level.toLowerCase() +
+                            {hackathon.experienceLevel
+                              ? hackathon.experienceLevel.toLowerCase() +
                                 " levels accepted"
                               : "All levels accepted"}
                           </p>
@@ -222,7 +248,9 @@ export function RegisteredHackathons() {
                             <Trophy className="w-4 h-4 mr-1" />
                             Total prize
                           </h6>
-                          <p className="text-sm font-medium">TBD</p>
+                          <p className="text-sm font-medium">
+                            {hackathon.totalPrize || "TBD"}
+                          </p>
                         </div>
                       </div>
 
@@ -236,16 +264,22 @@ export function RegisteredHackathons() {
                         </Button>
                         <div className="text-sm text-muted-foreground">
                           <span className="font-medium">
-                            {hackathon.hackathon_start_date
+                            {hackathon.submissionStartDate
                               ? formatDisplayDate(
-                                  hackathon.hackathon_start_date,
+                                  new Date(
+                                    Number(hackathon.submissionStartDate) * 1000
+                                  ).toISOString()
                                 )
                               : "TBD"}
                           </span>{" "}
                           -{" "}
                           <span className="font-medium">
-                            {hackathon.hackathon_end_date
-                              ? formatDisplayDate(hackathon.hackathon_end_date)
+                            {hackathon.submissionDeadline
+                              ? formatDisplayDate(
+                                  new Date(
+                                    Number(hackathon.submissionDeadline) * 1000
+                                  ).toISOString()
+                                )
                               : "TBD"}
                           </span>
                         </div>
@@ -255,8 +289,14 @@ export function RegisteredHackathons() {
 
                   <div className="relative w-1/3 min-h-[200px]">
                     <Image
-                      src={resolveIPFSToHttp(hackathon.visual)}
-                      alt={hackathon.name}
+                      src={resolveIPFSToHttp(
+                        hackathon.visual || hackathon.logo
+                      )}
+                      alt={
+                        hackathon.title ||
+                        hackathon.name ||
+                        `Hackathon ${hackathon.id}`
+                      }
                       fill
                       className="object-cover rounded-r-lg"
                       unoptimized
