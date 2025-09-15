@@ -395,22 +395,3 @@ export const useSubmitProject = () => {
     error: submitProjectError,
   };
 };
-
-/**
- * @deprecated Use useBlockchainProjects().userProjects instead
- * Legacy hook for fetching user projects - kept for backward compatibility
- */
-export const useUserBlockchainProjects = () => {
-  const {
-    userProjects,
-    isLoadingUserProjects,
-    userProjectsError,
-    refetchUserProjects,
-  } = useBlockchainProjects();
-  return {
-    data: userProjects,
-    isLoading: isLoadingUserProjects,
-    error: userProjectsError,
-    refetch: refetchUserProjects,
-  };
-};

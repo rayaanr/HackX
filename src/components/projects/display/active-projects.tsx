@@ -4,7 +4,7 @@ import { Plus, FolderIcon, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useUserBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
+import { useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
 import { getProjectStatusVariant } from "@/lib/helpers/project";
 import { formatRelativeDate } from "@/lib/helpers/date";
 import Link from "next/link";
@@ -12,10 +12,10 @@ import { useMemo } from "react";
 
 export function ActiveProjects() {
   const {
-    data: blockchainProjects = [],
-    isLoading: loading,
-    error,
-  } = useUserBlockchainProjects();
+    userProjects: blockchainProjects = [],
+    isLoadingUserProjects: loading,
+    userProjectsError: error,
+  } = useBlockchainProjects();
 
   // Debug logging
   console.log("🔍 ActiveProjects Debug:", {
