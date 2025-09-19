@@ -1,5 +1,4 @@
 import { IconBell, IconSearch } from "@tabler/icons-react";
-import { NavUser } from "@/components/layout/nav-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "./theme-toggle";
@@ -19,17 +18,14 @@ export function SiteHeader() {
         </div>
 
         {/* Right side icons and user */}
-        <div className="ml-auto flex items-center gap-2">
-          <WalletConnect />
+        <div className="ml-auto flex items-center gap-3">
           <ThemeToggle />
           {account && (
-            <>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <IconBell className="size-4" />
-              </Button>
-              <NavUser variant="header" />
-            </>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <IconBell className="size-4" />
+            </Button>
           )}
+          <WalletConnect />
         </div>
       </div>
     </header>
