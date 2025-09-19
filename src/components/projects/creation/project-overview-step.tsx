@@ -174,7 +174,7 @@ export function OverviewStep() {
             name="pitchVideo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Itch Video</FormLabel>
+                <FormLabel>Pitch Video</FormLabel>
                 <FormControl>
                   <Input placeholder="https://example.com/video" {...field} />
                 </FormControl>

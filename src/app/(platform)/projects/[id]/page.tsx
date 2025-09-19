@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useParams, notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, GitBranch } from "lucide-react";
+import { ArrowLeft, ExternalLink, GitBranch, Edit, Play } from "lucide-react";
 import Link from "next/link";
+import { YouTubeEmbed } from "@next/third-parties/google";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,11 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBlockchainProject } from "@/hooks/blockchain/useBlockchainProjects";
 import { getProjectStatusVariant } from "@/lib/helpers/project";
 import { formatRelativeDate } from "@/lib/helpers/date";
+import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 
 export default function ProjectDetailsPage() {
   const params = useParams();
   const projectId = params.id as string;
-  const [activeTab, setActiveTab] = useState<"overview" | "details">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "hackathon" | "team">("overview");
 
   const {
     data: project,
@@ -43,242 +45,318 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className="container py-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/projects">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Projects
+              Back
             </Link>
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">
-              {project.name || "Untitled Project"}
-            </h1>
-            <p className="text-muted-foreground mb-4">
-              {project.description || project.intro || "No description provided"}
-            </p>
-            <div className="flex items-center gap-4">
-              <Badge variant={getProjectStatusVariant(project.isCreated ? "submitted" : "draft")}>
-                {project.isCreated ? "submitted" : "draft"}
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                Created {formatRelativeDate(project.createdAt || new Date().toISOString())}
-              </span>
-            </div>
+        {/* Project Header Section */}
+        <div className="flex flex-col lg:flex-row gap-8 mb-8">
+          {/* Project Logo */}
+          <div className="flex-shrink-0">
+            {project.logo ? (
+              <img
+                src={project.logo}
+                alt={project.name || "Project logo"}
+                className="w-32 h-32 rounded-2xl object-cover border"
+              />
+            ) : (
+              <div className="w-32 h-32 rounded-2xl bg-primary/10 flex items-center justify-center border">
+                <span className="text-2xl font-bold text-primary">
+                  {(project.name || "P").charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
 
-          <div className="flex gap-2">
-            {project.githubLink && (
-              <Button variant="outline" asChild>
-                <a
-                  href={project.githubLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <GitBranch className="w-4 h-4 mr-2" />
-                  Repository
-                </a>
-              </Button>
-            )}
-            {project.demoVideo && (
-              <Button asChild>
-                <a
-                  href={project.demoVideo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Demo
-                </a>
-              </Button>
-            )}
+          {/* Project Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h1 className="text-4xl font-bold mb-3">
+                  {project.name || "Untitled Project"}
+                </h1>
+                <p className="text-lg text-muted-foreground mb-4 leading-relaxed">
+                  {project.intro || "No description provided"}
+                </p>
+              </div>
+              <div className="flex gap-2 ml-4">
+                <Button size="lg" className="gap-2">
+                  <Edit className="w-4 h-4" />
+                  Edit Project
+                </Button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 flex-wrap">
+              {project.githubLink && (
+                <Button variant="outline" asChild>
+                  <Link
+                    href={project.githubLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <GitBranch className="w-4 h-4 mr-2" />
+                    Repository
+                  </Link>
+                </Button>
+              )}
+              {project.demoVideo && (
+                <Button variant="outline" asChild>
+                  <Link
+                    href={project.demoVideo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Demo Video
+                  </Link>
+                </Button>
+              )}
+              {project.pitchVideo && (
+                <Button variant="outline" asChild>
+                  <Link
+                    href={project.pitchVideo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Pitch Video
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Content Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "overview" | "details")}>
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "overview" | "hackathon" | "team")}>
+          <TabsList className="grid w-full grid-cols-3 max-w-md">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="hackathon">Hackathon</TabsTrigger>
+            <TabsTrigger value="team">Team</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="mt-6">
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* Main Content */}
-              <div className="lg:col-span-2 space-y-6">
+          <TabsContent value="overview" className="mt-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="space-y-8">
                 {/* Description */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Description</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {project.description || project.intro || "No description available"}
-                    </p>
-                  </CardContent>
-                </Card>
+                {project.description && (
+                  <div>
+                    <div
+                      className="text-muted-foreground leading-relaxed prose prose-lg max-w-none dark:prose-invert"
+                      dangerouslySetInnerHTML={{ __html: project.description }}
+                    />
+                  </div>
+                )}
 
-                {/* Tech Stack */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Tech Stack</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {project.techStack && project.techStack.length > 0 ? (
-                        project.techStack.map((tech: string) => (
-                          <Badge key={tech} variant="secondary">
-                            {tech}
-                          </Badge>
-                        ))
-                      ) : (
-                        <span className="text-muted-foreground">No tech stack specified</span>
+                {/* Videos Section */}
+                {(project.demoVideo || project.pitchVideo) && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Videos</h2>
+                    <div className="space-y-6">
+                      {project.demoVideo && (
+                        <div>
+                          <h3 className="text-lg font-medium mb-3">Demo Video</h3>
+                          <div className="rounded-lg overflow-hidden">
+                            {isYouTubeUrl(project.demoVideo) ? (
+                              <YouTubeEmbed
+                                videoid={extractYouTubeVideoId(project.demoVideo) || ""}
+                                height={400}
+                                params="controls=1&modestbranding=1&rel=0"
+                              />
+                            ) : (
+                              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                                <div className="text-center">
+                                  <Play className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
+                                  <p className="text-sm text-muted-foreground mb-4">Video Preview</p>
+                                  <Button asChild>
+                                    <Link
+                                      href={project.demoVideo}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <ExternalLink className="w-4 h-4 mr-2" />
+                                      Watch Video
+                                    </Link>
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {project.pitchVideo && (
+                        <div>
+                          <h3 className="text-lg font-medium mb-3">Pitch Video</h3>
+                          <div className="rounded-lg overflow-hidden">
+                            {isYouTubeUrl(project.pitchVideo) ? (
+                              <YouTubeEmbed
+                                videoid={extractYouTubeVideoId(project.pitchVideo) || ""}
+                                height={400}
+                                params="controls=1&modestbranding=1&rel=0"
+                              />
+                            ) : (
+                              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                                <div className="text-center">
+                                  <Play className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
+                                  <p className="text-sm text-muted-foreground mb-4">Video Preview</p>
+                                  <Button asChild>
+                                    <Link
+                                      href={project.pitchVideo}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <ExternalLink className="w-4 h-4 mr-2" />
+                                      Watch Video
+                                    </Link>
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                )}
 
-              {/* Sidebar */}
-              <div className="space-y-6">
-                {/* Project Stats */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Project Stats</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Status</span>
-                      <Badge variant={getProjectStatusVariant(project.isCreated ? "submitted" : "draft")}>
-                        {project.isCreated ? "submitted" : "draft"}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Blockchain ID</span>
-                      <span className="text-sm">{project.blockchainId || "N/A"}</span>
-                    </div>
-                    {project.totalScore > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Total Score</span>
-                        <span className="text-sm font-medium">{project.totalScore}</span>
-                      </div>
-                    )}
-                    {project.judgeCount > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Judges</span>
-                        <span className="text-sm">{project.judgeCount}</span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Hackathons */}
-                {project.hackathonIds && project.hackathonIds.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Submitted to Hackathons</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {project.hackathonIds.map((hackathonId: string | number) => (
-                          <div key={hackathonId} className="flex items-center justify-between">
-                            <span className="text-sm">Hackathon #{hackathonId}</span>
-                            <Badge variant="outline" className="text-xs">
-                              Submitted
-                            </Badge>
+                {/* Progress */}
+                {project.progress && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Progress During Hackathon</h2>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <p className="text-muted-foreground leading-relaxed mb-4">
+                          {project.progress}
+                        </p>
+                        {/* Tech Stack */}
+                        {project.techStack && project.techStack.length > 0 && (
+                          <div className="pt-4 border-t">
+                            <div className="flex flex-wrap gap-2">
+                              {project.techStack.map((tech: string) => (
+                                <Badge key={tech} variant="secondary">
+                                  {tech}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Fundraising Status */}
+                {project.fundraisingStatus && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Fundraising Status</h2>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <p className="text-muted-foreground leading-relaxed">
+                          {project.fundraisingStatus}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
                 )}
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="details" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">Name</span>
-                    <p className="text-sm">{project.name || "Untitled Project"}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">Blockchain ID</span>
-                    <p className="text-sm">{project.blockchainId || "N/A"}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">Created</span>
-                    <p className="text-sm">
-                      {project.createdAt
-                        ? formatRelativeDate(project.createdAt)
-                        : "Unknown"
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-muted-foreground">Status</span>
-                    <p className="text-sm">{project.isCreated ? "Submitted" : "Draft"}</p>
-                  </div>
+          <TabsContent value="hackathon" className="mt-8">
+            <div className="space-y-6">
+              {/* Hackathon Submissions */}
+              {project.submittedToHackathons && project.submittedToHackathons.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {project.submittedToHackathons.map((hackathon: any, index: number) => (
+                    <Card key={index}>
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          {hackathon.name || `Hackathon #${index + 1}`}
+                        </CardTitle>
+                        <Badge variant="outline" className="w-fit">
+                          Submitted
+                        </Badge>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                          {hackathon.description || "No description available"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
+              ) : (
+                <div className="text-center py-12">
+                  <h3 className="text-lg font-semibold mb-2">No Hackathon Submissions</h3>
+                  <p className="text-muted-foreground">
+                    This project hasn't been submitted to any hackathons yet.
+                  </p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
 
-                {(project.githubLink || project.demoVideo || project.pitchVideo) && (
-                  <div className="pt-4 border-t">
-                    <span className="text-sm font-medium text-muted-foreground mb-2 block">Links</span>
-                    <div className="space-y-2">
-                      {project.githubLink && (
-                        <div className="flex items-center gap-2">
-                          <GitBranch className="w-4 h-4" />
-                          <a
-                            href={project.githubLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
-                          >
-                            GitHub Repository
-                          </a>
-                        </div>
-                      )}
-                      {project.demoVideo && (
-                        <div className="flex items-center gap-2">
-                          <ExternalLink className="w-4 h-4" />
-                          <a
-                            href={project.demoVideo}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
-                          >
-                            Demo Video
-                          </a>
-                        </div>
-                      )}
-                      {project.pitchVideo && (
-                        <div className="flex items-center gap-2">
-                          <ExternalLink className="w-4 h-4" />
-                          <a
-                            href={project.pitchVideo}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
-                          >
-                            Pitch Video
-                          </a>
-                        </div>
-                      )}
+          <TabsContent value="team" className="mt-8">
+            <div className="space-y-6">
+              {/* Team Leader */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Team Leader</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-lg font-semibold text-primary">
+                        R
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Rayaan</h3>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>Github</span>
+                        <Link
+                          href="https://github.com/rayaan"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                        >
+                          github.com/rayaan ↗
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Additional Team Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Team Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <span className="text-sm font-medium text-muted-foreground">Team Size</span>
+                      <p className="text-sm">1 member</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-muted-foreground">Project Role</span>
+                      <p className="text-sm">Full-stack Developer & Project Lead</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
