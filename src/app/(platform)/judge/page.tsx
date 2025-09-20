@@ -138,7 +138,7 @@ export default function JudgeDashboardPage() {
 
                 <div className="flex items-center gap-2">
                   <Button asChild>
-                    <Link href={`/hackathons/${hackathon.id}/judge`}>
+                    <Link href={`/judge/${hackathon.id}`}>
                       Go to judging
                       <ArrowRight className="size-4" />
                     </Link>
