@@ -2,17 +2,28 @@
 
 import { useState } from "react";
 import { useParams, notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, GitBranch, Edit, Play } from "lucide-react";
+import { ArrowLeft, ExternalLink, GitBranch, Edit, Play, Plus, Calendar, Trophy, Search, } from "lucide-react";
 import Link from "next/link";
 import { YouTubeEmbed } from "@next/third-parties/google";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useBlockchainProject, useProjectTeamMembers } from "@/hooks/blockchain/useBlockchainProjects";
+import { useBlockchainProject, useProjectTeamMembers, useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
+import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 import { useEns } from "@/hooks/use-ens";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { getUIHackathonStatus } from "@/lib/helpers/date";
 
 // Team member component with ENS support
 function TeamMember({ address, role = "Member", index }: { address: string; role?: string; index?: number }) {
@@ -42,6 +53,158 @@ function TeamMember({ address, role = "Member", index }: { address: string; role
         )}
       </div>
     </div>
+  );
+}
+
+// Hackathon submission dialog component
+function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
+  const { hackathons: registeredHackathons = [], isLoading } = useRegisteredHackathons();
+  const { submitToHackathon, isSubmittingToHackathon } = useBlockchainProjects();
+  const [open, setOpen] = useState(false);
+  const [showDiscovery, setShowDiscovery] = useState(false);
+
+  // Filter registered hackathons to only show active ones
+  const availableRegisteredHackathons = registeredHackathons.filter((hackathon: any) => {
+    const status = getUIHackathonStatus({
+      ...hackathon,
+      votingPeriod: hackathon.votingPeriod || undefined,
+    });
+    return status === "Registration Open" || status === "Live";
+  });
+
+  const handleSubmit = async (hackathonId: string) => {
+    try {
+      submitToHackathon({
+        projectId,
+        hackathonId,
+      });
+      toast.success("Project submitted to hackathon successfully!");
+      setOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to submit project");
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="gap-2">
+          <Plus className="w-4 h-4" />
+          Submit to Hackathon
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Submit to Hackathon</DialogTitle>
+          <DialogDescription>
+            Submit your project to hackathons you're registered for. Only active hackathons are shown.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Registered Hackathons Section */}
+          <div>
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              Your Registered Hackathons
+            </h3>
+
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-20 bg-muted rounded-lg"></div>
+                  </div>
+                ))}
+              </div>
+            ) : availableRegisteredHackathons.length > 0 ? (
+              <div className="space-y-3">
+                {availableRegisteredHackathons.map((hackathon: any) => {
+                const status = getUIHackathonStatus({
+                  ...hackathon,
+                  votingPeriod: hackathon.votingPeriod || undefined,
+                });
+
+                  return (
+                    <Card key={hackathon.id} className="border-green-200 dark:border-green-800">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-medium">{hackathon.name}</h4>
+                              <Badge variant={status === "Live" ? "default" : "secondary"}>
+                                {status}
+                              </Badge>
+                              <Badge variant="outline" className="text-green-600 border-green-600">
+                                Registered
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
+                              {hackathon.description}
+                            </p>
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>
+                                  {new Date(hackathon.startDate).toLocaleDateString()} - {new Date(hackathon.endDate).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Trophy className="w-3 h-3" />
+                                <span>${hackathon.prizePool?.toLocaleString() || "TBD"}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => handleSubmit(hackathon.blockchainId.toString())}
+                            disabled={isSubmittingToHackathon}
+                            size="sm"
+                            className="ml-4"
+                          >
+                            {isSubmittingToHackathon ? "Submitting..." : "Submit"}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6 border-2 border-dashed border-muted rounded-lg">
+                <Trophy className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                <h4 className="font-medium mb-1">No Registered Hackathons</h4>
+                <p className="text-sm text-muted-foreground">
+                  You haven't registered for any active hackathons.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Discover More Section */}
+          <div className="border-t pt-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium flex items-center gap-2">
+                <Search className="w-4 h-4" />
+                Discover More Hackathons
+              </h3>
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+              >
+                <Link href="/hackathons" className="gap-2">
+                  <ExternalLink className="w-3 h-3" />
+                  Browse All
+                </Link>
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Register for more hackathons to expand your submission opportunities.
+            </p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -310,33 +473,49 @@ export default function ProjectDetailsPage() {
 
           <TabsContent value="hackathon" className="mt-8">
             <div className="space-y-6">
-              {/* Hackathon Submissions */}
+              {/* Submit to Hackathon Action */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-semibold">Hackathon Submissions</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Submit your project to active hackathons to compete for prizes.
+                  </p>
+                </div>
+                <HackathonSubmissionDialog projectId={projectId} />
+              </div>
+
+              {/* Current Submissions */}
               {project.submittedToHackathons && project.submittedToHackathons.length > 0 ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {project.submittedToHackathons.map((hackathon: any, index: number) => (
-                    <Card key={index}>
-                      <CardHeader>
-                        <CardTitle className="text-lg">
-                          {hackathon.name || `Hackathon #${index + 1}`}
-                        </CardTitle>
-                        <Badge variant="outline" className="w-fit">
-                          Submitted
-                        </Badge>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground">
-                          {hackathon.description || "No description available"}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Current Submissions</h3>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {project.submittedToHackathons.map((hackathon: any, index: number) => (
+                      <Card key={index}>
+                        <CardHeader>
+                          <CardTitle className="text-lg">
+                            {hackathon.name || `Hackathon #${index + 1}`}
+                          </CardTitle>
+                          <Badge variant="outline" className="w-fit">
+                            Submitted
+                          </Badge>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground">
+                            {hackathon.description || "No description available"}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
+                <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
+                  <Trophy className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No Hackathon Submissions</h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-4">
                     This project hasn't been submitted to any hackathons yet.
                   </p>
+                  <HackathonSubmissionDialog projectId={projectId} />
                 </div>
               )}
             </div>
