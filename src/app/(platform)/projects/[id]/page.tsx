@@ -10,8 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBlockchainProject, useProjectTeamMembers } from "@/hooks/blockchain/useBlockchainProjects";
-import { getProjectStatusVariant } from "@/lib/helpers/project";
-import { formatRelativeDate } from "@/lib/helpers/date";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 import { useEns } from "@/hooks/use-ens";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -399,27 +397,6 @@ export default function ProjectDetailsPage() {
                   </CardContent>
                 </Card>
               )}
-
-              {/* Team Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Team Information</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <span className="text-sm font-medium text-muted-foreground">Team Size</span>
-                      <p className="text-sm">
-                        {project?.creator ? 1 + teamMembers.length : teamMembers.length} member{project?.creator && 1 + teamMembers.length > 1 ? 's' : ''}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-muted-foreground">Project Creator</span>
-                      <p className="text-sm font-mono">{project?.creator || 'Unknown'}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </TabsContent>
         </Tabs>
