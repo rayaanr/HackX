@@ -155,7 +155,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                             </div>
                           </div>
                           <Button
-                            onClick={() => handleSubmit(hackathon.blockchainId.toString())}
+                            onClick={() => handleSubmit(hackathon.id.toString())}
                             disabled={isSubmittingToHackathon}
                             size="sm"
                             className="ml-4"

@@ -29,7 +29,7 @@ export function ActiveProjects() {
     const projects = blockchainProjects
       .filter((project) => project !== null && project !== undefined)
       .map((project) => ({
-        id: project.blockchainId?.toString() || `blockchain-${Date.now()}`,
+        id: project.id?.toString() || `blockchain-${Date.now()}`,
         name: project.name || "Untitled Project",
         description: project.description || project.intro || null,
         hackathon_name:
@@ -46,7 +46,7 @@ export function ActiveProjects() {
         demo_url: project.demoVideo,
         team_members: [],
         source: "blockchain" as const,
-        key: `blockchain-${project.blockchainId}`,
+        key: `blockchain-${project.id}`,
         totalScore: project.totalScore,
         judgeCount: project.judgeCount,
       }));

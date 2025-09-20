@@ -4,30 +4,6 @@ import type { ThirdwebContract, ThirdwebClient } from "thirdweb";
 import type { HackathonFormData } from "@/types/hackathon";
 import type { ProjectFormData } from "@/lib/schemas/project-schema";
 
-/**
- * Core blockchain uti        // Debug logging
-        console.log(
-          `🔍 Processing project ID: ${projectId} (type: ${typeof projectId})`
-        );
-
-        const numericId = Number(projectId);
-        console.log(`🔢 Converted to numeric ID: ${numericId}`);
-
-        // Validate the numeric ID is reasonable
-        if (numericId < 0 || numericId > Number.MAX_SAFE_INTEGER || !Number.isFinite(numericId)) {
-          console.error(`❌ Invalid project ID: ${numericId} (original: ${projectId})`);
-          return null;
-        }
-        
-        // Additional check for the specific problematic value
-        const projectIdString = String(projectId);
-        if (projectIdString.includes('e+') || projectIdString.length > 20) {
-          console.error(`❌ Suspicious project ID format: ${projectIdString}`);
-          return null;
-        }nctions
- * Optimized to work with Thirdweb and eliminate duplication
- */
-
 // BigInt serialization utility
 export function serializeBigInts(obj: any): any {
   if (obj === null || obj === undefined) return obj;
@@ -472,7 +448,6 @@ export async function getUserProjectsWithDetails(
         return {
           // Contract data (serialized for JSON compatibility)
           id: numericId,
-          blockchainId: numericId,
           ipfsHash: project.ipfsHash,
           creator: project.creator,
           teamMembers: project.teamMembers || [],
@@ -552,7 +527,6 @@ export async function getProjectById(
   return {
     // Contract data
     ...serializeBigInts(project),
-    blockchainId: Number(projectId),
 
     // Flattened IPFS metadata
     name: metadata.name || "Untitled Project",
