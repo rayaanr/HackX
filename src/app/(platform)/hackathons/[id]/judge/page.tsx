@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   useHackathon,
-  useHackathonProjects,
+  useHackathonProjectsWithDetails,
 } from "@/hooks/blockchain/useBlockchainHackathons";
-import { useBlockchainProject } from "@/hooks/blockchain/useBlockchainProjects";
 import { notFound } from "next/navigation";
-import { use, useMemo } from "react";
+import { use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -27,10 +26,9 @@ export default function JudgingPage({ params }: JudgingPageProps) {
   } = useHackathon(id);
 
   const {
-    data: projectIds = [],
+    projects = [],
     isLoading: projectsLoading,
-    error: projectsError,
-  } = useHackathonProjects(id);
+  } = useHackathonProjectsWithDetails(id);
 
   if (hackathonLoading || projectsLoading) {
     return <div>Loading...</div>;
@@ -54,35 +52,65 @@ export default function JudgingPage({ params }: JudgingPageProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {projectIds.map((projectId: number) => (
+        {projects.map((project: any) => (
           <Card
-            key={projectId}
+            key={project.blockchainId}
             className="overflow-hidden hover:shadow-md transition-shadow"
           >
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="flex items-start gap-3">
+                {project.logo ? (
+                  <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                    <Image
+                      src={project.logo}
+                      alt={project.name || "Project logo"}
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <span className="text-lg font-bold text-primary">
-                      {projectId.toString()}
+                      {(project.name || "P").charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <div>
-                    <CardTitle className="text-lg">
-                      Project #{projectId}
-                    </CardTitle>
-                    <Badge variant="secondary">Submitted</Badge>
-                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-lg leading-tight">
+                    {project.name || "Untitled Project"}
+                  </CardTitle>
+                  <Badge variant="secondary" className="mt-1">
+                    Submitted
+                  </Badge>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground mb-4">
-                Click to view project details and submit your evaluation.
+              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                {project.intro || project.description || "No description provided"}
               </p>
 
+              {project.techStack && project.techStack.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {project.techStack.slice(0, 3).map((tech: string) => (
+                    <Badge key={tech} variant="outline" className="text-xs">
+                      {tech}
+                    </Badge>
+                  ))}
+                  {project.techStack.length > 3 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{project.techStack.length - 3} more
+                    </Badge>
+                  )}
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
-                <Link href={`/hackathons/${id}/judge/${projectId}`}>
+                <div className="text-xs text-muted-foreground">
+                  Score: {project.totalScore || 0} ({project.judgeCount || 0} judges)
+                </div>
+                <Link href={`/hackathons/${id}/judge/${project.blockchainId}`}>
                   <Button size="sm">Review Project</Button>
                 </Link>
               </div>
@@ -91,7 +119,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
         ))}
       </div>
 
-      {projectIds.length === 0 && (
+      {projects.length === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <h3 className="text-lg font-semibold mb-2">

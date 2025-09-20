@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useJudgeAssignments } from "@/hooks/blockchain/useBlockchainHackathons";
 import { useActiveAccount } from "thirdweb/react";
-import { ArrowRight, Calendar, MapPin, Users, Award } from "lucide-react";
+import { ArrowRight, Calendar, MapPin, Award } from "lucide-react";
 import Link from "next/link";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 
@@ -14,7 +14,6 @@ export default function JudgeDashboardPage() {
     hackathons: hackathonsToJudge = [],
     isLoading,
     error,
-    isConnected,
   } = useJudgeAssignments();
   const account = useActiveAccount();
 

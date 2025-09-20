@@ -12,6 +12,7 @@ import {
   isUserRegistered,
   prepareRegisterForHackathonTransaction,
   getJudgeAssignments,
+  getProjectById,
 } from "@/lib/helpers/blockchain";
 import { useCreateHackathon } from "./use-create-hackathon";
 
@@ -155,7 +156,7 @@ export function useHackathonParticipants(hackathonId: string | number) {
 }
 
 /**
- * Hook for fetching hackathon projects
+ * Hook for fetching hackathon projects (project IDs only)
  */
 export function useHackathonProjects(hackathonId: string | number) {
   const { contract } = useWeb3();
@@ -166,6 +167,51 @@ export function useHackathonProjects(hackathonId: string | number) {
     enabled: !!contract && !!hackathonId,
     staleTime: 2 * 60 * 1000,
   });
+}
+
+/**
+ * Hook for fetching hackathon projects with full project details
+ */
+export function useHackathonProjectsWithDetails(hackathonId: string | number) {
+  const { contract, client } = useWeb3();
+
+  // First get project IDs
+  const { data: projectIds = [], isLoading: isLoadingIds } = useQuery({
+    queryKey: ["hackathon-projects", hackathonId],
+    queryFn: () => getHackathonProjects(contract, hackathonId),
+    enabled: !!contract && !!hackathonId,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // Then fetch full details for each project
+  const projectQueries = useQueries({
+    queries: projectIds.map((projectId) => ({
+      queryKey: ["blockchain-project", projectId],
+      queryFn: () => getProjectById(contract, client, projectId),
+      enabled: !!contract && !!client && !!projectId,
+      staleTime: 2 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    })),
+  });
+
+  // Process the results
+  const projects = useMemo(
+    () => projectQueries.map((query) => query.data).filter(Boolean),
+    [projectQueries],
+  );
+
+  const isLoading = isLoadingIds || projectQueries.some((query) => query.isLoading);
+  const error = projectQueries.find((query) => query.error)?.error;
+
+  return useMemo(
+    () => ({
+      projects,
+      projectIds,
+      isLoading,
+      error,
+    }),
+    [projects, projectIds, isLoading, error],
+  );
 }
 
 /**

@@ -1,5 +1,5 @@
 import { download, upload } from "thirdweb/storage";
-import { readContract, prepareContractCall, waitForReceipt } from "thirdweb";
+import { readContract, prepareContractCall } from "thirdweb";
 import type { ThirdwebContract, ThirdwebClient } from "thirdweb";
 import type { HackathonFormData } from "@/types/hackathon";
 import type { ProjectFormData } from "@/lib/schemas/project-schema";
