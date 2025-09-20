@@ -67,7 +67,7 @@ export function WalletConnect() {
             variant="outline"
             className="gap-2 h-9 px-3 bg-background hover:bg-accent border-border"
           >
-            <Avatar className="h-6 w-6">
+            <Avatar className="size-6 rounded-sm">
               {ensAvatar && (
                 <AvatarImage src={ensAvatar} alt={ensName || "ENS Avatar"} />
               )}

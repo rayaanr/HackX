@@ -3,10 +3,7 @@
 import {
   Home,
   Code,
-  Trophy,
   FolderOpen,
-  Calendar,
-  Plus,
   BookOpen,
   Award,
   Users,
@@ -20,7 +17,6 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -172,9 +168,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           ),
         )}
       </SidebarContent>
-      <SidebarFooter>
-        {/* Footer content removed - wallet functionality moved to header */}
-      </SidebarFooter>
     </Sidebar>
   );
 }
