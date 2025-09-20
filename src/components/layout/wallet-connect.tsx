@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useEnsName, useEnsAvatar } from "thirdweb/react";
+import { useEns } from "@/hooks/use-ens";
 
 const wallets = [
   inAppWallet({
@@ -49,15 +49,8 @@ export function WalletConnect() {
   const wallet = useActiveWallet();
   const { disconnect } = useDisconnect();
 
-  // ENS hooks
-  const { data: ensName } = useEnsName({
-    client,
-    address: account?.address,
-  });
-  const { data: ensAvatar } = useEnsAvatar({
-    client,
-    ensName: ensName || undefined,
-  });
+  // Use the reusable ENS hook
+  const { ensName, ensAvatar, displayName, initials } = useEns(account?.address);
 
   const handleDisconnect = () => {
     if (wallet) {
@@ -66,10 +59,6 @@ export function WalletConnect() {
   };
 
   if (account) {
-    const userDisplayName =
-      ensName ||
-      account.address.slice(0, 5) + "..." + account.address.slice(-7);
-    const userInitials = account.address.slice(2, 4).toUpperCase();
 
     return (
       <DropdownMenu>
@@ -83,11 +72,11 @@ export function WalletConnect() {
                 <AvatarImage src={ensAvatar} alt={ensName || "ENS Avatar"} />
               )}
               <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
-                {userInitials}
+                {initials}
               </AvatarFallback>
             </Avatar>
             <span className="hidden sm:inline-block font-medium">
-              {userDisplayName}
+              {displayName}
             </span>
           </Button>
         </DropdownMenuTrigger>

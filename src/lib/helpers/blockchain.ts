@@ -572,6 +572,19 @@ export async function getProjectById(
   };
 }
 
+// Get project team members
+export async function getProjectTeamMembers(
+  contract: ThirdwebContract,
+  projectId: string | number,
+): Promise<string[]> {
+  const result = await readContract({
+    contract,
+    method: "function getProjectTeamMembers(uint256 projectId) view returns (address[])",
+    params: [BigInt(projectId)],
+  });
+  return result as string[];
+}
+
 // Get total projects count
 export async function getTotalProjects(
   contract: ThirdwebContract,

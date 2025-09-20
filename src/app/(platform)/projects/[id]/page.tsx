@@ -9,10 +9,43 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useBlockchainProject } from "@/hooks/blockchain/useBlockchainProjects";
+import { useBlockchainProject, useProjectTeamMembers } from "@/hooks/blockchain/useBlockchainProjects";
 import { getProjectStatusVariant } from "@/lib/helpers/project";
 import { formatRelativeDate } from "@/lib/helpers/date";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
+import { useEns } from "@/hooks/use-ens";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+// Team member component with ENS support
+function TeamMember({ address, role = "Member", index }: { address: string; role?: string; index?: number }) {
+  const { ensName, ensAvatar, displayName, initials } = useEns(address);
+
+  return (
+    <div className="flex items-center gap-4">
+      <Avatar className="h-10 w-10">
+        {ensAvatar && (
+          <AvatarImage src={ensAvatar} alt={ensName || "ENS Avatar"} />
+        )}
+        <AvatarFallback className="text-sm font-medium bg-secondary/50">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+      <div>
+        <h4 className="font-medium">
+          {ensName || (index !== undefined ? `${role} ${index + 1}` : role)}
+        </h4>
+        <p className="text-sm text-muted-foreground font-mono">
+          {displayName}
+        </p>
+        {ensName && (
+          <p className="text-xs text-muted-foreground font-mono opacity-70">
+            {address}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function ProjectDetailsPage() {
   const params = useParams();
@@ -24,6 +57,11 @@ export default function ProjectDetailsPage() {
     isLoading,
     error,
   } = useBlockchainProject(projectId);
+
+  const {
+    data: teamMembers = [],
+    isLoading: isLoadingTeamMembers,
+  } = useProjectTeamMembers(projectId);
 
   if (isLoading) {
     return (
@@ -309,36 +347,60 @@ export default function ProjectDetailsPage() {
           <TabsContent value="team" className="mt-8">
             <div className="space-y-6">
               {/* Team Leader */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Team Leader</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-lg font-semibold text-primary">
-                        R
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Rayaan</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>Github</span>
-                        <Link
-                          href="https://github.com/rayaan"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
-                        >
-                          github.com/rayaan ↗
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {project?.creator && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Team Leader</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <TeamMember address={project.creator} role="Creator" />
+                  </CardContent>
+                </Card>
+              )}
 
-              {/* Additional Team Info */}
+              {/* Team Members */}
+              {isLoadingTeamMembers ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Team Members</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : teamMembers.length > 0 ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Team Members</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {teamMembers.map((memberAddress, index) => (
+                        <TeamMember
+                          key={memberAddress}
+                          address={memberAddress}
+                          role="Member"
+                          index={index}
+                        />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Team Members</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">No additional team members found.</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Team Summary */}
               <Card>
                 <CardHeader>
                   <CardTitle>Team Information</CardTitle>
@@ -347,11 +409,13 @@ export default function ProjectDetailsPage() {
                   <div className="space-y-4">
                     <div>
                       <span className="text-sm font-medium text-muted-foreground">Team Size</span>
-                      <p className="text-sm">1 member</p>
+                      <p className="text-sm">
+                        {project?.creator ? 1 + teamMembers.length : teamMembers.length} member{project?.creator && 1 + teamMembers.length > 1 ? 's' : ''}
+                      </p>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-muted-foreground">Project Role</span>
-                      <p className="text-sm">Full-stack Developer & Project Lead</p>
+                      <span className="text-sm font-medium text-muted-foreground">Project Creator</span>
+                      <p className="text-sm font-mono">{project?.creator || 'Unknown'}</p>
                     </div>
                   </div>
                 </CardContent>

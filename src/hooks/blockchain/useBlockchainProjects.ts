@@ -17,6 +17,7 @@ import {
   getUserProjectsWithDetails,
   getProjectById,
   getTotalProjects,
+  getProjectTeamMembers,
 } from "@/lib/helpers/blockchain";
 
 /**
@@ -374,6 +375,29 @@ export function useBlockchainProject(projectId: string | number) {
       }
     },
     enabled: !!contract && !!client && !!projectId,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook for fetching project team members by blockchain ID
+ */
+export function useProjectTeamMembers(projectId: string | number) {
+  const { contract } = useWeb3();
+
+  return useQuery({
+    queryKey: ["project-team-members", projectId],
+    queryFn: async () => {
+      if (!contract) return [];
+      try {
+        return await getProjectTeamMembers(contract, projectId);
+      } catch (error) {
+        console.error(`Failed to fetch team members for project ${projectId}:`, error);
+        return [];
+      }
+    },
+    enabled: !!contract && !!projectId,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
