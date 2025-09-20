@@ -61,7 +61,6 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
   const { hackathons: registeredHackathons = [], isLoading } = useRegisteredHackathons();
   const { submitToHackathon, isSubmittingToHackathon } = useBlockchainProjects();
   const [open, setOpen] = useState(false);
-  const [showDiscovery, setShowDiscovery] = useState(false);
 
   // Filter registered hackathons to only show active ones
   const availableRegisteredHackathons = registeredHackathons.filter((hackathon: any) => {

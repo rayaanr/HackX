@@ -11,6 +11,7 @@ import {
   getHackathonProjects,
   isUserRegistered,
   prepareRegisterForHackathonTransaction,
+  getJudgeAssignments,
 } from "@/lib/helpers/blockchain";
 import { useCreateHackathon } from "./use-create-hackathon";
 
@@ -254,5 +255,61 @@ export function useRegisteredHackathons() {
       isConnected: !!activeAccount,
     }),
     [registeredHackathons, isLoading, error, activeAccount],
+  );
+}
+
+/**
+ * Hook for fetching hackathons assigned to a judge
+ */
+export function useJudgeAssignments() {
+  const { contract, client } = useWeb3();
+  const activeAccount = useActiveAccount();
+
+  // Get assigned hackathon IDs
+  const { data: assignedHackathonIds = [], isLoading: isLoadingIds } = useQuery({
+    queryKey: ["judge-assignments", activeAccount?.address],
+    queryFn: async () => {
+      if (!contract || !activeAccount?.address) return [];
+      try {
+        return await getJudgeAssignments(contract, activeAccount.address);
+      } catch (error) {
+        console.error("Failed to fetch judge assignments:", error);
+        return [];
+      }
+    },
+    enabled: !!contract && !!activeAccount?.address,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+  });
+
+  // Fetch hackathon details for assigned IDs
+  const hackathonQueries = useQueries({
+    queries: assignedHackathonIds.map((hackathonId) => ({
+      queryKey: ["hackathon", hackathonId],
+      queryFn: () => getHackathonById(contract, client, hackathonId),
+      enabled: !!contract && !!client && !!hackathonId,
+      staleTime: 2 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    })),
+  });
+
+  // Process the results
+  const assignedHackathons = useMemo(
+    () => hackathonQueries.map((query) => query.data).filter(Boolean),
+    [hackathonQueries],
+  );
+
+  const isLoading = isLoadingIds || hackathonQueries.some((query) => query.isLoading);
+  const error = hackathonQueries.find((query) => query.error)?.error;
+
+  return useMemo(
+    () => ({
+      hackathons: assignedHackathons,
+      assignedHackathonIds,
+      isLoading: !activeAccount ? false : isLoading,
+      error,
+      isConnected: !!activeAccount,
+    }),
+    [assignedHackathons, assignedHackathonIds, isLoading, error, activeAccount],
   );
 }

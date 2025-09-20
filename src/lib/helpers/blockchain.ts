@@ -585,6 +585,19 @@ export async function getProjectTeamMembers(
   return result as string[];
 }
 
+// Get judge assignments - returns hackathon IDs that the judge is assigned to
+export async function getJudgeAssignments(
+  contract: ThirdwebContract,
+  judgeAddress: string,
+): Promise<number[]> {
+  const result = await readContract({
+    contract,
+    method: "function getJudgeAssignments(address judge) view returns (uint256[])",
+    params: [judgeAddress],
+  });
+  return (result as bigint[]).map(id => Number(id));
+}
+
 // Get total projects count
 export async function getTotalProjects(
   contract: ThirdwebContract,
