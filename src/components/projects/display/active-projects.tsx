@@ -1,11 +1,17 @@
 "use client";
 
-import { Plus, FolderIcon, Wallet } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, FolderIcon } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
-import { getProjectStatusVariant } from "@/lib/helpers/project";
 import { formatRelativeDate } from "@/lib/helpers/date";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -17,13 +23,6 @@ export function ActiveProjects() {
     userProjectsError: error,
   } = useBlockchainProjects();
 
-  // Debug logging
-  console.log("🔍 ActiveProjects Debug:", {
-    blockchainProjects: blockchainProjects.length,
-    loading,
-    error: error?.message,
-  });
-
   // Transform blockchain projects to UI format
   const allProjects = useMemo(() => {
     const projects = blockchainProjects
@@ -31,7 +30,8 @@ export function ActiveProjects() {
       .map((project) => ({
         id: project.id?.toString() || `blockchain-${Date.now()}`,
         name: project.name || "Untitled Project",
-        description: project.description || project.intro || null,
+        intro: project.intro || "No Intro",
+        description: project.description || null,
         hackathon_name:
           project.hackathonIds && project.hackathonIds.length > 0
             ? `Submitted to ${project.hackathonIds.length} hackathon${
@@ -40,7 +40,6 @@ export function ActiveProjects() {
             : undefined,
         hackathon_id: project.hackathonIds?.[0]?.toString(),
         tech_stack: project.techStack || [],
-        status: project.isCreated ? "submitted" : ("draft" as const),
         updated_at: project.createdAt || new Date().toISOString(),
         repository_url: project.githubLink,
         demo_url: project.demoVideo,
@@ -49,11 +48,12 @@ export function ActiveProjects() {
         key: `blockchain-${project.id}`,
         totalScore: project.totalScore,
         judgeCount: project.judgeCount,
+        logo: project.logo,
       }));
 
     return projects.sort(
       (a, b) =>
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
     );
   }, [blockchainProjects]);
 
@@ -88,56 +88,43 @@ export function ActiveProjects() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Active Projects</h2>
-        <div className="flex gap-2 text-sm">
-          <Badge
-            variant={blockchainProjects.length > 0 ? "default" : "outline"}
-            className="text-xs"
-          >
-            <Wallet className="w-3 h-3 mr-1" />
-            Blockchain: {blockchainProjects.length}
-          </Badge>
-        </div>
-      </div>
+      <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Create New Project Card */}
-        <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group">
-          <Link href="/projects/create">
-            <CardContent className="flex flex-col items-center justify-center h-48 text-center p-6">
+        <Link href="/projects/create">
+          <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group gap-4 h-60">
+            <CardContent className="flex flex-col items-center justify-center text-center p-6 h-full">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                 <Plus className="w-8 h-8 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-primary mb-2">
-                Create New Project
+                New Project
               </h3>
               <p className="text-sm text-muted-foreground">
-                Start building your next big idea
+                Create a new project
               </p>
             </CardContent>
-          </Link>
-        </Card>
+          </Card>
+        </Link>
 
         {/* Project Cards */}
         {allProjects.map((project) => (
-          <Card
-            key={project.key}
-            className="hover:shadow-md transition-shadow cursor-pointer"
-          >
-            <Link href={`/projects/${project.id}`}>
-              <CardHeader className="pb-3">
+          <Link key={project.key} href={`/projects/${project.id}`}>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer gap-4 h-60 flex flex-col">
+              <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Wallet className="w-6 h-6 text-primary" />
-                    </div>
+                    <Avatar className="size-12 rounded-md">
+                      <AvatarImage
+                        src={project.logo}
+                        alt={project.name || "Project logo"}
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                        {(project.name || "P").charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        {project.name}
-                        <Badge variant="outline" className="text-xs">
-                          On-chain
-                        </Badge>
-                      </CardTitle>
+                      <CardTitle className="text-lg">{project.name}</CardTitle>
                       {project.hackathon_name && (
                         <p className="text-sm text-muted-foreground">
                           {project.hackathon_name}
@@ -145,49 +132,44 @@ export function ActiveProjects() {
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <Badge variant={getProjectStatusVariant(project.status)}>
-                      {project.status}
+                  {project.totalScore > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      Score: {project.totalScore}
                     </Badge>
-                    {project.totalScore > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        Score: {project.totalScore}
-                      </Badge>
-                    )}
-                  </div>
+                  )}
                 </div>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="pt-0 flex-1">
                 <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {project.description || "No description provided"}
+                  {project.intro}
                 </p>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex gap-2">
-                    {project.tech_stack.slice(0, 2).map((tech: string) => (
-                      <Badge key={tech} variant="outline" className="text-xs">
-                        {tech}
-                      </Badge>
-                    ))}
-                    {project.tech_stack.length > 2 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{project.tech_stack.length - 2}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end text-xs">
-                    <span className="text-muted-foreground">
-                      Last edited {formatRelativeDate(project.updated_at)}
-                    </span>
-                    {project.judgeCount > 0 && (
-                      <span className="text-muted-foreground">
-                        {project.judgeCount} judge(s)
-                      </span>
-                    )}
-                  </div>
+                <div className="flex gap-1 text-sm">
+                  {project.tech_stack.slice(0, 3).map((tech: string) => (
+                    <Badge key={tech} variant="outline" className="text-xs">
+                      {tech}
+                    </Badge>
+                  ))}
+                  {project.tech_stack.length > 2 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{project.tech_stack.length - 2}
+                    </Badge>
+                  )}
                 </div>
               </CardContent>
-            </Link>
-          </Card>
+              <CardFooter>
+                <div className="flex flex-col items-end text-xs">
+                  <span className="text-muted-foreground">
+                    Last edited {formatRelativeDate(project.updated_at)}
+                  </span>
+                  {project.judgeCount > 0 && (
+                    <span className="text-muted-foreground">
+                      {project.judgeCount} judge(s)
+                    </span>
+                  )}
+                </div>
+              </CardFooter>
+            </Card>
+          </Link>
         ))}
 
         {allProjects.length === 0 && (
