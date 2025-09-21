@@ -4,15 +4,10 @@ import { Plus, FolderIcon } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
-import { formatRelativeDate } from "@/lib/helpers/date";
+import { ProjectCard, type ProjectCardData } from "@/components/projects/display/project-card";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -23,32 +18,26 @@ export function ActiveProjects() {
     userProjectsError: error,
   } = useBlockchainProjects();
 
-  // Transform blockchain projects to UI format
-  const allProjects = useMemo(() => {
+  // Transform blockchain projects to ProjectCardData format
+  const allProjects = useMemo((): ProjectCardData[] => {
     const projects = blockchainProjects
       .filter((project) => project !== null && project !== undefined)
       .map((project) => ({
         id: project.id?.toString() || `blockchain-${Date.now()}`,
         name: project.name || "Untitled Project",
         intro: project.intro || "No Intro",
-        description: project.description || null,
         hackathon_name:
           project.hackathonIds && project.hackathonIds.length > 0
             ? `Submitted to ${project.hackathonIds.length} hackathon${
                 project.hackathonIds.length > 1 ? "s" : ""
               }`
             : undefined,
-        hackathon_id: project.hackathonIds?.[0]?.toString(),
         tech_stack: project.techStack || [],
         updated_at: project.createdAt || new Date().toISOString(),
-        repository_url: project.githubLink,
-        demo_url: project.demoVideo,
-        team_members: [],
-        source: "blockchain" as const,
-        key: `blockchain-${project.id}`,
         totalScore: project.totalScore,
         judgeCount: project.judgeCount,
         logo: project.logo,
+        key: `blockchain-${project.id}`,
       }));
 
     return projects.sort(
@@ -109,67 +98,7 @@ export function ActiveProjects() {
 
         {/* Project Cards */}
         {allProjects.map((project) => (
-          <Link key={project.key} href={`/projects/${project.id}`}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer gap-4 h-60 flex flex-col">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="size-12 rounded-md">
-                      <AvatarImage
-                        src={project.logo}
-                        alt={project.name || "Project logo"}
-                      />
-                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                        {(project.name || "P").charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
-                      {project.hackathon_name && (
-                        <p className="text-sm text-muted-foreground">
-                          {project.hackathon_name}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  {project.totalScore > 0 && (
-                    <Badge variant="secondary" className="text-xs">
-                      Score: {project.totalScore}
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0 flex-1">
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {project.intro}
-                </p>
-                <div className="flex gap-1 text-sm">
-                  {project.tech_stack.slice(0, 3).map((tech: string) => (
-                    <Badge key={tech} variant="outline" className="text-xs">
-                      {tech}
-                    </Badge>
-                  ))}
-                  {project.tech_stack.length > 2 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{project.tech_stack.length - 2}
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <div className="flex flex-col items-end text-xs">
-                  <span className="text-muted-foreground">
-                    Last edited {formatRelativeDate(project.updated_at)}
-                  </span>
-                  {project.judgeCount > 0 && (
-                    <span className="text-muted-foreground">
-                      {project.judgeCount} judge(s)
-                    </span>
-                  )}
-                </div>
-              </CardFooter>
-            </Card>
-          </Link>
+          <ProjectCard key={project.key} project={project} />
         ))}
 
         {allProjects.length === 0 && (

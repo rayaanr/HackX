@@ -4,8 +4,10 @@ import { Users, FolderOpen } from "lucide-react";
 import { type UIHackathon } from "@/types/hackathon";
 import {
   useHackathonParticipants,
-  useHackathonProjects,
+  useHackathonProjectsWithDetails,
 } from "@/hooks/blockchain/useBlockchainHackathons";
+import { ProjectCard, type ProjectCardData } from "@/components/projects/display/project-card";
+import { useMemo } from "react";
 
 interface SubmittedProjectsTabProps {
   hackathon: UIHackathon;
@@ -19,10 +21,26 @@ export function SubmittedProjectsTab({ hackathon }: SubmittedProjectsTabProps) {
   } = useHackathonParticipants(hackathon.id);
 
   const {
-    data: projects = [],
+    projects = [],
     isLoading: projectsLoading,
     error: projectsError,
-  } = useHackathonProjects(hackathon.id);
+  } = useHackathonProjectsWithDetails(hackathon.id);
+
+  // Transform blockchain projects to ProjectCardData format
+  const transformedProjects = useMemo((): ProjectCardData[] => {
+    return projects.map((project) => ({
+      id: project.id?.toString() || `project-${Date.now()}`,
+      name: project.name || "Untitled Project",
+      intro: project.intro || project.description || "No description available.",
+      hackathon_name: undefined, // Don't show hackathon name in hackathon context
+      tech_stack: project.techStack || [],
+      updated_at: project.createdAt || new Date().toISOString(),
+      totalScore: project.totalScore,
+      judgeCount: project.judgeCount,
+      logo: project.logo,
+      key: `hackathon-project-${project.id}`,
+    }));
+  }, [projects]);
 
   return (
     <div className="space-y-6">
@@ -135,22 +153,9 @@ export function SubmittedProjectsTab({ hackathon }: SubmittedProjectsTabProps) {
               No projects have been submitted yet.
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {projects.map((projectId) => (
-                <div key={projectId} className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">Project #{projectId}</h4>
-                    <Badge variant="secondary">Submitted</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Project details would be loaded from IPFS or contract
-                    storage.
-                  </p>
-                  <div className="mt-3 flex items-center text-xs text-muted-foreground">
-                    <FolderOpen className="h-3 w-3 mr-1" />
-                    ID: {projectId}
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {transformedProjects.map((project) => (
+                <ProjectCard key={project.key} project={project} />
               ))}
             </div>
           )}
