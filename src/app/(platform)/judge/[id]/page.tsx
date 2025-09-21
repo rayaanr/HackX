@@ -52,7 +52,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {projects.map((project: any) => (
           <Card
-            key={project.blockchainId}
+            key={project.id}
             className="overflow-hidden hover:shadow-md transition-shadow"
           >
             <CardHeader className="pb-3">
@@ -111,7 +111,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                   Score: {project.totalScore || 0} ({project.judgeCount || 0}{" "}
                   judges)
                 </div>
-                <Link href={`/judge/${id}/${project.blockchainId}`}>
+                <Link href={`/judge/${id}/${project.id}`}>
                   <Button size="sm">Review Project</Button>
                 </Link>
               </div>
