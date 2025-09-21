@@ -105,11 +105,13 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
         votingPeriod: hackathon.votingPeriod || undefined,
       });
       return status === "Registration Open" || status === "Live";
-    }
+    },
   );
 
   const handleSubmit = (hackathonId: string) => {
-    toast.loading("Submitting project to hackathon...", { id: "submit-to-hackathon" });
+    toast.loading("Submitting project to hackathon...", {
+      id: "submit-to-hackathon",
+    });
     submitToHackathon({
       projectId,
       hackathonId,
@@ -200,7 +202,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                                       hackathon.hackathonPeriod
                                         ?.hackathonStartDate,
                                       hackathon.hackathonPeriod
-                                        ?.hackathonEndDate
+                                        ?.hackathonEndDate,
                                     )}
                                   </span>
                                 </div>
@@ -232,7 +234,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                         </CardFooter>
                       </Card>
                     );
-                  }
+                  },
                 )}
               </div>
             ) : (
@@ -275,7 +277,7 @@ export default function ProjectDetailsPage() {
   const params = useParams();
   const projectId = params.id as string;
   const [activeTab, setActiveTab] = useState<"overview" | "hackathon" | "team">(
-    "overview"
+    "overview",
   );
 
   const { data: project, isLoading, error } = useBlockchainProject(projectId);
@@ -579,7 +581,7 @@ export default function ProjectDetailsPage() {
                     {project.submittedToHackathons.map(
                       (
                         hackathon: { name?: string; description?: string },
-                        index: number
+                        index: number,
                       ) => (
                         <Card key={index}>
                           <CardHeader>
@@ -597,7 +599,7 @@ export default function ProjectDetailsPage() {
                             </p>
                           </CardContent>
                         </Card>
-                      )
+                      ),
                     )}
                   </div>
                 </div>

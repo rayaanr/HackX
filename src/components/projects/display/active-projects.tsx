@@ -1,13 +1,13 @@
 "use client";
 
 import { Plus, FolderIcon } from "lucide-react";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
-import { ProjectCard, type ProjectCardData } from "@/components/projects/display/project-card";
+import {
+  ProjectCard,
+  type ProjectCardData,
+} from "@/components/projects/display/project-card";
 import Link from "next/link";
 import { useMemo } from "react";
 

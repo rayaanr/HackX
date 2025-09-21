@@ -1,11 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Users, FolderOpen } from "lucide-react";
 import { type UIHackathon } from "@/types/hackathon";
-import {
-  useHackathonParticipants,
-  useHackathonProjectsWithDetails,
-} from "@/hooks/blockchain/useBlockchainHackathons";
+import { useHackathonProjectsWithDetails } from "@/hooks/blockchain/useBlockchainHackathons";
 import {
   ProjectCard,
   type ProjectCardData,
@@ -17,12 +11,6 @@ interface SubmittedProjectsTabProps {
 }
 
 export function SubmittedProjectsTab({ hackathon }: SubmittedProjectsTabProps) {
-  const {
-    data: participants = [],
-    isLoading: participantsLoading,
-    error: participantsError,
-  } = useHackathonParticipants(hackathon.id);
-
   const {
     projects = [],
     isLoading: projectsLoading,

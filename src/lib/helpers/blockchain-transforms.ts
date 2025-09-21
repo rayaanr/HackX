@@ -297,7 +297,6 @@ export function getStatusVariant(
   }
 }
 
-
 /**
  * Calculate total prize amount from prize cohorts
  */
@@ -338,9 +337,7 @@ export function isInSubmissionPhase(hackathon: BlockchainHackathon): boolean {
   const submissionStartDate = Number(hackathon.submissionStartDate);
   const submissionDeadline = Number(hackathon.submissionDeadline);
   return (
-    hackathon.isActive &&
-    now >= submissionStartDate &&
-    now < submissionDeadline
+    hackathon.isActive && now >= submissionStartDate && now < submissionDeadline
   );
 }
 
@@ -352,9 +349,7 @@ export function isInJudgingPhase(hackathon: BlockchainHackathon): boolean {
   const submissionDeadline = Number(hackathon.submissionDeadline);
   const judgingDeadline = Number(hackathon.judgingDeadline);
   return (
-    hackathon.isActive &&
-    now >= submissionDeadline &&
-    now < judgingDeadline
+    hackathon.isActive && now >= submissionDeadline && now < judgingDeadline
   );
 }
 

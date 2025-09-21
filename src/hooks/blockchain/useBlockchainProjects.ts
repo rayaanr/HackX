@@ -301,7 +301,9 @@ export function useBlockchainProjects() {
     },
     onSuccess: (data) => {
       console.log("🎉 Project submitted to hackathon successfully!", data);
-      toast.success("Project submitted to hackathon successfully!", { id: "submit-to-hackathon" });
+      toast.success("Project submitted to hackathon successfully!", {
+        id: "submit-to-hackathon",
+      });
       // Invalidate and refetch user projects
       queryClient.invalidateQueries({ queryKey: ["blockchain-user-projects"] });
       queryClient.invalidateQueries({
@@ -312,7 +314,7 @@ export function useBlockchainProjects() {
       console.error("❌ Hackathon submission failed:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to submit project",
-        { id: "submit-to-hackathon" }
+        { id: "submit-to-hackathon" },
       );
     },
   });

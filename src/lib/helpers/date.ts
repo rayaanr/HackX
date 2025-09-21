@@ -228,6 +228,7 @@ export function getBlockchainHackathonStatus(hackathon: {
  * Blockchain timestamps are always UTC seconds since epoch
  */
 export function blockchainTimestampToDate(timestamp: bigint | number): Date {
-  const timestampNum = typeof timestamp === "bigint" ? Number(timestamp) : timestamp;
+  const timestampNum =
+    typeof timestamp === "bigint" ? Number(timestamp) : timestamp;
   return new Date(timestampNum * 1000); // Convert seconds to milliseconds
 }

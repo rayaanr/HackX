@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatRelativeDate } from "@/lib/helpers/date";
@@ -27,7 +33,9 @@ interface ProjectCardProps {
 export function ProjectCard({ project, className = "" }: ProjectCardProps) {
   return (
     <Link href={`/projects/${project.id}`}>
-      <Card className={`hover:shadow-md transition-shadow cursor-pointer gap-4 h-60 flex flex-col ${className}`}>
+      <Card
+        className={`hover:shadow-md transition-shadow cursor-pointer gap-4 h-60 flex flex-col ${className}`}
+      >
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
@@ -40,7 +48,7 @@ export function ProjectCard({ project, className = "" }: ProjectCardProps) {
                   {(project.name || "P").charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-                <CardTitle className="text-lg">{project.name}</CardTitle>
+              <CardTitle className="text-lg">{project.name}</CardTitle>
             </div>
           </div>
         </CardHeader>
