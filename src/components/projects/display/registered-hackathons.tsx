@@ -23,7 +23,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
-import { formatDisplayDate, formatDateRange, getUIHackathonStatus, type DateInput } from "@/lib/helpers/date";
+import {
+  formatDisplayDate,
+  formatDateRange,
+  getUIHackathonStatus,
+  type DateInput,
+} from "@/lib/helpers/date";
 import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
@@ -39,7 +44,6 @@ export function RegisteredHackathons() {
     error,
     isConnected,
   } = useRegisteredHackathons();
-
 
   if (!isConnected) {
     return (
@@ -178,92 +182,89 @@ export function RegisteredHackathons() {
                         </CardAction>
                       </div>
                     </CardHeader>
-                      <CardContent className="p-0">
-                        <p className="text-muted-foreground mb-4">
-                          {hackathon.shortDescription || "No description provided."}
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm [&>div>h6]:text-muted-foreground [&>div>p]:font-semibold [&>div>p]:text-xs">
-                          <div>
-                            <h6 className="flex items-center">
-                              <Calendar className="size-4 mr-1" />
-                              Registration closes
-                            </h6>
-                            <p>
-                              {hackathon.registrationPeriod?.registrationEndDate
-                                ? formatDisplayDate(hackathon.registrationPeriod.registrationEndDate)
-                                : "Registration TBD"}
-                            </p>
-                          </div>
-                          <div>
-                            <h6 className="flex items-center">
-                              <Code className="size-4 mr-1" />
-                              Tech stack
-                            </h6>
-                            <p>
-                              {hackathon.techStack &&
-                              hackathon.techStack.length > 0
-                                ? "All tech stack"
-                                : "Any"}
-                            </p>
-                          </div>
-                          <div>
-                            <h6 className="flex items-center">
-                              <Trophy className="size-4 mr-1" />
-                              Level
-                            </h6>
-                            <p className="capitalize">
-                              {hackathon.experienceLevel
-                                ? hackathon.experienceLevel.toLowerCase() +
-                                  " levels accepted"
-                                : "All levels accepted"}
-                            </p>
-                          </div>
-                          <div>
-                            <h6 className="flex items-center">
-                              <Trophy className="size-4 mr-1" />
-                              Total prize
-                            </h6>
-                            <p>
-                              {"TBD"}
-                            </p>
-                          </div>
+                    <CardContent className="p-0">
+                      <p className="text-muted-foreground mb-4">
+                        {hackathon.shortDescription ||
+                          "No description provided."}
+                      </p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm [&>div>h6]:text-muted-foreground [&>div>p]:font-semibold [&>div>p]:text-xs">
+                        <div>
+                          <h6 className="flex items-center">
+                            <Calendar className="size-4 mr-1" />
+                            Registration closes
+                          </h6>
+                          <p>
+                            {hackathon.registrationPeriod?.registrationEndDate
+                              ? formatDisplayDate(
+                                  hackathon.registrationPeriod
+                                    .registrationEndDate,
+                                )
+                              : "Registration TBD"}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-4 mt-4">
-                          <Button asChild>
-                            <Link
-                              href={`/projects/create?hackathon=${hackathon.id}`}
-                            >
-                              Submit Project
-                            </Link>
-                          </Button>
-                          <div className="text-sm text-muted-foreground">
-                            <span className="font-medium">
-                              {formatDateRange(
-                                hackathon.hackathonPeriod?.hackathonStartDate,
-                                hackathon.hackathonPeriod?.hackathonEndDate
-                              )}
-                            </span>
-                          </div>
+                        <div>
+                          <h6 className="flex items-center">
+                            <Code className="size-4 mr-1" />
+                            Tech stack
+                          </h6>
+                          <p>
+                            {hackathon.techStack &&
+                            hackathon.techStack.length > 0
+                              ? "All tech stack"
+                              : "Any"}
+                          </p>
                         </div>
-                      </CardContent>
-                    </div>
-                    <div className="relative w-1/3">
-                      <Image
-                        height={200}
-                        width={300}
-                        src={resolveIPFSToHttp(
-                          hackathon.visual
-                        )}
-                        alt={
-                          hackathon.name ||
-                          `Hackathon ${hackathon.id}`
-                        }
-                        className="h-full w-full object-cover rounded-lg"
-                        unoptimized
-                      />
-                    </div>
+                        <div>
+                          <h6 className="flex items-center">
+                            <Trophy className="size-4 mr-1" />
+                            Level
+                          </h6>
+                          <p className="capitalize">
+                            {hackathon.experienceLevel
+                              ? hackathon.experienceLevel.toLowerCase() +
+                                " levels accepted"
+                              : "All levels accepted"}
+                          </p>
+                        </div>
+                        <div>
+                          <h6 className="flex items-center">
+                            <Trophy className="size-4 mr-1" />
+                            Total prize
+                          </h6>
+                          <p>{"TBD"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 mt-4">
+                        <Button asChild>
+                          <Link
+                            href={`/projects/create?hackathon=${hackathon.id}`}
+                          >
+                            Submit Project
+                          </Link>
+                        </Button>
+                        <div className="text-sm text-muted-foreground">
+                          <span className="font-medium">
+                            {formatDateRange(
+                              hackathon.hackathonPeriod?.hackathonStartDate,
+                              hackathon.hackathonPeriod?.hackathonEndDate,
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
                   </div>
-                </Card>
+                  <div className="relative w-1/3">
+                    <Image
+                      height={200}
+                      width={300}
+                      src={resolveIPFSToHttp(hackathon.visual)}
+                      alt={hackathon.name || `Hackathon ${hackathon.id}`}
+                      className="h-full w-full object-cover rounded-lg"
+                      unoptimized
+                    />
+                  </div>
+                </div>
+              </Card>
             );
           })}
         </div>

@@ -25,10 +25,8 @@ export default function JudgingPage({ params }: JudgingPageProps) {
     error: hackathonError,
   } = useHackathon(id);
 
-  const {
-    projects = [],
-    isLoading: projectsLoading,
-  } = useHackathonProjectsWithDetails(id);
+  const { projects = [], isLoading: projectsLoading } =
+    useHackathonProjectsWithDetails(id);
 
   if (hackathonLoading || projectsLoading) {
     return <div>Loading...</div>;
@@ -88,7 +86,9 @@ export default function JudgingPage({ params }: JudgingPageProps) {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                {project.intro || project.description || "No description provided"}
+                {project.intro ||
+                  project.description ||
+                  "No description provided"}
               </p>
 
               {project.techStack && project.techStack.length > 0 && (
@@ -108,7 +108,8 @@ export default function JudgingPage({ params }: JudgingPageProps) {
 
               <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground">
-                  Score: {project.totalScore || 0} ({project.judgeCount || 0} judges)
+                  Score: {project.totalScore || 0} ({project.judgeCount || 0}{" "}
+                  judges)
                 </div>
                 <Link href={`/hackathons/${id}/judge/${project.blockchainId}`}>
                   <Button size="sm">Review Project</Button>

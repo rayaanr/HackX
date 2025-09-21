@@ -50,7 +50,9 @@ export function WalletConnect() {
   const { disconnect } = useDisconnect();
 
   // Use the reusable ENS hook
-  const { ensName, ensAvatar, displayName, initials } = useEns(account?.address);
+  const { ensName, ensAvatar, displayName, initials } = useEns(
+    account?.address,
+  );
 
   const handleDisconnect = () => {
     if (wallet) {
@@ -59,7 +61,6 @@ export function WalletConnect() {
   };
 
   if (account) {
-
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

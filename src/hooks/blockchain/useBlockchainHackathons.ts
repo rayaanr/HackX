@@ -200,7 +200,8 @@ export function useHackathonProjectsWithDetails(hackathonId: string | number) {
     [projectQueries],
   );
 
-  const isLoading = isLoadingIds || projectQueries.some((query) => query.isLoading);
+  const isLoading =
+    isLoadingIds || projectQueries.some((query) => query.isLoading);
   const error = projectQueries.find((query) => query.error)?.error;
 
   return useMemo(
@@ -312,21 +313,23 @@ export function useJudgeAssignments() {
   const activeAccount = useActiveAccount();
 
   // Get assigned hackathon IDs
-  const { data: assignedHackathonIds = [], isLoading: isLoadingIds } = useQuery({
-    queryKey: ["judge-assignments", activeAccount?.address],
-    queryFn: async () => {
-      if (!contract || !activeAccount?.address) return [];
-      try {
-        return await getJudgeAssignments(contract, activeAccount.address);
-      } catch (error) {
-        console.error("Failed to fetch judge assignments:", error);
-        return [];
-      }
+  const { data: assignedHackathonIds = [], isLoading: isLoadingIds } = useQuery(
+    {
+      queryKey: ["judge-assignments", activeAccount?.address],
+      queryFn: async () => {
+        if (!contract || !activeAccount?.address) return [];
+        try {
+          return await getJudgeAssignments(contract, activeAccount.address);
+        } catch (error) {
+          console.error("Failed to fetch judge assignments:", error);
+          return [];
+        }
+      },
+      enabled: !!contract && !!activeAccount?.address,
+      staleTime: 2 * 60 * 1000,
+      gcTime: 5 * 60 * 1000,
     },
-    enabled: !!contract && !!activeAccount?.address,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-  });
+  );
 
   // Fetch hackathon details for assigned IDs
   const hackathonQueries = useQueries({
@@ -345,7 +348,8 @@ export function useJudgeAssignments() {
     [hackathonQueries],
   );
 
-  const isLoading = isLoadingIds || hackathonQueries.some((query) => query.isLoading);
+  const isLoading =
+    isLoadingIds || hackathonQueries.some((query) => query.isLoading);
   const error = hackathonQueries.find((query) => query.error)?.error;
 
   return useMemo(

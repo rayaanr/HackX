@@ -36,10 +36,10 @@ export default function ProjectReviewPage() {
 
   // State for form data and selected cohort
   const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(
-    null
+    null,
   );
   const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(
-    undefined
+    undefined,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 

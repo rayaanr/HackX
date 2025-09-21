@@ -31,14 +31,11 @@ export function useEns(address?: string): UseEnsReturn {
   });
 
   // Generate display utilities
-  const displayName = ensName || (address
-    ? `${address.slice(0, 5)}...${address.slice(-7)}`
-    : 'Unknown'
-  );
+  const displayName =
+    ensName ||
+    (address ? `${address.slice(0, 5)}...${address.slice(-7)}` : "Unknown");
 
-  const initials = address
-    ? address.slice(2, 4).toUpperCase()
-    : '??';
+  const initials = address ? address.slice(2, 4).toUpperCase() : "??";
 
   return {
     ensName: ensName || null,

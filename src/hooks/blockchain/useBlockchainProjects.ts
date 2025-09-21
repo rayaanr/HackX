@@ -393,7 +393,10 @@ export function useProjectTeamMembers(projectId: string | number) {
       try {
         return await getProjectTeamMembers(contract, projectId);
       } catch (error) {
-        console.error(`Failed to fetch team members for project ${projectId}:`, error);
+        console.error(
+          `Failed to fetch team members for project ${projectId}:`,
+          error,
+        );
         return [];
       }
     },

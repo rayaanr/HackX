@@ -553,7 +553,8 @@ export async function getProjectTeamMembers(
 ): Promise<string[]> {
   const result = await readContract({
     contract,
-    method: "function getProjectTeamMembers(uint256 projectId) view returns (address[])",
+    method:
+      "function getProjectTeamMembers(uint256 projectId) view returns (address[])",
     params: [BigInt(projectId)],
   });
   return result as string[];
@@ -566,10 +567,11 @@ export async function getJudgeAssignments(
 ): Promise<number[]> {
   const result = await readContract({
     contract,
-    method: "function getJudgeAssignments(address judge) view returns (uint256[])",
+    method:
+      "function getJudgeAssignments(address judge) view returns (uint256[])",
     params: [judgeAddress],
   });
-  return (result as bigint[]).map(id => Number(id));
+  return (result as bigint[]).map((id) => Number(id));
 }
 
 // Get total projects count

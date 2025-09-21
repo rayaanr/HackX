@@ -81,8 +81,18 @@ export default function JudgeDashboardPage() {
                         {hackathon.name}
                       </h3>
                       <Badge
-                        variant={status === "Live" ? "default" : status === "Voting" ? "secondary" : "outline"}
-                        className={status === "Live" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100" : ""}
+                        variant={
+                          status === "Live"
+                            ? "default"
+                            : status === "Voting"
+                              ? "secondary"
+                              : "outline"
+                        }
+                        className={
+                          status === "Live"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                            : ""
+                        }
                       >
                         {status}
                       </Badge>
@@ -94,11 +104,16 @@ export default function JudgeDashboardPage() {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
                       <div className="flex items-center gap-1">
                         <Calendar className="size-4" />
-                        <span>{startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}</span>
+                        <span>
+                          {startDate.toLocaleDateString()} -{" "}
+                          {endDate.toLocaleDateString()}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Award className="size-4" />
-                        <span>${hackathon.prizePool?.toLocaleString() || "TBD"}</span>
+                        <span>
+                          ${hackathon.prizePool?.toLocaleString() || "TBD"}
+                        </span>
                       </div>
                       {hackathon.location && (
                         <div className="flex items-center gap-1">
@@ -151,7 +166,9 @@ export default function JudgeDashboardPage() {
           {hackathonsToJudge.length === 0 && (
             <div className="text-center py-12">
               <Award className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Judge Assignments</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                No Judge Assignments
+              </h3>
               <p className="text-muted-foreground">
                 You haven't been assigned to judge any hackathons yet.
               </p>
