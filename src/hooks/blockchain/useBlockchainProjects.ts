@@ -19,6 +19,7 @@ import {
   getTotalProjects,
   getProjectTeamMembers,
 } from "@/lib/helpers/blockchain";
+import { toast } from "sonner";
 
 /**
  * Unified hook for all project blockchain operations
@@ -300,6 +301,7 @@ export function useBlockchainProjects() {
     },
     onSuccess: (data) => {
       console.log("🎉 Project submitted to hackathon successfully!", data);
+      toast.success("Project submitted to hackathon successfully!", { id: "submit-to-hackathon" });
       // Invalidate and refetch user projects
       queryClient.invalidateQueries({ queryKey: ["blockchain-user-projects"] });
       queryClient.invalidateQueries({
@@ -308,6 +310,10 @@ export function useBlockchainProjects() {
     },
     onError: (error) => {
       console.error("❌ Hackathon submission failed:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to submit project",
+        { id: "submit-to-hackathon" }
+      );
     },
   });
 
