@@ -21,11 +21,8 @@ import { useEffect, useState, useMemo } from "react";
 import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import {
-  calculateTotalPrizeAmount,
-  formatDateForDisplay,
-} from "@/lib/helpers/blockchain-transforms";
-import { getUIHackathonStatus } from "@/lib/helpers/date";
+import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
+import { getUIHackathonStatus, formatDisplayDate } from "@/lib/helpers/date";
 import type { UIHackathon } from "@/types/hackathon";
 
 // Transform hackathon data to match ProjectHackathonCardProps interface
@@ -52,7 +49,7 @@ function transformHackathonToCardProps(
   return {
     id: hackathon.id?.toString(),
     name: hackathon.name || "Untitled Hackathon",
-    date: formatDateForDisplay(hackathon.hackathonPeriod?.hackathonStartDate),
+    date: formatDisplayDate(hackathon.hackathonPeriod?.hackathonStartDate),
     theme: hackathon.shortDescription || "",
     prize: calculateTotalPrizeAmount(hackathon.prizeCohorts || []),
     participants: hackathon.participantCount || 0,

@@ -1,26 +1,19 @@
 // Blockchain-specific types based on contract ABI and metadata structure
 
-// Contract enums and constants
-export enum ContractPhase {
-  REGISTRATION = 0,
-  SUBMISSION = 1,
-  JUDGING = 2,
-  COMPLETED = 3,
-}
-
-export const PHASE_LABELS: Record<ContractPhase, string> = {
-  [ContractPhase.REGISTRATION]: "Registration Open",
-  [ContractPhase.SUBMISSION]: "Submission Phase",
-  [ContractPhase.JUDGING]: "Judging Phase",
-  [ContractPhase.COMPLETED]: "Completed",
-};
+// Timeline-based phase detection constants
+export const HACKATHON_PHASE_LABELS = {
+  REGISTRATION_OPEN: "Registration Open",
+  REGISTRATION_CLOSED: "Registration Closed",
+  SUBMISSION_OPEN: "Live",
+  JUDGING_OPEN: "Voting",
+  COMPLETED: "Ended",
+} as const;
 
 // Raw contract types (matching ABI)
 export interface ContractHackathon {
   id: bigint;
   ipfsHash: string;
   organizer: string; // address
-  currentPhase: ContractPhase;
   registrationDeadline: bigint; // timestamp
   submissionStartDate: bigint; // timestamp
   submissionDeadline: bigint; // timestamp
@@ -282,12 +275,7 @@ export interface JudgeAddedEvent {
   transactionHash: string;
 }
 
-export interface PhaseChangedEvent {
-  hackathonId: bigint;
-  newPhase: ContractPhase;
-  blockNumber: number;
-  transactionHash: string;
-}
+// Phase events removed as phases are now determined by timestamps
 
 // Utility types for transformations
 export interface DatePeriod {

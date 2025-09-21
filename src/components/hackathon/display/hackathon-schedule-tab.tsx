@@ -1,7 +1,6 @@
-import { Calendar, Clock, Users, MapPin } from "lucide-react";
+import { Calendar, Clock, MapPin } from "lucide-react";
 import { type UIHackathon } from "@/types/hackathon";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,

@@ -11,7 +11,6 @@ import type {
   BlockchainProject,
   HackathonMetadata,
   ProjectMetadata,
-  ContractPhase,
   HackathonPhaseStatus,
   ProjectStatus,
 } from "@/types/blockchain";
@@ -22,7 +21,6 @@ export type {
   BlockchainProject,
   HackathonMetadata,
   ProjectMetadata,
-  ContractPhase,
   HackathonPhaseStatus,
   ProjectStatus,
 } from "@/types/blockchain";

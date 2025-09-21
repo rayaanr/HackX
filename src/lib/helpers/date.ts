@@ -181,3 +181,53 @@ export function getUIHackathonStatus(hackathon: {
 
   return "Ended";
 }
+
+/**
+ * Get hackathon status based on blockchain timestamps (Unix timestamps in seconds)
+ * Pure timeline logic for blockchain hackathon data
+ */
+export function getBlockchainHackathonStatus(hackathon: {
+  registrationDeadline: number;
+  submissionStartDate: number;
+  submissionDeadline: number;
+  judgingDeadline: number;
+  isActive?: boolean;
+}): "Registration Open" | "Registration Closed" | "Live" | "Voting" | "Ended" {
+  if (hackathon.isActive === false) {
+    return "Ended";
+  }
+
+  const now = Date.now() / 1000; // Current UTC timestamp in seconds (matches blockchain timestamps)
+
+  // Registration phase: before registration deadline
+  if (now < hackathon.registrationDeadline) {
+    return "Registration Open";
+  }
+
+  // Between registration deadline and submission start (if there's a gap)
+  if (hackathon.submissionStartDate && now < hackathon.submissionStartDate) {
+    return "Registration Closed";
+  }
+
+  // Submission phase: between submission start and submission deadline
+  if (now < hackathon.submissionDeadline) {
+    return "Live";
+  }
+
+  // Judging phase: between submission deadline and judging deadline
+  if (now < hackathon.judgingDeadline) {
+    return "Voting";
+  }
+
+  // After judging deadline: completed
+  return "Ended";
+}
+
+/**
+ * Convert blockchain timestamp (Unix seconds) to Date object
+ * Blockchain timestamps are always UTC seconds since epoch
+ */
+export function blockchainTimestampToDate(timestamp: bigint | number): Date {
+  const timestampNum = typeof timestamp === "bigint" ? Number(timestamp) : timestamp;
+  return new Date(timestampNum * 1000); // Convert seconds to milliseconds
+}

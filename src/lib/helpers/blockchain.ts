@@ -20,6 +20,8 @@ export function serializeBigInts(obj: any): any {
 }
 
 // Date conversion utilities
+// Note: Blockchain timestamps are always UTC Unix timestamps (seconds since epoch)
+// JavaScript Date.getTime() returns UTC milliseconds, so division by 1000 gives UTC seconds
 function dateToUnixTimestamp(date?: Date): number {
   return date ? Math.floor(date.getTime() / 1000) : 0;
 }
@@ -184,7 +186,7 @@ export async function getHackathonById(
   const hackathon = await readContract({
     contract,
     method:
-      "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint8 currentPhase, uint256 registrationDeadline, uint256 submissionStartDate, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
+      "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint256 registrationDeadline, uint256 submissionStartDate, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
     params: [id],
   });
   const metadata = await fetchIPFSMetadata(client, hackathon.ipfsHash);

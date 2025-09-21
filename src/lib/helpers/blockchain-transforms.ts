@@ -1,4 +1,4 @@
-import { ContractPhase } from "@/types/blockchain";
+// ContractPhase removed - using pure timeline logic
 import type {
   BlockchainHackathon,
   BlockchainProject,
@@ -119,7 +119,7 @@ export function transformBlockchainProjectToUI(
 }
 
 /**
- * Get UI-friendly hackathon status based on contract phase and timestamps
+ * Get UI-friendly hackathon status based on pure timeline logic with blockchain timestamps
  */
 export function getHackathonStatus(
   hackathon: BlockchainHackathon,
@@ -128,45 +128,36 @@ export function getHackathonStatus(
     return "cancelled";
   }
 
-  const now = Date.now() / 1000; // Current timestamp in seconds
+  const now = Date.now() / 1000; // Current UTC timestamp in seconds (matches blockchain timestamps)
   const registrationDeadline = Number(hackathon.registrationDeadline);
   const submissionStartDate = Number(hackathon.submissionStartDate);
   const submissionDeadline = Number(hackathon.submissionDeadline);
   const judgingDeadline = Number(hackathon.judgingDeadline);
 
-  switch (hackathon.currentPhase) {
-    case ContractPhase.REGISTRATION:
-      if (now < registrationDeadline) {
-        return "registration_open";
-      } else {
-        return "registration_closed";
-      }
+  // Pure timeline logic: check what phase we're in based on current time vs deadlines
 
-    case ContractPhase.SUBMISSION:
-      // Check if submissions haven't started yet
-      if (submissionStartDate && now < submissionStartDate) {
-        return "submission_not_started";
-      }
-      // Check if submissions are currently open
-      if (now < submissionDeadline) {
-        return "submission_open";
-      } else {
-        return "submission_closed";
-      }
-
-    case ContractPhase.JUDGING:
-      if (now < judgingDeadline) {
-        return "judging_open";
-      } else {
-        return "judging_closed";
-      }
-
-    case ContractPhase.COMPLETED:
-      return "completed";
-
-    default:
-      return "upcoming";
+  // Registration phase: before registration deadline
+  if (now < registrationDeadline) {
+    return "registration_open";
   }
+
+  // Between registration deadline and submission start (if there's a gap)
+  if (submissionStartDate && now < submissionStartDate) {
+    return "registration_closed";
+  }
+
+  // Submission phase: between submission start and submission deadline
+  if (now < submissionDeadline) {
+    return "submission_open";
+  }
+
+  // Judging phase: between submission deadline and judging deadline
+  if (now < judgingDeadline) {
+    return "judging_open";
+  }
+
+  // After judging deadline: completed
+  return "completed";
 }
 
 /**
@@ -306,32 +297,6 @@ export function getStatusVariant(
   }
 }
 
-/**
- * Format timestamps for display
- */
-export function formatTimestamp(timestamp: bigint | number): Date {
-  const timestampNum =
-    typeof timestamp === "bigint" ? Number(timestamp) : timestamp;
-  return new Date(timestampNum * 1000);
-}
-
-/**
- * Format date for display
- */
-export function formatDateForDisplay(
-  date: Date | string | null | undefined,
-): string {
-  if (!date) return "TBD";
-
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime()))
-    return "TBD";
-  return dateObj.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 /**
  * Calculate total prize amount from prize cohorts
@@ -357,51 +322,59 @@ export function calculateTotalPrizeAmount(
 }
 
 /**
- * Check if a hackathon is in a specific phase
+ * Check if a hackathon is in registration phase
  */
-export function isInPhase(
-  hackathon: BlockchainHackathon,
-  phase: ContractPhase,
-): boolean {
-  return hackathon.currentPhase === phase && hackathon.isActive;
-}
-
-/**
- * Check if a user can register for a hackathon
- */
-export function canRegister(hackathon: BlockchainHackathon): boolean {
+export function isInRegistrationPhase(hackathon: BlockchainHackathon): boolean {
   const now = Date.now() / 1000;
-  return (
-    hackathon.isActive &&
-    hackathon.currentPhase === ContractPhase.REGISTRATION &&
-    Number(hackathon.registrationDeadline) > now
-  );
+  const registrationDeadline = Number(hackathon.registrationDeadline);
+  return hackathon.isActive && now < registrationDeadline;
 }
 
 /**
- * Check if a user can submit a project
+ * Check if a hackathon is in submission phase
  */
-export function canSubmitProject(hackathon: BlockchainHackathon): boolean {
+export function isInSubmissionPhase(hackathon: BlockchainHackathon): boolean {
   const now = Date.now() / 1000;
   const submissionStartDate = Number(hackathon.submissionStartDate);
   const submissionDeadline = Number(hackathon.submissionDeadline);
-
   return (
     hackathon.isActive &&
-    hackathon.currentPhase === ContractPhase.SUBMISSION &&
     now >= submissionStartDate &&
     now < submissionDeadline
   );
 }
 
 /**
+ * Check if a hackathon is in judging phase
+ */
+export function isInJudgingPhase(hackathon: BlockchainHackathon): boolean {
+  const now = Date.now() / 1000;
+  const submissionDeadline = Number(hackathon.submissionDeadline);
+  const judgingDeadline = Number(hackathon.judgingDeadline);
+  return (
+    hackathon.isActive &&
+    now >= submissionDeadline &&
+    now < judgingDeadline
+  );
+}
+
+/**
+ * Check if a user can register for a hackathon
+ */
+export function canRegister(hackathon: BlockchainHackathon): boolean {
+  return isInRegistrationPhase(hackathon);
+}
+
+/**
+ * Check if a user can submit a project
+ */
+export function canSubmitProject(hackathon: BlockchainHackathon): boolean {
+  return isInSubmissionPhase(hackathon);
+}
+
+/**
  * Check if judges can score projects
  */
 export function canJudge(hackathon: BlockchainHackathon): boolean {
-  const now = Date.now() / 1000;
-  return (
-    hackathon.isActive &&
-    hackathon.currentPhase === ContractPhase.JUDGING &&
-    Number(hackathon.judgingDeadline) > now
-  );
+  return isInJudgingPhase(hackathon);
 }
