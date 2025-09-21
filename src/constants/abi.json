@@ -203,37 +203,6 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "hackathonId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "organizer",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum HackathonPlatform.Phase",
-        "name": "oldPhase",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum HackathonPlatform.Phase",
-        "name": "newPhase",
-        "type": "uint8"
-      }
-    ],
-    "name": "PhaseChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
         "name": "projectId",
         "type": "uint256"
       },
@@ -412,20 +381,6 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "user", "type": "address" },
-      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
-      { "internalType": "uint256", "name": "projectId", "type": "uint256" }
-    ],
-    "name": "canSubmitProject",
-    "outputs": [
-      { "internalType": "bool", "name": "canSubmit", "type": "bool" },
-      { "internalType": "string", "name": "reason", "type": "string" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
       { "internalType": "string", "name": "ipfsHash", "type": "string" },
       {
         "internalType": "uint256",
@@ -506,11 +461,6 @@
           { "internalType": "string", "name": "ipfsHash", "type": "string" },
           { "internalType": "address", "name": "organizer", "type": "address" },
           {
-            "internalType": "enum HackathonPlatform.Phase",
-            "name": "currentPhase",
-            "type": "uint8"
-          },
-          {
             "internalType": "uint256",
             "name": "registrationDeadline",
             "type": "uint256"
@@ -567,21 +517,6 @@
       { "internalType": "uint256", "name": "hackathonId", "type": "uint256" }
     ],
     "name": "getHackathonProjects",
-    "outputs": [
-      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "enum HackathonPlatform.Phase",
-        "name": "phase",
-        "type": "uint8"
-      }
-    ],
-    "name": "getHackathonsByPhase",
     "outputs": [
       { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
     ],
@@ -751,11 +686,6 @@
       { "internalType": "uint256", "name": "id", "type": "uint256" },
       { "internalType": "string", "name": "ipfsHash", "type": "string" },
       { "internalType": "address", "name": "organizer", "type": "address" },
-      {
-        "internalType": "enum HackathonPlatform.Phase",
-        "name": "currentPhase",
-        "type": "uint8"
-      },
       {
         "internalType": "uint256",
         "name": "registrationDeadline",
@@ -958,20 +888,6 @@
       { "internalType": "string", "name": "newIpfsHash", "type": "string" }
     ],
     "name": "updateHackathonMetadata",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
-      {
-        "internalType": "enum HackathonPlatform.Phase",
-        "name": "newPhase",
-        "type": "uint8"
-      }
-    ],
-    "name": "updateHackathonPhase",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -6,16 +6,13 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title HackathonPlatform
- * @dev Hackathon platform with comprehensive validation and events
  */
 contract HackathonPlatform is Ownable, ReentrancyGuard {
-    enum Phase { REGISTRATION, SUBMISSION, JUDGING, COMPLETED }
     
     struct Hackathon {
         uint256 id;
         string ipfsHash;
         address organizer;
-        Phase currentPhase;
         uint256 registrationDeadline;
         uint256 submissionStartDate;
         uint256 submissionDeadline;
@@ -33,7 +30,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         uint256 judgeCount;
     }
     
-    // Enhanced Events - comprehensive coverage for off-chain indexing
+    // Comprehensive Events
     event HackathonCreated(uint256 indexed hackathonId, address indexed organizer, string ipfsHash);
     event HackathonMetadataUpdated(uint256 indexed hackathonId, address indexed organizer, string newIpfsHash);
     event HackathonDeactivated(uint256 indexed hackathonId, address indexed organizer);
@@ -44,7 +41,6 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     event ProjectSubmittedToHackathon(uint256 indexed hackathonId, uint256 indexed projectId, address indexed submitter);
     event TeamMemberAdded(uint256 indexed projectId, address indexed creator, address indexed member);
     event TeamMemberRemoved(uint256 indexed projectId, address indexed creator, address indexed member);
-    event PhaseChanged(uint256 indexed hackathonId, address indexed organizer, Phase oldPhase, Phase newPhase);
     event ScoreSubmitted(uint256 indexed hackathonId, uint256 indexed projectId, address indexed judge, uint256 score, string ipfsHash);
     event JudgeAdded(uint256 indexed hackathonId, address indexed organizer, address indexed judge);
     event JudgeRemoved(uint256 indexed hackathonId, address indexed organizer, address indexed judge);
@@ -135,12 +131,11 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     {
         uint256 hackathonId = nextHackathonId++;
         
-        // Create hackathon first
+        // Create hackathon
         hackathons[hackathonId] = Hackathon({
             id: hackathonId,
             ipfsHash: ipfsHash,
             organizer: msg.sender,
-            currentPhase: Phase.REGISTRATION,
             registrationDeadline: registrationDeadline,
             submissionStartDate: submissionStartDate,
             submissionDeadline: submissionDeadline,
@@ -156,9 +151,9 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
             require(judge != address(0), "HackathonPlatform: Invalid judge address");
             require(judge != msg.sender, "HackathonPlatform: Organizer cannot be judge");
             
-            // Skip duplicates (gas efficient approach) - don't revert
+            // Skip duplicates (gas efficient approach)
             if (isJudge[hackathonId][judge]) {
-                continue; // Skip duplicate, don't waste gas on revert
+                continue;
             }
             
             // Add judge
@@ -166,7 +161,6 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
             hackathonJudges[hackathonId].push(judge);
             judgeAssignments[judge].push(hackathonId);
             
-            // Emit event for each judge
             emit JudgeAdded(hackathonId, msg.sender, judge);
         }
         
@@ -192,32 +186,6 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Change hackathon phase with validation
-     */
-    function updateHackathonPhase(uint256 hackathonId, Phase newPhase) 
-        external 
-        onlyHackathonOrganizer(hackathonId) 
-        hackathonExists(hackathonId) 
-    {
-        require(hackathons[hackathonId].isActive, "HackathonPlatform: Cannot update phase of inactive hackathon");
-        
-        Phase oldPhase = hackathons[hackathonId].currentPhase;
-        require(newPhase != oldPhase, "HackathonPlatform: Phase is already set to the specified value");
-        
-        // Validate phase transition logic
-        if (newPhase == Phase.SUBMISSION) {
-            require(oldPhase == Phase.REGISTRATION, "HackathonPlatform: Can only move to submission from registration phase");
-        } else if (newPhase == Phase.JUDGING) {
-            require(oldPhase == Phase.SUBMISSION, "HackathonPlatform: Can only move to judging from submission phase");
-        } else if (newPhase == Phase.COMPLETED) {
-            require(oldPhase == Phase.JUDGING, "HackathonPlatform: Can only complete from judging phase");
-        }
-        
-        hackathons[hackathonId].currentPhase = newPhase;
-        emit PhaseChanged(hackathonId, msg.sender, oldPhase, newPhase);
-    }
-    
-    /**
      * @dev Deactivate hackathon (organizer can deactivate their own hackathon)
      */
     function deactivateHackathon(uint256 hackathonId) 
@@ -233,7 +201,6 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     
     /**
      * @dev Delete hackathon completely (only contract owner can delete any hackathon)
-     * This is an administrative function for moderation purposes
      */
     function deleteHackathon(uint256 hackathonId) 
         external 
@@ -292,7 +259,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         }
         delete hackathonJudges[hackathonId];
         
-        // Clear project submissions (but don't delete the projects themselves)
+        // Clear project submissions
         uint256[] storage submittedProjects = hackathonProjects[hackathonId];
         for (uint256 i = 0; i < submittedProjects.length; i++) {
             isProjectSubmitted[hackathonId][submittedProjects[i]] = false;
@@ -332,7 +299,13 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         validAddress(judge)
     {
         require(isJudge[hackathonId][judge], "HackathonPlatform: Address is not a judge for this hackathon");
-        require(hackathons[hackathonId].currentPhase != Phase.JUDGING, "HackathonPlatform: Cannot remove judge during judging phase");
+        
+        // Check if we're in judging period - don't allow removal during judging
+        require(
+            block.timestamp <= hackathons[hackathonId].submissionDeadline || 
+            block.timestamp > hackathons[hackathonId].judgingDeadline, 
+            "HackathonPlatform: Cannot remove judge during judging period"
+        );
         
         isJudge[hackathonId][judge] = false;
         
@@ -360,7 +333,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Register for hackathon with enhanced validation
+     * @dev Register for hackathon - pure timestamp validation
      */
     function registerForHackathon(uint256 hackathonId) 
         external 
@@ -368,7 +341,6 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         hackathonExists(hackathonId)
     {
         require(hackathons[hackathonId].isActive, "HackathonPlatform: Cannot register for inactive hackathon");
-        require(hackathons[hackathonId].currentPhase == Phase.REGISTRATION, "HackathonPlatform: Registration phase is not active");
         require(block.timestamp <= hackathons[hackathonId].registrationDeadline, "HackathonPlatform: Registration deadline has passed");
         require(!isRegistered[hackathonId][msg.sender], "HackathonPlatform: Already registered for this hackathon");
         require(!isJudge[hackathonId][msg.sender], "HackathonPlatform: Judges cannot register as participants");
@@ -479,7 +451,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Submit project to hackathon with comprehensive validation
+     * @dev Submit project to hackathon - pure timestamp validation
      */
     function submitProjectToHackathon(uint256 hackathonId, uint256 projectId) 
         external 
@@ -488,7 +460,6 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         projectExists(projectId) 
     {
         require(hackathons[hackathonId].isActive, "HackathonPlatform: Cannot submit to inactive hackathon");
-        require(hackathons[hackathonId].currentPhase == Phase.SUBMISSION, "HackathonPlatform: Submission phase is not active");
         require(block.timestamp >= hackathons[hackathonId].submissionStartDate, "HackathonPlatform: Submission period has not started yet");
         require(block.timestamp <= hackathons[hackathonId].submissionDeadline, "HackathonPlatform: Submission deadline has passed");
         require(isRegistered[hackathonId][msg.sender], "HackathonPlatform: Must be registered for hackathon to submit projects");
@@ -514,7 +485,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Submit score with comprehensive validation
+     * @dev Submit score - pure timestamp validation
      */
     function submitScore(uint256 projectId, uint256 score, string memory feedbackIpfsHash) 
         external 
@@ -530,7 +501,8 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         
         for (uint256 i = 1; i < nextHackathonId; i++) {
             if (isProjectSubmitted[i][projectId] && isJudge[i][msg.sender]) {
-                require(hackathons[i].currentPhase == Phase.JUDGING, "HackathonPlatform: Judging phase is not active for this hackathon");
+                require(block.timestamp > hackathons[i].submissionDeadline, "HackathonPlatform: Judging period has not started yet");
+                require(block.timestamp <= hackathons[i].judgingDeadline, "HackathonPlatform: Judging deadline has passed");
                 require(hackathons[i].isActive, "HackathonPlatform: Cannot judge projects in inactive hackathon");
                 isAuthorizedJudge = true;
                 hackathonId = i;
@@ -547,7 +519,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         emit ScoreSubmitted(hackathonId, projectId, msg.sender, score, feedbackIpfsHash);
     }
     
-    // ========== ENHANCED VIEW FUNCTIONS ==========
+    // ========== VIEW FUNCTIONS ==========
     
     function getHackathon(uint256 hackathonId) external view returns (Hackathon memory) {
         require(hackathons[hackathonId].id != 0, "HackathonPlatform: Hackathon does not exist");
@@ -608,7 +580,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Get active hackathons with filtering
+     * @dev Get active hackathons
      */
     function getActiveHackathons() external view returns (uint256[] memory activeIds) {
         uint256 count = 0;
@@ -628,31 +600,6 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
                 index++;
             }
         }
-    }
-    
-    /**
-     * @dev Get hackathons by phase
-     */
-    function getHackathonsByPhase(Phase phase) external view returns (uint256[] memory) {
-        uint256 count = 0;
-        
-        for (uint256 i = 1; i < nextHackathonId; i++) {
-            if (hackathons[i].isActive && hackathons[i].currentPhase == phase) {
-                count++;
-            }
-        }
-        
-        uint256[] memory result = new uint256[](count);
-        uint256 index = 0;
-        
-        for (uint256 i = 1; i < nextHackathonId; i++) {
-            if (hackathons[i].isActive && hackathons[i].currentPhase == phase) {
-                result[index] = i;
-                index++;
-            }
-        }
-        
-        return result;
     }
     
     /**
@@ -687,65 +634,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         
         return result;
     }
-    
-    /**
-     * @dev Check if user can submit project to hackathon
-     */
-    function canSubmitProject(address user, uint256 hackathonId, uint256 projectId) 
-        external 
-        view 
-        returns (bool canSubmit, string memory reason) 
-    {
-        if (hackathons[hackathonId].id == 0) {
-            return (false, "Hackathon does not exist");
-        }
-        
-        if (!projects[projectId].isCreated) {
-            return (false, "Project does not exist");
-        }
-        
-        if (!hackathons[hackathonId].isActive) {
-            return (false, "Hackathon is inactive");
-        }
-        
-        if (hackathons[hackathonId].currentPhase != Phase.SUBMISSION) {
-            return (false, "Submission phase is not active");
-        }
-        
-        if (block.timestamp < hackathons[hackathonId].submissionStartDate) {
-            return (false, "Submission period has not started yet");
-        }
-        
-        if (block.timestamp > hackathons[hackathonId].submissionDeadline) {
-            return (false, "Submission deadline has passed");
-        }
-        
-        if (!isRegistered[hackathonId][user]) {
-            return (false, "User is not registered for hackathon");
-        }
-        
-        if (isProjectSubmitted[hackathonId][projectId]) {
-            return (false, "Project already submitted to this hackathon");
-        }
-        
-        // Check authorization
-        bool isAuthorized = (projects[projectId].creator == user);
-        if (!isAuthorized) {
-            address[] memory teamMembers = projects[projectId].teamMembers;
-            for (uint256 i = 0; i < teamMembers.length; i++) {
-                if (teamMembers[i] == user) {
-                    isAuthorized = true;
-                    break;
-                }
-            }
-        }
-        
-        if (!isAuthorized) {
-            return (false, "User is not authorized to submit this project");
-        }
-        
-        return (true, "Can submit project");
-    }
+
     
     function getTotalHackathons() external view returns (uint256) {
         return nextHackathonId - 1;
