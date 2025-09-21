@@ -23,11 +23,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
-import { formatDisplayDate, getUIHackathonStatus } from "@/lib/helpers/date";
+import { formatDisplayDate, formatDateRange, getUIHackathonStatus, type DateInput } from "@/lib/helpers/date";
 import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import Image from "next/image";
+import type { UIHackathon } from "@/types/hackathon";
+
+type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
 
 export function RegisteredHackathons() {
   const {
@@ -126,7 +129,7 @@ export function RegisteredHackathons() {
         </Card>
       ) : (
         <div className="space-y-6">
-          {registrations.map((hackathon) => {
+          {registrations.map((hackathon: RegisteredHackathon) => {
             // Get hackathon status using shared helper
             const status = getUIHackathonStatus({
               ...hackathon,
@@ -145,9 +148,7 @@ export function RegisteredHackathons() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <CardTitle className="text-2xl">
-                            {hackathon.title ||
-                              hackathon.name ||
-                              `Hackathon ${hackathon.id}`}
+                            {hackathon.name || `Hackathon ${hackathon.id}`}
                           </CardTitle>
                           <Badge variant={statusVariant}>{status}</Badge>
                         </div>
@@ -179,10 +180,7 @@ export function RegisteredHackathons() {
                     </CardHeader>
                       <CardContent className="p-0">
                         <p className="text-muted-foreground mb-4">
-                          {hackathon.shortDescription ||
-                            hackathon.description ||
-                            hackathon.short_description ||
-                            `Hackathon ${hackathon.id}`}
+                          {hackathon.shortDescription || "No description provided."}
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm [&>div>h6]:text-muted-foreground [&>div>p]:font-semibold [&>div>p]:text-xs">
                           <div>
@@ -191,13 +189,8 @@ export function RegisteredHackathons() {
                               Registration closes
                             </h6>
                             <p>
-                              {hackathon.registrationDeadline
-                                ? formatDisplayDate(
-                                    new Date(
-                                      Number(hackathon.registrationDeadline) *
-                                        1000,
-                                    ).toISOString(),
-                                  )
+                              {hackathon.registrationPeriod?.registrationEndDate
+                                ? formatDisplayDate(hackathon.registrationPeriod.registrationEndDate)
                                 : "Registration TBD"}
                             </p>
                           </div>
@@ -231,7 +224,7 @@ export function RegisteredHackathons() {
                               Total prize
                             </h6>
                             <p>
-                              {hackathon.totalPrize || "TBD"}
+                              {"TBD"}
                             </p>
                           </div>
                         </div>
@@ -245,24 +238,10 @@ export function RegisteredHackathons() {
                           </Button>
                           <div className="text-sm text-muted-foreground">
                             <span className="font-medium">
-                              {hackathon.submissionStartDate
-                                ? formatDisplayDate(
-                                    new Date(
-                                      Number(hackathon.submissionStartDate) *
-                                        1000,
-                                    ).toISOString(),
-                                  )
-                                : "TBD"}
-                            </span>{" "}
-                            -{" "}
-                            <span className="font-medium">
-                              {hackathon.submissionDeadline
-                                ? formatDisplayDate(
-                                    new Date(
-                                      Number(hackathon.submissionDeadline) * 1000,
-                                    ).toISOString(),
-                                  )
-                                : "TBD"}
+                              {formatDateRange(
+                                hackathon.hackathonPeriod?.hackathonStartDate,
+                                hackathon.hackathonPeriod?.hackathonEndDate
+                              )}
                             </span>
                           </div>
                         </div>
@@ -273,10 +252,9 @@ export function RegisteredHackathons() {
                         height={200}
                         width={300}
                         src={resolveIPFSToHttp(
-                          hackathon.visual || hackathon.logo,
+                          hackathon.visual
                         )}
                         alt={
-                          hackathon.title ||
                           hackathon.name ||
                           `Hackathon ${hackathon.id}`
                         }

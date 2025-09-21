@@ -2,14 +2,34 @@
 
 import { useState } from "react";
 import { useParams, notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, GitBranch, Edit, Play, Plus, Calendar, Trophy, Search, } from "lucide-react";
+import {
+  ArrowLeft,
+  ExternalLink,
+  GitBranch,
+  Edit,
+  Play,
+  Plus,
+  Calendar,
+  Trophy,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
 import { YouTubeEmbed } from "@next/third-parties/google";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useBlockchainProject, useProjectTeamMembers, useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
+import {
+  useBlockchainProject,
+  useProjectTeamMembers,
+  useBlockchainProjects,
+} from "@/hooks/blockchain/useBlockchainProjects";
 import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 import { useEns } from "@/hooks/use-ens";
@@ -23,10 +43,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { getUIHackathonStatus } from "@/lib/helpers/date";
+import {
+  getUIHackathonStatus,
+  formatDateRange,
+  type DateInput,
+} from "@/lib/helpers/date";
+import type { UIHackathon } from "@/types/hackathon";
+
+type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
 
 // Team member component with ENS support
-function TeamMember({ address, role = "Member", index }: { address: string; role?: string; index?: number }) {
+function TeamMember({
+  address,
+  role = "Member",
+  index,
+}: {
+  address: string;
+  role?: string;
+  index?: number;
+}) {
   const { ensName, ensAvatar, displayName, initials } = useEns(address);
 
   return (
@@ -43,9 +78,7 @@ function TeamMember({ address, role = "Member", index }: { address: string; role
         <h4 className="font-medium">
           {ensName || (index !== undefined ? `${role} ${index + 1}` : role)}
         </h4>
-        <p className="text-sm text-muted-foreground font-mono">
-          {displayName}
-        </p>
+        <p className="text-sm text-muted-foreground font-mono">{displayName}</p>
         {ensName && (
           <p className="text-xs text-muted-foreground font-mono opacity-70">
             {address}
@@ -58,18 +91,22 @@ function TeamMember({ address, role = "Member", index }: { address: string; role
 
 // Hackathon submission dialog component
 function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
-  const { hackathons: registeredHackathons = [], isLoading } = useRegisteredHackathons();
-  const { submitToHackathon, isSubmittingToHackathon } = useBlockchainProjects();
+  const { hackathons: registeredHackathons = [], isLoading } =
+    useRegisteredHackathons();
+  const { submitToHackathon, isSubmittingToHackathon } =
+    useBlockchainProjects();
   const [open, setOpen] = useState(false);
 
   // Filter registered hackathons to only show active ones
-  const availableRegisteredHackathons = registeredHackathons.filter((hackathon: any) => {
-    const status = getUIHackathonStatus({
-      ...hackathon,
-      votingPeriod: hackathon.votingPeriod || undefined,
-    });
-    return status === "Registration Open" || status === "Live";
-  });
+  const availableRegisteredHackathons = registeredHackathons.filter(
+    (hackathon: RegisteredHackathon) => {
+      const status = getUIHackathonStatus({
+        ...hackathon,
+        votingPeriod: hackathon.votingPeriod || undefined,
+      });
+      return status === "Registration Open" || status === "Live";
+    }
+  );
 
   const handleSubmit = async (hackathonId: string) => {
     try {
@@ -80,7 +117,9 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
       toast.success("Project submitted to hackathon successfully!");
       setOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to submit project");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to submit project"
+      );
     }
   };
 
@@ -96,7 +135,8 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
         <DialogHeader>
           <DialogTitle>Submit to Hackathon</DialogTitle>
           <DialogDescription>
-            Submit your project to hackathons you're registered for. Only active hackathons are shown.
+            Submit your project to hackathons you're registered for. Only active
+            hackathons are shown.
           </DialogDescription>
         </DialogHeader>
 
@@ -118,55 +158,88 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
               </div>
             ) : availableRegisteredHackathons.length > 0 ? (
               <div className="space-y-3">
-                {availableRegisteredHackathons.map((hackathon: any) => {
-                const status = getUIHackathonStatus({
-                  ...hackathon,
-                  votingPeriod: hackathon.votingPeriod || undefined,
-                });
+                {availableRegisteredHackathons.map(
+                  (hackathon: RegisteredHackathon) => {
+                    const status = getUIHackathonStatus({
+                      ...hackathon,
+                      votingPeriod: hackathon.votingPeriod || undefined,
+                    });
 
-                  return (
-                    <Card key={hackathon.id} className="border-green-200 dark:border-green-800">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-medium">{hackathon.name}</h4>
-                              <Badge variant={status === "Live" ? "default" : "secondary"}>
-                                {status}
-                              </Badge>
-                              <Badge variant="outline" className="text-green-600 border-green-600">
-                                Registered
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
-                              {hackathon.description}
-                            </p>
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                <span>
-                                  {new Date(hackathon.startDate).toLocaleDateString()} - {new Date(hackathon.endDate).toLocaleDateString()}
-                                </span>
+                    return (
+                      <Card
+                        key={hackathon.id}
+                        className="border-green-200 dark:border-green-800 gap-0"
+                      >
+                        <CardContent className="p-4 pt-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex justify-between gap-2 mb-2">
+                                <h4 className="font-medium">
+                                  {hackathon.name}
+                                </h4>
+                                <div className="flex gap-2">
+                                  <Badge
+                                    variant={
+                                      status === "Live"
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {status}
+                                  </Badge>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-green-600 border-green-600"
+                                  >
+                                    Registered
+                                  </Badge>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Trophy className="w-3 h-3" />
-                                <span>${hackathon.prizePool?.toLocaleString() || "TBD"}</span>
+                              <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
+                                {hackathon.shortDescription}
+                              </p>
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>
+                                    {formatDateRange(
+                                      hackathon.hackathonPeriod
+                                        ?.hackathonStartDate,
+                                      hackathon.hackathonPeriod
+                                        ?.hackathonEndDate
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Trophy className="w-3 h-3" />
+                                  <span>
+                                    {hackathon.prizeCohorts?.length
+                                      ? `${hackathon.prizeCohorts.length} Prizes`
+                                      : "TBD"}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
+                        </CardContent>
+                        <CardFooter className="pt-0 px-4">
                           <Button
-                            onClick={() => handleSubmit(hackathon.id.toString())}
+                            onClick={() =>
+                              handleSubmit(hackathon.id.toString())
+                            }
                             disabled={isSubmittingToHackathon}
                             size="sm"
-                            className="ml-4"
+                            className="w-full"
                           >
-                            {isSubmittingToHackathon ? "Submitting..." : "Submit"}
+                            {isSubmittingToHackathon
+                              ? "Submitting..."
+                              : "Submit"}
                           </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                        </CardFooter>
+                      </Card>
+                    );
+                  }
+                )}
               </div>
             ) : (
               <div className="text-center py-6 border-2 border-dashed border-muted rounded-lg">
@@ -186,11 +259,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                 <Search className="w-4 h-4" />
                 Discover More Hackathons
               </h3>
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-              >
+              <Button variant="outline" size="sm" asChild>
                 <Link href="/hackathons" className="gap-2">
                   <ExternalLink className="w-3 h-3" />
                   Browse All
@@ -198,7 +267,8 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              Register for more hackathons to expand your submission opportunities.
+              Register for more hackathons to expand your submission
+              opportunities.
             </p>
           </div>
         </div>
@@ -210,18 +280,14 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
 export default function ProjectDetailsPage() {
   const params = useParams();
   const projectId = params.id as string;
-  const [activeTab, setActiveTab] = useState<"overview" | "hackathon" | "team">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "hackathon" | "team">(
+    "overview"
+  );
 
-  const {
-    data: project,
-    isLoading,
-    error,
-  } = useBlockchainProject(projectId);
+  const { data: project, isLoading, error } = useBlockchainProject(projectId);
 
-  const {
-    data: teamMembers = [],
-    isLoading: isLoadingTeamMembers,
-  } = useProjectTeamMembers(projectId);
+  const { data: teamMembers = [], isLoading: isLoadingTeamMembers } =
+    useProjectTeamMembers(projectId);
 
   if (isLoading) {
     return (
@@ -335,7 +401,12 @@ export default function ProjectDetailsPage() {
         </div>
 
         {/* Content Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "overview" | "hackathon" | "team")}>
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) =>
+            setActiveTab(value as "overview" | "hackathon" | "team")
+          }
+        >
           <TabsList className="grid w-full grid-cols-3 max-w-md">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="hackathon">Hackathon</TabsTrigger>
@@ -362,11 +433,15 @@ export default function ProjectDetailsPage() {
                     <div className="space-y-6">
                       {project.demoVideo && (
                         <div>
-                          <h3 className="text-lg font-medium mb-3">Demo Video</h3>
+                          <h3 className="text-lg font-medium mb-3">
+                            Demo Video
+                          </h3>
                           <div className="rounded-lg overflow-hidden">
                             {isYouTubeUrl(project.demoVideo) ? (
                               <YouTubeEmbed
-                                videoid={extractYouTubeVideoId(project.demoVideo) || ""}
+                                videoid={
+                                  extractYouTubeVideoId(project.demoVideo) || ""
+                                }
                                 height={400}
                                 params="controls=1&modestbranding=1&rel=0"
                               />
@@ -374,7 +449,9 @@ export default function ProjectDetailsPage() {
                               <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                                 <div className="text-center">
                                   <Play className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
-                                  <p className="text-sm text-muted-foreground mb-4">Video Preview</p>
+                                  <p className="text-sm text-muted-foreground mb-4">
+                                    Video Preview
+                                  </p>
                                   <Button asChild>
                                     <Link
                                       href={project.demoVideo}
@@ -394,11 +471,16 @@ export default function ProjectDetailsPage() {
 
                       {project.pitchVideo && (
                         <div>
-                          <h3 className="text-lg font-medium mb-3">Pitch Video</h3>
+                          <h3 className="text-lg font-medium mb-3">
+                            Pitch Video
+                          </h3>
                           <div className="rounded-lg overflow-hidden">
                             {isYouTubeUrl(project.pitchVideo) ? (
                               <YouTubeEmbed
-                                videoid={extractYouTubeVideoId(project.pitchVideo) || ""}
+                                videoid={
+                                  extractYouTubeVideoId(project.pitchVideo) ||
+                                  ""
+                                }
                                 height={400}
                                 params="controls=1&modestbranding=1&rel=0"
                               />
@@ -406,7 +488,9 @@ export default function ProjectDetailsPage() {
                               <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                                 <div className="text-center">
                                   <Play className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
-                                  <p className="text-sm text-muted-foreground mb-4">Video Preview</p>
+                                  <p className="text-sm text-muted-foreground mb-4">
+                                    Video Preview
+                                  </p>
                                   <Button asChild>
                                     <Link
                                       href={project.pitchVideo}
@@ -430,7 +514,9 @@ export default function ProjectDetailsPage() {
                 {/* Progress */}
                 {project.progress && (
                   <div>
-                    <h2 className="text-xl font-semibold mb-4">Progress During Hackathon</h2>
+                    <h2 className="text-xl font-semibold mb-4">
+                      Progress During Hackathon
+                    </h2>
                     <Card>
                       <CardContent className="pt-6">
                         <p className="text-muted-foreground leading-relaxed mb-4">
@@ -456,7 +542,9 @@ export default function ProjectDetailsPage() {
                 {/* Fundraising Status */}
                 {project.fundraisingStatus && (
                   <div>
-                    <h2 className="text-xl font-semibold mb-4">Fundraising Status</h2>
+                    <h2 className="text-xl font-semibold mb-4">
+                      Fundraising Status
+                    </h2>
                     <Card>
                       <CardContent className="pt-6">
                         <p className="text-muted-foreground leading-relaxed">
@@ -475,42 +563,56 @@ export default function ProjectDetailsPage() {
               {/* Submit to Hackathon Action */}
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-xl font-semibold">Hackathon Submissions</h2>
+                  <h2 className="text-xl font-semibold">
+                    Hackathon Submissions
+                  </h2>
                   <p className="text-sm text-muted-foreground">
-                    Submit your project to active hackathons to compete for prizes.
+                    Submit your project to active hackathons to compete for
+                    prizes.
                   </p>
                 </div>
                 <HackathonSubmissionDialog projectId={projectId} />
               </div>
 
               {/* Current Submissions */}
-              {project.submittedToHackathons && project.submittedToHackathons.length > 0 ? (
+              {project.submittedToHackathons &&
+              project.submittedToHackathons.length > 0 ? (
                 <div>
-                  <h3 className="text-lg font-medium mb-4">Current Submissions</h3>
+                  <h3 className="text-lg font-medium mb-4">
+                    Current Submissions
+                  </h3>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {project.submittedToHackathons.map((hackathon: any, index: number) => (
-                      <Card key={index}>
-                        <CardHeader>
-                          <CardTitle className="text-lg">
-                            {hackathon.name || `Hackathon #${index + 1}`}
-                          </CardTitle>
-                          <Badge variant="outline" className="w-fit">
-                            Submitted
-                          </Badge>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm text-muted-foreground">
-                            {hackathon.description || "No description available"}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {project.submittedToHackathons.map(
+                      (
+                        hackathon: { name?: string; description?: string },
+                        index: number
+                      ) => (
+                        <Card key={index}>
+                          <CardHeader>
+                            <CardTitle className="text-lg">
+                              {hackathon.name || `Hackathon #${index + 1}`}
+                            </CardTitle>
+                            <Badge variant="outline" className="w-fit">
+                              Submitted
+                            </Badge>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                              {hackathon.description ||
+                                "No description available"}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      )
+                    )}
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
                   <Trophy className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Hackathon Submissions</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Hackathon Submissions
+                  </h3>
                   <p className="text-muted-foreground mb-4">
                     This project hasn't been submitted to any hackathons yet.
                   </p>
@@ -571,7 +673,9 @@ export default function ProjectDetailsPage() {
                     <CardTitle>Team Members</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground">No additional team members found.</p>
+                    <p className="text-muted-foreground">
+                      No additional team members found.
+                    </p>
                   </CardContent>
                 </Card>
               )}

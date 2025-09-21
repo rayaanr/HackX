@@ -3,13 +3,16 @@
  */
 
 /**
+ * Generic type for date inputs that can be strings, numbers, Date objects, or null/undefined
+ */
+export type DateInput = string | Date | number | null | undefined;
+
+/**
  * Safely converts various date formats to a Date object
  * @param value - Date string, timestamp number, or Date object
  * @returns Date object or null if invalid
  */
-export function safeToDate(
-  value: string | number | Date | null | undefined,
-): Date | null {
+export function safeToDate(value: DateInput): Date | null {
   if (!value) return null;
 
   if (value instanceof Date) return value;
@@ -32,9 +35,11 @@ export function safeToDate(
 /**
  * Calculate days left until a given date
  */
-export function getDaysLeft(endDate: string | Date): number {
+export function getDaysLeft(endDate: DateInput): number {
   const now = new Date();
-  const end = typeof endDate === "string" ? new Date(endDate) : endDate;
+  const end = safeToDate(endDate);
+  if (!end) return 0;
+
   const diffInDays = Math.ceil(
     (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
   );
@@ -44,9 +49,10 @@ export function getDaysLeft(endDate: string | Date): number {
 /**
  * Format a relative date string (e.g., "2 days ago", "Yesterday")
  */
-export function formatRelativeDate(dateString: string | Date): string {
-  const date =
-    typeof dateString === "string" ? new Date(dateString) : dateString;
+export function formatRelativeDate(dateString: DateInput): string {
+  const date = safeToDate(dateString);
+  if (!date) return "Invalid date";
+
   const now = new Date();
   const diffInDays = Math.floor(
     (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
@@ -68,9 +74,10 @@ export function formatRelativeDate(dateString: string | Date): string {
 /**
  * Format a date for display (e.g., "January 15, 2024")
  */
-export function formatDisplayDate(dateString: string | Date): string {
-  const date =
-    typeof dateString === "string" ? new Date(dateString) : dateString;
+export function formatDisplayDate(dateString: DateInput): string {
+  const date = safeToDate(dateString);
+  if (!date) return "Invalid date";
+
   return date.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -82,11 +89,13 @@ export function formatDisplayDate(dateString: string | Date): string {
  * Format a date range (e.g., "Jan 15 - Jan 17, 2024")
  */
 export function formatDateRange(
-  startDate: string | Date,
-  endDate: string | Date,
+  startDate: DateInput,
+  endDate: DateInput,
 ): string {
-  const start = typeof startDate === "string" ? new Date(startDate) : startDate;
-  const end = typeof endDate === "string" ? new Date(endDate) : endDate;
+  const start = safeToDate(startDate);
+  const end = safeToDate(endDate);
+
+  if (!start || !end) return "Invalid date range";
 
   const startStr = start.toLocaleDateString("en-US", {
     month: "short",
@@ -105,18 +114,20 @@ export function formatDateRange(
 /**
  * Check if a date is in the past
  */
-export function isPastDate(dateString: string | Date): boolean {
-  const date =
-    typeof dateString === "string" ? new Date(dateString) : dateString;
+export function isPastDate(dateString: DateInput): boolean {
+  const date = safeToDate(dateString);
+  if (!date) return false; // Invalid dates are considered not past
+
   return date.getTime() < Date.now();
 }
 
 /**
  * Check if a date is today
  */
-export function isToday(dateString: string | Date): boolean {
-  const date =
-    typeof dateString === "string" ? new Date(dateString) : dateString;
+export function isToday(dateString: DateInput): boolean {
+  const date = safeToDate(dateString);
+  if (!date) return false; // Invalid dates are considered not today
+
   const today = new Date();
   return date.toDateString() === today.toDateString();
 }
