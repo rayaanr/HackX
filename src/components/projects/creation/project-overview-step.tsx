@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
 import { type ProjectFormData } from "@/lib/schemas/project-schema";
-import { LexicalEditor } from "@/components/ui/rich-text-editor";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { FileUploadField } from "@/components/ui/file-upload";
 import MultipleSelector, { Option } from "@/components/ui/multiselect";
 import { Button } from "@/components/ui/button";
@@ -237,8 +237,8 @@ export function OverviewStep() {
               <FormItem>
                 <FormLabel>Full Description *</FormLabel>
                 <FormControl>
-                  <LexicalEditor
-                    initialContent={field.value || ""}
+                  <RichTextEditor
+                    initialValue={field.value || ""}
                     onChange={(content) => field.onChange(content)}
                     placeholder="Enter a detailed description of your project..."
                     className="min-h-[200px]"

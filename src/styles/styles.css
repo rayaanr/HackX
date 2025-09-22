@@ -1,100 +1,151 @@
-/* Lexical Editor Styles */
-/* .editor-placeholder {
-  color: hsl(var(--muted-foreground));
+
+/* Cleaned up - removed conflicting Lexical editor styles that interfere with theming */
+
+pre::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: #999;
+}
+
+.debug-timetravel-panel {
   overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: 16px;
-  left: 16px;
-  font-size: 14px;
-  user-select: none;
-  display: inline-block;
-  pointer-events: none;
-} */
-
-.editor-paragraph {
-  margin: 0;
-  margin-bottom: 8px;
-  position: relative;
+  padding: 0 0 10px 0;
+  margin: auto;
+  display: flex;
 }
 
-.editor-paragraph:last-child {
-  margin-bottom: 0;
-}
-
-.editor-heading-h1 {
-  font-size: 1.875rem;
-  font-weight: 700;
-  margin: 0;
-  margin-bottom: 12px;
+.debug-timetravel-panel-slider {
   padding: 0;
-  line-height: 1.2;
-  color: hsl(var(--foreground));
+  flex: 8;
 }
 
-.editor-heading-h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-  margin-bottom: 10px;
+.debug-timetravel-panel-button {
   padding: 0;
-  line-height: 1.3;
-  color: hsl(var(--foreground));
+  border: 0;
+  background: none;
+  flex: 1;
+  color: #fff;
+  font-size: 12px;
 }
 
-.editor-heading-h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-  margin-bottom: 8px;
-  padding: 0;
-  line-height: 1.4;
-  color: hsl(var(--foreground));
-}
-
-.editor-text-bold {
-  font-weight: 700;
-}
-
-.editor-text-italic {
-  font-style: italic;
-}
-
-.editor-text-underline {
+.debug-timetravel-panel-button:hover {
   text-decoration: underline;
 }
 
-.editor-text-strikethrough {
-  text-decoration: line-through;
+.debug-timetravel-button {
+  border: 0;
+  padding: 0;
+  font-size: 12px;
+  top: 10px;
+  right: 15px;
+  position: absolute;
+  background: none;
+  color: #fff;
 }
 
-.editor-text-underlineStrikethrough {
-  text-decoration: underline line-through;
+.debug-timetravel-button:hover {
+  text-decoration: underline;
 }
 
-.editor-text-highlight {
-  background-color: yellow;
+.emoji {
+  color: transparent;
+  background-size: 16px 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  margin: 0 -1px;
 }
 
-.editor-list-ol {
-  list-style: decimal;
-  margin-left: 1.5rem;
-  margin-bottom: 8px;
+.emoji-happysmile {
+  background-image: url(images/emoji/1F642.png);
 }
 
-.editor-list-ul {
-  list-style: disc;
-  margin-left: 1.5rem;
-  margin-bottom: 8px;
+.emoji-veryhappysmile {
+  background-image: url(images/emoji/1F600.png);
 }
 
-.editor-listitem {
-  margin-bottom: 4px;
+.emoji-unhappysmile {
+  background-image: url(images/emoji/1F641.png);
 }
 
-.editor-nested-listitem {
-  list-style: none;
+.emoji-heart {
+  background-image: url(images/emoji/2764.png);
 }
+
+.keyword {
+  color: #07a;
+  font-weight: bold;
+}
+
+.actions {
+  position: absolute;
+  text-align: right;
+  margin: 10px;
+  bottom: 0;
+  right: 0;
+}
+
+.actions i {
+  background-size: contain;
+  display: inline-block;
+  height: 15px;
+  width: 15px;
+  vertical-align: -0.25em;
+}
+
+.actions i.indent {
+  background-image: url(images/icons/indent.svg);
+}
+
+.actions i.outdent {
+  background-image: url(images/icons/outdent.svg);
+}
+
+.actions i.lock {
+  background-image: url(images/icons/lock.svg);
+}
+
+.actions i.image {
+  background-image: url(images/icons/file-image.svg);
+}
+
+.actions i.table {
+  background-image: url(images/icons/table.svg);
+}
+
+.actions i.unlock {
+  background-image: url(images/icons/lock-open.svg);
+}
+
+.actions i.left-align {
+  background-image: url(images/icons/text-left.svg);
+}
+
+.actions i.center-align {
+  background-image: url(images/icons/text-center.svg);
+}
+
+.actions i.right-align {
+  background-image: url(images/icons/text-right.svg);
+}
+
+.actions i.justify-align {
+  background-image: url(images/icons/justify.svg);
+}
+
+.actions i.disconnect {
+  background-image: url(images/icons/plug-disconnect.svg);
+}
+
+.actions i.connect {
+  background-image: url(images/icons/plug-connect.svg);
+}
+
+
+/* Old Lexical styles removed - now using theme-based styles in component */
 
 /* Prose content styling for consistent typography */
 /* .prose {
