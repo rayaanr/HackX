@@ -586,3 +586,19 @@ export async function getTotalProjects(
   });
   return Number(result);
 }
+
+// ===== JUDGE SCORING FUNCTIONS =====
+
+// Prepare submit score transaction
+export function prepareSubmitScoreTransaction(
+  contract: ThirdwebContract,
+  projectId: string | number,
+  totalScore: number,
+  feedbackIpfsHash: string,
+) {
+  return prepareContractCall({
+    contract,
+    method: "function submitScore(uint256 projectId, uint256 score, string feedbackIpfsHash)",
+    params: [BigInt(projectId), BigInt(totalScore), feedbackIpfsHash],
+  });
+}

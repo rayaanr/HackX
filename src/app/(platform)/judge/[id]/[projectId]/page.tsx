@@ -1,14 +1,25 @@
 "use client";
 
-import { use, useState } from "react";
+import { use } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { notFound } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Rating, RatingButton } from "@/components/ui/rating";
 import {
   ArrowLeft,
   Clock,
@@ -20,6 +31,14 @@ import {
   useHackathon,
   useHackathonProjectsWithDetails
 } from "@/hooks/blockchain/useBlockchainHackathons";
+import type { ProjectWithHackathon } from "@/types/hackathon";
+import { useJudgeEvaluation } from "@/hooks/blockchain/use-judge";
+import {
+  judgeRatingSchema,
+  defaultJudgeRatingValues,
+  evaluationCriteria,
+  type JudgeRatingFormData,
+} from "@/lib/schemas/judge-schema";
 
 interface ProjectReviewPageProps {
   params: Promise<{ id: string; projectId: string }>;
@@ -29,19 +48,19 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   const { id: hackathonId, projectId } = use(params);
   const account = useActiveAccount();
 
-  // State for evaluation form
-  const [evaluation, setEvaluation] = useState({
-    technicalExecution: 0,
-    innovation: 0,
-    usability: 0,
-    marketPotential: 0,
-    presentation: 0,
-    overallFeedback: "",
-    strengths: "",
-    improvements: "",
+  // React Hook Form setup
+  const form = useForm<JudgeRatingFormData>({
+    resolver: zodResolver(judgeRatingSchema),
+    defaultValues: defaultJudgeRatingValues,
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Use judge blockchain hook
+  const {
+    isSubmitting,
+    submissionStage,
+    submitEvaluation,
+    calculateTotalScore,
+  } = useJudgeEvaluation();
 
   // Fetch hackathon and project data
   const { data: hackathon, isLoading: hackathonLoading } = useHackathon(hackathonId);
@@ -56,7 +75,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   }
 
   // Find the specific project
-  const project = projects.find((p: any) => p.id.toString() === projectId);
+  const project = projects.find((p: ProjectWithHackathon) => p.id.toString() === projectId);
 
   if (!project) {
     notFound();
@@ -74,56 +93,25 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     );
   }
 
-  const handleScoreChange = (criteria: string, score: number) => {
-    setEvaluation(prev => ({
-      ...prev,
-      [criteria]: score
-    }));
-  };
 
-  const calculateTotalScore = () => {
-    const scores = [
-      evaluation.technicalExecution,
-      evaluation.innovation,
-      evaluation.usability,
-      evaluation.marketPotential,
-      evaluation.presentation
-    ];
-    const total = scores.reduce((sum, score) => sum + score, 0);
-    return Math.round((total / scores.length) * 10) / 10; // Average out of 10
-  };
-
-  const handleSubmitEvaluation = async () => {
-    setIsSubmitting(true);
-    try {
-      // TODO: Implement blockchain transaction to submit evaluation
-      // This would involve calling a smart contract function to submit the judge's score
-      console.log("Submitting evaluation:", {
-        hackathonId,
-        projectId,
-        judgeAddress: account.address,
-        totalScore: calculateTotalScore(),
-        evaluation
-      });
-
-      toast.success("Evaluation submitted successfully!");
-    } catch (error) {
-      console.error("Failed to submit evaluation:", error);
-      toast.error("Failed to submit evaluation. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+  const handleSubmitEvaluation = async (data: JudgeRatingFormData) => {
+    if (!account?.address) {
+      toast.error("Please connect your wallet to submit evaluation.");
+      return;
     }
-  };
 
-  const isEvaluationComplete = () => {
-    return (
-      evaluation.technicalExecution > 0 &&
-      evaluation.innovation > 0 &&
-      evaluation.usability > 0 &&
-      evaluation.marketPotential > 0 &&
-      evaluation.presentation > 0 &&
-      evaluation.overallFeedback.trim().length > 0
-    );
+    // Show initial loading toast
+    toast.loading("Uploading feedback to IPFS...", { id: "evaluation-submission" });
+
+    // Start the submission process
+    const result = await submitEvaluation(projectId, data);
+
+    if (result.success) {
+      toast.success("Evaluation submitted successfully to blockchain!", { id: "evaluation-submission" });
+      form.reset(); // Reset form after successful submission
+    } else {
+      toast.error(result.error || "Failed to submit evaluation. Please try again.", { id: "evaluation-submission" });
+    }
   };
 
   return (
@@ -145,126 +133,157 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
       </div>
 
       <div className="gap-6">
-        {/* Evaluation Form - Right Column */}
-        <div>
-          <Card >
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="size-4" />
-                Judge Evaluation
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Scoring Criteria */}
-              <div className="space-y-4">
-                {[
-                  { key: 'technicalExecution', label: 'Technical Execution', description: 'Code quality, architecture, implementation' },
-                  { key: 'innovation', label: 'Innovation', description: 'Originality and creativity of the solution' },
-                  { key: 'usability', label: 'Usability', description: 'User experience and design quality' },
-                  { key: 'marketPotential', label: 'Market Potential', description: 'Commercial viability and impact' },
-                  { key: 'presentation', label: 'Presentation', description: 'Quality of demo and pitch' },
-                ].map((criteria) => (
-                  <div key={criteria.key} className="space-y-2">
-                    <div>
-                      <Label className="text-sm font-medium">{criteria.label}</Label>
-                      <p className="text-xs text-muted-foreground">{criteria.description}</p>
-                    </div>
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
-                        <Button
-                          key={score}
-                          variant={Number(evaluation[criteria.key as keyof typeof evaluation]) >= score ? "default" : "outline"}
-                          size="sm"
-                          className="w-8 h-8 p-0"
-                          onClick={() => handleScoreChange(criteria.key, score)}
-                        >
-                          {score}
-                        </Button>
-                      ))}
-                    </div>
-                    <p className="text-xs text-right text-muted-foreground">
-                      Score: {evaluation[criteria.key as keyof typeof evaluation] || 0}/10
-                    </p>
-                  </div>
-                ))}
-              </div>
+        {/* Evaluation Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="size-4" />
+              Judge Evaluation
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmitEvaluation)} className="space-y-6">
+                {/* Scoring Criteria */}
+                <div className="space-y-6">
+                  {evaluationCriteria.map((criteria) => (
+                    <FormField
+                      key={criteria.key}
+                      control={form.control}
+                      name={criteria.key}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            {criteria.label}
+                          </FormLabel>
+                          <FormDescription className="text-xs">
+                            {criteria.description}
+                          </FormDescription>
+                          <FormControl>
+                            <div className="space-y-2">
+                              <Rating
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                className="justify-start"
+                              >
+                                {Array.from({ length: 10 }, (_, i) => (
+                                  <RatingButton key={i + 1} />
+                                ))}
+                              </Rating>
+                              <p className="text-xs text-right text-muted-foreground">
+                                Score: {field.value || 0}/10
+                              </p>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
 
-              <Separator />
+                <Separator />
 
-              {/* Total Score Display */}
-              <div className="text-center p-4 bg-primary/5 rounded-lg">
-                <p className="text-sm font-medium text-muted-foreground">Total Score</p>
-                <p className="text-2xl font-bold text-primary">{calculateTotalScore()}/10</p>
-              </div>
+                {/* Total Score Display */}
+                <div className="text-center p-4 bg-primary/5 rounded-lg">
+                  <p className="text-sm font-medium text-muted-foreground">Total Score</p>
+                  <p className="text-2xl font-bold text-primary">{calculateTotalScore(form.getValues())}/10</p>
+                </div>
 
-              <Separator />
+                <Separator />
 
-              {/* Feedback Sections */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="overallFeedback">Overall Feedback *</Label>
-                  <Textarea
-                    id="overallFeedback"
-                    placeholder="Provide your overall assessment of this project..."
-                    value={evaluation.overallFeedback}
-                    onChange={(e) => setEvaluation(prev => ({ ...prev, overallFeedback: e.target.value }))}
-                    rows={4}
+                {/* Feedback Sections */}
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="overallFeedback"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Overall Feedback *</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Provide your overall assessment of this project..."
+                            {...field}
+                            rows={4}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="strengths"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Strengths</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="What are the project's main strengths?"
+                            {...field}
+                            rows={3}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="improvements"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Areas for Improvement</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="What could be improved?"
+                            {...field}
+                            rows={3}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="strengths">Strengths</Label>
-                  <Textarea
-                    id="strengths"
-                    placeholder="What are the project's main strengths?"
-                    value={evaluation.strengths}
-                    onChange={(e) => setEvaluation(prev => ({ ...prev, strengths: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
+                <Separator />
 
-                <div className="space-y-2">
-                  <Label htmlFor="improvements">Areas for Improvement</Label>
-                  <Textarea
-                    id="improvements"
-                    placeholder="What could be improved?"
-                    value={evaluation.improvements}
-                    onChange={(e) => setEvaluation(prev => ({ ...prev, improvements: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Submit Button */}
-              <Button
-                onClick={handleSubmitEvaluation}
-                disabled={!isEvaluationComplete() || isSubmitting}
-                className="w-full"
-                size="lg"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Clock className="size-4 mr-2 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Award className="size-4 mr-2" />
-                    Submit Evaluation
-                  </>
-                )}
-              </Button>
-
-              {!isEvaluationComplete() && (
-                <p className="text-xs text-muted-foreground text-center">
-                  Please complete all scores and provide overall feedback to submit.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full"
+                  size="lg"
+                >
+                  {submissionStage === "uploading" ? (
+                    <>
+                      <Clock className="size-4 mr-2 animate-spin" />
+                      Uploading to IPFS...
+                    </>
+                  ) : submissionStage === "blockchain" ? (
+                    <>
+                      <Clock className="size-4 mr-2 animate-spin" />
+                      Submitting to Blockchain...
+                    </>
+                  ) : submissionStage === "success" ? (
+                    <>
+                      <Award className="size-4 mr-2" />
+                      Submitted Successfully!
+                    </>
+                  ) : (
+                    <>
+                      <Award className="size-4 mr-2" />
+                      Submit Evaluation
+                    </>
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

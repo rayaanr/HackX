@@ -172,7 +172,6 @@ export type JudgeStatus =
 // Re-export schema types for convenience
 export type { HackathonFormData, PrizeCohort, Judge, ScheduleSlot };
 export type { ProjectFormData } from "@/lib/schemas/project-schema";
-export type { JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 
 // Common component prop types
 export interface ProjectComponentProps {
