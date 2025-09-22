@@ -10,7 +10,6 @@ import {
   GraduationCap,
   MessageCircle,
   UserCheck,
-  MoreHorizontal,
   ListTodo,
   Gavel,
 } from "lucide-react";
@@ -23,84 +22,92 @@ import {
   SidebarMenuItem,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarSeparator,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import Image from "next/image";
 import { ComponentProps } from "react";
 import { usePathname } from "next/navigation";
+import { IconDots } from "@tabler/icons-react";
 
 const nav = {
-  main: {
-    section1: [
-      {
-        title: "Judge Dashboard",
-        url: "/judge",
-        Icon: Gavel,
-      },
-      {
-        title: "Quest",
-        url: "/quest",
-        Icon: ListTodo,
-      },
-    ],
-    section2: [
-      {
-        title: "My Certification",
-        url: "/certification",
-        Icon: Award,
-      },
-      {
-        title: "Explore Course",
-        url: "/course",
-        Icon: BookOpen,
-      },
-    ],
-    section3: [
-      {
-        title: "Dashboard",
-        url: "/dashboard",
-        Icon: Home,
-      },
-      {
-        title: "Explore Hackathons",
-        url: "/hackathons",
-        Icon: Code,
-      },
-      {
-        title: "Project Archive",
-        url: "/projects",
-        Icon: FolderOpen,
-      },
-    ],
-    section4: [
-      {
-        title: "Community Events",
-        url: "/community",
-        Icon: Users,
-      },
-      {
-        title: "Learning Camps",
-        url: "/camps",
-        Icon: GraduationCap,
-      },
-      {
-        title: "Discussion and Support",
-        url: "/support",
-        Icon: MessageCircle,
-      },
-      {
-        title: "Advocate Program",
-        url: "/advocate",
-        Icon: UserCheck,
-      },
-      {
-        title: "More",
-        url: "/more",
-        Icon: MoreHorizontal,
-      },
-    ],
-  },
+  main: [
+    {
+      title: "Evaluation",
+      items: [
+        {
+          title: "Judge Dashboard",
+          url: "/judge",
+          Icon: Gavel,
+        },
+        {
+          title: "Quest",
+          url: "/quest",
+          Icon: ListTodo,
+        },
+      ],
+    },
+    {
+      title: "Development",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/dashboard",
+          Icon: Home,
+        },
+        {
+          title: "Explore Hackathons",
+          url: "/hackathons",
+          Icon: Code,
+        },
+        {
+          title: "Project Archive",
+          url: "/projects",
+          Icon: FolderOpen,
+        },
+      ],
+    },
+    {
+      title: "Learning",
+      items: [
+        {
+          title: "My Certification",
+          url: "/certification",
+          Icon: Award,
+        },
+        {
+          title: "Explore Course",
+          url: "/course",
+          Icon: BookOpen,
+        },
+      ],
+    },
+    {
+      title: "Community",
+      items: [
+        {
+          title: "Community Events",
+          url: "/community",
+          Icon: Users,
+        },
+        {
+          title: "Learning Camps",
+          url: "/camps",
+          Icon: GraduationCap,
+        },
+        {
+          title: "Discussion and Support",
+          url: "/support",
+          Icon: MessageCircle,
+        },
+        {
+          title: "Advocate Program",
+          url: "/advocate",
+          Icon: UserCheck,
+        },
+      ],
+    },
+  ],
 };
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
@@ -129,44 +136,37 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        {Object.entries(nav.main).map(
-          ([sectionKey, sectionItems], sectionIndex) => (
-            <div key={sectionKey}>
-              <SidebarGroup>
-                <SidebarGroupContent className="flex flex-col gap-2">
-                  <SidebarMenu>
-                    {sectionItems.map((item) => {
-                      const isActive =
-                        pathname === item.url ||
-                        (item.url !== "/dashboard" &&
-                          pathname.startsWith(item.url));
+      <SidebarContent className="gap-0">
+        {nav.main.map((section) => (
+          <SidebarGroup key={section.title}>
+            <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => {
+                  const isActive =
+                    pathname === item.url ||
+                    (item.url !== "/dashboard" &&
+                      pathname.startsWith(item.url));
 
-                      return (
-                        <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton
-                            asChild
-                            tooltip={item.title}
-                            isActive={isActive}
-                          >
-                            <Link href={item.url}>
-                              <item.Icon className="!size-4" />
-                              <span>{item.title}</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-              {/* Add separator after each section except the last one */}
-              {sectionIndex < Object.entries(nav.main).length - 1 && (
-                <SidebarSeparator />
-              )}
-            </div>
-          ),
-        )}
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={item.title}
+                        isActive={isActive}
+                      >
+                        <Link href={item.url}>
+                          <item.Icon className="!size-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
     </Sidebar>
   );
