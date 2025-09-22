@@ -1,157 +1,271 @@
 "use client";
 
-import { useHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
-import { useBlockchainProject } from "@/hooks/blockchain/useBlockchainProjects";
+import { use, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { notFound } from "next/navigation";
-import { useState } from "react";
-import { useParams } from "next/navigation";
-import { ProjectReviewHeader } from "@/components/judge/project-evaluation-header";
-import { ProjectDetailsSection } from "@/components/judge/project-details-viewer";
-import { JudgingInterface } from "@/components/judge/project-evaluation-form";
-import { ReviewActions } from "@/components/judge/evaluation-submit-actions";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
-import type { PrizeCohort } from "@/lib/schemas/hackathon-schema";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  ArrowLeft,
+  Clock,
+  Award,
+} from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+import {
+  useHackathon,
+  useHackathonProjectsWithDetails
+} from "@/hooks/blockchain/useBlockchainHackathons";
 
-export default function ProjectReviewPage() {
-  const { id, projectId } = useParams<{ id: string; projectId: string }>();
-  const hackathonId = id as string;
+interface ProjectReviewPageProps {
+  params: Promise<{ id: string; projectId: string }>;
+}
 
-  const {
-    data: dbHackathon,
-    isLoading: hackathonLoading,
-    error: hackathonError,
-  } = useHackathon(hackathonId);
-  const {
-    data: project,
-    isLoading: projectLoading,
-    error: projectError,
-  } = useBlockchainProject(projectId);
-
-  // For simplicity, we'll skip the projectHackathons hook for now since the blockchain
-  // project already contains the necessary data
-  const projectHackathons: any[] = [];
+export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
+  const { id: hackathonId, projectId } = use(params);
   const account = useActiveAccount();
 
-  // State for form data and selected cohort
-  const [formData, setFormData] = useState<JudgeEvaluationFormData | null>(
-    null,
-  );
-  const [selectedCohort, setSelectedCohort] = useState<PrizeCohort | undefined>(
-    undefined,
-  );
+  // State for evaluation form
+  const [evaluation, setEvaluation] = useState({
+    technicalExecution: 0,
+    innovation: 0,
+    usability: 0,
+    marketPotential: 0,
+    presentation: 0,
+    overallFeedback: "",
+    strengths: "",
+    improvements: "",
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Transform data safely
-  const hackathon =
-    dbHackathon && dbHackathon.length > 0 ? dbHackathon[0] : null;
+  // Fetch hackathon and project data
+  const { data: hackathon, isLoading: hackathonLoading } = useHackathon(hackathonId);
+  const { projects, isLoading: projectsLoading } = useHackathonProjectsWithDetails(hackathonId);
 
-  if (hackathonLoading || projectLoading) {
+  if (hackathonLoading || projectsLoading) {
     return <div>Loading...</div>;
   }
 
-  // Check for data errors or missing resources first
-  if (
-    hackathonError ||
-    projectError ||
-    !dbHackathon ||
-    dbHackathon.length === 0 ||
-    !project ||
-    !hackathon
-  ) {
+  if (!hackathon || !projects) {
     notFound();
   }
 
-  // Validate wallet connection
+  // Find the specific project
+  const project = projects.find((p: any) => p.id.toString() === projectId);
+
+  if (!project) {
+    notFound();
+  }
+
   if (!account) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">
-            Wallet Connection Required
-          </h2>
-          <p className="text-muted-foreground">
-            You must connect your wallet to access this page.
-          </p>
-        </div>
+        <Alert>
+          <AlertDescription>
+            Please connect your wallet to review projects.
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
 
-  // For now, allow any connected wallet to judge (until judge system is updated for blockchain)
-  const judgeAddress = account.address;
+  const handleScoreChange = (criteria: string, score: number) => {
+    setEvaluation(prev => ({
+      ...prev,
+      [criteria]: score
+    }));
+  };
 
-  // Convert ProjectWithHackathon[] to ProjectHackathon[] format expected by ProjectDetailsSection
-  const convertedProjectHackathons = projectHackathons.map((p) => ({
-    hackathon: {
-      id: p.hackathon?.id || "",
-      name: p.hackathon?.name || "",
-      short_description: p.hackathon?.short_description || "",
-      hackathon_start_date: p.hackathon?.hackathon_start_date || "",
-      hackathon_end_date: p.hackathon?.hackathon_end_date || "",
-      registration_start_date: null,
-      registration_end_date: null,
-      voting_start_date: null,
-      voting_end_date: null,
-      tech_stack: p.hackathon?.tech_stack || [],
-      experience_level: p.hackathon?.experience_level || "",
-      prize_cohorts: [],
-      participantCount: 0,
-    },
-    status: p.status,
-  }));
+  const calculateTotalScore = () => {
+    const scores = [
+      evaluation.technicalExecution,
+      evaluation.innovation,
+      evaluation.usability,
+      evaluation.marketPotential,
+      evaluation.presentation
+    ];
+    const total = scores.reduce((sum, score) => sum + score, 0);
+    return Math.round((total / scores.length) * 10) / 10; // Average out of 10
+  };
+
+  const handleSubmitEvaluation = async () => {
+    setIsSubmitting(true);
+    try {
+      // TODO: Implement blockchain transaction to submit evaluation
+      // This would involve calling a smart contract function to submit the judge's score
+      console.log("Submitting evaluation:", {
+        hackathonId,
+        projectId,
+        judgeAddress: account.address,
+        totalScore: calculateTotalScore(),
+        evaluation
+      });
+
+      toast.success("Evaluation submitted successfully!");
+    } catch (error) {
+      console.error("Failed to submit evaluation:", error);
+      toast.error("Failed to submit evaluation. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isEvaluationComplete = () => {
+    return (
+      evaluation.technicalExecution > 0 &&
+      evaluation.innovation > 0 &&
+      evaluation.usability > 0 &&
+      evaluation.marketPotential > 0 &&
+      evaluation.presentation > 0 &&
+      evaluation.overallFeedback.trim().length > 0
+    );
+  };
 
   return (
     <div className="space-y-6">
-      <ProjectReviewHeader
-        hackathonId={hackathonId}
-        hackathon={hackathon}
-        project={project}
-      />
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href={`/hackathons/${hackathonId}/judge`}>
+            <ArrowLeft className="size-4 mr-2" />
+            Back to Projects
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
+          <p className="text-muted-foreground">
+            Evaluating project for {hackathon.name}
+          </p>
+        </div>
+      </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Project Overview</TabsTrigger>
-          <TabsTrigger value="hackathon">Hackathon</TabsTrigger>
-          <TabsTrigger value="judging">Judging</TabsTrigger>
-        </TabsList>
+      <div className="gap-6">
+        {/* Evaluation Form - Right Column */}
+        <div>
+          <Card >
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="size-4" />
+                Judge Evaluation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Scoring Criteria */}
+              <div className="space-y-4">
+                {[
+                  { key: 'technicalExecution', label: 'Technical Execution', description: 'Code quality, architecture, implementation' },
+                  { key: 'innovation', label: 'Innovation', description: 'Originality and creativity of the solution' },
+                  { key: 'usability', label: 'Usability', description: 'User experience and design quality' },
+                  { key: 'marketPotential', label: 'Market Potential', description: 'Commercial viability and impact' },
+                  { key: 'presentation', label: 'Presentation', description: 'Quality of demo and pitch' },
+                ].map((criteria) => (
+                  <div key={criteria.key} className="space-y-2">
+                    <div>
+                      <Label className="text-sm font-medium">{criteria.label}</Label>
+                      <p className="text-xs text-muted-foreground">{criteria.description}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
+                        <Button
+                          key={score}
+                          variant={Number(evaluation[criteria.key as keyof typeof evaluation]) >= score ? "default" : "outline"}
+                          size="sm"
+                          className="w-8 h-8 p-0"
+                          onClick={() => handleScoreChange(criteria.key, score)}
+                        >
+                          {score}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-right text-muted-foreground">
+                      Score: {evaluation[criteria.key as keyof typeof evaluation] || 0}/10
+                    </p>
+                  </div>
+                ))}
+              </div>
 
-        <TabsContent value="overview" className="space-y-6">
-          <ProjectDetailsSection
-            project={project}
-            projectHackathons={convertedProjectHackathons}
-            hackathon={hackathon}
-            activeTab="overview"
-          />
-        </TabsContent>
+              <Separator />
 
-        <TabsContent value="hackathon" className="space-y-6">
-          <ProjectDetailsSection
-            project={project}
-            projectHackathons={convertedProjectHackathons}
-            hackathon={hackathon}
-            activeTab="hackathon"
-          />
-        </TabsContent>
+              {/* Total Score Display */}
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <p className="text-sm font-medium text-muted-foreground">Total Score</p>
+                <p className="text-2xl font-bold text-primary">{calculateTotalScore()}/10</p>
+              </div>
 
-        <TabsContent value="judging" className="space-y-6">
-          <JudgingInterface
-            hackathon={hackathon}
-            onFormDataChange={setFormData}
-            onSelectedCohortChange={setSelectedCohort}
-          />
-          <ReviewActions
-            projectId={projectId}
-            hackathonId={hackathonId}
-            selectedCohort={selectedCohort}
-            judgeEmail={judgeAddress}
-            formData={formData}
-            isSubmitting={isSubmitting}
-            setIsSubmitting={setIsSubmitting}
-          />
-        </TabsContent>
-      </Tabs>
+              <Separator />
+
+              {/* Feedback Sections */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="overallFeedback">Overall Feedback *</Label>
+                  <Textarea
+                    id="overallFeedback"
+                    placeholder="Provide your overall assessment of this project..."
+                    value={evaluation.overallFeedback}
+                    onChange={(e) => setEvaluation(prev => ({ ...prev, overallFeedback: e.target.value }))}
+                    rows={4}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="strengths">Strengths</Label>
+                  <Textarea
+                    id="strengths"
+                    placeholder="What are the project's main strengths?"
+                    value={evaluation.strengths}
+                    onChange={(e) => setEvaluation(prev => ({ ...prev, strengths: e.target.value }))}
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="improvements">Areas for Improvement</Label>
+                  <Textarea
+                    id="improvements"
+                    placeholder="What could be improved?"
+                    value={evaluation.improvements}
+                    onChange={(e) => setEvaluation(prev => ({ ...prev, improvements: e.target.value }))}
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Submit Button */}
+              <Button
+                onClick={handleSubmitEvaluation}
+                disabled={!isEvaluationComplete() || isSubmitting}
+                className="w-full"
+                size="lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Clock className="size-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Award className="size-4 mr-2" />
+                    Submit Evaluation
+                  </>
+                )}
+              </Button>
+
+              {!isEvaluationComplete() && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Please complete all scores and provide overall feedback to submit.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
