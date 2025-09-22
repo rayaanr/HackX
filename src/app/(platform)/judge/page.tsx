@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useJudgeAssignments } from "@/hooks/blockchain/useBlockchainHackathons";
 import { useActiveAccount } from "thirdweb/react";
 import { ArrowRight, Calendar, MapPin, Award } from "lucide-react";
+import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
 import Link from "next/link";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 
@@ -23,13 +24,17 @@ export default function JudgeDashboardPage() {
 
   if (!account) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-2">Connect Your Wallet</h2>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Judge Dashboard</h1>
           <p className="text-muted-foreground">
-            Please connect your wallet to view your judge assignments.
+            Manage your judging assignments and review submissions
           </p>
         </div>
+        <WalletConnectionPrompt
+          title="Connect your wallet"
+          description="Connect your wallet to view your judge assignments and review submissions"
+        />
       </div>
     );
   }

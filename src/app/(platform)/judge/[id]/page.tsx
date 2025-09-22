@@ -7,6 +7,8 @@ import {
   useHackathon,
   useHackathonProjectsWithDetails,
 } from "@/hooks/blockchain/useBlockchainHackathons";
+import { useActiveAccount } from "thirdweb/react";
+import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
 import { notFound } from "next/navigation";
 import { use } from "react";
 import Image from "next/image";
@@ -18,6 +20,7 @@ interface JudgingPageProps {
 
 export default function JudgingPage({ params }: JudgingPageProps) {
   const { id } = use(params);
+  const account = useActiveAccount();
 
   const {
     data: dbHackathon,
@@ -27,6 +30,23 @@ export default function JudgingPage({ params }: JudgingPageProps) {
 
   const { projects = [], isLoading: projectsLoading } =
     useHackathonProjectsWithDetails(id);
+
+  if (!account) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Judge Hackathon</h1>
+          <p className="text-muted-foreground">
+            Review and judge submitted projects for this hackathon
+          </p>
+        </div>
+        <WalletConnectionPrompt
+          title="Connect your wallet"
+          description="Connect your wallet to review and judge hackathon submissions"
+        />
+      </div>
+    );
+  }
 
   if (hackathonLoading || projectsLoading) {
     return <div>Loading...</div>;

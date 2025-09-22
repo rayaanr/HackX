@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -20,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Rating, RatingButton } from "@/components/ui/rating";
+import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
 import { ArrowLeft, Clock, Award } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -96,12 +96,27 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   if (!account) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Alert>
-          <AlertDescription>
-            Please connect your wallet to review projects.
-          </AlertDescription>
-        </Alert>
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Link href={`/judge/${hackathonId}`}>
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Projects
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Review Project
+            </h1>
+            <p className="text-muted-foreground">
+              Connect your wallet to review and evaluate project submissions
+            </p>
+          </div>
+        </div>
+        <WalletConnectionPrompt
+          title="Connect your wallet"
+          description="Connect your wallet to review and evaluate project submissions"
+        />
       </div>
     );
   }
@@ -168,8 +183,12 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
               >
                 {/* Total Score Display */}
                 <div className="text-center p-4 bg-primary/5 rounded-lg mb-6">
-                  <p className="text-sm font-medium text-muted-foreground">Average Score</p>
-                  <p className="text-2xl font-bold text-primary">{totalScore}/10</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Average Score
+                  </p>
+                  <p className="text-2xl font-bold text-primary">
+                    {totalScore}/10
+                  </p>
                 </div>
 
                 {/* Scoring Criteria */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, FolderIcon, Wallet } from "lucide-react";
+import { Plus, FolderIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
@@ -8,7 +8,7 @@ import {
   ProjectCard,
   type ProjectCardData,
 } from "@/components/projects/display/project-card";
-import { WalletConnect } from "@/components/layout/wallet-connect";
+import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -64,16 +64,7 @@ export function ActiveProjects() {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
-        <div className="col-span-full text-center py-12">
-          <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-            <Wallet className="w-12 h-12 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Connect your wallet</h3>
-          <p className="text-muted-foreground mb-4">
-            Connect your wallet to view and manage your projects
-          </p>
-          <WalletConnect />
-        </div>
+        <WalletConnectionPrompt />
       </div>
     );
   }
