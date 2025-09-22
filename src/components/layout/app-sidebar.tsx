@@ -44,6 +44,7 @@ const nav = {
           title: "Quest",
           url: "/quest",
           Icon: ListTodo,
+          disabled: true,
         },
       ],
     },
@@ -74,11 +75,13 @@ const nav = {
           title: "My Certification",
           url: "/certification",
           Icon: Award,
+          disabled: true,
         },
         {
           title: "Explore Course",
           url: "/course",
           Icon: BookOpen,
+          disabled: true,
         },
       ],
     },
@@ -89,21 +92,25 @@ const nav = {
           title: "Community Events",
           url: "/community",
           Icon: Users,
+          disabled: true,
         },
         {
           title: "Learning Camps",
           url: "/camps",
           Icon: GraduationCap,
+          disabled: true,
         },
         {
           title: "Discussion and Support",
           url: "/support",
           Icon: MessageCircle,
+          disabled: true,
         },
         {
           title: "Advocate Program",
           url: "/advocate",
           Icon: UserCheck,
+          disabled: true,
         },
       ],
     },
@@ -148,18 +155,31 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                     (item.url !== "/dashboard" &&
                       pathname.startsWith(item.url));
 
+                  const isDisabled = item.disabled;
+
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={item.title}
-                        isActive={isActive}
-                      >
-                        <Link href={item.url}>
+                      {isDisabled ? (
+                        <SidebarMenuButton
+                          tooltip={`${item.title} (Coming Soon)`}
+                          disabled
+                          className="cursor-not-allowed opacity-60"
+                        >
                           <item.Icon className="!size-4" />
                           <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
+                        </SidebarMenuButton>
+                      ) : (
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={item.title}
+                          isActive={isActive}
+                        >
+                          <Link href={item.url}>
+                            <item.Icon className="!size-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      )}
                     </SidebarMenuItem>
                   );
                 })}
