@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { notFound } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -61,6 +61,19 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     submitEvaluation,
     calculateTotalScore,
   } = useJudgeEvaluation();
+
+  // Reactive total score calculation
+  const [totalScore, setTotalScore] = useState(0);
+
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      if (values) {
+        const score = calculateTotalScore(values as JudgeRatingFormData);
+        setTotalScore(score);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch, calculateTotalScore]);
 
   // Fetch hackathon and project data
   const { data: hackathon, isLoading: hackathonLoading } = useHackathon(hackathonId);
@@ -145,34 +158,40 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmitEvaluation)} className="space-y-6">
                 {/* Scoring Criteria */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                   {evaluationCriteria.map((criteria) => (
                     <FormField
                       key={criteria.key}
                       control={form.control}
                       name={criteria.key}
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium">
-                            {criteria.label}
-                          </FormLabel>
-                          <FormDescription className="text-xs">
-                            {criteria.description}
-                          </FormDescription>
+                        <FormItem className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <FormLabel className="text-base font-semibold">
+                                {criteria.label}
+                              </FormLabel>
+                              <FormDescription className="text-sm text-muted-foreground mt-1">
+                                {criteria.description}
+                              </FormDescription>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-muted-foreground">
+                                Score: {field.value || 0}/10
+                              </p>
+                            </div>
+                          </div>
                           <FormControl>
-                            <div className="space-y-2">
+                            <div className="flex justify-center">
                               <Rating
                                 value={field.value}
                                 onValueChange={field.onChange}
-                                className="justify-start"
+                                className="gap-1"
                               >
                                 {Array.from({ length: 10 }, (_, i) => (
-                                  <RatingButton key={i + 1} />
+                                  <RatingButton key={i + 1} className="w-8 h-8" />
                                 ))}
                               </Rating>
-                              <p className="text-xs text-right text-muted-foreground">
-                                Score: {field.value || 0}/10
-                              </p>
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -185,68 +204,81 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                 <Separator />
 
                 {/* Total Score Display */}
-                <div className="text-center p-4 bg-primary/5 rounded-lg">
-                  <p className="text-sm font-medium text-muted-foreground">Total Score</p>
-                  <p className="text-2xl font-bold text-primary">{calculateTotalScore(form.getValues())}/10</p>
+                <div className="text-center p-6 bg-primary/5 rounded-lg border">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Average Score</p>
+                  <p className="text-3xl font-bold text-primary">{totalScore}/10</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Based on {evaluationCriteria.length} criteria
+                  </p>
                 </div>
 
                 <Separator />
 
                 {/* Feedback Sections */}
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="overallFeedback"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Overall Feedback *</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Provide your overall assessment of this project..."
-                            {...field}
-                            rows={4}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Written Feedback</h3>
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="overallFeedback"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium">Overall Feedback *</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Provide your overall assessment of this project. What are your thoughts on the execution, innovation, and impact?"
+                                {...field}
+                                rows={4}
+                                className="resize-none"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="strengths"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Strengths</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="What are the project's main strengths?"
-                            {...field}
-                            rows={3}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="strengths"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium">Strengths</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="What are the project's main strengths and standout features?"
+                                  {...field}
+                                  rows={3}
+                                  className="resize-none"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                  <FormField
-                    control={form.control}
-                    name="improvements"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Areas for Improvement</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="What could be improved?"
-                            {...field}
-                            rows={3}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                        <FormField
+                          control={form.control}
+                          name="improvements"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium">Areas for Improvement</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="What aspects could be enhanced or developed further?"
+                                  {...field}
+                                  rows={3}
+                                  className="resize-none"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <Separator />
