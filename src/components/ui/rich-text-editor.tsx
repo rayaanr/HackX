@@ -53,7 +53,6 @@ import { ListItemNode } from "@lexical/list"
 import { AutoLinkNode, LinkNode } from "@lexical/link"
 
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
@@ -89,7 +88,7 @@ const theme = {
     strikethrough: "line-through text-foreground",
     underlineStrikethrough: "underline line-through text-foreground",
     code: "bg-muted text-foreground px-1 py-0.5 rounded text-sm font-mono",
-    highlight: "bg-yellow-200 dark:bg-yellow-800 text-foreground px-1 rounded",
+    highlight: "bg-transparent px-1 rounded",
   },
   paragraph: "mb-2 text-foreground",
   quote: "border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground my-4",
@@ -198,48 +197,90 @@ function ToolbarPlugin() {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-border bg-muted/20">
+    <div className="flex flex-wrap items-center gap-2 p-2 border-b border-border bg-muted/20">
       {/* Text Formatting Group */}
-      <div className="flex items-center gap-1">
-        <Button type="button" variant={isBold ? "default" : "ghost"} size="sm" onClick={() => formatText("bold")} title="Bold">
+      <div className="flex items-center border border-border rounded-md bg-background">
+        <Button
+          type="button"
+          variant={isBold ? "default" : "ghost"}
+          size="sm"
+          onClick={() => formatText("bold")}
+          title="Bold"
+          className="rounded-none border-0 first:rounded-l-md"
+        >
           <Bold className="h-4 w-4" />
         </Button>
-        <Button type="button" variant={isItalic ? "default" : "ghost"} size="sm" onClick={() => formatText("italic")} title="Italic">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant={isItalic ? "default" : "ghost"}
+          size="sm"
+          onClick={() => formatText("italic")}
+          title="Italic"
+          className="rounded-none border-0"
+        >
           <Italic className="h-4 w-4" />
         </Button>
-        <Button type="button" variant={isUnderline ? "default" : "ghost"} size="sm" onClick={() => formatText("underline")} title="Underline">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant={isUnderline ? "default" : "ghost"}
+          size="sm"
+          onClick={() => formatText("underline")}
+          title="Underline"
+          className="rounded-none border-0"
+        >
           <Underline className="h-4 w-4" />
         </Button>
-        <Button type="button" variant={isStrikethrough ? "default" : "ghost"} size="sm" onClick={() => formatText("strikethrough")} title="Strikethrough">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant={isStrikethrough ? "default" : "ghost"}
+          size="sm"
+          onClick={() => formatText("strikethrough")}
+          title="Strikethrough"
+          className="rounded-none border-0 last:rounded-r-md"
+        >
           <Strikethrough className="h-4 w-4" />
         </Button>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
-
       {/* Special Text Formatting */}
-      <div className="flex items-center gap-1">
-        <Button type="button" variant={isCode ? "default" : "ghost"} size="sm" onClick={() => formatText("code")} title="Code">
+      <div className="flex items-center border border-border rounded-md bg-background">
+        <Button
+          type="button"
+          variant={isCode ? "default" : "ghost"}
+          size="sm"
+          onClick={() => formatText("code")}
+          title="Code"
+          className="rounded-none border-0 first:rounded-l-md"
+        >
           <Code className="h-4 w-4" />
         </Button>
+        <div className="w-px h-6 bg-border" />
         <Button
           type="button"
           variant={isHighlight ? "default" : "ghost"}
           size="sm"
           onClick={() => formatText("highlight")}
           title="Highlight"
+          className="rounded-none border-0 last:rounded-r-md"
         >
           <Highlighter className="h-4 w-4" />
         </Button>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
-
       {/* Link Tools */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center border border-border rounded-md bg-background">
         <Popover>
           <PopoverTrigger asChild>
-            <Button type="button" variant={isLink ? "default" : "ghost"} size="sm" title="Insert Link">
+            <Button
+              type="button"
+              variant={isLink ? "default" : "ghost"}
+              size="sm"
+              title="Insert Link"
+              className="rounded-md border-0"
+            >
               <Link className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
@@ -263,65 +304,157 @@ function ToolbarPlugin() {
         </Popover>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
-
       {/* Block Types */}
-      <div className="flex items-center gap-1">
-        <Button type="button" variant="ghost" size="sm" onClick={formatParagraph} title="Paragraph">
+      <div className="flex items-center border border-border rounded-md bg-background">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={formatParagraph}
+          title="Paragraph"
+          className="rounded-none border-0 first:rounded-l-md"
+        >
           <Type className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => formatHeading("h1")} title="Heading 1">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => formatHeading("h1")}
+          title="Heading 1"
+          className="rounded-none border-0"
+        >
           <Heading1 className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => formatHeading("h2")} title="Heading 2">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => formatHeading("h2")}
+          title="Heading 2"
+          className="rounded-none border-0"
+        >
           <Heading2 className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => formatHeading("h3")} title="Heading 3">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => formatHeading("h3")}
+          title="Heading 3"
+          className="rounded-none border-0"
+        >
           <Heading3 className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={formatQuote} title="Quote">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={formatQuote}
+          title="Quote"
+          className="rounded-none border-0 last:rounded-r-md"
+        >
           <Quote className="h-4 w-4" />
         </Button>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
-
       {/* Lists */}
-      <div className="flex items-center gap-1">
-        <Button type="button" variant="ghost" size="sm" onClick={formatBulletList} title="Bullet List">
+      <div className="flex items-center border border-border rounded-md bg-background">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={formatBulletList}
+          title="Bullet List"
+          className="rounded-none border-0 first:rounded-l-md"
+        >
           <List className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={formatNumberedList} title="Numbered List">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={formatNumberedList}
+          title="Numbered List"
+          className="rounded-none border-0 last:rounded-r-md"
+        >
           <ListOrdered className="h-4 w-4" />
         </Button>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
-
       {/* Text Alignment */}
-      <div className="flex items-center gap-1">
-        <Button type="button" variant="ghost" size="sm" onClick={() => formatAlignment("left")} title="Align Left">
+      <div className="flex items-center border border-border rounded-md bg-background">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => formatAlignment("left")}
+          title="Align Left"
+          className="rounded-none border-0 first:rounded-l-md"
+        >
           <AlignLeft className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => formatAlignment("center")} title="Align Center">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => formatAlignment("center")}
+          title="Align Center"
+          className="rounded-none border-0"
+        >
           <AlignCenter className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => formatAlignment("right")} title="Align Right">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => formatAlignment("right")}
+          title="Align Right"
+          className="rounded-none border-0"
+        >
           <AlignRight className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => formatAlignment("justify")} title="Justify">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => formatAlignment("justify")}
+          title="Justify"
+          className="rounded-none border-0 last:rounded-r-md"
+        >
           <AlignJustify className="h-4 w-4" />
         </Button>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
-
       {/* History */}
-      <div className="flex items-center gap-1">
-        <Button type="button" variant="ghost" size="sm" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)} title="Undo">
+      <div className="flex items-center border border-border rounded-md bg-background">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
+          title="Undo"
+          className="rounded-none border-0 first:rounded-l-md"
+        >
           <Undo className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)} title="Redo">
+        <div className="w-px h-6 bg-border" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
+          title="Redo"
+          className="rounded-none border-0 last:rounded-r-md"
+        >
           <Redo className="h-4 w-4" />
         </Button>
       </div>
@@ -357,7 +490,7 @@ export function RichTextEditor({
           <RichTextPlugin
             contentEditable={
               <ContentEditable
-                className="min-h-[200px] p-4 outline-none resize-none overflow-auto prose prose-sm max-w-none text-foreground"
+                className="min-h-[200px] p-4 outline-none resize-none overflow-auto prose prose-sm max-w-none text-foreground rounded-t-none"
                 style={{ caretColor: "hsl(var(--foreground))" }}
               />
             }
