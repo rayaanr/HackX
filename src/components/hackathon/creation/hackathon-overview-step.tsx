@@ -27,7 +27,7 @@ import MultipleSelector from "@/components/ui/multiselect";
 import { TECH_STACK } from "@/constants/tech-stack";
 
 export function OverviewStep() {
-  const { control, setValue } = useFormContext<HackathonFormData>();
+  const { control } = useFormContext<HackathonFormData>();
 
   return (
     <div className="space-y-6">

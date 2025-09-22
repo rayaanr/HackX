@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useFormContext, useFieldArray } from "react-hook-form";
-import { z } from "zod";
 import {
   hackathonSchema,
   type HackathonFormData,
@@ -16,11 +15,8 @@ import { Trash2, Wallet, Send, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
 export function JudgesStep() {
-  const { control, watch } = useFormContext<HackathonFormData>();
+  const { control } = useFormContext<HackathonFormData>();
   const [newJudgeAddress, setNewJudgeAddress] = useState("");
-
-  // Watch the hackathon name from the form
-  const hackathonName = watch("name") || "Your Hackathon";
 
   const {
     fields: judges,

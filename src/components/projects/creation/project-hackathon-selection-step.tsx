@@ -17,15 +17,13 @@ import {
   ProjectHackathonCardProps,
 } from "@/components/projects/display/hackathon-card";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import { getUIHackathonStatus, formatDisplayDate } from "@/lib/helpers/date";
-import type { UIHackathon } from "@/types/hackathon";
 
-// Transform hackathon data to match ProjectHackathonCardProps interface
 function transformHackathonToCardProps(
   hackathon: any, // Blockchain hackathon with combined contract + IPFS data
 ): ProjectHackathonCardProps {

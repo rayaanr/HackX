@@ -18,11 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFormContext } from "react-hook-form";
-import { z } from "zod";
-import {
-  hackathonSchema,
-  type HackathonFormData,
-} from "@/lib/schemas/hackathon-schema";
+import { type HackathonFormData } from "@/lib/schemas/hackathon-schema";
 import { Trash2, Plus, Trophy, X } from "lucide-react";
 import {
   usePrizeCohorts,

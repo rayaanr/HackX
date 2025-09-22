@@ -168,18 +168,6 @@ export function CreateProjectForm() {
             </p>
           </div>
         )}
-
-        {(!form.watch("hackathonIds") ||
-          form.watch("hackathonIds")?.length === 0) &&
-          isConnected && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-              <p className="text-sm text-blue-800">
-                💡 <strong>Create project independently</strong> - Your project
-                will be created on blockchain. You can submit it to hackathons
-                later from your projects dashboard.
-              </p>
-            </div>
-          )}
       </form>
     </Form>
   );

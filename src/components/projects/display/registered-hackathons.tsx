@@ -27,7 +27,6 @@ import {
   formatDisplayDate,
   formatDateRange,
   getUIHackathonStatus,
-  type DateInput,
 } from "@/lib/helpers/date";
 import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";

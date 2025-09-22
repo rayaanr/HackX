@@ -28,7 +28,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ComponentProps } from "react";
 import { usePathname } from "next/navigation";
-import { IconDots } from "@tabler/icons-react";
 
 const nav = {
   main: [
