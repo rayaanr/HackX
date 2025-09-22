@@ -113,7 +113,7 @@ export function WalletConnect() {
         wallets={wallets}
         connectButton={{
           style: {
-            borderRadius: "calc(var(--radius) - 2px)",
+            borderRadius: "calc(var(--radius))",
             padding: "0.5rem 1rem",
             fontSize: "0.875rem",
             fontWeight: "500",
@@ -122,16 +122,19 @@ export function WalletConnect() {
             alignItems: "center",
             gap: "0.5rem",
             transition: "all 0.2s ease-in-out",
+            margin: "0 auto",
+            backgroundColor: "oklch(0.6537 0.1909 251.1544)",
+            color: "white",
           },
         }}
       />
       <style jsx>{`
         .tw-connect-wallet :global(button:hover) {
-          background-color: hsl(var(--accent)) !important;
+          background-color: oklch(var(--accent)) !important;
           color: white !important;
         }
         .tw-connect-wallet :global(button:focus) {
-          outline: 2px solid hsl(var(--ring)) !important;
+          outline: 2px solid oklch(var(--ring)) !important;
           outline-offset: 2px !important;
         }
       `}</style>

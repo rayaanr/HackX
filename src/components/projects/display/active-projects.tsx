@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, FolderIcon } from "lucide-react";
+import { Plus, FolderIcon, Wallet } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
@@ -8,6 +8,7 @@ import {
   ProjectCard,
   type ProjectCardData,
 } from "@/components/projects/display/project-card";
+import { WalletConnect } from "@/components/layout/wallet-connect";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -16,6 +17,7 @@ export function ActiveProjects() {
     userProjects: blockchainProjects = [],
     isLoadingUserProjects: loading,
     userProjectsError: error,
+    isConnected,
   } = useBlockchainProjects();
 
   // Transform blockchain projects to ProjectCardData format
@@ -57,6 +59,25 @@ export function ActiveProjects() {
     );
   }
 
+  // Show wallet connection prompt if not connected
+  if (!isConnected) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
+        <div className="col-span-full text-center py-12">
+          <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+            <Wallet className="w-12 h-12 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Connect your wallet</h3>
+          <p className="text-muted-foreground mb-4">
+            Connect your wallet to view and manage your projects
+          </p>
+          <WalletConnect />
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div>
@@ -79,29 +100,7 @@ export function ActiveProjects() {
     <div>
       <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Create New Project Card */}
-        <Link href="/projects/create">
-          <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group gap-4 h-60">
-            <CardContent className="flex flex-col items-center justify-center text-center p-6 h-full">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <Plus className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-primary mb-2">
-                New Project
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Create a new project
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        {/* Project Cards */}
-        {allProjects.map((project) => (
-          <ProjectCard key={project.key} project={project} />
-        ))}
-
-        {allProjects.length === 0 && (
+        {allProjects.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
               <FolderIcon className="w-12 h-12 text-muted-foreground" />
@@ -117,6 +116,30 @@ export function ActiveProjects() {
               </Link>
             </Button>
           </div>
+        ) : (
+          <>
+            {/* Create New Project Card */}
+            <Link href="/projects/create">
+              <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group gap-4 h-60">
+                <CardContent className="flex flex-col items-center justify-center text-center p-6 h-full">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <Plus className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-primary mb-2">
+                    New Project
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Create a new project
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Project Cards */}
+            {allProjects.map((project) => (
+              <ProjectCard key={project.key} project={project} />
+            ))}
+          </>
         )}
       </div>
     </div>

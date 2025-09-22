@@ -79,9 +79,18 @@ export default function ExplorePage() {
       });
     };
 
+    // Filter past hackathons to only show those with judging started or ended
+    const filterPastHackathons = (hackathons: any[]) => {
+      return hackathons.filter((hackathon) => {
+        const currentStatus = getUIHackathonStatus(hackathon);
+        // Only show hackathons where judging has started (Voting) or ended
+        return currentStatus === "Voting" || currentStatus === "Ended";
+      });
+    };
+
     return {
       liveHackathons: applyFilters(initialLiveHackathons),
-      pastHackathons: applyFilters(initialPastHackathons),
+      pastHackathons: applyFilters(filterPastHackathons(initialPastHackathons)),
     };
   }, [initialLiveHackathons, initialPastHackathons, filters]);
 
