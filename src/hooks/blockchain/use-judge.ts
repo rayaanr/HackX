@@ -44,7 +44,7 @@ export function useJudgeEvaluation() {
 
   const submitEvaluation = async (
     projectId: string | number,
-    evaluation: JudgeRatingFormData
+    evaluation: JudgeRatingFormData,
   ): Promise<SubmitEvaluationResult> => {
     if (!activeAccount?.address) {
       const errorMsg = "Please connect your wallet to submit evaluation.";
@@ -131,7 +131,7 @@ export function useJudgeEvaluation() {
         contract,
         projectId,
         Math.round(totalScore * 10), // Convert to scale of 100 for contract (e.g., 8.5 -> 85)
-        cid
+        cid,
       );
 
       // Send transaction

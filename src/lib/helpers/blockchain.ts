@@ -598,7 +598,8 @@ export function prepareSubmitScoreTransaction(
 ) {
   return prepareContractCall({
     contract,
-    method: "function submitScore(uint256 projectId, uint256 score, string feedbackIpfsHash)",
+    method:
+      "function submitScore(uint256 projectId, uint256 score, string feedbackIpfsHash)",
     params: [BigInt(projectId), BigInt(totalScore), feedbackIpfsHash],
   });
 }

@@ -20,16 +20,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Rating, RatingButton } from "@/components/ui/rating";
-import {
-  ArrowLeft,
-  Clock,
-  Award,
-} from "lucide-react";
+import { ArrowLeft, Clock, Award } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
   useHackathon,
-  useHackathonProjectsWithDetails
+  useHackathonProjectsWithDetails,
 } from "@/hooks/blockchain/useBlockchainHackathons";
 import type { ProjectWithHackathon } from "@/types/hackathon";
 import { useJudgeEvaluation } from "@/hooks/blockchain/use-judge";
@@ -76,8 +72,10 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   }, [form.watch, calculateTotalScore]);
 
   // Fetch hackathon and project data
-  const { data: hackathon, isLoading: hackathonLoading } = useHackathon(hackathonId);
-  const { projects, isLoading: projectsLoading } = useHackathonProjectsWithDetails(hackathonId);
+  const { data: hackathon, isLoading: hackathonLoading } =
+    useHackathon(hackathonId);
+  const { projects, isLoading: projectsLoading } =
+    useHackathonProjectsWithDetails(hackathonId);
 
   if (hackathonLoading || projectsLoading) {
     return <div>Loading...</div>;
@@ -88,7 +86,9 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   }
 
   // Find the specific project
-  const project = projects.find((p: ProjectWithHackathon) => p.id.toString() === projectId);
+  const project = projects.find(
+    (p: ProjectWithHackathon) => p.id.toString() === projectId,
+  );
 
   if (!project) {
     notFound();
@@ -106,7 +106,6 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     );
   }
 
-
   const handleSubmitEvaluation = async (data: JudgeRatingFormData) => {
     if (!account?.address) {
       toast.error("Please connect your wallet to submit evaluation.");
@@ -114,16 +113,23 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     }
 
     // Show initial loading toast
-    toast.loading("Uploading feedback to IPFS...", { id: "evaluation-submission" });
+    toast.loading("Uploading feedback to IPFS...", {
+      id: "evaluation-submission",
+    });
 
     // Start the submission process
     const result = await submitEvaluation(projectId, data);
 
     if (result.success) {
-      toast.success("Evaluation submitted successfully to blockchain!", { id: "evaluation-submission" });
+      toast.success("Evaluation submitted successfully to blockchain!", {
+        id: "evaluation-submission",
+      });
       form.reset(); // Reset form after successful submission
     } else {
-      toast.error(result.error || "Failed to submit evaluation. Please try again.", { id: "evaluation-submission" });
+      toast.error(
+        result.error || "Failed to submit evaluation. Please try again.",
+        { id: "evaluation-submission" },
+      );
     }
   };
 
@@ -156,7 +162,10 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmitEvaluation)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(handleSubmitEvaluation)}
+                className="space-y-6"
+              >
                 {/* Scoring Criteria */}
                 <div className="space-y-8">
                   {evaluationCriteria.map((criteria) => (
@@ -189,7 +198,10 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                                 className="gap-1"
                               >
                                 {Array.from({ length: 10 }, (_, i) => (
-                                  <RatingButton key={i + 1} className="w-8 h-8" />
+                                  <RatingButton
+                                    key={i + 1}
+                                    className="w-8 h-8"
+                                  />
                                 ))}
                               </Rating>
                             </div>
@@ -205,8 +217,12 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
                 {/* Total Score Display */}
                 <div className="text-center p-6 bg-primary/5 rounded-lg border">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Average Score</p>
-                  <p className="text-3xl font-bold text-primary">{totalScore}/10</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">
+                    Average Score
+                  </p>
+                  <p className="text-3xl font-bold text-primary">
+                    {totalScore}/10
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Based on {evaluationCriteria.length} criteria
                   </p>
@@ -217,14 +233,18 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                 {/* Feedback Sections */}
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Written Feedback</h3>
+                    <h3 className="text-lg font-semibold mb-4">
+                      Written Feedback
+                    </h3>
                     <div className="space-y-4">
                       <FormField
                         control={form.control}
                         name="overallFeedback"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base font-medium">Overall Feedback *</FormLabel>
+                            <FormLabel className="text-base font-medium">
+                              Overall Feedback *
+                            </FormLabel>
                             <FormControl>
                               <Textarea
                                 placeholder="Provide your overall assessment of this project. What are your thoughts on the execution, innovation, and impact?"
@@ -244,7 +264,9 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                           name="strengths"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-base font-medium">Strengths</FormLabel>
+                              <FormLabel className="text-base font-medium">
+                                Strengths
+                              </FormLabel>
                               <FormControl>
                                 <Textarea
                                   placeholder="What are the project's main strengths and standout features?"
@@ -263,7 +285,9 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                           name="improvements"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-base font-medium">Areas for Improvement</FormLabel>
+                              <FormLabel className="text-base font-medium">
+                                Areas for Improvement
+                              </FormLabel>
                               <FormControl>
                                 <Textarea
                                   placeholder="What aspects could be enhanced or developed further?"

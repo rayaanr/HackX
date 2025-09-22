@@ -32,10 +32,7 @@ export const judgeRatingSchema = z.object({
     .min(10, "Overall feedback must be at least 10 characters")
     .max(2000, "Overall feedback is too long"),
 
-  strengths: z
-    .string()
-    .max(1000, "Strengths feedback is too long")
-    .optional(),
+  strengths: z.string().max(1000, "Strengths feedback is too long").optional(),
 
   improvements: z
     .string()
