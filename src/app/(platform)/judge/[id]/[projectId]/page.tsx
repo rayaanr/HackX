@@ -132,7 +132,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" asChild>
-          <Link href={`/hackathons/${hackathonId}/judge`}>
+          <Link href={`/judge/${hackathon.id}`}>
             <ArrowLeft className="size-4 mr-2" />
             Back to Projects
           </Link>
