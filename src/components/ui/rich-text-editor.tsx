@@ -5,13 +5,15 @@ import {
   $isRangeSelection,
   FORMAT_TEXT_COMMAND,
   $createParagraphNode,
+  $createTextNode,
+  $getRoot,
   UNDO_COMMAND,
   REDO_COMMAND,
   FORMAT_ELEMENT_COMMAND,
   KEY_DOWN_COMMAND,
 } from "lexical"
 import { useCallback, useEffect, useState } from "react"
-import { $wrapNodes } from "@lexical/selection"
+import { $setBlocksType } from "@lexical/selection"
 import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text"
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, ListNode } from "@lexical/list"
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link"
@@ -47,6 +49,33 @@ function PreventFormSubmitPlugin() {
 
   return null
 }
+
+// Plugin to handle external value changes (e.g., from form setValue)
+function ValueSyncPlugin({ value }: { value?: string }) {
+  const [editor] = useLexicalComposerContext()
+
+  useEffect(() => {
+    if (value !== undefined) {
+      editor.update(() => {
+        const root = $getRoot()
+        const currentText = root.getTextContent()
+
+        // Only update if the content is actually different
+        if (currentText !== value) {
+          root.clear()
+          if (value) {
+            const paragraph = $createParagraphNode()
+            paragraph.append($createTextNode(value))
+            root.append(paragraph)
+          }
+        }
+      })
+    }
+  }, [editor, value])
+
+  return null
+}
+
 
 import { HeadingNode, QuoteNode } from "@lexical/rich-text"
 import { ListItemNode } from "@lexical/list"
@@ -165,7 +194,7 @@ function ToolbarPlugin() {
     editor.update(() => {
       const selection = $getSelection()
       if ($isRangeSelection(selection)) {
-        $wrapNodes(selection, () => $createHeadingNode(headingSize as any))
+        $setBlocksType(selection, () => $createHeadingNode(headingSize as any))
       }
     })
   }
@@ -174,7 +203,7 @@ function ToolbarPlugin() {
     editor.update(() => {
       const selection = $getSelection()
       if ($isRangeSelection(selection)) {
-        $wrapNodes(selection, () => $createParagraphNode())
+        $setBlocksType(selection, () => $createParagraphNode())
       }
     })
   }
@@ -183,7 +212,7 @@ function ToolbarPlugin() {
     editor.update(() => {
       const selection = $getSelection()
       if ($isRangeSelection(selection)) {
-        $wrapNodes(selection, () => $createQuoteNode())
+        $setBlocksType(selection, () => $createQuoteNode())
       }
     })
   }
@@ -490,7 +519,7 @@ export function RichTextEditor({
           <RichTextPlugin
             contentEditable={
               <ContentEditable
-                className="min-h-[200px] p-4 outline-none resize-none overflow-auto prose prose-sm max-w-none text-foreground rounded-t-none"
+                className="min-h-[200px] p-4 outline-none resize-none overflow-auto prose prose-sm max-w-none text-foreground rounded-t-none border-none"
                 style={{ caretColor: "hsl(var(--foreground))" }}
               />
             }
@@ -505,7 +534,10 @@ export function RichTextEditor({
             onChange={(editorState) => {
               if (onChange) {
                 editorState.read(() => {
-                  onChange(JSON.stringify(editorState.toJSON()))
+                  const root = $getRoot()
+                  const textContent = root.getTextContent()
+                  // Return text content for validation (form expects string)
+                  onChange(textContent || "")
                 })
               }
             }}
@@ -516,6 +548,7 @@ export function RichTextEditor({
           <AutoFocusPlugin />
           <TabIndentationPlugin />
           <PreventFormSubmitPlugin />
+          <ValueSyncPlugin value={initialValue} />
         </div>
       </LexicalComposer>
     </div>
