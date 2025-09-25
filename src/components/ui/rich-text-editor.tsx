@@ -524,9 +524,9 @@ export function RichTextEditor({
               />
             }
             placeholder={
-              <div className="absolute top-4 left-4 text-muted-foreground pointer-events-none select-none">
+              <p className="absolute top-4 left-4 text-muted-foreground pointer-events-none select-none font-medium text-sm">
                 {placeholder}
-              </div>
+              </p>
             }
             ErrorBoundary={LexicalErrorBoundary}
           />

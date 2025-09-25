@@ -5,7 +5,6 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -81,62 +80,51 @@ export function OverviewStep() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-4 space-y-6">
+              <FormField
+                control={control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Project Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter project name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="intro"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Project Intro</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter a short intro" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={control}
               name="logo"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="col-span-2">
                   <FormLabel>Project Logo</FormLabel>
                   <FileUploadField
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Drop your project logo here"
                   />
-                  <FormDescription>
-                    Upload a logo for your project
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Project Name *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter project name" {...field} />
-                  </FormControl>
-                  <FormDescription>The name of your project</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-
-          <FormField
-            control={control}
-            name="intro"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Project Intro *</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter a short intro"
-                    rows={3}
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  A brief one-liner about your project
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <FormField
             control={control}
@@ -147,9 +135,6 @@ export function OverviewStep() {
                 <FormControl>
                   <Input placeholder="https://example.com/video" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Link to your project video (optional)
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -160,7 +145,7 @@ export function OverviewStep() {
             name="sector"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Sector *</FormLabel>
+                <FormLabel required>Sector</FormLabel>
                 <FormControl>
                   <MultipleSelector
                     value={field.value.map((val) => ({
@@ -180,9 +165,6 @@ export function OverviewStep() {
                     }
                   />
                 </FormControl>
-                <FormDescription>
-                  What sector does your project belong to?
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -193,7 +175,7 @@ export function OverviewStep() {
             name="progress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Progress *</FormLabel>
+                <FormLabel required>Progress</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Describe your project's progress..."
@@ -201,9 +183,6 @@ export function OverviewStep() {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>
-                  What stage is your project at?
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -214,7 +193,7 @@ export function OverviewStep() {
             name="fundraisingStatus"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Fundraising Status *</FormLabel>
+                <FormLabel required>Fundraising Status</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Describe your fundraising status..."
@@ -222,9 +201,6 @@ export function OverviewStep() {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>
-                  What is your project's fundraising status?
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -235,7 +211,7 @@ export function OverviewStep() {
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Description *</FormLabel>
+                <FormLabel required>Full Description</FormLabel>
                 <FormControl>
                   <RichTextEditor
                     initialValue={field.value || ""}
@@ -244,9 +220,6 @@ export function OverviewStep() {
                     className="min-h-[200px]"
                   />
                 </FormControl>
-                <FormDescription>
-                  Provide a comprehensive description of your project
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
