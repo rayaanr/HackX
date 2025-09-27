@@ -17,29 +17,18 @@ import {
   ProjectHackathonCardProps,
 } from "@/components/projects/display/hackathon-card";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useMemo } from "react";
-import { useBlockchainHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
-import {
-  getHackathonStatus,
-  calculateTotalPrizeAmount,
-  formatDateForDisplay,
-} from "@/lib/helpers/hackathon-transforms";
-import type { HackathonWithRelations } from "@/types/hackathon";
+import { useState, useMemo } from "react";
+import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
+import { getUIHackathonStatus, formatDisplayDate } from "@/lib/helpers/date";
 
-// Transform hackathon data to match ProjectHackathonCardProps interface
 function transformHackathonToCardProps(
   hackathon: any, // Blockchain hackathon with combined contract + IPFS data
 ): ProjectHackathonCardProps {
-  // For blockchain hackathons, we need to create a compatible object for getHackathonStatus
-  // The blockchain hackathon has different field names than database hackathons
-  const compatibleHackathon = {
-    ...hackathon,
-    hackathon_start_date: hackathon.hackathonPeriod?.hackathonStartDate || hackathon.hackathon_start_date,
-    short_description: hackathon.shortDescription || hackathon.short_description,
-    participant_count: hackathon.participantCount || hackathon.participant_count || 0,
-  };
-
-  const status = getHackathonStatus(compatibleHackathon);
+  // Use the shared UI hackathon status helper
+  const status = getUIHackathonStatus(hackathon);
 
   // Map status to card status with improved logic
   let cardStatus: "live" | "upcoming" | "completed";
@@ -56,21 +45,25 @@ function transformHackathonToCardProps(
   }
 
   return {
-    id: hackathon.id?.toString() || hackathon.blockchainId?.toString(),
+    id: hackathon.id?.toString(),
     name: hackathon.name || "Untitled Hackathon",
-    date: formatDateForDisplay(hackathon.hackathonPeriod?.hackathonStartDate || hackathon.hackathon_start_date),
-    theme: hackathon.shortDescription || hackathon.short_description || "",
-    prize: calculateTotalPrizeAmount(compatibleHackathon),
-    participants: hackathon.participantCount || hackathon.participant_count || 0,
+    date: formatDisplayDate(hackathon.hackathonPeriod?.hackathonStartDate),
+    theme: hackathon.shortDescription || "",
+    prize: calculateTotalPrizeAmount(hackathon.prizeCohorts || []),
+    participants: hackathon.participantCount || 0,
     status: cardStatus,
   };
 }
 
 export function HackathonSelectionStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormData>();
-  // Updated to use blockchain hackathons instead of database hackathons
-  // This ensures we only show hackathons stored on blockchain with IPFS metadata
-  const { hackathons: hackathonData, isLoadingHackathons: isLoading, hackathonsError: error } = useBlockchainHackathons();
+  // Updated to use registered hackathons only
+  const {
+    hackathons: hackathonData,
+    isLoading,
+    error,
+    isConnected,
+  } = useRegisteredHackathons();
 
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");
   const selectedHackathonIds = watch("hackathonIds") || [];
@@ -78,15 +71,18 @@ export function HackathonSelectionStep() {
   // Transform and filter hackathon data to card props format
   const { hackathons, filteredHackathons } = useMemo(() => {
     if (!hackathonData) return { hackathons: [], filteredHackathons: [] };
-    
-    const transformedHackathons = hackathonData.map(transformHackathonToCardProps);
-    const filtered = filter === "all" 
-      ? transformedHackathons 
-      : transformedHackathons.filter((h) => h.status === filter);
-    
-    return { 
-      hackathons: transformedHackathons, 
-      filteredHackathons: filtered 
+
+    const transformedHackathons = hackathonData.map(
+      transformHackathonToCardProps,
+    );
+    const filtered =
+      filter === "all"
+        ? transformedHackathons
+        : transformedHackathons.filter((h) => h.status === filter);
+
+    return {
+      hackathons: transformedHackathons,
+      filteredHackathons: filtered,
     };
   }, [hackathonData, filter]);
 
@@ -113,52 +109,62 @@ export function HackathonSelectionStep() {
                 <FormLabel>Hackathon Selection *</FormLabel>
                 <FormControl>
                   <div className="space-y-4">
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant={filter === "all" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilter("all")}
-                      >
-                        All Hackathons
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={filter === "live" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilter("live")}
-                      >
-                        Live
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={filter === "upcoming" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilter("upcoming")}
-                      >
-                        Upcoming
-                      </Button>
-                    </div>
+                    {/* Removed filter buttons since we only show registered hackathons */}
 
                     {isLoading ? (
                       <div className="text-center py-8 text-muted-foreground">
-                        Loading hackathons...
+                        Loading registered hackathons...
                       </div>
                     ) : error ? (
                       <div className="text-center py-8 text-destructive">
                         Failed to load hackathons. Please try again.
                       </div>
+                    ) : !isConnected ? (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground mb-4">
+                          Connect your wallet to see registered hackathons
+                        </p>
+                      </div>
+                    ) : hackathonData.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="max-w-sm mx-auto">
+                          <div className="mb-4">
+                            <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4 flex items-center justify-center">
+                              <ExternalLink className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">
+                              No Registered Hackathons
+                            </h3>
+                            <p className="text-muted-foreground mb-6">
+                              You haven't registered for any hackathons yet.
+                              Register for a hackathon to submit your project.
+                            </p>
+                          </div>
+                          <Link href="/hackathons">
+                            <Button className="w-full">
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              Explore Hackathons
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
                     ) : (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {filteredHackathons.map((hackathon) => {
-                            const isSubmissionPhase = hackathon.status === "live";
+                          {filteredHackathons.map((hackathon: any) => {
+                            // Check if hackathon is accepting submissions
+                            const isAcceptingSubmissions =
+                              hackathon.status === "live";
                             return (
                               <div key={hackathon.id} className="relative">
-                                <div className={`${!isSubmissionPhase ? 'opacity-60' : ''}`}>
+                                <div
+                                  className={`${
+                                    !isAcceptingSubmissions ? "opacity-60" : ""
+                                  }`}
+                                >
                                   <ProjectHackathonCard {...hackathon} />
                                 </div>
-                                {!isSubmissionPhase && (
+                                {!isAcceptingSubmissions && (
                                   <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
                                     <div className="bg-white dark:bg-gray-900 px-3 py-1 rounded-md text-sm font-medium">
                                       Not accepting submissions
@@ -170,9 +176,9 @@ export function HackathonSelectionStep() {
                                     checked={selectedHackathonIds.includes(
                                       hackathon.id,
                                     )}
-                                    disabled={!isSubmissionPhase}
+                                    disabled={!isAcceptingSubmissions}
                                     onCheckedChange={(checked) => {
-                                      if (!isSubmissionPhase) return; // Prevent selection of non-submission phase hackathons
+                                      if (!isAcceptingSubmissions) return; // Prevent selection of non-submission phase hackathons
                                       const isChecked = checked === true;
                                       const next = isChecked
                                         ? Array.from(
@@ -206,7 +212,8 @@ export function HackathonSelectionStep() {
                   </div>
                 </FormControl>
                 <FormDescription>
-                  Select the hackathons you want to submit your project to. Only hackathons in the "Live" submission phase can be selected.
+                  Select the hackathons you want to submit your project to. Only
+                  hackathons in the "Live" submission phase can be selected.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

@@ -25,7 +25,8 @@ export function CreateHackathonForm() {
           <div className="flex items-center gap-2">
             <Info className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
-              Testing Mode: Use mock data to quickly test the hackathon creation flow
+              Testing Mode: Use mock data to quickly test the hackathon creation
+              flow
             </span>
           </div>
           <Button

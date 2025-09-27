@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import Providers from "./providers";
 import { ReactNode } from "react";
-import { ConditionalLayout } from "@/components/layout/conditional-layout";
 import "./globals.css";
 import "@/styles/styles.css";
 
@@ -32,7 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <ConditionalLayout>{children}</ConditionalLayout>
+          {children}
           <Toaster position="top-right" richColors />
         </Providers>
       </body>

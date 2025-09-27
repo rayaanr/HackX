@@ -1,34 +1,33 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useUserHackathons } from "@/hooks/queries/use-hackathons";
-import type { DashboardStats, HackathonWithRelations } from "@/types/hackathon";
+import { useMemo } from "react";
+import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+import type { DashboardStats, UIHackathon } from "@/types/hackathon";
+import { getUIHackathonStatus } from "@/lib/helpers/date";
 
 // Calculate dashboard statistics from hackathons data
-function calculateDashboardStats(
-  hackathons: HackathonWithRelations[],
-): DashboardStats {
-  const now = new Date();
-
+function calculateDashboardStats(hackathons: UIHackathon[]): DashboardStats {
   const activeHackathons = hackathons.filter((h) => {
-    const hackathonEnd = h.hackathon_end_date
-      ? new Date(h.hackathon_end_date)
-      : null;
-    return hackathonEnd && hackathonEnd > now;
+    const status = getUIHackathonStatus({
+      ...h,
+      votingPeriod: h.votingPeriod || undefined,
+    });
+    return status !== "Ended";
   }).length;
 
   const completedHackathons = hackathons.filter((h) => {
-    const hackathonEnd = h.hackathon_end_date
-      ? new Date(h.hackathon_end_date)
-      : null;
-    return hackathonEnd && hackathonEnd <= now;
+    const status = getUIHackathonStatus({
+      ...h,
+      votingPeriod: h.votingPeriod || undefined,
+    });
+    return status === "Ended";
   }).length;
 
   const totalPrizeValue = hackathons.reduce((total, hackathon) => {
     const hackathonTotal =
-      hackathon.prize_cohorts?.reduce((sum, cohort) => {
+      hackathon.prizeCohorts?.reduce((sum, cohort) => {
         const amount =
-          parseFloat(cohort.prize_amount.replace(/[^0-9.-]+/g, "")) || 0;
+          parseFloat(cohort.prizeAmount.replace(/[^0-9.-]+/g, "")) || 0;
         return sum + amount;
       }, 0) || 0;
     return total + hackathonTotal;
@@ -49,33 +48,42 @@ function calculateDashboardStats(
 // Dashboard stats hook
 export function useDashboardStats() {
   const {
-    data: hackathons = [],
+    hackathons = [],
     isLoading: hackathonsLoading,
     error: hackathonsError,
-  } = useUserHackathons();
+  } = useAllHackathons();
 
-  return useQuery({
-    queryKey: ["dashboard", "stats"],
-    queryFn: () => calculateDashboardStats(hackathons),
-    enabled: !hackathonsLoading && !!hackathons,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
-    select: (data) => data,
+  const stats = useMemo(() => {
+    if (hackathonsLoading || hackathons.length === 0) {
+      return {
+        totalHackathons: 0,
+        activeHackathons: 0,
+        completedHackathons: 0,
+        totalPrizeValue: "$0",
+      };
+    }
+    return calculateDashboardStats(hackathons);
+  }, [hackathons, hackathonsLoading]);
+
+  return {
+    data: stats,
+    isLoading: hackathonsLoading,
+    error: hackathonsError,
     meta: {
       hackathonsLoading,
       hackathonsError,
     },
-  });
+  };
 }
 
 // Combined dashboard data hook for convenience
 export function useDashboardData() {
   const {
-    data: hackathons = [],
+    hackathons = [],
     isLoading: hackathonsLoading,
     error: hackathonsError,
     refetch: refetchHackathons,
-  } = useUserHackathons();
+  } = useAllHackathons();
 
   const {
     data: stats = {

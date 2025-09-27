@@ -52,11 +52,111 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "organizer",
+        "type": "address"
+      }
+    ],
+    "name": "HackathonDeactivated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "hackathonId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "organizer",
+        "type": "address"
+      }
+    ],
+    "name": "HackathonDeleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "hackathonId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "organizer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "newIpfsHash",
+        "type": "string"
+      }
+    ],
+    "name": "HackathonMetadataUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "hackathonId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "organizer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "judge",
         "type": "address"
       }
     ],
     "name": "JudgeAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "hackathonId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "organizer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "judge",
+        "type": "address"
+      }
+    ],
+    "name": "JudgeRemoved",
     "type": "event"
   },
   {
@@ -92,12 +192,6 @@
         "internalType": "address",
         "name": "participant",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "ipfsHash",
-        "type": "string"
       }
     ],
     "name": "ParticipantRegistered",
@@ -109,17 +203,48 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "hackathonId",
+        "name": "projectId",
         "type": "uint256"
       },
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
         "indexed": false,
-        "internalType": "enum HackathonPlatform.Phase",
-        "name": "newPhase",
-        "type": "uint8"
+        "internalType": "string",
+        "name": "ipfsHash",
+        "type": "string"
       }
     ],
-    "name": "PhaseChanged",
+    "name": "ProjectCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "newIpfsHash",
+        "type": "string"
+      }
+    ],
+    "name": "ProjectMetadataUpdated",
     "type": "event"
   },
   {
@@ -140,17 +265,11 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "creator",
+        "name": "submitter",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "ipfsHash",
-        "type": "string"
       }
     ],
-    "name": "ProjectSubmitted",
+    "name": "ProjectSubmittedToHackathon",
     "type": "event"
   },
   {
@@ -191,11 +310,71 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "member",
+        "type": "address"
+      }
+    ],
+    "name": "TeamMemberAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "projectId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "member",
+        "type": "address"
+      }
+    ],
+    "name": "TeamMemberRemoved",
+    "type": "event"
+  },
+  {
     "inputs": [
       { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
       { "internalType": "address", "name": "judge", "type": "address" }
     ],
     "name": "addJudge",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "projectId", "type": "uint256" },
+      { "internalType": "address", "name": "member", "type": "address" }
+    ],
+    "name": "addTeamMember",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -210,6 +389,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "submissionStartDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "submissionDeadline",
         "type": "uint256"
       },
@@ -217,10 +401,42 @@
         "internalType": "uint256",
         "name": "judgingDeadline",
         "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "initialJudges",
+        "type": "address[]"
       }
     ],
     "name": "createHackathon",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "projectIpfsHash", "type": "string" }
+    ],
+    "name": "createProject",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" }
+    ],
+    "name": "deactivateHackathon",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" }
+    ],
+    "name": "deleteHackathon",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -245,13 +461,13 @@
           { "internalType": "string", "name": "ipfsHash", "type": "string" },
           { "internalType": "address", "name": "organizer", "type": "address" },
           {
-            "internalType": "enum HackathonPlatform.Phase",
-            "name": "currentPhase",
-            "type": "uint8"
+            "internalType": "uint256",
+            "name": "registrationDeadline",
+            "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "registrationDeadline",
+            "name": "submissionStartDate",
             "type": "uint256"
           },
           {
@@ -270,6 +486,17 @@
         "name": "",
         "type": "tuple"
       }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" }
+    ],
+    "name": "getHackathonJudges",
+    "outputs": [
+      { "internalType": "address[]", "name": "", "type": "address[]" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -298,6 +525,28 @@
   },
   {
     "inputs": [
+      { "internalType": "address", "name": "judge", "type": "address" }
+    ],
+    "name": "getJudgeAssignments",
+    "outputs": [
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "organizer", "type": "address" }
+    ],
+    "name": "getOrganizerHackathons",
+    "outputs": [
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
       { "internalType": "uint256", "name": "projectId", "type": "uint256" }
     ],
     "name": "getProject",
@@ -305,14 +554,14 @@
       {
         "components": [
           { "internalType": "uint256", "name": "id", "type": "uint256" },
-          {
-            "internalType": "uint256",
-            "name": "hackathonId",
-            "type": "uint256"
-          },
           { "internalType": "string", "name": "ipfsHash", "type": "string" },
           { "internalType": "address", "name": "creator", "type": "address" },
-          { "internalType": "bool", "name": "isSubmitted", "type": "bool" },
+          {
+            "internalType": "address[]",
+            "name": "teamMembers",
+            "type": "address[]"
+          },
+          { "internalType": "bool", "name": "isCreated", "type": "bool" },
           {
             "internalType": "uint256",
             "name": "totalScore",
@@ -342,6 +591,17 @@
     "type": "function"
   },
   {
+    "inputs": [
+      { "internalType": "uint256", "name": "projectId", "type": "uint256" }
+    ],
+    "name": "getProjectTeamMembers",
+    "outputs": [
+      { "internalType": "address[]", "name": "", "type": "address[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getTotalHackathons",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
@@ -359,10 +619,43 @@
     "inputs": [
       { "internalType": "address", "name": "user", "type": "address" }
     ],
+    "name": "getUserHackathons",
+    "outputs": [
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "user", "type": "address" }
+    ],
     "name": "getUserProjects",
     "outputs": [
       { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
     ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "user", "type": "address" },
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" }
+    ],
+    "name": "getUserSubmissionsForHackathon",
+    "outputs": [
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "hackathonJudges",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -394,13 +687,13 @@
       { "internalType": "string", "name": "ipfsHash", "type": "string" },
       { "internalType": "address", "name": "organizer", "type": "address" },
       {
-        "internalType": "enum HackathonPlatform.Phase",
-        "name": "currentPhase",
-        "type": "uint8"
+        "internalType": "uint256",
+        "name": "registrationDeadline",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "registrationDeadline",
+        "name": "submissionStartDate",
         "type": "uint256"
       },
       {
@@ -431,10 +724,40 @@
   {
     "inputs": [
       { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "isProjectSubmitted",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
+      { "internalType": "uint256", "name": "projectId", "type": "uint256" }
+    ],
+    "name": "isProjectSubmittedToHackathon",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
       { "internalType": "address", "name": "", "type": "address" }
     ],
     "name": "isRegistered",
     "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "judgeAssignments",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -448,6 +771,16 @@
   {
     "inputs": [],
     "name": "nextProjectId",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "organizerHackathons",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
@@ -474,10 +807,9 @@
     "name": "projects",
     "outputs": [
       { "internalType": "uint256", "name": "id", "type": "uint256" },
-      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
       { "internalType": "string", "name": "ipfsHash", "type": "string" },
       { "internalType": "address", "name": "creator", "type": "address" },
-      { "internalType": "bool", "name": "isSubmitted", "type": "bool" },
+      { "internalType": "bool", "name": "isCreated", "type": "bool" },
       { "internalType": "uint256", "name": "totalScore", "type": "uint256" },
       { "internalType": "uint256", "name": "judgeCount", "type": "uint256" }
     ],
@@ -486,14 +818,29 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
-      {
-        "internalType": "string",
-        "name": "participantIpfsHash",
-        "type": "string"
-      }
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" }
     ],
     "name": "registerForHackathon",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
+      { "internalType": "address", "name": "judge", "type": "address" }
+    ],
+    "name": "removeJudge",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "projectId", "type": "uint256" },
+      { "internalType": "address", "name": "member", "type": "address" }
+    ],
+    "name": "removeTeamMember",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -508,10 +855,10 @@
   {
     "inputs": [
       { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
-      { "internalType": "string", "name": "projectIpfsHash", "type": "string" }
+      { "internalType": "uint256", "name": "projectId", "type": "uint256" }
     ],
-    "name": "submitProject",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "submitProjectToHackathon",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -547,20 +894,6 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
-      {
-        "internalType": "enum HackathonPlatform.Phase",
-        "name": "newPhase",
-        "type": "uint8"
-      }
-    ],
-    "name": "updateHackathonPhase",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
       { "internalType": "uint256", "name": "projectId", "type": "uint256" },
       {
         "internalType": "string",
@@ -571,6 +904,16 @@
     "name": "updateProject",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "userHackathons",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
     "type": "function"
   },
   {

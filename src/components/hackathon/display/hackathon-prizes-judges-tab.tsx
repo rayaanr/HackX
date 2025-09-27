@@ -176,10 +176,11 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
                   {hackathon.judges && hackathon.judges.length > 0 ? (
                     hackathon.judges.slice(0, 4).map((judge) => (
                       <div
-                        key={judge.email}
+                        key={judge.address}
                         className="w-10 h-10 bg-muted rounded-full flex items-center justify-center text-sm font-semibold"
+                        title={judge.address}
                       >
-                        {judge.email.charAt(0).toUpperCase()}
+                        {judge.address.slice(2, 4).toUpperCase()}
                       </div>
                     ))
                   ) : (

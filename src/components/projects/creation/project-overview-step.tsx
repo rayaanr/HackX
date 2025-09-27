@@ -5,24 +5,19 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormContext } from "react-hook-form";
-import { z } from "zod";
-import {
-  projectSchema,
-  type ProjectFormData,
-} from "@/lib/schemas/project-schema";
-import { LexicalEditor } from "@/components/ui/rich-text-editor";
+import { type ProjectFormData } from "@/lib/schemas/project-schema";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { FileUploadField } from "@/components/ui/file-upload";
 import MultipleSelector, { Option } from "@/components/ui/multiselect";
 import { Button } from "@/components/ui/button";
 import { Shuffle } from "lucide-react";
-import { MOCK_PROJECT_DATA, getRandomMockProject } from "@/constants/mock-project-data";
+import { getRandomMockProject } from "@/data/mock-project-data";
 
 const SECTOR_OPTIONS: Option[] = [
   { value: "ai-ml", label: "AI/ML" },
@@ -49,11 +44,15 @@ export function OverviewStep() {
     setValue("logo", mockData.logo);
     setValue("name", mockData.name);
     setValue("intro", mockData.intro);
-    setValue("itchVideo", mockData.itchVideo);
+    setValue("pitchVideo", mockData.pitchVideo);
     setValue("sector", mockData.sector);
     setValue("progress", mockData.progress);
     setValue("fundraisingStatus", mockData.fundraisingStatus);
     setValue("description", mockData.description);
+    setValue("githubLink", mockData.githubLink);
+    setValue("demoVideo", mockData.demoVideo);
+    setValue("techStack", mockData.techStack);
+    setValue("hackathonIds", mockData.hackathonIds);
   };
 
   const loadRandomMockData = () => {
@@ -67,73 +66,60 @@ export function OverviewStep() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Project Overview</CardTitle>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={loadRandomMockData}
-                className="flex items-center gap-2"
-              >
-                <Shuffle className="w-4 h-4" />
-                Load Random
-              </Button>
-              <div className="relative">
-                <select
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      const mockData = MOCK_PROJECT_DATA[parseInt(e.target.value)];
-                      loadMockData(mockData);
-                      e.target.value = ""; // Reset select
-                    }
-                  }}
-                >
-                  <option value="">Choose specific...</option>
-                  {MOCK_PROJECT_DATA.map((project, index) => (
-                    <option key={index} value={index}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
-                <Button type="button" variant="outline" size="sm">
-                  Load Specific
-                </Button>
-              </div>
-            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={loadRandomMockData}
+              className="flex items-center gap-2"
+            >
+              <Shuffle className="w-4 h-4" />
+              Load Random
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-4 space-y-6">
+              <FormField
+                control={control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Project Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter project name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="intro"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Project Intro</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter a short intro" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={control}
               name="logo"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="col-span-2">
                   <FormLabel>Project Logo</FormLabel>
                   <FileUploadField
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Drop your project logo here"
                   />
-                  <FormDescription>
-                    Upload a logo for your project
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Project Name *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter project name" {...field} />
-                  </FormControl>
-                  <FormDescription>The name of your project</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -142,37 +128,13 @@ export function OverviewStep() {
 
           <FormField
             control={control}
-            name="intro"
+            name="pitchVideo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Project Intro *</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter a short intro"
-                    rows={3}
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  A brief one-liner about your project
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={control}
-            name="itchVideo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Itch Video</FormLabel>
+                <FormLabel>Pitch Video</FormLabel>
                 <FormControl>
                   <Input placeholder="https://example.com/video" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Link to your project video (optional)
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -183,7 +145,7 @@ export function OverviewStep() {
             name="sector"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Sector *</FormLabel>
+                <FormLabel required>Sector</FormLabel>
                 <FormControl>
                   <MultipleSelector
                     value={field.value.map((val) => ({
@@ -203,9 +165,6 @@ export function OverviewStep() {
                     }
                   />
                 </FormControl>
-                <FormDescription>
-                  What sector does your project belong to?
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -216,7 +175,7 @@ export function OverviewStep() {
             name="progress"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Progress *</FormLabel>
+                <FormLabel required>Progress</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Describe your project's progress..."
@@ -224,9 +183,6 @@ export function OverviewStep() {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>
-                  What stage is your project at?
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -237,7 +193,7 @@ export function OverviewStep() {
             name="fundraisingStatus"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Fundraising Status *</FormLabel>
+                <FormLabel required>Fundraising Status</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Describe your fundraising status..."
@@ -245,9 +201,6 @@ export function OverviewStep() {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>
-                  What is your project's fundraising status?
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -258,18 +211,15 @@ export function OverviewStep() {
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Description *</FormLabel>
+                <FormLabel required>Full Description</FormLabel>
                 <FormControl>
-                  <LexicalEditor
-                    initialContent={field.value || ""}
+                  <RichTextEditor
+                    initialValue={field.value || ""}
                     onChange={(content) => field.onChange(content)}
                     placeholder="Enter a detailed description of your project..."
                     className="min-h-[200px]"
                   />
                 </FormControl>
-                <FormDescription>
-                  Provide a comprehensive description of your project
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

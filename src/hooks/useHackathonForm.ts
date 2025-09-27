@@ -7,7 +7,7 @@ import {
   HackathonFormData,
   validateDateConsistency,
 } from "@/lib/schemas/hackathon-schema";
-import { useCreateHackathon } from "@/hooks/blockchain/useBlockchainHackathons";
+import { useCreateHackathon } from "@/hooks/blockchain/use-create-hackathon";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -45,8 +45,14 @@ const getDefaultHackathonFormValues = (): HackathonFormData => ({
 
 // Form submission handlers
 function createSuccessHandler(router: any) {
-  return (data: { hackathonId: number; ipfsHash: string; transactionHash: string }) => {
-    toast.success(`Hackathon created successfully! Transaction: ${data.transactionHash.slice(0, 10)}...`);
+  return (data: {
+    hackathonId: number;
+    cid: string;
+    transactionHash: string;
+  }) => {
+    toast.success(
+      `Hackathon created successfully! IPFS: ${data.cid.slice(0, 10)}... TX: ${data.transactionHash.slice(0, 10)}...`,
+    );
     router.push("/dashboard");
   };
 }
@@ -63,13 +69,17 @@ function createErrorHandler(router: any) {
 
     // Handle transaction rejection
     if (error.message.includes("Transaction was rejected")) {
-      toast.error("Transaction rejected. Please approve the transaction to create your hackathon.");
+      toast.error(
+        "Transaction rejected. Please approve the transaction to create your hackathon.",
+      );
       return;
     }
 
     // Handle insufficient funds
     if (error.message.includes("insufficient funds")) {
-      toast.error("Insufficient funds for gas fees. Please add ETH to your wallet.");
+      toast.error(
+        "Insufficient funds for gas fees. Please add ETH to your wallet.",
+      );
       return;
     }
 
@@ -111,8 +121,8 @@ export function useHackathonForm() {
 
   const { handleSubmit, setError, clearErrors } = methods;
 
-  // Create hackathon mutation
-  const createHackathonMutation = useCreateHackathon();
+  // Create hackathon hook
+  const { createHackathon, isCreating, error } = useCreateHackathon();
 
   // Success and error handlers
   const handleCreateSuccess = createSuccessHandler(router);
@@ -128,10 +138,22 @@ export function useHackathonForm() {
     }
 
     console.log("Creating hackathon...");
-    createHackathonMutation.mutate(data, {
-      onSuccess: handleCreateSuccess,
-      onError: handleCreateError,
-    });
+
+    try {
+      const result = await createHackathon(data);
+
+      if (result.success) {
+        handleCreateSuccess({
+          hackathonId: result.hackathonId!,
+          cid: result.cid!,
+          transactionHash: result.transactionHash!,
+        });
+      } else {
+        handleCreateError(new Error(result.error || "Unknown error"));
+      }
+    } catch (err) {
+      handleCreateError(err as Error);
+    }
   };
 
   // Form reset handler
@@ -147,7 +169,7 @@ export function useHackathonForm() {
   return {
     methods,
     onSubmit: handleSubmit(onSubmit),
-    isSubmitting: createHackathonMutation.isPending,
+    isSubmitting: isCreating,
     isFormValid,
     resetForm,
     formState: methods.formState,

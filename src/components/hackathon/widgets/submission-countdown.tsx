@@ -31,8 +31,12 @@ export function SubmissionCountdown({ hackathon }: SubmissionCountdownProps) {
       let targetDate: Date | null = null;
 
       // Determine which date to countdown to based on hackathon status
-      const regEndDate = safeToDate(hackathon.registrationPeriod?.registrationEndDate);
-      const hackEndDate = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+      const regEndDate = safeToDate(
+        hackathon.registrationPeriod?.registrationEndDate,
+      );
+      const hackEndDate = safeToDate(
+        hackathon.hackathonPeriod?.hackathonEndDate,
+      );
 
       if (regEndDate && new Date() < regEndDate) {
         targetDate = regEndDate;
@@ -66,7 +70,9 @@ export function SubmissionCountdown({ hackathon }: SubmissionCountdownProps) {
   }, [hackathon]);
 
   const getCountdownTitle = () => {
-    const regEndDate = safeToDate(hackathon.registrationPeriod?.registrationEndDate);
+    const regEndDate = safeToDate(
+      hackathon.registrationPeriod?.registrationEndDate,
+    );
     if (regEndDate && new Date() < regEndDate) {
       return "Registration ends in";
     }

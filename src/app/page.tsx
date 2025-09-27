@@ -1,19 +1,40 @@
 "use client";
 
-import { WaveLoader } from "@/components/ui/loader";
-import { useAuth } from "@/providers/auth-provider";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { WalletConnect } from "@/components/layout/wallet-connect";
 
 export default function Home() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  // const account = useActiveAccount();
+  // const router = useRouter();
 
-  useEffect(() => {
-    if (!loading) {
-      user ? router.replace("/dashboard") : router.replace("/login");
-    }
-  }, [user, loading, router]);
+  // useEffect(() => {
+  //   if (account) {
+  //     router.replace("/dashboard");
+  //   }
+  // }, [account, router]);
 
-  return <WaveLoader />;
+  // if (account) {
+  //   return null; // Will redirect to dashboard
+  // }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-background/80">
+      <div className="max-w-md text-center space-y-8">
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+            HackX
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            The next generation hackathon platform
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Connect your wallet to get started
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <WalletConnect />
+        </div>
+      </div>
+    </div>
+  );
 }

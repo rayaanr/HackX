@@ -22,45 +22,46 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRegisteredHackathons } from "@/hooks/queries/use-projects";
-import { getDaysLeft, formatDisplayDate } from "@/lib/helpers/date";
+import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+import {
+  formatDisplayDate,
+  formatDateRange,
+  getUIHackathonStatus,
+} from "@/lib/helpers/date";
+import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import Image from "next/image";
+import type { UIHackathon } from "@/types/hackathon";
+
+type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
 
 export function RegisteredHackathons() {
   const {
-    data: registrations = [],
+    hackathons: registrations = [],
     isLoading: loading,
     error,
+    isConnected,
   } = useRegisteredHackathons();
 
-  const getStatusBadge = (hackathon: any) => {
-    const now = new Date();
-    const regEnd = hackathon.registration_end_date
-      ? new Date(hackathon.registration_end_date)
-      : null;
-    const hackStart = hackathon.hackathon_start_date
-      ? new Date(hackathon.hackathon_start_date)
-      : null;
-    const hackEnd = hackathon.hackathon_end_date
-      ? new Date(hackathon.hackathon_end_date)
-      : null;
-
-    if (regEnd && now < regEnd) {
-      return (
-        <Badge className="bg-blue-500 hover:bg-blue-600">
-          Registration Open
-        </Badge>
-      );
-    } else if (hackStart && hackEnd && now >= hackStart && now <= hackEnd) {
-      return <Badge className="bg-green-500 hover:bg-green-600">Live</Badge>;
-    } else if (hackEnd && now > hackEnd) {
-      return <Badge variant="secondary">Completed</Badge>;
-    } else {
-      return <Badge variant="outline">Upcoming</Badge>;
-    }
-  };
+  if (!isConnected) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
+        <Card>
+          <CardContent className="text-center py-12">
+            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Trophy className="w-12 h-12 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Connect Your Wallet</h3>
+            <p className="text-muted-foreground mb-4">
+              Connect your wallet to view your registered hackathons
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -81,23 +82,24 @@ export function RegisteredHackathons() {
         <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
         <div className="space-y-6">
           {[1, 2].map((i) => (
-            <Card key={i} className="animate-pulse">
+            <Card key={i} className="p-6 animate-pulse">
               <div className="flex">
-                <div className="flex-1 p-6">
-                  <div className="h-6 bg-muted rounded w-1/3 mb-4"></div>
-                  <div className="h-4 bg-muted rounded w-2/3 mb-4"></div>
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+                    <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="h-4 w-full bg-muted animate-pulse rounded" />
                   <div className="grid grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map((j) => (
-                      <div key={j} className="space-y-2">
-                        <div className="h-3 bg-muted rounded w-3/4"></div>
-                        <div className="h-4 bg-muted rounded w-1/2"></div>
+                    {Array.from({ length: 4 }).map((_, j) => (
+                      <div key={j}>
+                        <div className="h-4 w-16 bg-muted animate-pulse rounded mb-1" />
+                        <div className="h-4 w-12 bg-muted animate-pulse rounded" />
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="w-1/3 p-6">
-                  <div className="h-32 bg-muted rounded"></div>
-                </div>
+                <div className="w-1/3 h-48 bg-muted animate-pulse rounded-lg" />
               </div>
             </Card>
           ))}
@@ -107,7 +109,7 @@ export function RegisteredHackathons() {
   }
 
   return (
-    <div>
+    <div className="mt-12">
       <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
 
       {registrations.length === 0 ? (
@@ -130,22 +132,28 @@ export function RegisteredHackathons() {
         </Card>
       ) : (
         <div className="space-y-6">
-          {registrations.map((registration) => {
-            const hackathon = registration.hackathon;
+          {registrations.map((hackathon: RegisteredHackathon) => {
+            // Get hackathon status using shared helper
+            const status = getUIHackathonStatus({
+              ...hackathon,
+              votingPeriod: hackathon.votingPeriod || undefined,
+            });
+            const statusVariant = getStatusVariant(status);
+
             return (
               <Card
                 key={hackathon.id}
-                className="overflow-hidden hover:shadow-md transition-shadow"
+                className="p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex">
-                  <div className="flex-1 p-6">
+                  <div className="flex-1">
                     <CardHeader className="p-0 mb-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <CardTitle className="text-xl">
-                            {hackathon.name}
+                          <CardTitle className="text-2xl">
+                            {hackathon.name || `Hackathon ${hackathon.id}`}
                           </CardTitle>
-                          {getStatusBadge(hackathon)}
+                          <Badge variant={statusVariant}>{status}</Badge>
                         </div>
                         <CardAction className="p-0">
                           <DropdownMenu>
@@ -173,60 +181,59 @@ export function RegisteredHackathons() {
                         </CardAction>
                       </div>
                     </CardHeader>
-
                     <CardContent className="p-0">
-                      <p className="text-muted-foreground mb-6">
-                        {hackathon.short_description}
+                      <p className="text-muted-foreground mb-4">
+                        {hackathon.shortDescription ||
+                          "No description provided."}
                       </p>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm [&>div>h6]:text-muted-foreground [&>div>p]:font-semibold [&>div>p]:text-xs">
                         <div>
-                          <h6 className="flex items-center text-sm text-muted-foreground mb-1">
-                            <Calendar className="w-4 h-4 mr-1" />
+                          <h6 className="flex items-center">
+                            <Calendar className="size-4 mr-1" />
                             Registration closes
                           </h6>
-                          <p className="text-sm font-medium">
-                            {hackathon.registration_end_date
-                              ? `Registration ${getDaysLeft(
-                                  hackathon.registration_end_date,
-                                )} days left`
+                          <p>
+                            {hackathon.registrationPeriod?.registrationEndDate
+                              ? formatDisplayDate(
+                                  hackathon.registrationPeriod
+                                    .registrationEndDate,
+                                )
                               : "Registration TBD"}
                           </p>
                         </div>
                         <div>
-                          <h6 className="flex items-center text-sm text-muted-foreground mb-1">
-                            <Code className="w-4 h-4 mr-1" />
+                          <h6 className="flex items-center">
+                            <Code className="size-4 mr-1" />
                             Tech stack
                           </h6>
-                          <p className="text-sm font-medium">
-                            {hackathon.tech_stack &&
-                            hackathon.tech_stack.length > 0
+                          <p>
+                            {hackathon.techStack &&
+                            hackathon.techStack.length > 0
                               ? "All tech stack"
                               : "Any"}
                           </p>
                         </div>
                         <div>
-                          <h6 className="flex items-center text-sm text-muted-foreground mb-1">
-                            <Trophy className="w-4 h-4 mr-1" />
+                          <h6 className="flex items-center">
+                            <Trophy className="size-4 mr-1" />
                             Level
                           </h6>
-                          <p className="text-sm font-medium capitalize">
-                            {hackathon.experience_level
-                              ? hackathon.experience_level.toLowerCase() +
+                          <p className="capitalize">
+                            {hackathon.experienceLevel
+                              ? hackathon.experienceLevel.toLowerCase() +
                                 " levels accepted"
                               : "All levels accepted"}
                           </p>
                         </div>
                         <div>
-                          <h6 className="flex items-center text-sm text-muted-foreground mb-1">
-                            <Trophy className="w-4 h-4 mr-1" />
+                          <h6 className="flex items-center">
+                            <Trophy className="size-4 mr-1" />
                             Total prize
                           </h6>
-                          <p className="text-sm font-medium">TBD</p>
+                          <p>{"TBD"}</p>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-4 mt-4">
                         <Button asChild>
                           <Link
                             href={`/projects/create?hackathon=${hackathon.id}`}
@@ -236,29 +243,22 @@ export function RegisteredHackathons() {
                         </Button>
                         <div className="text-sm text-muted-foreground">
                           <span className="font-medium">
-                            {hackathon.hackathon_start_date
-                              ? formatDisplayDate(
-                                  hackathon.hackathon_start_date,
-                                )
-                              : "TBD"}
-                          </span>{" "}
-                          -{" "}
-                          <span className="font-medium">
-                            {hackathon.hackathon_end_date
-                              ? formatDisplayDate(hackathon.hackathon_end_date)
-                              : "TBD"}
+                            {formatDateRange(
+                              hackathon.hackathonPeriod?.hackathonStartDate,
+                              hackathon.hackathonPeriod?.hackathonEndDate,
+                            )}
                           </span>
                         </div>
                       </div>
                     </CardContent>
                   </div>
-
-                  <div className="relative w-1/3 min-h-[200px]">
+                  <div className="relative w-1/3">
                     <Image
+                      height={200}
+                      width={300}
                       src={resolveIPFSToHttp(hackathon.visual)}
-                      alt={hackathon.name}
-                      fill
-                      className="object-cover rounded-r-lg"
+                      alt={hackathon.name || `Hackathon ${hackathon.id}`}
+                      className="h-full w-full object-cover rounded-lg"
                       unoptimized
                     />
                   </div>
