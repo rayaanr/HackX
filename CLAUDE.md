@@ -2,126 +2,140 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Development Commands
+## Project Overview
 
-- `bun run dev` - Start development server with Next.js
-- `bun run build` - Build the application for production
+HackX is a decentralized hackathon platform built with Next.js 15, React 19, and Thirdweb for Web3 integration. The platform operates on the Base Sepolia testnet and stores metadata on IPFS using Pinata.
+
+## Essential Commands
+
+### Development
+- `bun dev` - Start development server
+- `bun build` - Build for production
 - `bun start` - Start production server
-- `bun run lint` - Run Biome linting checks
-- `bun run format` - Format code using Biome
 
-## Code Architecture & Structure
+### Code Quality
+- `bun run lint` - Run Biome linting
+- `bun run format` - Format code with Biome
 
-This is a Next.js 15 blockchain-based hackathon management application using smart contracts for data storage.
+Note: This project uses Biome instead of ESLint/Prettier for both linting and formatting.
 
-### Tech Stack
-- **Framework**: Next.js 15 with App Router
-- **Blockchain**: Ethereum-compatible smart contract with Thirdweb SDK
-- **Storage**: IPFS via Pinata for metadata storage
-- **Language**: TypeScript with strict mode enabled
-- **Styling**: Tailwind CSS 4 with CSS variables for theming
-- **UI Components**: shadcn/ui (Radix UI primitives) with "new-york" style
-- **Icons**: Lucide React and Tabler Icons
-- **Linting/Formatting**: Biome (replaces ESLint + Prettier)
-- **State Management**: Custom blockchain hooks with TanStack Query for data caching
-- **Authentication**: Thirdweb wallet-based authentication
-- **Form Handling**: react-hook-form with Zod validation
-- **Rich Text**: Lexical editor with HTML/Markdown support
+## Architecture
 
-### Key Architectural Patterns
+### Core Technologies
+- **Frontend**: Next.js 15 with App Router, React 19, TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **Blockchain**: Thirdweb SDK, Base Sepolia testnet
+- **Storage**: IPFS via Pinata for metadata
+- **State Management**: TanStack Query for server state
+- **Forms**: React Hook Form with Zod validation
 
-**Provider Architecture**:
-- `Web3Provider` - Blockchain integration and wallet state management
-- `ThemeProvider` - Dark/light mode theming
-- `SidebarProvider` - Sidebar state management
+### Key Architecture Patterns
 
-**Layout System**: Conditional layout based on route:
-- `ConditionalLayout` - Wraps children with sidebar layout except for auth/home pages
-- `AppSidebar` - Main navigation sidebar with user context
-- `SiteHeader` - Top header component
-- Auth pages (`/login`, `/signup`) and home page (`/`) use full-width layout
+#### Blockchain-First Data Model
+The platform uses a hybrid approach:
+- **On-chain**: Core hackathon and project data, user registrations, scoring
+- **Off-chain (IPFS)**: Rich metadata, descriptions, images, team details
 
-**Blockchain Integration**:
-- Smart contract integration with Thirdweb SDK (`contract.sol`)
-- Contract deployment and interaction in `src/lib/helpers/blockchain.ts`
-- IPFS metadata storage with Pinata integration for hackathon/project data
-- Comprehensive type mapping between blockchain and UI types in `src/types/blockchain.ts`
-- Date/timestamp conversion utilities in `src/lib/helpers/date.ts` for Unix timestamps from contract
+#### Smart Contract Integration
+- Main contract: `HackathonPlatform.sol` deployed on Base Sepolia
+- Contract interaction via Thirdweb SDK in `src/providers/web3-provider.tsx`
+- Contract ABI located at `src/constants/abi.json`
 
-**Form & Validation System**:
-- Complex multi-step forms using react-hook-form
-- Zod schemas in `src/lib/schemas/` with cross-field validation
-- `hackathon-schema.ts` includes comprehensive validation for hackathon creation with date consistency checks
+#### Type System Architecture
+- **Contract types**: Raw blockchain data (`src/types/blockchain.ts`)
+- **Metadata types**: IPFS-stored rich data structures
+- **UI types**: Frontend-friendly transformed data (`src/types/hackathon.ts`)
 
-**Code Organization Rules**:
-- Components: `src/components/{feature}/` - Group by feature with creation/display subdirectories
-- Hooks: `src/hooks/blockchain/` for blockchain operations, `src/hooks/queries/` for data transformations
-- Utils: `src/lib/helpers/` for transformations, `src/lib/schemas/` for Zod validation
-- Types: `src/types/blockchain.ts` (smart contract types), `src/types/hackathon.ts` (UI mappings)
-- Constants: `src/constants/` for static data and configuration options
+### Directory Structure
 
-**Routing Structure**:
-- `/` - Landing page (no sidebar)
-- `/dashboard` - Main dashboard with stats and recent hackathons
-- `/hackathons/` - Hackathon listing and individual hackathon pages
-- `/hackathons/create` - Multi-step hackathon creation form
-- `/hackathons/[id]/judge` - Judge dashboard for evaluating projects in a hackathon
-- `/hackathons/[id]/judge/[projectId]` - Individual project evaluation page for judges
-- `/judge` - Judge overview page showing all hackathons available for judging
-- `/projects/` - Project management pages
-- Authentication is wallet-based (no traditional auth pages)
+```
+src/
+├── app/                    # Next.js app router
+│   ├── (platform)/        # Protected platform routes
+│   └── providers.tsx       # Root providers
+├── components/             # React components
+│   ├── ui/                # shadcn/ui base components
+│   ├── layout/            # Layout components
+│   ├── hackathon/         # Hackathon-specific components
+│   ├── projects/          # Project-specific components
+│   └── dashboard/         # Dashboard components
+├── hooks/                  # Custom React hooks
+│   ├── blockchain/        # Web3/contract interaction hooks
+│   └── queries/           # TanStack Query hooks
+├── lib/                    # Utilities and helpers
+│   ├── helpers/           # Business logic helpers
+│   └── schemas/           # Zod validation schemas
+├── providers/              # React context providers
+├── types/                  # TypeScript type definitions
+└── constants/              # App constants and config
+```
 
-### Configuration Files
+## Component Patterns
 
-- **biome.json**: Configured for Next.js/React with 2-space indentation, import organization
-- **components.json**: shadcn/ui using "new-york" style, Lucide icons, CSS variables
-- **tsconfig.json**: Path aliases (`@/*` maps to `./src/*`)
+### Form Components
+All forms use React Hook Form with Zod validation:
+- Schemas defined in `src/lib/schemas/`
+- Multi-step forms use `@stepperize/react`
+- File uploads handled via custom hook `useFileUpload`
 
-### Type System
+### Blockchain Components
+Components that interact with the blockchain:
+- Use `useWeb3()` hook for contract access
+- Handle loading states and transaction errors
+- Store metadata on IPFS before contract calls
 
-The application uses a multi-type system:
-- **Blockchain types**: Smart contract data structures (`BlockchainHackathon`, `BlockchainProject`, etc.)
-- **UI types**: Application-specific interfaces (`UIHackathon`, `UIProject`, etc.)
-- **Form types**: Zod-inferred types from schemas (`HackathonFormData`, etc.)
-- **Contract types**: Solidity event and struct mappings for blockchain interactions
+### Data Fetching
+- Use TanStack Query for caching and state management
+- Blockchain data hooks in `src/hooks/blockchain/`
+- Transform raw contract data to UI-friendly formats
 
-### Key Features
+## Environment Variables
 
-- Multi-step hackathon creation with complex validation
-- Rich text editing with Lexical
-- File upload with drag-and-drop
-- Responsive design with container queries
-- Toast notifications with Sonner
-- Date/time pickers with validation
-- Multi-select components for tech stacks
-- Avatar lists for team displays
+Required environment variables (see `.env.example`):
+- `NEXT_PUBLIC_THIRDWEB_CLIENT_ID` - Thirdweb client ID
+- `NEXT_PUBLIC_CONTRACT_ADDRESS` - Deployed contract address
+- `NEXT_PUBLIC_PINATA_JWT` - Pinata JWT for IPFS uploads
 
-### Critical Implementation Details
+## Development Workflow
 
-**Status Calculation**:
-- Use shared `getUIHackathonStatus` helper from `src/lib/helpers/date.ts` for consistent status display
-- Always convert `votingPeriod: null` to `undefined` when calling status functions:
-  ```typescript
-  const status = getUIHackathonStatus({
-    ...hackathon,
-    votingPeriod: hackathon.votingPeriod || undefined,
-  });
-  ```
+### Adding New Features
+1. Define types in `src/types/` if needed
+2. Create Zod schemas for validation in `src/lib/schemas/`
+3. Implement blockchain hooks in `src/hooks/blockchain/`
+4. Build UI components following existing patterns
+5. Add routes in `app/(platform)/`
 
-**Environment Variables**:
-- `NEXT_PUBLIC_THIRDWEB_CLIENT_ID` - Thirdweb client configuration
-- `NEXT_PUBLIC_CONTRACT_ADDRESS` - Smart contract deployment address
-- `PINATA_API_KEY` / `PINATA_SECRET_API_KEY` - IPFS storage credentials
+### Smart Contract Changes
+When updating the smart contract:
+1. Update `contract.sol`
+2. Regenerate ABI and update `src/constants/abi.json`
+3. Update types in `src/types/blockchain.ts`
+4. Update contract interaction hooks
 
-**Data Flow**:
-- All data comes from smart contract events and IPFS metadata
-- No traditional database - blockchain is the source of truth
-- Timestamps from contract are Unix format and need conversion via `safeToDate`
+### Styling Guidelines
+- Use Tailwind utility classes
+- Follow shadcn/ui design system
+- Use CSS variables for theming (dark/light mode support)
+- Responsive design with mobile-first approach
 
-When making changes:
-- Use existing Zod schemas for validation and extend them as needed
-- Follow the blockchain/UI type mapping patterns in `src/lib/helpers/blockchain-transforms.ts`
-- Maintain the provider hierarchy in `src/app/providers.tsx`
-- Use blockchain hooks for contract interactions and TanStack Query for data caching
-- Follow shadcn/ui component patterns with class-variance-authority
-- Always handle type conversion between blockchain and UI data consistently
+## Key Hooks
+
+### Blockchain Hooks
+- `useBlockchainHackathons()` - Fetch hackathons from contract
+- `useBlockchainProjects()` - Fetch projects from contract
+- `useCreateHackathon()` - Create new hackathon
+- `useJudge()` - Judge functionality for scoring projects
+
+### Utility Hooks
+- `useFileUpload()` - Handle file uploads to IPFS
+- `useHackathonForm()` - Multi-step hackathon creation
+- `usePrizeCohorts()` - Manage prize cohort data
+- `useENS()` - ENS name resolution
+
+## Data Flow
+
+1. **Creation**: Form data → Zod validation → IPFS upload → Contract transaction
+2. **Reading**: Contract query → IPFS metadata fetch → Data transformation → UI display
+3. **Updates**: Similar to creation but with update contract calls
+
+This architecture ensures data integrity while providing rich user experiences through IPFS metadata storage.
