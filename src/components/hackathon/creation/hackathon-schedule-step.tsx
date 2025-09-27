@@ -14,11 +14,7 @@ import { CalendarIcon } from "lucide-react";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useFormContext, useFieldArray, useWatch } from "react-hook-form";
-import { z } from "zod";
-import {
-  hackathonSchema,
-  type HackathonFormData,
-} from "@/lib/schemas/hackathon-schema";
+import { type HackathonFormData } from "@/lib/schemas/hackathon-schema";
 import { Trash2, Plus } from "lucide-react";
 import { ImageUploader } from "@/components/ui/file-upload";
 

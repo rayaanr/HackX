@@ -29,7 +29,7 @@ const prizeCohortSchema = z.object({
 // Define the judge schema
 const judgeSchema = z.object({
   id: z.string().optional(),
-  email: z.email("Invalid email address"),
+  address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid EVM address"),
   status: z.enum(["waiting", "invited", "pending", "accepted", "declined"]),
 });
 
@@ -151,14 +151,6 @@ export const validateDateConsistency = (data: any) => {
   const hackEnd = data.hackathonPeriod?.hackathonEndDate;
   const voteStart = data.votingPeriod?.votingStartDate;
   const voteEnd = data.votingPeriod?.votingEndDate;
-
-  // Check that registration ends before hackathon starts
-  if (regEnd && hackStart) {
-    if (regEnd >= hackStart) {
-      errors["hackathonPeriod.hackathonStartDate"] =
-        "Hackathon must start after registration ends";
-    }
-  }
 
   // Check that hackathon ends before voting starts
   if (hackEnd && voteStart) {

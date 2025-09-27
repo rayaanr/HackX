@@ -1,4 +1,3 @@
-import type { Database } from "@/types/supabase";
 import type {
   HackathonFormData,
   PrizeCohort,
@@ -6,31 +5,83 @@ import type {
   ScheduleSlot,
 } from "@/lib/schemas/hackathon-schema";
 
-// Database types from Supabase
-export type DatabaseHackathon =
-  Database["public"]["Tables"]["hackathons"]["Row"];
-export type DatabasePrizeCohort =
-  Database["public"]["Tables"]["prize_cohorts"]["Row"];
-export type DatabaseJudge = Database["public"]["Tables"]["judges"]["Row"];
-export type DatabaseScheduleSlot =
-  Database["public"]["Tables"]["schedule_slots"]["Row"];
-export type DatabaseSpeaker = Database["public"]["Tables"]["speakers"]["Row"];
-export type DatabaseEvaluationCriteria =
-  Database["public"]["Tables"]["evaluation_criteria"]["Row"];
-export type DatabaseProject = Database["public"]["Tables"]["projects"]["Row"];
-export type DatabaseHackathonRegistration =
-  Database["public"]["Tables"]["hackathon_registrations"]["Row"];
+// Import blockchain types
+import type {
+  BlockchainHackathon,
+  BlockchainProject,
+  HackathonMetadata,
+  ProjectMetadata,
+  HackathonPhaseStatus,
+  ProjectStatus,
+} from "@/types/blockchain";
 
-// Extended database hackathon with relations
-export interface HackathonWithRelations extends DatabaseHackathon {
+// Re-export blockchain types for convenience
+export type {
+  BlockchainHackathon,
+  BlockchainProject,
+  HackathonMetadata,
+  ProjectMetadata,
+  HackathonPhaseStatus,
+  ProjectStatus,
+} from "@/types/blockchain";
+
+// Blockchain-compatible types (no more database types)
+export interface HackathonWithRelations {
+  id: string;
+  name: string;
+  visual: string | null;
+  short_description: string;
+  full_description: string;
+  location: string;
+  tech_stack: string[];
+  experience_level: string;
+  registration_start_date: string | null;
+  registration_end_date: string;
+  hackathon_start_date: string | null;
+  hackathon_end_date: string;
+  voting_start_date: string | null;
+  voting_end_date: string;
+  social_links: Record<string, string | undefined>;
+  created_by: string; // wallet address
+  created_at: string;
+  updated_at: string;
   participant_count?: number | null;
-  prize_cohorts: (DatabasePrizeCohort & {
-    evaluation_criteria: DatabaseEvaluationCriteria[];
-  })[];
-  judges: DatabaseJudge[];
-  schedule_slots: (DatabaseScheduleSlot & {
-    speaker: DatabaseSpeaker | null;
-  })[];
+  prize_cohorts: {
+    id: string;
+    name: string;
+    number_of_winners: number;
+    prize_amount: string;
+    description: string;
+    judging_mode: string;
+    voting_mode: string;
+    max_votes_per_judge: number;
+    evaluation_criteria: {
+      name: string;
+      points: number;
+      description: string;
+    }[];
+  }[];
+  judges: {
+    address: string;
+    status: string;
+  }[];
+  schedule_slots: {
+    name: string;
+    description: string;
+    start_date_time: string;
+    end_date_time: string;
+    has_speaker: boolean;
+    speaker?: {
+      name: string;
+      position?: string;
+      x_name?: string;
+      x_handle?: string;
+      picture?: string;
+    };
+  }[];
+  // Blockchain specific fields
+  currentPhase?: number;
+  isActive?: boolean;
 }
 
 // UI types (for backwards compatibility with existing mock data structure)
@@ -73,7 +124,7 @@ export interface UIHackathon {
     }[];
   }[];
   judges: {
-    email: string;
+    address: string;
     status: "waiting" | "invited" | "pending" | "accepted" | "declined";
   }[];
   schedule: {
@@ -100,7 +151,7 @@ export interface DashboardStats {
   totalPrizeValue: string;
 }
 
-// Hackathon status type
+// Legacy types - use blockchain types for new development
 export type HackathonStatus =
   | "Registration Open"
   | "Registration Closed"
@@ -108,16 +159,9 @@ export type HackathonStatus =
   | "Voting"
   | "Ended";
 
-// Experience level type
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced" | "all";
-
-// Judging mode type
 export type JudgingMode = "manual" | "automated" | "hybrid";
-
-// Voting mode type
 export type VotingMode = "public" | "private" | "judges_only";
-
-// Judge status type
 export type JudgeStatus =
   | "waiting"
   | "invited"
@@ -128,15 +172,14 @@ export type JudgeStatus =
 // Re-export schema types for convenience
 export type { HackathonFormData, PrizeCohort, Judge, ScheduleSlot };
 export type { ProjectFormData } from "@/lib/schemas/project-schema";
-export type { JudgeEvaluationFormData } from "@/lib/schemas/judge-evaluation-schema";
 
 // Common component prop types
 export interface ProjectComponentProps {
   name: string;
   description: string | null;
-  demo_url?: string;
-  repository_url?: string;
-  team_members?: any[];
+  demo_url?: string | null;
+  repository_url?: string | null;
+  team_members?: any[] | null;
   tech_stack: string[];
   status: string;
   sector?: string[];
@@ -147,29 +190,44 @@ export interface HackathonComponentProps {
   participantCount?: number;
 }
 
-// API response types
-export interface HackathonsResponse {
-  data: HackathonWithRelations[];
-}
-
-export interface HackathonResponse {
-  data: HackathonWithRelations;
-}
-
+// Legacy API response types (kept for backward compatibility)
 export interface CreateHackathonResponse {
   success: boolean;
   data?: HackathonWithRelations;
   error?: string;
 }
 
-export interface ApiError {
-  error: string;
-  details?: Record<string, string[]>;
-}
-
-// Project types
-export interface ProjectWithHackathon extends DatabaseProject {
-  hackathon: DatabaseHackathon | null;
+// Project types - blockchain compatible
+export interface ProjectWithHackathon {
+  id: string;
+  name: string;
+  description: string | null;
+  hackathon_id: string;
+  tech_stack: string[];
+  status: "draft" | "submitted" | "in_review" | "completed";
+  repository_url: string | null;
+  demo_url: string | null;
+  team_members: any[] | null;
+  created_by: string; // wallet address
+  created_at: string;
+  updated_at: string;
+  totalScore?: number;
+  judgeCount?: number;
+  averageScore?: number;
+  hackathon?: {
+    id: string;
+    name: string;
+    short_description: string;
+    location: string;
+    experience_level: string;
+    hackathon_start_date: string | null;
+    hackathon_end_date: string;
+    tech_stack: string[];
+    registration_start_date?: string | null;
+    registration_end_date?: string | null;
+    voting_start_date?: string | null;
+    voting_end_date?: string | null;
+  } | null;
 }
 
 export interface UIProject {
@@ -181,26 +239,50 @@ export interface UIProject {
   tech_stack: string[];
   status: "draft" | "submitted" | "in_review" | "completed";
   updated_at: string;
-  repository_url?: string;
-  demo_url?: string;
-  team_members?: any[];
+  repository_url?: string | null;
+  demo_url?: string | null;
+  team_members?: any[] | null;
+  created_by: string; // wallet address
+  created_at: string;
+  totalScore?: number;
+  judgeCount?: number;
+  averageScore?: number;
+  hackathon?: {
+    id: string;
+    name: string;
+    short_description: string;
+    location: string;
+    experience_level: string;
+    hackathon_start_date: string | null;
+    hackathon_end_date: string;
+    tech_stack: string[];
+    registration_start_date?: string | null;
+    registration_end_date?: string | null;
+    voting_start_date?: string | null;
+    voting_end_date?: string | null;
+  } | null;
 }
 
-// Registration types
-export interface HackathonRegistrationWithHackathon
-  extends DatabaseHackathonRegistration {
-  hackathon: DatabaseHackathon;
-}
-
-// API response types for projects
-export interface ProjectsResponse {
-  data: ProjectWithHackathon[];
-}
-
-export interface ProjectResponse {
-  data: ProjectWithHackathon;
-}
-
-export interface RegisteredHackathonsResponse {
-  data: HackathonRegistrationWithHackathon[];
+// Registration types - simplified for blockchain
+export interface HackathonRegistrationWithHackathon {
+  id: string;
+  user_id: string; // wallet address
+  hackathon_id: string;
+  status: string;
+  registered_at: string;
+  hackathon: {
+    id: string;
+    name: string;
+    visual?: string | null;
+    short_description: string;
+    location: string;
+    experience_level: string;
+    hackathon_start_date: string | null;
+    hackathon_end_date: string;
+    tech_stack: string[];
+    registration_start_date?: string | null;
+    registration_end_date?: string | null;
+    voting_start_date?: string | null;
+    voting_end_date?: string | null;
+  };
 }

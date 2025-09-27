@@ -21,13 +21,13 @@ import { Separator } from "@/components/ui/separator";
 import { FileUploadField } from "@/components/ui/file-upload";
 import { useFormContext } from "react-hook-form";
 import { type HackathonFormData } from "@/lib/schemas/hackathon-schema";
-import { LexicalEditor } from "@/components/ui/rich-text-editor";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { SocialLinksInput } from "./social-links-input";
 import MultipleSelector from "@/components/ui/multiselect";
 import { TECH_STACK } from "@/constants/tech-stack";
 
 export function OverviewStep() {
-  const { control, setValue } = useFormContext<HackathonFormData>();
+  const { control } = useFormContext<HackathonFormData>();
 
   return (
     <div className="space-y-6">
@@ -307,8 +307,8 @@ export function OverviewStep() {
           <FormItem>
             <FormLabel required>Detailed Description</FormLabel>
             <FormControl>
-              <LexicalEditor
-                initialContent={field.value || ""}
+              <RichTextEditor
+                initialValue={field.value || ""}
                 onChange={(content) => field.onChange(content)}
                 placeholder="Provide a comprehensive description of your hackathon, including goals, themes, prizes, and what participants can expect..."
                 className="min-h-[200px]"

@@ -12,10 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { UIHackathon } from "@/types/hackathon";
+import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
 import {
-  getHackathonStatus,
-  getStatusVariant,
-} from "@/lib/helpers/hackathon-transforms";
+  safeToDate,
+  getDaysLeft,
+  getUIHackathonStatus,
+} from "@/lib/helpers/date";
+import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import React, { useEffect, useState, useRef } from "react";
 
@@ -26,7 +29,10 @@ interface FeaturedCarouselProps {
 export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
   // Filter for live hackathons (Registration Open, Registration Closed, Live, Voting)
   const liveHackathons = hackathons.filter((hackathon) => {
-    const status = getHackathonStatus(hackathon);
+    const status = getUIHackathonStatus({
+      ...hackathon,
+      votingPeriod: hackathon.votingPeriod || undefined,
+    });
     return (
       status === "Registration Open" ||
       status === "Registration Closed" ||
@@ -145,19 +151,15 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
         <CarouselContent>
           {liveHackathons.map((hackathon) => {
             const totalPrize = calculateTotalPrize(hackathon);
-            const status = getHackathonStatus(hackathon);
+            const status = getUIHackathonStatus({
+              ...hackathon,
+              votingPeriod: hackathon.votingPeriod || undefined,
+            });
             const statusVariant = getStatusVariant(status);
             const deadline = hackathon.registrationPeriod?.registrationEndDate;
 
             // Calculate days left until deadline
-            const daysLeft = deadline
-              ? Math.max(
-                  0,
-                  Math.ceil(
-                    (deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-                  ),
-                )
-              : 0;
+            const daysLeft = deadline ? getDaysLeft(deadline) : 0;
 
             return (
               <CarouselItem key={hackathon.id}>
@@ -165,7 +167,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
                   <div
                     className="relative rounded-xl overflow-hidden text-white h-[250px] sm:h-[300px] flex items-end hover:scale-[1.02] transition-transform duration-300"
                     style={{
-                      background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${hackathon.visual || "/placeholder.svg"})`,
+                      background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${resolveIPFSToHttp(hackathon.visual)})`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}

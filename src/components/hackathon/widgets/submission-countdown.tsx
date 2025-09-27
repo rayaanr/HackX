@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { UIHackathon } from "@/types/hackathon";
+import { safeToDate } from "@/lib/helpers/date";
 
 interface SubmissionCountdownProps {
   hackathon: UIHackathon;
@@ -27,16 +28,20 @@ export function SubmissionCountdown({ hackathon }: SubmissionCountdownProps) {
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
-      let targetDate: Date;
+      let targetDate: Date | null = null;
 
       // Determine which date to countdown to based on hackathon status
-      if (
-        hackathon.registrationPeriod?.registrationEndDate &&
-        new Date() < hackathon.registrationPeriod.registrationEndDate
-      ) {
-        targetDate = hackathon.registrationPeriod.registrationEndDate;
-      } else if (hackathon.hackathonPeriod?.hackathonEndDate) {
-        targetDate = hackathon.hackathonPeriod.hackathonEndDate;
+      const regEndDate = safeToDate(
+        hackathon.registrationPeriod?.registrationEndDate,
+      );
+      const hackEndDate = safeToDate(
+        hackathon.hackathonPeriod?.hackathonEndDate,
+      );
+
+      if (regEndDate && new Date() < regEndDate) {
+        targetDate = regEndDate;
+      } else if (hackEndDate) {
+        targetDate = hackEndDate;
       } else {
         return { days: 0, hours: 0, minutes: 0, seconds: 0 };
       }
@@ -65,10 +70,10 @@ export function SubmissionCountdown({ hackathon }: SubmissionCountdownProps) {
   }, [hackathon]);
 
   const getCountdownTitle = () => {
-    if (
-      hackathon.registrationPeriod?.registrationEndDate &&
-      new Date() < hackathon.registrationPeriod.registrationEndDate
-    ) {
+    const regEndDate = safeToDate(
+      hackathon.registrationPeriod?.registrationEndDate,
+    );
+    if (regEndDate && new Date() < regEndDate) {
       return "Registration ends in";
     }
     return "Submission ends in";

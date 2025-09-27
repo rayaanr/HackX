@@ -17,20 +17,18 @@ import {
   ProjectHackathonCardProps,
 } from "@/components/projects/display/hackathon-card";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useMemo } from "react";
-import { useAllHackathons } from "@/hooks/queries/use-hackathons";
-import {
-  getHackathonStatus,
-  calculateTotalPrizeAmount,
-  formatDateForDisplay,
-} from "@/lib/helpers/hackathon-transforms";
-import type { HackathonWithRelations } from "@/types/hackathon";
+import { useState, useMemo } from "react";
+import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
+import { getUIHackathonStatus, formatDisplayDate } from "@/lib/helpers/date";
 
-// Transform hackathon data to match ProjectHackathonCardProps interface
 function transformHackathonToCardProps(
-  hackathon: HackathonWithRelations,
+  hackathon: any, // Blockchain hackathon with combined contract + IPFS data
 ): ProjectHackathonCardProps {
-  const status = getHackathonStatus(hackathon);
+  // Use the shared UI hackathon status helper
+  const status = getUIHackathonStatus(hackathon);
 
   // Map status to card status with improved logic
   let cardStatus: "live" | "upcoming" | "completed";
@@ -47,40 +45,46 @@ function transformHackathonToCardProps(
   }
 
   return {
-    id: hackathon.id,
-    name: hackathon.name,
-    date: formatDateForDisplay(hackathon.hackathon_start_date),
-    theme: hackathon.short_description,
-    prize: calculateTotalPrizeAmount(hackathon),
-    participants: hackathon.participant_count || 0,
+    id: hackathon.id?.toString(),
+    name: hackathon.name || "Untitled Hackathon",
+    date: formatDisplayDate(hackathon.hackathonPeriod?.hackathonStartDate),
+    theme: hackathon.shortDescription || "",
+    prize: calculateTotalPrizeAmount(hackathon.prizeCohorts || []),
+    participants: hackathon.participantCount || 0,
     status: cardStatus,
   };
 }
 
 export function HackathonSelectionStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormData>();
-  const { data: hackathonData, isLoading, error } = useAllHackathons();
+  // Updated to use registered hackathons only
+  const {
+    hackathons: hackathonData,
+    isLoading,
+    error,
+    isConnected,
+  } = useRegisteredHackathons();
 
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");
   const selectedHackathonIds = watch("hackathonIds") || [];
 
-  // Transform hackathon data to card props format
-  const hackathons = useMemo(() => {
-    if (!hackathonData) return [];
-    return hackathonData.map(transformHackathonToCardProps);
-  }, [hackathonData]);
+  // Transform and filter hackathon data to card props format
+  const { hackathons, filteredHackathons } = useMemo(() => {
+    if (!hackathonData) return { hackathons: [], filteredHackathons: [] };
 
-  const [filteredHackathons, setFilteredHackathons] = useState<
-    ProjectHackathonCardProps[]
-  >([]);
+    const transformedHackathons = hackathonData.map(
+      transformHackathonToCardProps,
+    );
+    const filtered =
+      filter === "all"
+        ? transformedHackathons
+        : transformedHackathons.filter((h) => h.status === filter);
 
-  useEffect(() => {
-    if (filter === "all") {
-      setFilteredHackathons(hackathons);
-    } else {
-      setFilteredHackathons(hackathons.filter((h) => h.status === filter));
-    }
-  }, [filter, hackathons]);
+    return {
+      hackathons: transformedHackathons,
+      filteredHackathons: filtered,
+    };
+  }, [hackathonData, filter]);
 
   const toggleHackathonSelection = (id: string) => {
     const newSelectedIds = selectedHackathonIds.includes(id)
@@ -105,73 +109,97 @@ export function HackathonSelectionStep() {
                 <FormLabel>Hackathon Selection *</FormLabel>
                 <FormControl>
                   <div className="space-y-4">
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant={filter === "all" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilter("all")}
-                      >
-                        All Hackathons
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={filter === "live" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilter("live")}
-                      >
-                        Live
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={filter === "upcoming" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilter("upcoming")}
-                      >
-                        Upcoming
-                      </Button>
-                    </div>
+                    {/* Removed filter buttons since we only show registered hackathons */}
 
                     {isLoading ? (
                       <div className="text-center py-8 text-muted-foreground">
-                        Loading hackathons...
+                        Loading registered hackathons...
                       </div>
                     ) : error ? (
                       <div className="text-center py-8 text-destructive">
                         Failed to load hackathons. Please try again.
                       </div>
+                    ) : !isConnected ? (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground mb-4">
+                          Connect your wallet to see registered hackathons
+                        </p>
+                      </div>
+                    ) : hackathonData.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="max-w-sm mx-auto">
+                          <div className="mb-4">
+                            <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4 flex items-center justify-center">
+                              <ExternalLink className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">
+                              No Registered Hackathons
+                            </h3>
+                            <p className="text-muted-foreground mb-6">
+                              You haven't registered for any hackathons yet.
+                              Register for a hackathon to submit your project.
+                            </p>
+                          </div>
+                          <Link href="/hackathons">
+                            <Button className="w-full">
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              Explore Hackathons
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
                     ) : (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {filteredHackathons.map((hackathon) => (
-                            <div key={hackathon.id} className="relative">
-                              <ProjectHackathonCard {...hackathon} />
-                              <div className="absolute top-2 right-2">
-                                <Checkbox
-                                  checked={selectedHackathonIds.includes(
-                                    hackathon.id,
-                                  )}
-                                  onCheckedChange={(checked) => {
-                                    const isChecked = checked === true;
-                                    const next = isChecked
-                                      ? Array.from(
-                                          new Set([
-                                            ...selectedHackathonIds,
-                                            hackathon.id,
-                                          ]),
-                                        )
-                                      : selectedHackathonIds.filter(
-                                          (x: string) => x !== hackathon.id,
-                                        );
-                                    setValue("hackathonIds", next, {
-                                      shouldValidate: true,
-                                      shouldDirty: true,
-                                    });
-                                  }}
-                                />
+                          {filteredHackathons.map((hackathon: any) => {
+                            // Check if hackathon is accepting submissions
+                            const isAcceptingSubmissions =
+                              hackathon.status === "live";
+                            return (
+                              <div key={hackathon.id} className="relative">
+                                <div
+                                  className={`${
+                                    !isAcceptingSubmissions ? "opacity-60" : ""
+                                  }`}
+                                >
+                                  <ProjectHackathonCard {...hackathon} />
+                                </div>
+                                {!isAcceptingSubmissions && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                                    <div className="bg-white dark:bg-gray-900 px-3 py-1 rounded-md text-sm font-medium">
+                                      Not accepting submissions
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="absolute top-2 right-2">
+                                  <Checkbox
+                                    checked={selectedHackathonIds.includes(
+                                      hackathon.id,
+                                    )}
+                                    disabled={!isAcceptingSubmissions}
+                                    onCheckedChange={(checked) => {
+                                      if (!isAcceptingSubmissions) return; // Prevent selection of non-submission phase hackathons
+                                      const isChecked = checked === true;
+                                      const next = isChecked
+                                        ? Array.from(
+                                            new Set([
+                                              ...selectedHackathonIds,
+                                              hackathon.id,
+                                            ]),
+                                          )
+                                        : selectedHackathonIds.filter(
+                                            (x: string) => x !== hackathon.id,
+                                          );
+                                      setValue("hackathonIds", next, {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                      });
+                                    }}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
 
                         {filteredHackathons.length === 0 && !isLoading && (
@@ -184,7 +212,8 @@ export function HackathonSelectionStep() {
                   </div>
                 </FormControl>
                 <FormDescription>
-                  Select the hackathons you want to submit your project to
+                  Select the hackathons you want to submit your project to. Only
+                  hackathons in the "Live" submission phase can be selected.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

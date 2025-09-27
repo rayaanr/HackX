@@ -7,29 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useFormContext, useFieldArray } from "react-hook-form";
-import { z } from "zod";
 import {
   hackathonSchema,
   type HackathonFormData,
 } from "@/lib/schemas/hackathon-schema";
-import { Trash2, Mail, Send, Copy, Check } from "lucide-react";
+import { Trash2, Wallet, Send, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-import { useCopyToClipboard } from "@uidotdev/usehooks";
-import {
-  validateJudgeEmail,
-  generateJudgeInviteLink,
-  composeJudgeInvitation,
-  isJudgeAlreadyInvited,
-  getJudgeStats,
-} from "@/lib/helpers/judgeHelpers";
 
 export function JudgesStep() {
-  const { control, watch } = useFormContext<HackathonFormData>();
-  const [newJudgeEmail, setNewJudgeEmail] = useState("");
-  const [copiedText, copyToClipboard] = useCopyToClipboard();
-
-  // Watch the hackathon name from the form
-  const hackathonName = watch("name") || "Your Hackathon";
+  const { control } = useFormContext<HackathonFormData>();
+  const [newJudgeAddress, setNewJudgeAddress] = useState("");
 
   const {
     fields: judges,
@@ -40,37 +27,27 @@ export function JudgesStep() {
     name: "judges",
   });
 
-  const inviteJudgeByEmail = () => {
-    const validation = validateJudgeEmail(newJudgeEmail);
-    if (!validation.isValid) {
-      toast.error(validation.error || "Please enter a valid email address");
+  const addJudgeByAddress = () => {
+    // Validate EVM address format
+    const evmAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+    if (!evmAddressRegex.test(newJudgeAddress)) {
+      toast.error("Please enter a valid EVM address");
       return;
     }
 
-    // Check if judge is already invited
-    if (isJudgeAlreadyInvited(newJudgeEmail, judges)) {
-      toast.error("This judge has already been invited");
+    // Check if judge is already added
+    if (judges.find((judge) => judge.address === newJudgeAddress)) {
+      toast.error("This judge has already been added");
       return;
     }
-
-    const judgeInvitation = composeJudgeInvitation(
-      newJudgeEmail,
-      hackathonName,
-    );
 
     appendJudge({
-      email: judgeInvitation.email,
+      address: newJudgeAddress,
       status: "pending",
     });
 
-    setNewJudgeEmail("");
-    toast.success(`Invitation sent to ${judgeInvitation.email}`);
-  };
-
-  const copyInviteLink = () => {
-    const inviteLink = generateJudgeInviteLink();
-    copyToClipboard(inviteLink);
-    toast.success("Invite link copied to clipboard");
+    setNewJudgeAddress("");
+    toast.success(`Judge added: ${newJudgeAddress}`);
   };
 
   return (
@@ -81,18 +58,18 @@ export function JudgesStep() {
           <div className="lg:pr-6">
             {judges.length === 0 ? (
               <div className="text-center py-12 h-full flex flex-col justify-center">
-                <Mail className="mx-auto h-12 w-12 text-muted-foreground" />
+                <Wallet className="mx-auto h-12 w-12 text-muted-foreground" />
                 <p className="mt-2 text-sm text-muted-foreground">
-                  No judges invited yet
+                  No judges added yet
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Use the invitation panel to add judges
+                  Use the panel to add judges by EVM address
                 </p>
               </div>
             ) : (
               <div>
                 <h3 className="font-medium text-sm text-muted-foreground mb-4">
-                  Invited Judges ({judges.length})
+                  Added Judges ({judges.length})
                 </h3>
                 <div className="space-y-3">
                   {judges.map((judge, index) => {
@@ -101,15 +78,15 @@ export function JudgesStep() {
                         key={judge.id}
                         className="flex items-center gap-3 p-3 py-2 border rounded-lg"
                       >
-                        <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <Wallet className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <div className="flex-1">
                           <FormField
                             control={control}
-                            name={`judges.${index}.email`}
+                            name={`judges.${index}.address`}
                             render={({ field }) => (
                               <Input
-                                type="email"
-                                placeholder="judge@example.com"
+                                type="text"
+                                placeholder="0x..."
                                 {...field}
                                 className="border-none shadow-none py-0.5 px-0 bg-transparent! h-auto font-medium focus-visible:ring-0 rounded-none w-fit"
                                 readOnly
@@ -117,7 +94,7 @@ export function JudgesStep() {
                             )}
                           />
                           <p className="text-xs text-muted-foreground capitalize">
-                            Status: Pending (Sent on creation)
+                            Status: Added
                           </p>
                         </div>
                         <Button
@@ -142,64 +119,41 @@ export function JudgesStep() {
             <Separator orientation="vertical" className="h-full" />
           </div>
 
-          {/* Right: Invite Judges Panel */}
+          {/* Right: Add Judges Panel */}
           <div className="lg:pl-6">
             <h3 className="font-medium text-sm text-muted-foreground mb-4">
-              Invite Judges
+              Add Judges
             </h3>
             <div className="space-y-4">
-              {/* Email Invitation */}
+              {/* EVM Address Input */}
               <div className="space-y-2">
-                <FormLabel>Invite via Email</FormLabel>
+                <FormLabel>Add by EVM Address</FormLabel>
                 <div className="space-y-2">
                   <Input
-                    type="email"
-                    placeholder="judge@example.com"
-                    value={newJudgeEmail}
-                    onChange={(e) => setNewJudgeEmail(e.target.value)}
+                    type="text"
+                    placeholder="0x..."
+                    value={newJudgeAddress}
+                    onChange={(e) => setNewJudgeAddress(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        inviteJudgeByEmail();
+                        addJudgeByAddress();
                       }
                     }}
                   />
                   <Button
                     type="button"
-                    onClick={inviteJudgeByEmail}
-                    disabled={!newJudgeEmail}
+                    onClick={addJudgeByAddress}
+                    disabled={!newJudgeAddress}
                     className="w-full"
                   >
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Invitation
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Add Judge
                   </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Enter the wallet address of the judge
+                  </p>
                 </div>
-              </div>
-
-              {/* Copy Link */}
-              <div className="space-y-2 pt-4 border-t">
-                <FormLabel>Share Invite Link</FormLabel>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={copyInviteLink}
-                  className="w-full"
-                >
-                  {copiedText ? (
-                    <>
-                      <Check className="h-4 w-4 mr-2" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy Invite Link
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  Anyone with this link can apply to be a judge
-                </p>
               </div>
             </div>
           </div>

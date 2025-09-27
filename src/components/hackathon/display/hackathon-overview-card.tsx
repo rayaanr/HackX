@@ -4,11 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AvatarList } from "@/components/ui/avatar-list";
 import type { UIHackathon } from "@/types/hackathon";
+import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
 import {
-  getHackathonStatus,
-  getStatusVariant,
-} from "@/lib/helpers/hackathon-transforms";
-import { format } from "date-fns";
+  safeToDate,
+  getDaysLeft,
+  getUIHackathonStatus,
+} from "@/lib/helpers/date";
+import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import { Calendar, Code, Trophy, Award } from "lucide-react";
 
 interface HackathonCardProps {
@@ -16,17 +18,32 @@ interface HackathonCardProps {
 }
 
 export function HackathonCard({ hackathon }: HackathonCardProps) {
-  const status = getHackathonStatus(hackathon);
+  // Get hackathon status using shared helper
+  const status = getUIHackathonStatus({
+    ...hackathon,
+    votingPeriod: hackathon.votingPeriod || undefined,
+  });
   const statusVariant = getStatusVariant(status);
-  const deadline = hackathon.registrationPeriod?.registrationEndDate;
+
+  // Get the relevant deadline based on current status
+  const deadline = (() => {
+    switch (status) {
+      case "Registration Open":
+        return safeToDate(hackathon.registrationPeriod?.registrationEndDate);
+      case "Registration Closed":
+        return safeToDate(hackathon.hackathonPeriod?.hackathonStartDate);
+      case "Live":
+        return safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+      case "Voting":
+        return safeToDate(hackathon.votingPeriod?.votingEndDate);
+      case "Ended":
+      default:
+        return null; // No active deadline for ended hackathons
+    }
+  })();
 
   // Calculate days left until deadline
-  const daysLeft = deadline
-    ? Math.max(
-        0,
-        Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
-      )
-    : 0;
+  const daysLeft = deadline ? getDaysLeft(deadline) : 0;
 
   // Create sample avatar images for participants
   const participantAvatars = [
@@ -55,16 +72,22 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                 <div>
                   <h6 className="flex items-center">
                     <Calendar className="size-4 mr-1" />
-                    Days Left
+                    {status === "Ended" ? "Status" : "Days Left"}
                   </h6>
-                  <p>{deadline ? `${daysLeft} days` : "TBD"}</p>
+                  <p>
+                    {status === "Ended"
+                      ? "Completed"
+                      : deadline
+                        ? `${daysLeft} days`
+                        : "TBD"}
+                  </p>
                 </div>
                 <div>
                   <h6 className="flex items-center">
                     <Code className="size-4 mr-1" />
                     Tech Stack
                   </h6>
-                  <p>{hackathon.techStack.slice(0, 2).join(", ")}...</p>
+                  <p>{hackathon.techStack?.slice(0, 2).join(", ")}...</p>
                 </div>
                 <div>
                   <h6 className="flex items-center">
@@ -93,8 +116,8 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Trophy className="h-4 w-4 mr-1" />
                   <span>
-                    {hackathon.prizeCohorts.length} Prize
-                    {hackathon.prizeCohorts.length !== 1 ? "s" : ""}
+                    {hackathon.prizeCohorts?.length} Prize
+                    {hackathon.prizeCohorts?.length !== 1 ? "s" : ""}
                   </span>
                 </div>
               </div>
@@ -104,7 +127,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
             <Image
               height={200}
               width={300}
-              src={hackathon.visual || "/placeholder.svg"}
+              src={resolveIPFSToHttp(hackathon.visual)}
               alt={hackathon.name}
               className="h-full w-full object-cover rounded-lg"
               unoptimized

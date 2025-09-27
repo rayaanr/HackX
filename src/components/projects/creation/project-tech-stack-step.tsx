@@ -5,7 +5,6 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -30,16 +29,13 @@ export function TechStackStep() {
             name="githubLink"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>GitHub Link</FormLabel>
+                <FormLabel required>GitHub Link</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="https://github.com/username/project"
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>
-                  Link to your project's GitHub repository
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -50,13 +46,10 @@ export function TechStackStep() {
             name="demoVideo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Demo Video</FormLabel>
+                <FormLabel required>Demo Video</FormLabel>
                 <FormControl>
                   <Input placeholder="https://example.com/demo" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Link to your project's demo video (optional)
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -67,7 +60,7 @@ export function TechStackStep() {
             name="techStack"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tech Stack *</FormLabel>
+                <FormLabel required>Tech Stack</FormLabel>
                 <FormControl>
                   <MultipleSelector
                     value={
@@ -91,9 +84,6 @@ export function TechStackStep() {
                     }
                   />
                 </FormControl>
-                <FormDescription>
-                  Technologies used in your project
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
