@@ -1,21 +1,97 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
-import { FeaturedCarousel } from "@/components/hackathon/widgets/featured-carousel";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
 import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
-import { safeToDate, getUIHackathonStatus } from "@/lib/helpers/date";
-import { toast } from "sonner";
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { getUIHackathonStatus } from "@/lib/helpers/date";
+import type { UIHackathon, PrizeCohort } from "@/types/hackathon";
+
+// Filter types
+type FilterKey = "prizeRange" | "techStack" | "status";
+
+type FilterConfig = {
+  key: FilterKey;
+  label: string;
+  options: { value: string; label: string }[];
+};
+
+// Filter configuration
+const filterConfig: FilterConfig[] = [
+  {
+    key: "prizeRange",
+    label: "Total Prize",
+    options: [
+      { value: "", label: "All Prizes" },
+      { value: "$10,000+", label: "$10,000+" },
+      { value: "$50,000+", label: "$50,000+" },
+      { value: "$100,000+", label: "$100,000+" },
+    ],
+  },
+  {
+    key: "techStack",
+    label: "Tech Stack",
+    options: [
+      { value: "", label: "All Tech" },
+      { value: "AI", label: "AI" },
+      { value: "Web3", label: "Web3" },
+      { value: "React", label: "React" },
+      { value: "TypeScript", label: "TypeScript" },
+      { value: "Mobile", label: "Mobile" },
+    ],
+  },
+  {
+    key: "status",
+    label: "Status",
+    options: [
+      { value: "", label: "All Status" },
+      { value: "Registration Open", label: "Registration Open" },
+      { value: "Live", label: "Live" },
+      { value: "Voting", label: "Voting" },
+      { value: "Ended", label: "Ended" },
+    ],
+  },
+];
+
+// Reusable filter dropdown component
+interface FilterDropdownProps {
+  filterKey: FilterKey;
+  label: string;
+  options: { value: string; label: string }[];
+  currentValue: string;
+  onValueChange: (key: FilterKey, value: string) => void;
+}
+
+function FilterDropdown({ filterKey, label, options, currentValue, onValueChange }: FilterDropdownProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">
+          {currentValue || label} <ChevronDown className="ml-2" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {options.map((option) => (
+          <DropdownMenuItem
+            key={option.value}
+            onClick={() => onValueChange(filterKey, option.value)}
+          >
+            {option.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export default function ExplorePage() {
   const {
@@ -31,6 +107,11 @@ export default function ExplorePage() {
     status: "",
   });
 
+  // Handle filter changes
+  const handleFilterChange = (key: FilterKey, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
   // Get data with fallbacks - hackathonData is now the direct array
   const allHackathons = hackathonData || [];
   const initialLiveHackathons = hackathonData || [];
@@ -40,16 +121,16 @@ export default function ExplorePage() {
 
   // Apply additional filters on top of the pre-filtered data
   const { liveHackathons, pastHackathons } = useMemo(() => {
-    const applyFilters = (hackathons: any[]) => {
+    const applyFilters = (hackathons: UIHackathon[]) => {
       return hackathons.filter((hackathon) => {
         // Prize range filter
         if (filters.prizeRange) {
           const totalPrizePool =
-            hackathon.prizeCohorts?.reduce((sum: number, cohort: any) => {
+            hackathon.prizeCohorts?.reduce((sum: number, cohort: PrizeCohort) => {
               const amount =
                 typeof cohort.prizeAmount === "string"
-                  ? parseInt(cohort.prizeAmount)
-                  : cohort.prizeAmount;
+                  ? parseInt(cohort.prizeAmount.replace(/[^0-9]/g, ""))
+                  : Number(cohort.prizeAmount);
               return sum + (amount || 0);
             }, 0) || 0;
 
@@ -71,7 +152,10 @@ export default function ExplorePage() {
 
         // Status filter
         if (filters.status) {
-          const currentStatus = getUIHackathonStatus(hackathon);
+          const currentStatus = getUIHackathonStatus({
+            ...hackathon,
+            votingPeriod: hackathon.votingPeriod || undefined,
+          });
           if (filters.status !== currentStatus) return false;
         }
 
@@ -80,9 +164,12 @@ export default function ExplorePage() {
     };
 
     // Filter past hackathons to only show those with judging started or ended
-    const filterPastHackathons = (hackathons: any[]) => {
+    const filterPastHackathons = (hackathons: UIHackathon[]) => {
       return hackathons.filter((hackathon) => {
-        const currentStatus = getUIHackathonStatus(hackathon);
+        const currentStatus = getUIHackathonStatus({
+          ...hackathon,
+          votingPeriod: hackathon.votingPeriod || undefined,
+        });
         // Only show hackathons where judging has started (Voting) or ended
         return currentStatus === "Voting" || currentStatus === "Ended";
       });
@@ -104,9 +191,6 @@ export default function ExplorePage() {
 
   return (
     <div>
-      {/* Featured Hackathon Carousel */}
-      <FeaturedCarousel hackathons={liveHackathons} />
-
       {/* Explore Section */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -124,138 +208,16 @@ export default function ExplorePage() {
 
       {/* Filter Bar */}
       <div className="flex flex-wrap gap-4 mb-8">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              {filters.prizeRange || "Total Prize"}{" "}
-              <ChevronDown className="ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, prizeRange: "" }))
-              }
-            >
-              All Prizes
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, prizeRange: "$10,000+" }))
-              }
-            >
-              $10,000+
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, prizeRange: "$50,000+" }))
-              }
-            >
-              $50,000+
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, prizeRange: "$100,000+" }))
-              }
-            >
-              $100,000+
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              {filters.techStack || "Tech Stack"}{" "}
-              <ChevronDown className="ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem
-              onClick={() => setFilters((prev) => ({ ...prev, techStack: "" }))}
-            >
-              All Tech
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, techStack: "AI" }))
-              }
-            >
-              AI
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, techStack: "Web3" }))
-              }
-            >
-              Web3
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, techStack: "React" }))
-              }
-            >
-              React
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, techStack: "TypeScript" }))
-              }
-            >
-              TypeScript
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, techStack: "Mobile" }))
-              }
-            >
-              Mobile
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              {filters.status || "Status"} <ChevronDown className="ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem
-              onClick={() => setFilters((prev) => ({ ...prev, status: "" }))}
-            >
-              All Status
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, status: "Registration Open" }))
-              }
-            >
-              Registration Open
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, status: "Live" }))
-              }
-            >
-              Live
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, status: "Voting" }))
-              }
-            >
-              Voting
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, status: "Ended" }))
-              }
-            >
-              Ended
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {filterConfig.map((config) => (
+          <FilterDropdown
+            key={config.key}
+            filterKey={config.key}
+            label={config.label}
+            options={config.options}
+            currentValue={filters[config.key]}
+            onValueChange={handleFilterChange}
+          />
+        ))}
       </div>
 
       {/* Hackathon Grid */}
