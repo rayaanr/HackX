@@ -34,7 +34,7 @@ interface ProjectCardProps {
 function TechBadges({ stack }: { stack: string[] }) {
   if (!stack?.length) return null;
   return (
-    <div className="mt-4 flex flex-wrap gap-1.5 md:justify-start justify-center">
+    <div className="mt-5 flex flex-wrap gap-2 justify-center">
       {stack.slice(0, 4).map((tech) => (
         <Badge
           key={tech}
@@ -101,7 +101,7 @@ export function ProjectCard({
                 )}
               </div>
             </div>
-            <p className="text-xs md:text-sm text-white/65 line-clamp-3">
+            <p className="text-sm text-white/65 line-clamp-3">
               {project.intro}
             </p>
             <TechBadges stack={project.tech_stack} />
@@ -143,7 +143,7 @@ export function ProjectCard({
           </div>
         </CardHeader>
         <CardContent className="flex-1 relative z-10 text-center items-center">
-          <p className="text-xs text-white/65 mb-3 line-clamp-3">
+          <p className="text-sm text-white/65 mb-3 line-clamp-3">
             {project.intro}
           </p>
           <TechBadges stack={project.tech_stack} />

@@ -1,7 +1,12 @@
 "use client";
 
 import { Plus, FolderIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBlockchainProjects } from "@/hooks/use-projects";
 import {
@@ -90,7 +95,7 @@ export function ActiveProjects() {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
         {allProjects.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
@@ -109,27 +114,33 @@ export function ActiveProjects() {
           </div>
         ) : (
           <>
-            {/* Create New Project Card - feature style */}
-            <Link href="/projects/create" className="block h-full">
-              <Card className="relative flex h-full flex-col overflow-hidden border border-white/10 bg-white/[0.02] backdrop-blur-sm transition-colors duration-200">
-                <CardContent className="relative z-10 flex flex-1 flex-col items-center p-6 text-center">
-                  <div className="relative mx-auto flex aspect-square size-24 items-center justify-center rounded-full border border-white/10 before:absolute before:-inset-2 before:rounded-full before:border before:border-white/5 mb-5">
-                    <div className="flex size-14 items-center justify-center rounded-md bg-primary/10 ring-1 ring-white/10">
-                      <Plus className="size-8 text-primary" />
+            {/* Create New Project Card - matching default structure */}
+            <Link href="/projects/create" className="group block h-full">
+              <Card className="group relative overflow-hidden border border-white/5 bg-white/[0.015] backdrop-blur-md transition-all duration-300 hover:border-primary/30 hover:shadow-[0_4px_32px_-8px_rgba(59,130,246,0.35),0_0_0_1px_rgba(59,130,246,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 h-full">
+                {/* gradient border effect */}
+                <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(140deg,rgba(59,130,246,0.15),transparent_40%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                {/* radial glow */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_20%_18%,rgba(59,130,246,0.25),transparent_65%)]" />
+                <div className="relative z-10 h-full flex flex-col">
+                  <CardHeader className="mb-3 relative z-10 flex items-center justify-center">
+                    <div className="relative mx-auto flex aspect-square size-24 items-center justify-center rounded-full border border-white/10 before:absolute before:-inset-2 before:rounded-full before:border before:border-white/5">
+                      <div className="flex size-14 items-center justify-center rounded-md bg-primary/10 ring-1 ring-white/10">
+                        <Plus className="size-8 text-primary" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-medium tracking-tight">
+                  </CardHeader>
+                  <CardContent className="flex-1 relative z-10 text-center items-center">
+                    <h3 className="text-base md:text-lg font-semibold tracking-tight mb-2">
                       New Project
                     </h3>
-                    <p className="text-sm text-white/60">
+                    <p className="text-sm text-white/65 mb-3 line-clamp-3">
                       Create a new project
                     </p>
-                  </div>
-                  <div className="mt-auto w-full pt-5 text-[11px] text-white/45">
-                    <span>Start building</span>
-                  </div>
-                </CardContent>
+                    <div className="mt-5 flex flex-wrap gap-2 justify-center">
+                      {/* Empty space to match tech badges */}
+                    </div>
+                  </CardContent>
+                </div>
               </Card>
             </Link>
 
