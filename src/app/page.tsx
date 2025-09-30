@@ -1,14 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 export default function HomePage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace("/dashboard");
-  }, [router]);
-
-  return null;
+  return (
+    <HeroGeometric
+      badge="Kokonut UI"
+      title1="Elevate Your"
+      title2="Digital Vision"
+    />
+  );
 }
