@@ -1,13 +1,26 @@
-import { Calendar, Clock, MapPin } from "lucide-react";
-import { type UIHackathon } from "@/types/hackathon";
-import { Badge } from "@/components/ui/badge";
+"use client";
+
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  Calendar,
+  Clock,
+  MapPin,
+  CheckCircle2,
+  Circle,
+  Play,
+} from "lucide-react";
+import { type UIHackathon } from "@/types/hackathon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Timeline,
+  TimelineContent,
+  TimelineDate,
+  TimelineHeader,
+  TimelineIndicator,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineTitle,
+} from "@/components/ui/timeline";
+import { motion } from "framer-motion";
 import { safeToDate } from "@/lib/helpers/date";
 
 interface ScheduleTabProps {
@@ -16,7 +29,7 @@ interface ScheduleTabProps {
 
 function getEventStatus(
   startDate: Date,
-  endDate: Date,
+  endDate: Date
 ): "live" | "upcoming" | "completed" {
   const now = new Date();
   if (now >= startDate && now <= endDate) return "live";
@@ -73,10 +86,10 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
 
   // Registration Phase
   const regStartDate = safeToDate(
-    hackathon.registrationPeriod?.registrationStartDate,
+    hackathon.registrationPeriod?.registrationStartDate
   );
   const regEndDate = safeToDate(
-    hackathon.registrationPeriod?.registrationEndDate,
+    hackathon.registrationPeriod?.registrationEndDate
   );
   if (regStartDate && regEndDate) {
     const status = getEventStatus(regStartDate, regEndDate);
@@ -111,7 +124,7 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
 
   // Submission Phase
   const hackStartDate = safeToDate(
-    hackathon.hackathonPeriod?.hackathonStartDate,
+    hackathon.hackathonPeriod?.hackathonStartDate
   );
   const hackEndDate = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
   if (hackStartDate && hackEndDate) {
@@ -144,95 +157,148 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
 
   if (schedulePhases.length === 0) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Schedule</h2>
-        <p className="text-muted-foreground">
-          The schedule will be announced soon.
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-4"
+      >
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+          Schedule
+        </h2>
+        <div className="border-dashed border-2 border-muted-foreground/20 rounded-lg">
+          <div className="flex flex-col items-center justify-center py-12">
+            <Calendar className="h-12 w-12 text-muted-foreground/40 mb-4" />
+            <p className="text-muted-foreground text-center">
+              The schedule will be announced soon.
+            </p>
+          </div>
+        </div>
+      </motion.div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Schedule</h2>
-      <Accordion type="multiple" className="space-y-2">
-        {schedulePhases.map((phase, index) => (
-          <AccordionItem
-            key={index}
-            value={`phase-${index}`}
-            className="border-0 border-b last:border-b-0"
-          >
-            <AccordionTrigger className="hover:no-underline py-3">
-              <div className="flex items-center gap-3 flex-1">
-                {/* Status Badge */}
-                <Badge
-                  variant={
-                    phase.status === "live"
-                      ? "default"
-                      : phase.status === "upcoming"
-                        ? "secondary"
-                        : "outline"
-                  }
-                  className={
-                    phase.status === "live"
-                      ? "bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1"
-                      : phase.status === "upcoming"
-                        ? "bg-blue-100 text-blue-700 text-xs px-2 py-1"
-                        : "text-gray-500 text-xs px-2 py-1"
-                  }
-                >
-                  {phase.status}
-                </Badge>
+  // Find current active step
+  const currentActiveStep = schedulePhases.findIndex((phase) => {
+    return phase.status === "live";
+  });
 
-                {/* Event Info */}
-                <div className="flex-1 text-left">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {phase.name}
-                  </h3>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {phase.isPhase ? (
-                        <span>
-                          {formatDateRange(phase.startDate, phase.endDate)}
-                        </span>
-                      ) : (
-                        <span>{formatSingleDate(phase.startDate)}</span>
-                      )}
-                    </div>
-                    {!phase.isPhase && (
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+          Schedule
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Track the hackathon progress and important events
+        </p>
+      </div>
+
+      <Timeline
+        defaultValue={currentActiveStep >= 0 ? currentActiveStep + 1 : 1}
+        orientation="vertical"
+        className="w-full max-w-2xl"
+      >
+        {schedulePhases.map((phase, index) => (
+          <TimelineItem key={index} step={index + 1} className="pb-4">
+            <TimelineIndicator className="relative bg-background border-2">
+              {phase.status === "completed" ? (
+                <CheckCircle2 className="h-2.5 w-2.5 fill-green-500 text-white" />
+              ) : phase.status === "live" ? (
+                <Play className="h-2.5 w-2.5 fill-blue-500 text-white animate-pulse" />
+              ) : (
+                <Circle className="h-2.5 w-2.5 text-muted-foreground" />
+              )}
+
+              {/* Glow effect for live events */}
+              {phase.status === "live" && (
+                <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-pulse -m-1" />
+              )}
+            </TimelineIndicator>
+
+            <TimelineSeparator />
+
+            <TimelineHeader className="flex-1">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                className="space-y-2"
+              >
+                <TimelineDate className="text-xs text-muted-foreground">
+                  {phase.startDate.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </TimelineDate>
+
+                <TimelineTitle className="text-base font-semibold text-foreground">
+                  {phase.name}
+                </TimelineTitle>
+
+                <TimelineContent className="space-y-2">
+                  {phase.description && (
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {phase.description}
+                    </p>
+                  )}
+
+                  {/* Time and duration info for events */}
+                  {!phase.isPhase && (
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         <span>
                           {phase.endDate.getTime() - phase.startDate.getTime() >
                           3600000
-                            ? `${Math.round((phase.endDate.getTime() - phase.startDate.getTime()) / 3600000)}h`
-                            : `${Math.round((phase.endDate.getTime() - phase.startDate.getTime()) / 60000)}min`}
+                            ? `${Math.round(
+                                (phase.endDate.getTime() -
+                                  phase.startDate.getTime()) /
+                                  3600000
+                              )}h`
+                            : `${Math.round(
+                                (phase.endDate.getTime() -
+                                  phase.startDate.getTime()) /
+                                  60000
+                              )}min`}
                         </span>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </AccordionTrigger>
+                      <span>
+                        {phase.startDate.toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        -{" "}
+                        {phase.endDate.toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  )}
 
-            <AccordionContent>
-              <div className="pt-2 pb-3 space-y-3 text-sm">
-                {phase.description && (
-                  <div>
-                    <h4 className="font-medium mb-1 text-sm">Description</h4>
-                    <p className="text-muted-foreground text-sm">
-                      {phase.description}
-                    </p>
-                  </div>
-                )}
+                  {/* End date for phases */}
+                  {phase.isPhase && phase.endDate && (
+                    <div className="text-xs text-muted-foreground">
+                      Ends{" "}
+                      {phase.endDate.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                  )}
 
-                {phase.speaker && (
-                  <div>
-                    <h4 className="font-medium mb-2 text-sm">Speaker</h4>
+                  {/* Speaker info */}
+                  {phase.speaker && (
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-5 w-5">
                         <AvatarImage
                           src={phase.speaker.picture}
                           alt={phase.speaker.name}
@@ -244,62 +310,24 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <p className="font-medium text-sm">
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">
                           {phase.speaker.name}
-                        </p>
+                        </span>
                         {phase.speaker.position && (
-                          <p className="text-xs text-muted-foreground">
-                            {phase.speaker.position}
-                          </p>
-                        )}
-                        {phase.speaker.xHandle && (
-                          <p className="text-xs text-blue-600">
-                            @{phase.speaker.xHandle}
-                          </p>
+                          <span className="text-muted-foreground ml-1">
+                            • {phase.speaker.position}
+                          </span>
                         )}
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {phase.isPhase && (
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <h6 className="flex items-center text-muted-foreground mb-1">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        Start Date
-                      </h6>
-                      <p className="font-medium text-xs">
-                        {phase.startDate.toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <h6 className="flex items-center text-muted-foreground mb-1">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        End Date
-                      </h6>
-                      <p className="font-medium text-xs">
-                        {phase.endDate.toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {hackathon.location && phase.isPhase && (
-                  <div>
-                    <h6 className="flex items-center text-muted-foreground mb-1 text-xs">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      Location
-                    </h6>
-                    <p className="font-medium text-xs">{hackathon.location}</p>
-                  </div>
-                )}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
+                  )}
+                </TimelineContent>
+              </motion.div>
+            </TimelineHeader>
+          </TimelineItem>
         ))}
-      </Accordion>
-    </div>
+      </Timeline>
+    </motion.div>
   );
 }
