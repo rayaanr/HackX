@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import { Plus } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { CardLoading } from "@/components/ui/global-loading";
 import type { UIHackathon } from "@/types/hackathon";
 import { getHackathonStatusVariant } from "@/lib/helpers/status";

@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { ActiveProjects } from "@/components/projects/display/active-projects";
 import { RegisteredHackathons } from "@/components/projects/display/registered-hackathons";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export default function ProjectsPage() {
   const ease: [number, number, number, number] = [0.215, 0.61, 0.355, 1];

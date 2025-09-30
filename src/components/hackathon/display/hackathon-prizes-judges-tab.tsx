@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Trophy, Users, Target, Vote, Scale } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { type UIHackathon } from "@/types/hackathon";
 
 interface PrizeAndJudgeTabProps {

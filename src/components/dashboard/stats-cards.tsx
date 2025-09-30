@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Trophy, Users, DollarSign } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { CardLoading } from "@/components/ui/global-loading";
 import { SlidingNumber } from "../ui/anim/sliding-number";
 import type { DashboardStats } from "@/types/hackathon";

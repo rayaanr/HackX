@@ -20,7 +20,7 @@ import {
   TimelineSeparator,
   TimelineTitle,
 } from "@/components/ui/timeline";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { safeToDate } from "@/lib/helpers/date";
 
 interface ScheduleTabProps {

@@ -32,7 +32,7 @@ import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import Image from "next/image";
 import type { UIHackathon } from "@/types/hackathon";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useRegisteredHackathons } from "@/hooks/use-hackathons";
 

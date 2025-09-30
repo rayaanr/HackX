@@ -27,7 +27,7 @@ import {
 import Link from "next/link";
 import { ComponentProps } from "react";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 const nav = {

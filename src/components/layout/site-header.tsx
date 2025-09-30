@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "./theme-toggle";
 import { WalletConnect } from "./wallet-connect";
 import { useActiveAccount } from "thirdweb/react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
