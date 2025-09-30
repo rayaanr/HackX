@@ -31,6 +31,8 @@ import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { Separator } from "@/components/ui/separator";
 import { ShareDialog } from "@/components/share-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TextShimmerLoader } from "@/components/ui/loader";
+import { PageLoading } from "@/components/ui/global-loading";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import {
   useBlockchainProject,
@@ -321,32 +323,7 @@ export default function ProjectPage() {
   ];
 
   if (loading) {
-    return (
-      <div className="container mx-auto">
-        <div className="flex justify-between pb-6">
-          <Link href="/projects">
-            <Button
-              variant="outline"
-              className="hover:bg-white/10 hover:border-blue-400/50 transition-all duration-300"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          </Link>
-          <div className="space-y-2">
-            <div className="text-center">
-              <div className="h-10 w-64 bg-white/20 animate-pulse rounded mb-2" />
-              <div className="h-6 w-48 bg-white/20 animate-pulse rounded" />
-            </div>
-            <div className="text-center">
-              <div className="h-10 w-32 bg-white/20 animate-pulse rounded" />
-            </div>
-          </div>
-          <div className="h-10 w-32 bg-white/20 animate-pulse rounded" />
-        </div>
-        <div className="h-96 bg-white/20 animate-pulse rounded" />
-      </div>
-    );
+    return <PageLoading text="Loading project details" />;
   }
 
   if (error || !project) {
@@ -405,10 +382,14 @@ export default function ProjectPage() {
           </Link>
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-2 text-white">
-              {project?.name || "Loading..."}
+              {project?.name || (
+                <TextShimmerLoader text="Loading project" size="lg" />
+              )}
             </h1>
             <p className="text-white/70 mb-4">
-              {project?.tagline || "Loading description..."}
+              {project?.tagline || (
+                <TextShimmerLoader text="Loading description" />
+              )}
             </p>
             <div className="flex items-center justify-center gap-2">
               <Badge className={statusStyles}>{status}</Badge>
@@ -479,7 +460,12 @@ export default function ProjectPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-end">
                         <div className="p-6 text-white">
                           <h2 className="text-2xl font-bold drop-shadow-lg">
-                            {project?.name || "Loading..."}
+                            {project?.name || (
+                              <TextShimmerLoader
+                                text="Loading project"
+                                size="lg"
+                              />
+                            )}
                           </h2>
                         </div>
                       </div>

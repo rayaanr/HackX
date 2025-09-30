@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageLoading } from "@/components/ui/global-loading";
 import { useActiveAccount } from "thirdweb/react";
 import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
 import { notFound } from "next/navigation";
@@ -49,7 +50,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
   }
 
   if (hackathonLoading || projectsLoading) {
-    return <div>Loading...</div>;
+    return <PageLoading text="Loading hackathon projects for judging" />;
   }
 
   if (hackathonError || !dbHackathon || dbHackathon.length === 0) {
@@ -92,9 +93,9 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                       </span>
                     </div>
                   )}
-                    <CardTitle className="text-lg leading-tight">
-                      {project.name || "Untitled Project"}
-                    </CardTitle>
+                  <CardTitle className="text-lg leading-tight">
+                    {project.name || "Untitled Project"}
+                  </CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="pt-0 flex-1 flex flex-col">

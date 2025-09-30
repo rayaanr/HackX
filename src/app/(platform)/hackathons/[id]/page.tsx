@@ -15,6 +15,8 @@ import { ShareDialog } from "@/components/share-dialog";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { Separator } from "@/components/ui/separator";
+import { TextShimmerLoader } from "@/components/ui/loader";
+import { PageLoading } from "@/components/ui/global-loading";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import { PrizeAndJudgeTab } from "@/components/hackathon/display/hackathon-prizes-judges-tab";
 import { ScheduleTab } from "@/components/hackathon/display/hackathon-schedule-tab";
@@ -38,32 +40,7 @@ export default function HackathonPage() {
   ];
 
   if (loading) {
-    return (
-      <div className="container mx-auto">
-        <div className="flex justify-between pb-6">
-            <Link href="/hackathons">
-              <Button
-                variant="outline"
-                className="hover:bg-white/10 hover:border-blue-400/50 transition-all duration-300"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
-              </Button>
-            </Link>
-            <div className="space-y-2">
-              <div className="text-center">
-                <div className="h-10 w-64 bg-muted animate-pulse rounded mb-2" />
-                <div className="h-6 w-48 bg-muted animate-pulse rounded" />
-              </div>
-              <div className="text-center">
-                <div className="h-10 w-32 bg-muted animate-pulse rounded" />
-              </div>
-            </div>
-            <div className="h-10 w-32 bg-muted animate-pulse rounded" />
-          </div>
-          <div className="h-96 bg-muted animate-pulse rounded" />
-        </div>
-    );
+    return <PageLoading text="Loading hackathon details" />;
   }
 
   if (error || !hackathon) {
@@ -98,10 +75,10 @@ export default function HackathonPage() {
           </Link>
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-2 text-white">
-              {hackathon?.name || "Loading..."}
+              {hackathon?.name || <TextShimmerLoader text="Loading hackathon" size="lg" />}
             </h1>
             <p className="text-white/70 mb-4">
-              {hackathon?.shortDescription || "Loading description..."}
+              {hackathon?.shortDescription || <TextShimmerLoader text="Loading description" />}
             </p>
             <RegistrationButton hackathonId={id} />
           </div>
@@ -156,7 +133,7 @@ export default function HackathonPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-end">
                         <div className="p-6 text-white">
                           <h2 className="text-2xl font-bold drop-shadow-lg">
-                            {hackathon?.name || "Loading..."}
+                            {hackathon?.name || <TextShimmerLoader text="Loading hackathon" size="lg" />}
                           </h2>
                         </div>
                       </div>

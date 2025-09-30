@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Trophy, Users, DollarSign } from "lucide-react";
 import { motion } from "framer-motion";
+import { CardLoading } from "@/components/ui/global-loading";
 import type { DashboardStats } from "@/types/hackathon";
 
 interface StatsCardsProps {
@@ -13,16 +14,13 @@ export function StatsCards({ stats, loading = false }: StatsCardsProps) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className="project-card-hover">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-              <div className="h-4 w-4 bg-muted animate-pulse rounded" />
-            </CardHeader>
-            <CardContent>
-              <div className="h-8 w-16 bg-muted animate-pulse rounded mb-1" />
-              <div className="h-3 w-24 bg-muted animate-pulse rounded" />
-            </CardContent>
-          </Card>
+          <CardLoading
+            key={i}
+            text="Loading stats"
+            size="sm"
+            height="120px"
+            className="project-card-hover"
+          />
         ))}
       </div>
     );

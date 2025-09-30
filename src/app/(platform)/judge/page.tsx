@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { PageLoading } from "@/components/ui/global-loading";
 import { useActiveAccount } from "thirdweb/react";
 import { ArrowRight, Calendar, MapPin, Award, Code } from "lucide-react";
 import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
@@ -19,7 +20,7 @@ export default function JudgeDashboardPage() {
   const account = useActiveAccount();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <PageLoading text="Loading judge assignments" />;
   }
 
   if (!account) {

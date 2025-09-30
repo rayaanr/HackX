@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import { Plus } from "lucide-react";
 import { motion } from "framer-motion";
+import { CardLoading } from "@/components/ui/global-loading";
 import type { UIHackathon } from "@/types/hackathon";
 import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
@@ -21,30 +22,7 @@ export function RecentHackathons({
   loading = false,
 }: RecentHackathonsProps) {
   if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="h-6 w-40 bg-muted animate-pulse rounded" />
-            <div className="h-9 w-32 bg-muted animate-pulse rounded" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
-                <div className="h-12 w-12 bg-muted animate-pulse rounded-lg" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-48 bg-muted animate-pulse rounded" />
-                  <div className="h-3 w-32 bg-muted animate-pulse rounded" />
-                </div>
-                <div className="h-6 w-16 bg-muted animate-pulse rounded" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <CardLoading text="Loading recent hackathons" height="300px" />;
   }
 
   // Show most recent hackathons (up to 5)
