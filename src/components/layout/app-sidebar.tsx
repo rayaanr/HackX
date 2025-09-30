@@ -101,7 +101,7 @@ const nav = {
           disabled: true,
         },
         {
-          title: "Discussion and Support",
+          title: "Discussion & Support",
           url: "/support",
           Icon: MessageCircle,
           disabled: true,
@@ -172,7 +172,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                 asChild
                 className={cn(
                   "data-[slot=sidebar-menu-button]:!p-1.5 justify-start",
-                  "relative group",
+                  "relative group"
                 )}
               >
                 <Link href="#" className="flex gap-2">
@@ -252,8 +252,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                                 isActive={isActive}
                                 className={cn(
                                   "relative group/item",
-                                  // Left accent bar
-                                  "before:absolute before:inset-y-1 before:left-1 before:w-[3px] before:rounded-full before:bg-gradient-to-b before:from-primary/80 before:to-primary/40 before:opacity-0 before:transition-opacity before:duration-300",
+                                  // Left accent bar - positioned at the very edge
+                                  "before:absolute before:inset-y-0 before:left-0 before:w-[4px] before:rounded-none before:bg-gradient-to-b before:from-primary/80 before:to-primary/40 before:opacity-0 before:transition-opacity before:duration-300",
                                   "data-[active=true]:before:opacity-100",
                                   // Glow ring subtle
                                   "data-[active=true]:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_0_4px_rgba(var(--primary-rgb,0,120,255),0.15)]",
