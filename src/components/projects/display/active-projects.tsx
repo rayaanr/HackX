@@ -44,7 +44,7 @@ export function ActiveProjects() {
 
     return projects.sort(
       (a, b) =>
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
     );
   }, [blockchainProjects]);
 
@@ -109,19 +109,26 @@ export function ActiveProjects() {
           </div>
         ) : (
           <>
-            {/* Create New Project Card */}
-            <Link href="/projects/create">
-              <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group gap-4 h-60">
-                <CardContent className="flex flex-col items-center justify-center text-center p-6 h-full">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <Plus className="w-8 h-8 text-primary" />
+            {/* Create New Project Card - feature style */}
+            <Link href="/projects/create" className="block h-full">
+              <Card className="relative flex h-full flex-col overflow-hidden border border-white/10 bg-white/[0.02] backdrop-blur-sm transition-colors duration-200">
+                <CardContent className="relative z-10 flex flex-1 flex-col items-center p-6 text-center">
+                  <div className="relative mx-auto flex aspect-square size-24 items-center justify-center rounded-full border border-white/10 before:absolute before:-inset-2 before:rounded-full before:border before:border-white/5 mb-5">
+                    <div className="flex size-14 items-center justify-center rounded-md bg-primary/10 ring-1 ring-white/10">
+                      <Plus className="size-8 text-primary" />
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-primary mb-2">
-                    New Project
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Create a new project
-                  </p>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-medium tracking-tight">
+                      New Project
+                    </h3>
+                    <p className="text-sm text-white/60">
+                      Create a new project
+                    </p>
+                  </div>
+                  <div className="mt-auto w-full pt-5 text-[11px] text-white/45">
+                    <span>Start building</span>
+                  </div>
                 </CardContent>
               </Card>
             </Link>
