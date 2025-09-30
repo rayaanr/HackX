@@ -117,7 +117,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
         votingPeriod: hackathon.votingPeriod || undefined,
       });
       return status === "Registration Open" || status === "Live";
-    }
+    },
   );
 
   const handleSubmit = (hackathonId: string) => {
@@ -219,7 +219,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                                       hackathon.hackathonPeriod
                                         ?.hackathonStartDate,
                                       hackathon.hackathonPeriod
-                                        ?.hackathonEndDate
+                                        ?.hackathonEndDate,
                                     )}
                                   </span>
                                 </div>
@@ -249,7 +249,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                         </CardContent>
                       </Card>
                     );
-                  }
+                  },
                 )}
               </div>
             ) : (
@@ -299,7 +299,7 @@ export default function ProjectPage() {
   const params = useParams();
   const id = params.id as string;
   const [activeTab, setActiveTab] = useState<"overview" | "hackathon" | "team">(
-    "overview"
+    "overview",
   );
 
   const {
@@ -308,7 +308,7 @@ export default function ProjectPage() {
     error: projectError,
   } = useBlockchainProject(id);
   const { data: hackathon, isLoading: hackathonLoading } = useHackathon(
-    project?.hackathonId
+    project?.hackathonId,
   );
   const { data: teamMembers, isLoading: teamLoading } =
     useProjectTeamMembers(id);
@@ -503,8 +503,8 @@ export default function ProjectPage() {
                               "blockquote",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          }
-                        )
+                          },
+                        ),
                       )}
                     </div>
                   </div>
@@ -741,7 +741,7 @@ export default function ProjectPage() {
                               >
                                 {tech}
                               </Badge>
-                            )
+                            ),
                           )}
                         </div>
                       </CardContent>
@@ -837,7 +837,7 @@ export default function ProjectPage() {
                                 role="Member"
                                 index={index}
                               />
-                            )
+                            ),
                           )}
                         </div>
                       </CardContent>
@@ -888,7 +888,7 @@ export default function ProjectPage() {
                         {project.submittedToHackathons.map(
                           (
                             hackathon: { name?: string; description?: string },
-                            index: number
+                            index: number,
                           ) => (
                             <Card
                               key={index}
@@ -912,7 +912,7 @@ export default function ProjectPage() {
                                 </p>
                               </CardContent>
                             </Card>
-                          )
+                          ),
                         )}
                       </div>
                     </div>

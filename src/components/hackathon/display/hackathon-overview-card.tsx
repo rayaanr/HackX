@@ -24,7 +24,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
     votingPeriod: hackathon.votingPeriod || undefined,
   });
   const statusVariant = getHackathonStatusVariant(
-    hackathonStatus as HackathonStatus
+    hackathonStatus as HackathonStatus,
   );
 
   // Get the relevant deadline based on current status
@@ -86,8 +86,8 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                       {hackathonStatus === "Ended"
                         ? "Completed"
                         : deadline
-                        ? `${daysLeft} days`
-                        : "TBD"}
+                          ? `${daysLeft} days`
+                          : "TBD"}
                     </p>
                   </div>
                   <div className="space-y-1">

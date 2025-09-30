@@ -161,7 +161,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         // Hover effects matching card hover theme
         "[&_[data-sidebar=menu-button]:not([data-active=true])]:hover:bg-white/8",
         "[&_[data-sidebar=menu-button]:not([data-active=true])]:hover:text-white/95",
-        "[&_[data-sidebar=menu-button]:not([data-active=true])]:hover:shadow-[0_0_20px_rgba(255,255,255,0.02)]"
+        "[&_[data-sidebar=menu-button]:not([data-active=true])]:hover:shadow-[0_0_20px_rgba(255,255,255,0.02)]",
       )}
     >
       <div className="relative h-full flex flex-col before:absolute before:inset-0 before:bg-[linear-gradient(to_bottom,rgba(0,0,0,0.2),transparent_50%)] before:pointer-events-none after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_0%_0%,rgba(59,130,246,0.06),transparent_75%)] after:pointer-events-none">
@@ -172,7 +172,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                 asChild
                 className={cn(
                   "data-[slot=sidebar-menu-button]:!p-1.5 justify-start",
-                  "relative group"
+                  "relative group",
                 )}
               >
                 <Link href="#" className="flex gap-2">
@@ -206,7 +206,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                   className={cn(
                     "uppercase tracking-wider text-[10px] font-medium pl-2 py-0.5",
                     "text-white/35",
-                    "after:bg-gradient-to-r after:from-white/10 after:to-transparent"
+                    "after:bg-gradient-to-r after:from-white/10 after:to-transparent",
                   )}
                 >
                   {section.title}
@@ -236,7 +236,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                                 disabled
                                 className={cn(
                                   "cursor-not-allowed opacity-50",
-                                  "relative"
+                                  "relative",
                                 )}
                               >
                                 <Icon className="!size-4 opacity-70" />
@@ -264,7 +264,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                                   // Slight border on hover / active
                                   "border border-transparent hover:border-white/10 data-[active=true]:border-primary/30",
                                   // Background layering
-                                  "data-[active=true]:backdrop-blur-md"
+                                  "data-[active=true]:backdrop-blur-md",
                                 )}
                               >
                                 <Link

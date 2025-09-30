@@ -59,7 +59,7 @@ export function StatusBadge({
           colors.lightBg,
           colors.lightText,
           sizeClasses[size],
-          className
+          className,
         )}
       >
         <div className={cn("w-1.5 h-1.5 rounded-full", colors.bg)} />
@@ -74,7 +74,7 @@ export function StatusBadge({
       className={cn(
         "font-medium uppercase tracking-wide",
         sizeClasses[size],
-        className
+        className,
       )}
     >
       {displayText}

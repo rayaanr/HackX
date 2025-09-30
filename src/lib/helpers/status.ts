@@ -20,7 +20,7 @@ export type StatusVariant =
  * Get status variant for hackathon status badges
  */
 export function getHackathonStatusVariant(
-  status: HackathonStatus
+  status: HackathonStatus,
 ): StatusVariant {
   switch (status) {
     case "Live":
@@ -41,7 +41,7 @@ export function getHackathonStatusVariant(
  * Get status variant for project status badges
  */
 export function getProjectStatusVariant(
-  status: string
+  status: string,
 ): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "draft":
@@ -88,7 +88,7 @@ export function getStatusDisplayText(status: string): string {
       return status
         .split(/[\s_]+/)
         .map(
-          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
         )
         .join(" ");
   }

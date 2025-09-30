@@ -30,7 +30,7 @@ export function RecentHackathons({
     .sort(
       (a, b) =>
         new Date(b.hackathonPeriod?.hackathonStartDate || 0).getTime() -
-        new Date(a.hackathonPeriod?.hackathonStartDate || 0).getTime()
+        new Date(a.hackathonPeriod?.hackathonStartDate || 0).getTime(),
     )
     .slice(0, 5);
 
@@ -74,7 +74,7 @@ export function RecentHackathons({
               });
               const variant = getHackathonStatusVariant(status);
               const totalPrize = calculateTotalPrizeAmount(
-                hackathon.prizeCohorts || []
+                hackathon.prizeCohorts || [],
               );
 
               return (
@@ -111,7 +111,7 @@ export function RecentHackathons({
                             {hackathon.hackathonPeriod?.hackathonStartDate
                               ? format(
                                   hackathon.hackathonPeriod.hackathonStartDate,
-                                  "dd MMM yyyy"
+                                  "dd MMM yyyy",
                                 )
                               : "TBD"}
                           </span>

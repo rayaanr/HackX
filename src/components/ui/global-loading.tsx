@@ -82,7 +82,7 @@ export function GlobalLoading({
       <div
         className={cn(
           "flex min-h-screen w-full flex-col items-center justify-center gap-4",
-          className
+          className,
         )}
       >
         <ClassicLoader size="lg" />
@@ -100,7 +100,7 @@ export function GlobalLoading({
         className={cn(
           "flex w-full flex-col items-center justify-center gap-3 rounded-lg border bg-card p-8",
           height,
-          className
+          className,
         )}
         style={{ minHeight: height }}
       >
@@ -118,7 +118,7 @@ export function GlobalLoading({
       className={cn(
         "flex w-full flex-col items-center justify-center gap-3 py-8",
         height,
-        className
+        className,
       )}
       style={{ minHeight: height }}
     >

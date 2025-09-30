@@ -29,7 +29,7 @@ interface ScheduleTabProps {
 
 function getEventStatus(
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): "live" | "upcoming" | "completed" {
   const now = new Date();
   if (now >= startDate && now <= endDate) return "live";
@@ -86,10 +86,10 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
 
   // Registration Phase
   const regStartDate = safeToDate(
-    hackathon.registrationPeriod?.registrationStartDate
+    hackathon.registrationPeriod?.registrationStartDate,
   );
   const regEndDate = safeToDate(
-    hackathon.registrationPeriod?.registrationEndDate
+    hackathon.registrationPeriod?.registrationEndDate,
   );
   if (regStartDate && regEndDate) {
     const status = getEventStatus(regStartDate, regEndDate);
@@ -124,7 +124,7 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
 
   // Submission Phase
   const hackStartDate = safeToDate(
-    hackathon.hackathonPeriod?.hackathonStartDate
+    hackathon.hackathonPeriod?.hackathonStartDate,
   );
   const hackEndDate = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
   if (hackStartDate && hackEndDate) {
@@ -260,12 +260,12 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
                             ? `${Math.round(
                                 (phase.endDate.getTime() -
                                   phase.startDate.getTime()) /
-                                  3600000
+                                  3600000,
                               )}h`
                             : `${Math.round(
                                 (phase.endDate.getTime() -
                                   phase.startDate.getTime()) /
-                                  60000
+                                  60000,
                               )}min`}
                         </span>
                       </div>

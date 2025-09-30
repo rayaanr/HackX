@@ -90,10 +90,10 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
                 index === 0
                   ? "border-yellow-500/20 bg-yellow-500/5"
                   : index === 1
-                  ? "border-gray-400/20 bg-gray-400/5"
-                  : index === 2
-                  ? "border-orange-500/20 bg-orange-500/5"
-                  : "border-muted-foreground/20"
+                    ? "border-gray-400/20 bg-gray-400/5"
+                    : index === 2
+                      ? "border-orange-500/20 bg-orange-500/5"
+                      : "border-muted-foreground/20"
               }`}
             >
               <CardContent className="p-4">

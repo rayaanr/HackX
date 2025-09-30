@@ -86,7 +86,7 @@ export default function ExplorePage() {
                     : Number(cohort.prizeAmount);
                 return sum + (amount || 0);
               },
-              0
+              0,
             ) || 0;
 
           const minPrize = Number(filters.prizeRange);
@@ -98,7 +98,7 @@ export default function ExplorePage() {
           const hackathonTechStack = hackathon.techStack || [];
           if (
             !hackathonTechStack.some((tech: string) =>
-              tech.toLowerCase().includes(filters.techStack.toLowerCase())
+              tech.toLowerCase().includes(filters.techStack.toLowerCase()),
             )
           ) {
             return false;
@@ -181,7 +181,7 @@ export default function ExplorePage() {
             asChild
             className={cn(
               "bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25",
-              "transition-all duration-200 hover:scale-[1.02]"
+              "transition-all duration-200 hover:scale-[1.02]",
             )}
           >
             <Link href="/hackathons/create">Host a Hackathon</Link>
@@ -208,7 +208,7 @@ export default function ExplorePage() {
                 className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-blue-500/10 hover:border-blue-500/30 text-white/80 hover:text-blue-500 transition-all duration-300 group"
               >
                 {prizeRangeOptions.find(
-                  (option) => option.value === filters.prizeRange
+                  (option) => option.value === filters.prizeRange,
                 )?.label || "Total Prize"}{" "}
                 <motion.div
                   animate={{ rotate: dropdownStates.prizeRange ? 180 : 0 }}
@@ -270,7 +270,7 @@ export default function ExplorePage() {
                 className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-blue-500/10 hover:border-blue-500/30 text-white/80 hover:text-blue-500 transition-all duration-300 group"
               >
                 {techStackOptions.find(
-                  (option) => option.value === filters.techStack
+                  (option) => option.value === filters.techStack,
                 )?.label || "Tech Stack"}{" "}
                 <motion.div
                   animate={{ rotate: dropdownStates.techStack ? 180 : 0 }}

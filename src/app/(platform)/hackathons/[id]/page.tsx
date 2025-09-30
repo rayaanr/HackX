@@ -75,10 +75,14 @@ export default function HackathonPage() {
           </Link>
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-2 text-white">
-              {hackathon?.name || <TextShimmerLoader text="Loading hackathon" size="lg" />}
+              {hackathon?.name || (
+                <TextShimmerLoader text="Loading hackathon" size="lg" />
+              )}
             </h1>
             <p className="text-white/70 mb-4">
-              {hackathon?.shortDescription || <TextShimmerLoader text="Loading description" />}
+              {hackathon?.shortDescription || (
+                <TextShimmerLoader text="Loading description" />
+              )}
             </p>
             <RegistrationButton hackathonId={id} />
           </div>
@@ -104,7 +108,7 @@ export default function HackathonPage() {
                 selectedTab={activeTab}
                 onTabChange={(value) =>
                   setActiveTab(
-                    value as "overview" | "prize" | "schedule" | "projects"
+                    value as "overview" | "prize" | "schedule" | "projects",
                   )
                 }
                 className="h-14 p-1"
@@ -133,7 +137,12 @@ export default function HackathonPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-end">
                         <div className="p-6 text-white">
                           <h2 className="text-2xl font-bold drop-shadow-lg">
-                            {hackathon?.name || <TextShimmerLoader text="Loading hackathon" size="lg" />}
+                            {hackathon?.name || (
+                              <TextShimmerLoader
+                                text="Loading hackathon"
+                                size="lg"
+                              />
+                            )}
                           </h2>
                         </div>
                       </div>
@@ -173,8 +182,8 @@ export default function HackathonPage() {
                               "blockquote",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          }
-                        )
+                          },
+                        ),
                       )}
                     </div>
                   </div>

@@ -223,7 +223,7 @@ export function RegisteredHackathons() {
                                   ?.registrationEndDate
                                   ? formatDisplayDate(
                                       hackathon.registrationPeriod
-                                        .registrationEndDate
+                                        .registrationEndDate,
                                     )
                                   : "TBD"}
                               </p>
@@ -277,7 +277,7 @@ export function RegisteredHackathons() {
                               <span className="font-medium">
                                 {formatDateRange(
                                   hackathon.hackathonPeriod?.hackathonStartDate,
-                                  hackathon.hackathonPeriod?.hackathonEndDate
+                                  hackathon.hackathonPeriod?.hackathonEndDate,
                                 )}
                               </span>
                             </div>
