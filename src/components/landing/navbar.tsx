@@ -40,7 +40,7 @@ export function LandingNavbar({ className }: LandingNavbarProps) {
       className={cn(
         "fixed top-0 left-0 right-0 z-50",
         "landing-nav-glass",
-        className
+        className,
       )}
     >
       <div className="container mx-auto px-2 md:px-4 py-3">
@@ -76,7 +76,7 @@ export function LandingNavbar({ className }: LandingNavbarProps) {
                 "bg-primary hover:bg-primary/90",
                 "text-primary-foreground border-0 shadow-lg shadow-primary/20",
                 "transition-all duration-200 transform hover:scale-105",
-                "group"
+                "group",
               )}
               size="lg"
             >
@@ -127,11 +127,14 @@ export function LandingNavbar({ className }: LandingNavbarProps) {
                 className={cn(
                   "bg-primary hover:bg-primary/90",
                   "text-primary-foreground border-0 shadow-lg shadow-primary/20",
-                  "transition-all duration-200 mt-4 group"
+                  "transition-all duration-200 mt-4 group",
                 )}
                 size="lg"
               >
-                <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
                   Go to Dashboard
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>

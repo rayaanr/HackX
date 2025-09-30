@@ -4,7 +4,11 @@ import { LandingNavbar } from "@/components/landing/navbar";
 import { HeroGeometric } from "@/components/landing/hero";
 import { HackXFeatures } from "@/components/landing/features";
 import { Footer } from "@/components/landing/footer";
-import { IconBrandTwitter, IconBrandGithub, IconBrandLinkedin } from "@tabler/icons-react";
+import {
+  IconBrandTwitter,
+  IconBrandGithub,
+  IconBrandLinkedin,
+} from "@tabler/icons-react";
 
 export default function HomePage() {
   return (

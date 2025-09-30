@@ -25,6 +25,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import {
   useBlockchainProject,
   useProjectTeamMembers,
@@ -280,6 +281,12 @@ export default function ProjectDetailsPage() {
     "overview",
   );
 
+  const projectTabs = [
+    { text: "Overview", value: "overview" },
+    { text: "Hackathon", value: "hackathon" },
+    { text: "Team", value: "team" },
+  ];
+
   const { data: project, isLoading, error } = useBlockchainProject(projectId);
 
   const { data: teamMembers = [], isLoading: isLoadingTeamMembers } =
@@ -397,19 +404,21 @@ export default function ProjectDetailsPage() {
         </div>
 
         {/* Content Tabs */}
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) =>
-            setActiveTab(value as "overview" | "hackathon" | "team")
-          }
-        >
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="hackathon">Hackathon</TabsTrigger>
-            <TabsTrigger value="team">Team</TabsTrigger>
-          </TabsList>
+        <div className="mb-8">
+          <div className="flex justify-center">
+            <AnimatedTabs
+              tabs={projectTabs}
+              selectedTab={activeTab}
+              onTabChange={(value) =>
+                setActiveTab(value as "overview" | "hackathon" | "team")
+              }
+              className="max-w-md"
+            />
+          </div>
+        </div>
 
-          <TabsContent value="overview" className="mt-8">
+        {activeTab === "overview" && (
+          <div className="mt-8">
             <div className="max-w-4xl mx-auto">
               <div className="space-y-8">
                 {/* Description */}
@@ -552,9 +561,11 @@ export default function ProjectDetailsPage() {
                 )}
               </div>
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="hackathon" className="mt-8">
+        {activeTab === "hackathon" && (
+          <div className="mt-8">
             <div className="space-y-6">
               {/* Submit to Hackathon Action */}
               <div className="flex justify-between items-center">
@@ -616,9 +627,11 @@ export default function ProjectDetailsPage() {
                 </div>
               )}
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="team" className="mt-8">
+        {activeTab === "team" && (
+          <div className="mt-8">
             <div className="space-y-6">
               {/* Team Leader */}
               {project?.creator && (
@@ -676,8 +689,8 @@ export default function ProjectDetailsPage() {
                 </Card>
               )}
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );

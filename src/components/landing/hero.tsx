@@ -94,55 +94,55 @@ function HeroGeometric({
     }),
   };
 
-    return (
-        <div className="landing-hero relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030303]">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] via-transparent to-primary/[0.08] blur-3xl" />
+  return (
+    <div className="landing-hero relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030303]">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] via-transparent to-primary/[0.08] blur-3xl" />
 
       <div className="absolute inset-0 overflow-hidden">
-                <ElegantShape
-                    delay={0.3}
-                    width={600}
-                    height={140}
-                    rotate={12}
-                    gradient="from-primary/[0.15]"
-                    className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]"
-                />
+        <ElegantShape
+          delay={0.3}
+          width={600}
+          height={140}
+          rotate={12}
+          gradient="from-primary/[0.15]"
+          className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]"
+        />
 
-                <ElegantShape
-                    delay={0.5}
-                    width={500}
-                    height={120}
-                    rotate={-15}
-                    gradient="from-primary/[0.12]"
-                    className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]"
-                />
+        <ElegantShape
+          delay={0.5}
+          width={500}
+          height={120}
+          rotate={-15}
+          gradient="from-primary/[0.12]"
+          className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]"
+        />
 
-                <ElegantShape
-                    delay={0.4}
-                    width={300}
-                    height={80}
-                    rotate={-8}
-                    gradient="from-primary/[0.10]"
-                    className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]"
-                />
+        <ElegantShape
+          delay={0.4}
+          width={300}
+          height={80}
+          rotate={-8}
+          gradient="from-primary/[0.10]"
+          className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]"
+        />
 
-                <ElegantShape
-                    delay={0.6}
-                    width={200}
-                    height={60}
-                    rotate={20}
-                    gradient="from-primary/[0.08]"
-                    className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]"
-                />
+        <ElegantShape
+          delay={0.6}
+          width={200}
+          height={60}
+          rotate={20}
+          gradient="from-primary/[0.08]"
+          className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]"
+        />
 
-                <ElegantShape
-                    delay={0.7}
-                    width={150}
-                    height={40}
-                    rotate={-25}
-                    gradient="from-primary/[0.06]"
-                    className="left-[20%] md:left-[25%] top-[5%] md:top-[10%]"
-                />
+        <ElegantShape
+          delay={0.7}
+          width={150}
+          height={40}
+          rotate={-25}
+          gradient="from-primary/[0.06]"
+          className="left-[20%] md:left-[25%] top-[5%] md:top-[10%]"
+        />
       </div>
 
       <div className="relative z-10 container mx-auto px-4 md:px-6">
@@ -154,7 +154,7 @@ function HeroGeometric({
             animate="visible"
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] mb-8 md:mb-12"
           >
-                        <Circle className="h-2 w-2 fill-primary/80" />
+            <Circle className="h-2 w-2 fill-primary/80" />
             <span className="text-sm text-white/60 tracking-wide">{badge}</span>
           </motion.div>
 
@@ -169,13 +169,13 @@ function HeroGeometric({
                 {title1}
               </span>
               <br />
-                            <span
-                                className={cn(
-                                    "bg-clip-text text-transparent bg-gradient-to-r from-primary/90 via-white/90 to-primary/70"
-                                )}
-                            >
-                                {title2}
-                            </span>
+              <span
+                className={cn(
+                  "bg-clip-text text-transparent bg-gradient-to-r from-primary/90 via-white/90 to-primary/70",
+                )}
+              >
+                {title2}
+              </span>
             </h1>
           </motion.div>
 
@@ -185,45 +185,45 @@ function HeroGeometric({
             initial="hidden"
             animate="visible"
           >
-                        <p className="text-base sm:text-lg md:text-xl text-white/40 mb-8 md:mb-12 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
-                            Crafting exceptional digital experiences through
-                            innovative design and cutting-edge technology.
-                        </p>
-                    </motion.div>
+            <p className="text-base sm:text-lg md:text-xl text-white/40 mb-8 md:mb-12 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
+              Crafting exceptional digital experiences through innovative design
+              and cutting-edge technology.
+            </p>
+          </motion.div>
 
-                    <motion.div
-                        custom={3}
-                        variants={fadeUpVariants}
-                        initial="hidden"
-                        animate="visible"
-                        className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-                    >
-                        <Button
-                            asChild
-                            size="lg"
-                            className={cn(
-                                "bg-primary hover:bg-primary/90",
-                                "text-primary-foreground border-0 shadow-lg shadow-primary/20",
-                                "transition-all duration-200 transform hover:scale-105",
-                                "px-8 py-3 text-lg font-semibold group"
-                            )}
-                        >
-                            <Link href="/dashboard">
-                                Get Started
-                                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            className={cn(
-                                "border-white/20 bg-white/5 hover:bg-white/10 text-white",
-                                "backdrop-blur-sm px-8 py-3 text-lg font-medium",
-                                "transition-all duration-200 hover:border-white/30"
-                            )}
-                        >
-                            Learn More
-                        </Button>
+          <motion.div
+            custom={3}
+            variants={fadeUpVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          >
+            <Button
+              asChild
+              size="lg"
+              className={cn(
+                "bg-primary hover:bg-primary/90",
+                "text-primary-foreground border-0 shadow-lg shadow-primary/20",
+                "transition-all duration-200 transform hover:scale-105",
+                "px-8 py-3 text-lg font-semibold group",
+              )}
+            >
+              <Link href="/dashboard">
+                Get Started
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className={cn(
+                "border-white/20 bg-white/5 hover:bg-white/10 text-white",
+                "backdrop-blur-sm px-8 py-3 text-lg font-medium",
+                "transition-all duration-200 hover:border-white/30",
+              )}
+            >
+              Learn More
+            </Button>
           </motion.div>
         </div>
       </div>

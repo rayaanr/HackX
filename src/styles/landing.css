@@ -4,7 +4,7 @@
   /* Custom blue glow effects */
   --hero-glow-primary: oklch(0.6537 0.1909 251.1544 / 0.15);
   --hero-glow-secondary: oklch(0.6537 0.1909 251.1544 / 0.08);
-  
+
   /* Enhanced shadow colors matching globals.css */
   --shadow-primary: rgba(29, 161, 242, 0.25);
   --shadow-primary-light: rgba(29, 161, 242, 0.15);
@@ -14,13 +14,14 @@
 @media (prefers-color-scheme: dark) {
   .landing-hero {
     --shadow-primary: rgba(29, 161, 242, 0.35);
-    --shadow-primary-light: rgba(29, 161, 242, 0.20);
+    --shadow-primary-light: rgba(29, 161, 242, 0.2);
   }
 }
 
 /* Custom animation for blue shapes */
 @keyframes float-blue {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
     filter: drop-shadow(0 0 20px var(--shadow-primary-light));
   }

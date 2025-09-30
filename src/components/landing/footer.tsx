@@ -1,25 +1,25 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 
 interface FooterProps {
-  logo: React.ReactNode
-  brandName: string
+  logo: React.ReactNode;
+  brandName: string;
   socialLinks: Array<{
-    icon: React.ReactNode
-    href: string
-    label: string
-  }>
+    icon: React.ReactNode;
+    href: string;
+    label: string;
+  }>;
   mainLinks: Array<{
-    href: string
-    label: string
-  }>
+    href: string;
+    label: string;
+  }>;
   legalLinks: Array<{
-    href: string
-    label: string
-  }>
+    href: string;
+    label: string;
+  }>;
   copyright: {
-    text: string
-    license?: string
-  }
+    text: string;
+    license?: string;
+  };
 }
 
 export function Footer({
@@ -40,7 +40,9 @@ export function Footer({
             aria-label={brandName}
           >
             {logo}
-            <span className="font-bold text-xl text-foreground">{brandName}</span>
+            <span className="font-bold text-xl text-foreground">
+              {brandName}
+            </span>
           </a>
           <ul className="flex list-none mt-6 md:mt-0 space-x-3">
             {socialLinks.map((link, i) => (
@@ -51,7 +53,12 @@ export function Footer({
                   className="h-10 w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
                   asChild
                 >
-                  <a href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={link.label}
+                  >
                     {link.icon}
                   </a>
                 </Button>
@@ -95,5 +102,5 @@ export function Footer({
         </div>
       </div>
     </footer>
-  )
+  );
 }
