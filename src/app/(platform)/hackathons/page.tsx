@@ -3,6 +3,8 @@
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,7 +79,7 @@ export default function ExplorePage() {
                     : Number(cohort.prizeAmount);
                 return sum + (amount || 0);
               },
-              0,
+              0
             ) || 0;
 
           const minPrize = Number(filters.prizeRange);
@@ -89,7 +91,7 @@ export default function ExplorePage() {
           const hackathonTechStack = hackathon.techStack || [];
           if (
             !hackathonTechStack.some((tech: string) =>
-              tech.toLowerCase().includes(filters.techStack.toLowerCase()),
+              tech.toLowerCase().includes(filters.techStack.toLowerCase())
             )
           ) {
             return false;
@@ -135,170 +137,252 @@ export default function ExplorePage() {
     }
   }, [error]);
 
+  const ease: [number, number, number, number] = [0.215, 0.61, 0.355, 1];
+  const fadeUp = {
+    hidden: { opacity: 0, y: 18 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: 0.05 * i, duration: 0.55, ease },
+    }),
+  } as const;
+
   return (
-    <div>
-      {/* Explore Section */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">Explore Hackathons</h2>
-          <p className="text-muted-foreground max-w-2xl">
-            Welcome to your hackathon dashboard! Manage projects, invite
-            teammates, and track your hackathon journey with ease — all in one
-            place.
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/hackathons/create">Host a Hackathon</Link>
-        </Button>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="flex flex-wrap gap-4 mb-8">
-        {/* Prize Range Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              {prizeRangeOptions.find(
-                (option) => option.value === filters.prizeRange,
-              )?.label || "Total Prize"}{" "}
-              <ChevronDown className="ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {prizeRangeOptions.map((option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onClick={() =>
-                  setFilters((prev) => ({ ...prev, prizeRange: option.value }))
-                }
-              >
-                {option.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Tech Stack Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              {techStackOptions.find(
-                (option) => option.value === filters.techStack,
-              )?.label || "Tech Stack"}{" "}
-              <ChevronDown className="ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {techStackOptions.map((option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onClick={() =>
-                  setFilters((prev) => ({ ...prev, techStack: option.value }))
-                }
-              >
-                {option.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Status Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              {statusOptions.find((option) => option.value === filters.status)
-                ?.label || "Status"}{" "}
-              <ChevronDown className="ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {statusOptions.map((option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onClick={() =>
-                  setFilters((prev) => ({ ...prev, status: option.value }))
-                }
-              >
-                {option.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Hackathon Grid */}
-      <div className="space-y-6">
-        {loading ? (
-          // Loading skeleton
-          Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="border rounded-lg p-6">
-              <div className="flex">
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-                    <div className="h-6 w-20 bg-muted animate-pulse rounded" />
-                  </div>
-                  <div className="h-4 w-full bg-muted animate-pulse rounded" />
-                  <div className="grid grid-cols-4 gap-4">
-                    {Array.from({ length: 4 }).map((_, j) => (
-                      <div key={j}>
-                        <div className="h-4 w-16 bg-muted animate-pulse rounded mb-1" />
-                        <div className="h-4 w-12 bg-muted animate-pulse rounded" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="w-1/3 h-48 bg-muted animate-pulse rounded-lg" />
-              </div>
-            </div>
-          ))
-        ) : liveHackathons.length === 0 ? (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-semibold mb-2">No active hackathons</h3>
-            <p className="text-muted-foreground">
-              {allHackathons.length === 0
-                ? "No hackathons have been created yet."
-                : "All hackathons have ended or haven't started yet."}
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none [mask-image:radial-gradient(circle_at_30%_20%,black,transparent_70%)] bg-[radial-gradient(circle_at_0%_0%,rgba(255,255,255,0.08),transparent_55%),radial-gradient(circle_at_100%_20%,rgba(59,130,246,0.15),transparent_60%)]" />
+      <div className="relative">
+        {/* Explore Section */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          custom={0}
+          variants={fadeUp}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8"
+        >
+          <div className="space-y-3 max-w-3xl">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+                Explore Hackathons
+              </span>
+            </h1>
+            <p className="text-sm md:text-base text-white/50 leading-relaxed">
+              Discover live and past hackathons. Filter by prize pool, stack,
+              and status to find the perfect challenge.
             </p>
           </div>
-        ) : (
-          liveHackathons.map((hackathon) => (
-            <HackathonCard key={hackathon.id} hackathon={hackathon} />
-          ))
-        )}
-      </div>
+          <Button
+            asChild
+            className={cn(
+              "bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25",
+              "transition-all duration-200 hover:scale-[1.02]"
+            )}
+          >
+            <Link href="/hackathons/create">Host a Hackathon</Link>
+          </Button>
+        </motion.div>
 
-      {/* Past Hackathons */}
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-6">Past Hackathons</h2>
-        <div className="space-y-6">
+        {/* Filter Bar */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          custom={1}
+          variants={fadeUp}
+          className="flex flex-wrap gap-3 md:gap-4 mb-10"
+        >
+          {/* Prize Range Filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-white/[0.07] text-white/80 hover:text-white"
+              >
+                {prizeRangeOptions.find(
+                  (option) => option.value === filters.prizeRange
+                )?.label || "Total Prize"}{" "}
+                <ChevronDown className="ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {prizeRangeOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      prizeRange: option.value,
+                    }))
+                  }
+                >
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Tech Stack Filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-white/[0.07] text-white/80 hover:text-white"
+              >
+                {techStackOptions.find(
+                  (option) => option.value === filters.techStack
+                )?.label || "Tech Stack"}{" "}
+                <ChevronDown className="ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {techStackOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() =>
+                    setFilters((prev) => ({ ...prev, techStack: option.value }))
+                  }
+                >
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Status Filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-white/[0.07] text-white/80 hover:text-white"
+              >
+                {statusOptions.find((option) => option.value === filters.status)
+                  ?.label || "Status"}{" "}
+                <ChevronDown className="ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {statusOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() =>
+                    setFilters((prev) => ({ ...prev, status: option.value }))
+                  }
+                >
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </motion.div>
+
+        {/* Hackathon Grid */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          custom={2}
+          variants={fadeUp}
+          className="space-y-6"
+        >
           {loading ? (
-            Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="border rounded-lg p-6">
+            // Loading skeleton
+            Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="border border-white/10 rounded-xl p-6 bg-white/[0.03] backdrop-blur-sm animate-pulse"
+              >
                 <div className="flex">
                   <div className="flex-1 space-y-4">
                     <div className="flex items-center gap-4">
-                      <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-                      <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                      <div className="h-8 w-48 bg-white/10 rounded" />
+                      <div className="h-6 w-20 bg-white/10 rounded" />
                     </div>
-                    <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-full bg-white/10 rounded" />
+                    <div className="grid grid-cols-4 gap-4">
+                      {Array.from({ length: 4 }).map((_, j) => (
+                        <div key={j}>
+                          <div className="h-4 w-16 bg-white/10 rounded mb-1" />
+                          <div className="h-4 w-12 bg-white/10 rounded" />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="w-1/3 h-32 bg-muted animate-pulse rounded-lg" />
+                  <div className="w-1/3 h-48 bg-white/10 rounded-lg" />
                 </div>
               </div>
             ))
-          ) : pastHackathons.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                No past hackathons to display
+          ) : liveHackathons.length === 0 ? (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-semibold mb-2 text-white/90">
+                No active hackathons
+              </h3>
+              <p className="text-white/50">
+                {allHackathons.length === 0
+                  ? "No hackathons have been created yet."
+                  : "All hackathons have ended or haven't started yet."}
               </p>
             </div>
           ) : (
-            pastHackathons.map((hackathon) => (
-              <HackathonCard key={hackathon.id} hackathon={hackathon} />
+            liveHackathons.map((hackathon, i) => (
+              <motion.div
+                key={hackathon.id}
+                custom={i}
+                initial="hidden"
+                animate="visible"
+                variants={fadeUp}
+              >
+                <HackathonCard hackathon={hackathon} />
+              </motion.div>
             ))
           )}
-        </div>
+        </motion.div>
+
+        {/* Past Hackathons */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          custom={3}
+          variants={fadeUp}
+          className="mt-20"
+        >
+          <h2 className="text-2xl font-semibold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+            Past Hackathons
+          </h2>
+          <div className="space-y-6">
+            {loading ? (
+              Array.from({ length: 2 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="border border-white/10 rounded-xl p-6 bg-white/[0.03] backdrop-blur-sm animate-pulse"
+                >
+                  <div className="flex">
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-8 w-48 bg-white/10 rounded" />
+                        <div className="h-6 w-20 bg-white/10 rounded" />
+                      </div>
+                      <div className="h-4 w-full bg-white/10 rounded" />
+                    </div>
+                    <div className="w-1/3 h-32 bg-white/10 rounded-lg" />
+                  </div>
+                </div>
+              ))
+            ) : pastHackathons.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-white/50">No past hackathons to display</p>
+              </div>
+            ) : (
+              pastHackathons.map((hackathon, i) => (
+                <motion.div
+                  key={hackathon.id}
+                  custom={i}
+                  initial="hidden"
+                  animate="visible"
+                  variants={fadeUp}
+                >
+                  <HackathonCard hackathon={hackathon} />
+                </motion.div>
+              ))
+            )}
+          </div>
+        </motion.div>
       </div>
     </div>
   );
