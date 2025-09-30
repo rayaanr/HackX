@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Trophy, Users, DollarSign } from "lucide-react";
+import { motion } from "framer-motion";
 import type { DashboardStats } from "@/types/hackathon";
 
 interface StatsCardsProps {
@@ -12,7 +13,7 @@ export function StatsCards({ stats, loading = false }: StatsCardsProps) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
+          <Card key={i} className="project-card-hover">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="h-4 w-20 bg-muted animate-pulse rounded" />
               <div className="h-4 w-4 bg-muted animate-pulse rounded" />
@@ -27,57 +28,124 @@ export function StatsCards({ stats, loading = false }: StatsCardsProps) {
     );
   }
 
+  const fadeUpVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Total Hackathons
-          </CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalHackathons}</div>
-          <p className="text-xs text-muted-foreground">All your hackathons</p>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeUpVariants}
+        transition={{
+          delay: 0,
+          duration: 0.5,
+          ease: [0.215, 0.61, 0.355, 1],
+        }}
+      >
+        <Card className="project-card-hover">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium group-hover:text-white transition-colors">
+              Total Hackathons
+            </CardTitle>
+            <Calendar className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold group-hover:text-white transition-colors">
+              {stats.totalHackathons}
+            </div>
+            <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">
+              All your hackathons
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Active Events</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.activeHackathons}</div>
-          <p className="text-xs text-muted-foreground">Currently running</p>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeUpVariants}
+        transition={{
+          delay: 0.1,
+          duration: 0.5,
+          ease: [0.215, 0.61, 0.355, 1],
+        }}
+      >
+        <Card className="project-card-hover">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium group-hover:text-white transition-colors">
+              Active Events
+            </CardTitle>
+            <Users className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold group-hover:text-white transition-colors">
+              {stats.activeHackathons}
+            </div>
+            <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">
+              Currently running
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Completed Events
-          </CardTitle>
-          <Trophy className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.completedHackathons}</div>
-          <p className="text-xs text-muted-foreground">Successfully finished</p>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeUpVariants}
+        transition={{
+          delay: 0.2,
+          duration: 0.5,
+          ease: [0.215, 0.61, 0.355, 1],
+        }}
+      >
+        <Card className="project-card-hover">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium group-hover:text-white transition-colors">
+              Completed Events
+            </CardTitle>
+            <Trophy className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold group-hover:text-white transition-colors">
+              {stats.completedHackathons}
+            </div>
+            <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">
+              Successfully finished
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Total Prize Value
-          </CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalPrizeValue}</div>
-          <p className="text-xs text-muted-foreground">Across all events</p>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeUpVariants}
+        transition={{
+          delay: 0.3,
+          duration: 0.5,
+          ease: [0.215, 0.61, 0.355, 1],
+        }}
+      >
+        <Card className="project-card-hover">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium group-hover:text-white transition-colors">
+              Total Prize Value
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold group-hover:text-white transition-colors">
+              {stats.totalPrizeValue}
+            </div>
+            <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">
+              Across all events
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

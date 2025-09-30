@@ -123,7 +123,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
 
   return (
     <div
-      className="mb-12 relative"
+      className="mb-12 relative group"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -131,7 +131,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
       <div className="absolute top-4 left-4 z-20">
         <Badge
           variant="default"
-          className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white"
+          className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg backdrop-blur-sm"
         >
           ⭐ Featured
         </Badge>
