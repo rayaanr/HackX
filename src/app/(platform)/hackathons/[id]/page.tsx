@@ -39,11 +39,13 @@ export default function HackathonPage() {
 
   if (loading) {
     return (
-      <div className="bg-background text-foreground">
-        <div className="container mx-auto">
-          <div className="flex justify-between pb-6">
+      <div className="container mx-auto">
+        <div className="flex justify-between pb-6">
             <Link href="/hackathons">
-              <Button variant="outline">
+              <Button
+                variant="outline"
+                className="hover:bg-white/10 hover:border-blue-400/50 transition-all duration-300"
+              >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
               </Button>
@@ -61,70 +63,77 @@ export default function HackathonPage() {
           </div>
           <div className="h-96 bg-muted animate-pulse rounded" />
         </div>
-      </div>
     );
   }
 
   if (error || !hackathon) {
     return (
-      <div className="bg-background text-foreground">
-        <div className="container mx-auto py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Hackathon Not Found</h1>
-            <Link href="/hackathons">
-              <Button>Browse Hackathons</Button>
-            </Link>
-          </div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center p-8 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
+          <h1 className="text-2xl font-bold mb-4 text-white">
+            Hackathon Not Found
+          </h1>
+          <Link href="/hackathons">
+            <Button className="hover:bg-white/10 hover:border-blue-400/50 transition-all duration-300">
+              Browse Hackathons
+            </Button>
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-background text-foreground">
+    <div>
       <div className="container mx-auto">
         <div className="flex justify-between pb-6">
           <Link href="/hackathons">
-            <Button variant="outline">
+            <Button
+              variant="outline"
+              className="hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all duration-300"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
           </Link>
           <div className="text-center">
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-3xl font-bold mb-2 text-white">
               {hackathon?.name || "Loading..."}
             </h1>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-white/70 mb-4">
               {hackathon?.shortDescription || "Loading description..."}
             </p>
             <RegistrationButton hackathonId={id} />
           </div>
           <ShareDialog url={`https://hackx.com/hackathons/${id}`}>
-            <Button variant="outline">
+            <Button
+              variant="outline"
+              className="hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all duration-300"
+            >
               <IconShare className="mr-2 h-4 w-4" />
               Share Link
             </Button>
           </ShareDialog>
         </div>
 
-        <div className="gap-1">
-          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw]">
+        <div className="gap-2">
+          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] pb-2">
             <Separator className="absolute top-0 left-0 right-0" />
           </div>
-          <div className="sticky top-[var(--header-height)] backdrop-blur-lg z-10 mb-3">
-            <div className="flex justify-center mt-2">
+          <div className="sticky top-16 backdrop-blur-xl border-white/10 z-10">
+            <div className="flex justify-center">
               <AnimatedTabs
                 tabs={hackathonTabs}
                 selectedTab={activeTab}
                 onTabChange={(value) =>
                   setActiveTab(
-                    value as "overview" | "prize" | "schedule" | "projects",
+                    value as "overview" | "prize" | "schedule" | "projects"
                   )
                 }
-                className="h-12 p-1"
+                className="h-14 p-1"
               />
             </div>
-            <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] my-2">
+            <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] mb-10 pt-2">
               <Separator className="absolute bottom-0 left-0 right-0" />
             </div>
           </div>
@@ -134,7 +143,7 @@ export default function HackathonPage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Hero Image */}
                 <div className="lg:col-span-2 space-y-6">
-                  <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+                  <div className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-sm shadow-2xl overflow-hidden">
                     <div className="relative aspect-video">
                       <Image
                         src={resolveIPFSToHttp(hackathon?.visual)}
@@ -144,7 +153,7 @@ export default function HackathonPage() {
                         priority
                       />
                       {/* Overlay with hackathon name */}
-                      <div className="absolute inset-0 bg-black/20 flex items-end">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-end">
                         <div className="p-6 text-white">
                           <h2 className="text-2xl font-bold drop-shadow-lg">
                             {hackathon?.name || "Loading..."}
@@ -156,10 +165,10 @@ export default function HackathonPage() {
 
                   {/* Description Section */}
                   <div className="space-y-4">
-                    <h3 className="text-xl font-semibold">
+                    <h3 className="text-xl font-semibold text-white">
                       About This Hackathon
                     </h3>
-                    <div className="prose prose-sm prose-zinc dark:prose-invert max-w-none">
+                    <div className="prose prose-sm prose-invert max-w-none [&>*]:text-white/80 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>h5]:text-white [&>h6]:text-white [&>strong]:text-white">
                       {/* prettier-ignore */}
                       {/* biome-ignore format */}
                       {parse(
@@ -187,23 +196,27 @@ export default function HackathonPage() {
                               "blockquote",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          },
-                        ),
+                          }
+                        )
                       )}
                     </div>
                   </div>
 
-                  {/* Quick Info Cards */}
+                  {/* Quick Info Cards - No hover effects since they're not interactive */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">Participants</h4>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
+                      <h4 className="font-medium mb-2 text-white">
+                        Participants
+                      </h4>
+                      <p className="text-sm text-white/70">
                         {hackathon?.participantCount || 0} registered
                       </p>
                     </div>
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">Total Prizes</h4>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
+                      <h4 className="font-medium mb-2 text-white">
+                        Total Prizes
+                      </h4>
+                      <p className="text-sm text-white/70">
                         {hackathon?.prizeCohorts
                           ?.reduce((sum: number, cohort: any) => {
                             const amount =
@@ -215,9 +228,11 @@ export default function HackathonPage() {
                           ?.toLocaleString() || "TBD"}
                       </p>
                     </div>
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-medium mb-2">Tech Stack</h4>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
+                      <h4 className="font-medium mb-2 text-white">
+                        Tech Stack
+                      </h4>
+                      <p className="text-sm text-white/70">
                         {hackathon?.techStack?.slice(0, 3).join(", ") ||
                           "Not specified"}
                       </p>
