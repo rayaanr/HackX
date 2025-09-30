@@ -54,13 +54,6 @@ export default function JudgeDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Judge Dashboard</h1>
-        <p className="text-muted-foreground">
-          Manage your judging assignments and review submissions
-        </p>
-      </div>
-
-      <div>
         <h2 className="text-2xl font-bold mb-6">Hackathons to judge</h2>
         <div className="space-y-6">
           {hackathonsToJudge.map((hackathon) => {

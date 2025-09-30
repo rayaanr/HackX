@@ -3,7 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,13 @@ export default function ExplorePage() {
     prizeRange: "",
     techStack: "",
     status: "",
+  });
+
+  // Dropdown open states for animations
+  const [dropdownStates, setDropdownStates] = useState({
+    prizeRange: false,
+    techStack: false,
+    status: false,
   });
 
   // Get data with fallbacks - hackathonData is now the direct array
@@ -190,86 +197,188 @@ export default function ExplorePage() {
           className="flex flex-wrap gap-3 md:gap-4 mb-10"
         >
           {/* Prize Range Filter */}
-          <DropdownMenu>
+          <DropdownMenu
+            onOpenChange={(open) =>
+              setDropdownStates((prev) => ({ ...prev, prizeRange: open }))
+            }
+          >
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-white/[0.07] text-white/80 hover:text-white"
+                className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-blue-500/10 hover:border-blue-500/30 text-white/80 hover:text-blue-500 transition-all duration-300 group"
               >
                 {prizeRangeOptions.find(
                   (option) => option.value === filters.prizeRange
                 )?.label || "Total Prize"}{" "}
-                <ChevronDown className="ml-2" />
+                <motion.div
+                  animate={{ rotate: dropdownStates.prizeRange ? 180 : 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <ChevronDown className="ml-2 w-4 h-4" />
+                </motion.div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {prizeRangeOptions.map((option) => (
-                <DropdownMenuItem
-                  key={option.value}
-                  onClick={() =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      prizeRange: option.value,
-                    }))
-                  }
-                >
-                  {option.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
+            <AnimatePresence>
+              {dropdownStates.prizeRange && (
+                <DropdownMenuContent asChild>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="border border-white/10 bg-black/40 backdrop-blur-md shadow-xl shadow-black/20 min-w-[160px] rounded-xl p-2 z-50"
+                  >
+                    {prizeRangeOptions.map((option, index) => (
+                      <motion.div
+                        key={option.value}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03, duration: 0.2 }}
+                      >
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setFilters((prev) => ({
+                              ...prev,
+                              prizeRange: option.value,
+                            }));
+                            setDropdownStates((prev) => ({
+                              ...prev,
+                              prizeRange: false,
+                            }));
+                          }}
+                          className="text-white/70 hover:text-blue-500 hover:bg-blue-500/10 focus:bg-blue-500/10 focus:text-blue-500 cursor-pointer transition-all duration-200 rounded-lg px-3 py-2 text-sm font-medium"
+                        >
+                          {option.label}
+                        </DropdownMenuItem>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </DropdownMenuContent>
+              )}
+            </AnimatePresence>
           </DropdownMenu>
 
           {/* Tech Stack Filter */}
-          <DropdownMenu>
+          <DropdownMenu
+            onOpenChange={(open) =>
+              setDropdownStates((prev) => ({ ...prev, techStack: open }))
+            }
+          >
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-white/[0.07] text-white/80 hover:text-white"
+                className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-blue-500/10 hover:border-blue-500/30 text-white/80 hover:text-blue-500 transition-all duration-300 group"
               >
                 {techStackOptions.find(
                   (option) => option.value === filters.techStack
                 )?.label || "Tech Stack"}{" "}
-                <ChevronDown className="ml-2" />
+                <motion.div
+                  animate={{ rotate: dropdownStates.techStack ? 180 : 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <ChevronDown className="ml-2 w-4 h-4" />
+                </motion.div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {techStackOptions.map((option) => (
-                <DropdownMenuItem
-                  key={option.value}
-                  onClick={() =>
-                    setFilters((prev) => ({ ...prev, techStack: option.value }))
-                  }
-                >
-                  {option.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
+            <AnimatePresence>
+              {dropdownStates.techStack && (
+                <DropdownMenuContent asChild>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="border border-white/10 bg-black/40 backdrop-blur-md shadow-xl shadow-black/20 min-w-[160px] rounded-xl p-2 z-50"
+                  >
+                    {techStackOptions.map((option, index) => (
+                      <motion.div
+                        key={option.value}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03, duration: 0.2 }}
+                      >
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setFilters((prev) => ({
+                              ...prev,
+                              techStack: option.value,
+                            }));
+                            setDropdownStates((prev) => ({
+                              ...prev,
+                              techStack: false,
+                            }));
+                          }}
+                          className="text-white/70 hover:text-blue-500 hover:bg-blue-500/10 focus:bg-blue-500/10 focus:text-blue-500 cursor-pointer transition-all duration-200 rounded-lg px-3 py-2 text-sm font-medium"
+                        >
+                          {option.label}
+                        </DropdownMenuItem>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </DropdownMenuContent>
+              )}
+            </AnimatePresence>
           </DropdownMenu>
 
           {/* Status Filter */}
-          <DropdownMenu>
+          <DropdownMenu
+            onOpenChange={(open) =>
+              setDropdownStates((prev) => ({ ...prev, status: open }))
+            }
+          >
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-white/[0.07] text-white/80 hover:text-white"
+                className="backdrop-blur-sm bg-white/[0.04] border-white/10 hover:bg-blue-500/10 hover:border-blue-500/30 text-white/80 hover:text-blue-500 transition-all duration-300 group"
               >
                 {statusOptions.find((option) => option.value === filters.status)
                   ?.label || "Status"}{" "}
-                <ChevronDown className="ml-2" />
+                <motion.div
+                  animate={{ rotate: dropdownStates.status ? 180 : 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <ChevronDown className="ml-2 w-4 h-4" />
+                </motion.div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {statusOptions.map((option) => (
-                <DropdownMenuItem
-                  key={option.value}
-                  onClick={() =>
-                    setFilters((prev) => ({ ...prev, status: option.value }))
-                  }
-                >
-                  {option.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
+            <AnimatePresence>
+              {dropdownStates.status && (
+                <DropdownMenuContent asChild>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="border border-white/10 bg-black/40 backdrop-blur-md shadow-xl shadow-black/20 min-w-[160px] rounded-xl p-2 z-50"
+                  >
+                    {statusOptions.map((option, index) => (
+                      <motion.div
+                        key={option.value}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03, duration: 0.2 }}
+                      >
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setFilters((prev) => ({
+                              ...prev,
+                              status: option.value,
+                            }));
+                            setDropdownStates((prev) => ({
+                              ...prev,
+                              status: false,
+                            }));
+                          }}
+                          className="text-white/70 hover:text-blue-500 hover:bg-blue-500/10 focus:bg-blue-500/10 focus:text-blue-500 cursor-pointer transition-all duration-200 rounded-lg px-3 py-2 text-sm font-medium"
+                        >
+                          {option.label}
+                        </DropdownMenuItem>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </DropdownMenuContent>
+              )}
+            </AnimatePresence>
           </DropdownMenu>
         </motion.div>
 

@@ -25,7 +25,6 @@ import {
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import Image from "next/image";
 import { ComponentProps } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
@@ -174,21 +173,20 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                 className={cn(
                   "data-[slot=sidebar-menu-button]:!p-1.5 justify-start",
                   "relative group",
-                  // Logo hover aura matching dark theme
-                  "hover:bg-white/8 hover:shadow-[0_0_20px_rgba(255,255,255,0.02)]"
                 )}
               >
-                <Link href="#" className="flex items-center gap-2">
-                  <Image
-                    src="/logo-icon.svg"
-                    alt="Logo"
-                    height={32}
-                    width={32}
-                    className="shrink-0"
-                  />
-                  <span className="text-base font-semibold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 tracking-tight">
-                    HackX
-                  </span>
+                <Link href="#" className="flex gap-2">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-primary/20 to-primary/30 border border-white/[0.1] shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-gradient-to-r from-primary/80 to-primary" />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-base font-semibold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 tracking-tight">
+                      HackX
+                    </span>
+                    <span className="text-xs text-white/40 -mt-0.5 ml-2">
+                      by AthenaX
+                    </span>
+                  </div>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
