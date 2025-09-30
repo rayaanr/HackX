@@ -17,7 +17,7 @@ export default function Providers({ children }: { children: ReactNode }) {
             refetchOnWindowFocus: false,
           },
         },
-      }),
+      })
   );
 
   return (
@@ -25,8 +25,8 @@ export default function Providers({ children }: { children: ReactNode }) {
       <Web3Provider>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           {children}
