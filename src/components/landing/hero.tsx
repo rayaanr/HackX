@@ -76,10 +76,12 @@ function HeroGeometric({
   badge = "Design Collective",
   title1 = "Elevate Your Digital Vision",
   title2 = "Crafting Exceptional Websites",
+  subtitle = "Crafting exceptional digital experiences through innovative design and cutting-edge technology.",
 }: {
   badge?: string;
   title1?: string;
   title2?: string;
+  subtitle?: string;
 }) {
   const fadeUpVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -186,8 +188,7 @@ function HeroGeometric({
             animate="visible"
           >
             <p className="text-base sm:text-lg md:text-xl text-white/40 mb-8 md:mb-12 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
-              Crafting exceptional digital experiences through innovative design
-              and cutting-edge technology.
+              {subtitle}
             </p>
           </motion.div>
 

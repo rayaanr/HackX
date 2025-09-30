@@ -10,15 +10,18 @@ import {
   IconBrandLinkedin,
 } from "@tabler/icons-react";
 
+const YEAR = new Date().getFullYear();
+
 export default function HomePage() {
   return (
     <div className="relative min-h-screen flex flex-col">
       <LandingNavbar />
       <main className="flex-1">
         <HeroGeometric
-          badge="HackX Platform"
+          badge="AthenaX"
           title1="Build Amazing"
-          title2="Hackathon Projects"
+          title2="Hackathons"
+          subtitle="Discover, Participate, and Showcase Innovation with fully on-chain hackathons."
         />
         <HackXFeatures />
       </main>
@@ -60,7 +63,7 @@ export default function HomePage() {
           { href: "/cookies", label: "Cookie Policy" },
         ]}
         copyright={{
-          text: "© 2024 HackX Platform",
+          text: `© ${YEAR} HackX Platform`,
           license: "Powered by Web3 • Built for Innovators",
         }}
       />
