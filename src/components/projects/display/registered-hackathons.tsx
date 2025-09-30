@@ -158,140 +158,143 @@ export function RegisteredHackathons() {
                   duration: 0.5,
                   ease: [0.215, 0.61, 0.355, 1],
                 }}
-                className="group relative"
+                className="group relative h-full"
               >
-                <Card className="p-6 md:p-7 transition-all duration-300 overflow-hidden relative border border-white/10 bg-white/[0.02] backdrop-blur-sm hover:border-white/20 hover:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.08)]">
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.08),transparent_60%)]" />
-                  <div className="flex flex-col md:flex-row gap-6 relative z-10">
-                    <div className="flex-1">
-                      <CardHeader className="p-0 mb-5">
-                        <div className="flex flex-wrap items-center justify-between gap-4">
-                          <div className="flex flex-wrap items-center gap-3 md:gap-4">
-                            <CardTitle className="text-xl md:text-2xl font-semibold tracking-tight group-hover:text-white">
-                              {hackathon.name || `Hackathon ${hackathon.id}`}
-                            </CardTitle>
-                            <Badge
-                              variant={statusVariant}
-                              className="text-[10px] uppercase tracking-wide py-1"
-                            >
-                              {status}
-                            </Badge>
-                          </div>
-                          <CardAction className="p-0">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="hover:bg-white/10 text-white/70 hover:text-white"
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/hackathons/${hackathon.id}`}>
-                                    <LinkIcon className="w-4 h-4 mr-2" />
-                                    View Details
-                                  </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                  <Link
-                                    href={`/projects/create?hackathon=${hackathon.id}`}
+                <Card className="project-card-hover h-full p-6 md:p-7">
+                  <div className="relative z-10 h-full">
+                    <div className="flex flex-col md:flex-row gap-6 h-full">
+                      <div className="flex-1 flex flex-col">
+                        <CardHeader className="p-0 mb-5">
+                          <div className="flex flex-wrap items-center justify-between gap-4">
+                            <div className="flex flex-wrap items-center gap-3 md:gap-4">
+                              <CardTitle className="text-xl md:text-2xl font-semibold tracking-tight group-hover:text-white">
+                                {hackathon.name || `Hackathon ${hackathon.id}`}
+                              </CardTitle>
+                              <Badge
+                                variant={statusVariant}
+                                className="text-[10px] uppercase tracking-wide py-1"
+                              >
+                                {status}
+                              </Badge>
+                            </div>
+                            <CardAction className="p-0">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="hover:bg-white/10 text-white/70 hover:text-white"
                                   >
-                                    Submit Project
-                                  </Link>
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </CardAction>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        <p className="text-white/60 mb-5 line-clamp-3">
-                          {hackathon.shortDescription ||
-                            "No description provided."}
-                        </p>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs md:text-sm">
-                          <div className="space-y-1">
-                            <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
-                              <Calendar className="size-3.5 mr-1.5" />
-                              Registration closes
-                            </h6>
-                            <p className="font-semibold text-white/85 text-sm">
-                              {hackathon.registrationPeriod?.registrationEndDate
-                                ? formatDisplayDate(
-                                    hackathon.registrationPeriod
-                                      .registrationEndDate
-                                  )
-                                : "TBD"}
-                            </p>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/hackathons/${hackathon.id}`}>
+                                      <LinkIcon className="w-4 h-4 mr-2" />
+                                      View Details
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild>
+                                    <Link
+                                      href={`/projects/create?hackathon=${hackathon.id}`}
+                                    >
+                                      Submit Project
+                                    </Link>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </CardAction>
                           </div>
-                          <div className="space-y-1">
-                            <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
-                              <Code className="size-3.5 mr-1.5" />
-                              Tech Stack
-                            </h6>
-                            <p className="font-semibold text-white/85 text-sm truncate">
-                              {hackathon.techStack &&
-                              hackathon.techStack.length > 0
-                                ? hackathon.techStack.slice(0, 3).join(", ")
-                                : "Any"}
-                            </p>
+                        </CardHeader>
+                        <CardContent className="p-0 flex-1 flex flex-col">
+                          <p className="text-white/60 mb-5 line-clamp-3">
+                            {hackathon.shortDescription ||
+                              "No description provided."}
+                          </p>
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs md:text-sm mb-5">
+                            <div className="space-y-1">
+                              <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                                <Calendar className="size-3.5 mr-1.5" />
+                                Registration closes
+                              </h6>
+                              <p className="font-semibold text-white/85 text-sm">
+                                {hackathon.registrationPeriod
+                                  ?.registrationEndDate
+                                  ? formatDisplayDate(
+                                      hackathon.registrationPeriod
+                                        .registrationEndDate
+                                    )
+                                  : "TBD"}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                                <Code className="size-3.5 mr-1.5" />
+                                Tech Stack
+                              </h6>
+                              <p className="font-semibold text-white/85 text-sm truncate">
+                                {hackathon.techStack &&
+                                hackathon.techStack.length > 0
+                                  ? hackathon.techStack.slice(0, 3).join(", ")
+                                  : "Any"}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                                <Trophy className="size-3.5 mr-1.5" />
+                                Level
+                              </h6>
+                              <p className="font-semibold text-white/85 text-sm capitalize">
+                                {hackathon.experienceLevel
+                                  ? `${hackathon.experienceLevel}`
+                                  : "All"}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                                <Trophy className="size-3.5 mr-1.5" />
+                                Total Prize
+                              </h6>
+                              <p className="font-semibold text-white/85 text-sm">
+                                TBD
+                              </p>
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
-                              <Trophy className="size-3.5 mr-1.5" />
-                              Level
-                            </h6>
-                            <p className="font-semibold text-white/85 text-sm capitalize">
-                              {hackathon.experienceLevel
-                                ? `${hackathon.experienceLevel}`
-                                : "All"}
-                            </p>
-                          </div>
-                          <div className="space-y-1">
-                            <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
-                              <Trophy className="size-3.5 mr-1.5" />
-                              Total Prize
-                            </h6>
-                            <p className="font-semibold text-white/85 text-sm">
-                              TBD
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-5 mt-6">
-                          <Button
-                            asChild
-                            className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
-                          >
-                            <Link
-                              href={`/projects/create?hackathon=${hackathon.id}`}
+
+                          <div className="flex flex-wrap items-center gap-5 mt-auto">
+                            <Button
+                              asChild
+                              className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
                             >
-                              Submit Project
-                            </Link>
-                          </Button>
-                          <div className="text-xs md:text-sm text-white/55">
-                            <span className="font-medium">
-                              {formatDateRange(
-                                hackathon.hackathonPeriod?.hackathonStartDate,
-                                hackathon.hackathonPeriod?.hackathonEndDate
-                              )}
-                            </span>
+                              <Link
+                                href={`/projects/create?hackathon=${hackathon.id}`}
+                              >
+                                Submit Project
+                              </Link>
+                            </Button>
+                            <div className="text-xs md:text-sm text-white/55">
+                              <span className="font-medium">
+                                {formatDateRange(
+                                  hackathon.hackathonPeriod?.hackathonStartDate,
+                                  hackathon.hackathonPeriod?.hackathonEndDate
+                                )}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </div>
-                    <div className="relative md:w-1/3 overflow-hidden rounded-lg group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <Image
-                        height={200}
-                        width={300}
-                        src={resolveIPFSToHttp(hackathon.visual)}
-                        alt={hackathon.name || `Hackathon ${hackathon.id}`}
-                        className="h-40 md:h-full w-full object-cover rounded-lg transform group-hover:scale-[1.03] transition-transform duration-500"
-                        unoptimized
-                      />
+                        </CardContent>
+                      </div>
+                      <div className="relative md:w-1/3 overflow-hidden rounded-lg group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Image
+                          height={200}
+                          width={300}
+                          src={resolveIPFSToHttp(hackathon.visual)}
+                          alt={hackathon.name || `Hackathon ${hackathon.id}`}
+                          className="h-40 md:h-full w-full object-cover rounded-lg transform group-hover:scale-[1.03] transition-transform duration-500"
+                          unoptimized
+                        />
+                      </div>
                     </div>
                   </div>
                 </Card>

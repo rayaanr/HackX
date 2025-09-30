@@ -19,11 +19,15 @@ interface HackathonCardProps {
 }
 
 export function HackathonCard({ hackathon }: HackathonCardProps) {
-  const statusVariant = getStatusVariant(status as HackathonStatus);
+  const hackathonStatus = getUIHackathonStatus({
+    ...hackathon,
+    votingPeriod: hackathon.votingPeriod || undefined,
+  });
+  const statusVariant = getStatusVariant(hackathonStatus as HackathonStatus);
 
   // Get the relevant deadline based on current status
   const deadline = (() => {
-    switch (status) {
+    switch (hackathonStatus) {
       case "Registration Open":
         return safeToDate(hackathon.registrationPeriod?.registrationEndDate);
       case "Registration Closed":
@@ -48,106 +52,107 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
   ];
 
   return (
-    <Link href={`/hackathons/${hackathon.id}`} className="block group">
-      <Card className="p-6 md:p-7 transition-all duration-300 cursor-pointer overflow-hidden relative border border-white/10 bg-white/[0.02] backdrop-blur-sm hover:border-white/20 hover:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.08)]">
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.08),transparent_60%)]" />
-        <div className="flex flex-col md:flex-row gap-6 relative z-10">
-          <div className="flex-1 min-w-0">
-            <CardHeader className="p-0 mb-5">
-              <div className="flex flex-wrap items-center gap-3 md:gap-4">
-                <CardTitle className="text-xl md:text-2xl font-semibold tracking-tight group-hover:text-white">
-                  {hackathon.name}
-                </CardTitle>
-                <Badge
-                  variant={statusVariant}
-                  className="text-[10px] uppercase tracking-wide py-1"
-                >
-                  {status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <p className="text-sm md:text-base text-white/60 mb-5 line-clamp-3">
-                {hackathon.shortDescription}
-              </p>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs md:text-sm">
-                <div className="space-y-1">
-                  <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
-                    <Calendar className="size-3.5 mr-1.5" />
-                    {status === "Ended" ? "Status" : "Days Left"}
-                  </h6>
-                  <p className="font-semibold text-white/85 text-sm">
-                    {status === "Ended"
-                      ? "Completed"
-                      : deadline
-                      ? `${daysLeft} days`
-                      : "TBD"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
-                    <Code className="size-3.5 mr-1.5" />
-                    Tech Stack
-                  </h6>
-                  <p className="font-semibold text-white/85 text-sm truncate">
-                    {hackathon.techStack?.slice(0, 3).join(", ")}
-                    {hackathon.techStack &&
-                      hackathon.techStack.length > 3 &&
-                      "..."}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
-                    <Trophy className="size-3.5 mr-1.5" />
-                    Level
-                  </h6>
-                  <p className="font-semibold text-white/85 text-sm capitalize">
-                    {hackathon.experienceLevel}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
-                    <Award className="size-3.5 mr-1.5" />
-                    Location
-                  </h6>
-                  <p
-                    className="font-semibold text-white/85 text-sm truncate"
-                    title={hackathon.location}
+    <Link href={`/hackathons/${hackathon.id}`} className="block group h-full">
+      <Card className="project-card-hover h-full p-6 md:p-7 cursor-pointer">
+        <div className="relative z-10 h-full">
+          <div className="flex flex-col md:flex-row gap-6 h-full">
+            <div className="flex-1 min-w-0 flex flex-col">
+              <CardHeader className="p-0 mb-5">
+                <div className="flex flex-wrap items-center gap-3 md:gap-4">
+                  <CardTitle className="text-xl md:text-2xl font-semibold tracking-tight group-hover:text-white">
+                    {hackathon.name}
+                  </CardTitle>
+                  <Badge
+                    variant={statusVariant}
+                    className="text-[10px] uppercase tracking-wide py-1"
                   >
-                    {hackathon.location}
-                  </p>
+                    {hackathonStatus}
+                  </Badge>
                 </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-5 mt-5">
-                <AvatarList
-                  images={participantAvatars}
-                  totalCount={150}
-                  additionalCount={0}
-                  className="border-0 shadow-none"
-                />
-                <div className="flex items-center text-xs md:text-sm text-white/60">
-                  <Trophy className="h-4 w-4 mr-1 text-white/50" />
-                  <span>
-                    {hackathon.prizeCohorts?.length || 0} Prize
-                    {hackathon.prizeCohorts &&
-                    hackathon.prizeCohorts.length !== 1
-                      ? "s"
-                      : ""}
-                  </span>
+              </CardHeader>
+              <CardContent className="p-0 flex-1 flex flex-col">
+                <p className="text-sm md:text-base text-white/60 mb-5 line-clamp-3">
+                  {hackathon.shortDescription}
+                </p>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs md:text-sm mb-5">
+                  <div className="space-y-1">
+                    <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                      <Calendar className="size-3.5 mr-1.5" />
+                      {hackathonStatus === "Ended" ? "Status" : "Days Left"}
+                    </h6>
+                    <p className="font-semibold text-white/85 text-sm">
+                      {hackathonStatus === "Ended"
+                        ? "Completed"
+                        : deadline
+                        ? `${daysLeft} days`
+                        : "TBD"}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                      <Code className="size-3.5 mr-1.5" />
+                      Tech Stack
+                    </h6>
+                    <p className="font-semibold text-white/85 text-sm truncate">
+                      {hackathon.techStack?.slice(0, 3).join(", ")}
+                      {hackathon.techStack &&
+                        hackathon.techStack.length > 3 &&
+                        "..."}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                      <Trophy className="size-3.5 mr-1.5" />
+                      Level
+                    </h6>
+                    <p className="font-semibold text-white/85 text-sm capitalize">
+                      {hackathon.experienceLevel}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                      <Award className="size-3.5 mr-1.5" />
+                      Location
+                    </h6>
+                    <p
+                      className="font-semibold text-white/85 text-sm truncate"
+                      title={hackathon.location}
+                    >
+                      {hackathon.location}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </div>
-          <div className="relative md:w-1/3 overflow-hidden rounded-lg group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Image
-              height={200}
-              width={300}
-              src={resolveIPFSToHttp(hackathon.visual)}
-              alt={hackathon.name}
-              className="h-40 md:h-full w-full object-cover rounded-lg transform group-hover:scale-[1.03] transition-transform duration-500"
-              unoptimized
-            />
+                <div className="flex flex-wrap items-center gap-5 mt-auto">
+                  <AvatarList
+                    images={participantAvatars}
+                    totalCount={150}
+                    additionalCount={0}
+                    className="border-0 shadow-none"
+                  />
+                  <div className="flex items-center text-xs md:text-sm text-white/60">
+                    <Trophy className="h-4 w-4 mr-1 text-white/50" />
+                    <span>
+                      {hackathon.prizeCohorts?.length || 0} Prize
+                      {hackathon.prizeCohorts &&
+                      hackathon.prizeCohorts.length !== 1
+                        ? "s"
+                        : ""}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </div>
+            <div className="relative md:w-1/3 overflow-hidden rounded-lg group">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Image
+                height={200}
+                width={300}
+                src={resolveIPFSToHttp(hackathon.visual)}
+                alt={hackathon.name}
+                className="h-40 md:h-full w-full object-cover rounded-lg transform group-hover:scale-[1.03] transition-transform duration-500"
+                unoptimized
+              />
+            </div>
           </div>
         </div>
       </Card>
