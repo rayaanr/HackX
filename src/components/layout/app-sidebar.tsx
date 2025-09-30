@@ -149,22 +149,23 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       {...props}
       className={cn(
         "z-30 border-r border-white/10",
-        // Glass + layered subtle gradients inspired by landing hero + navbar
-        "before:absolute before:inset-0 before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.04),transparent_40%)] before:pointer-events-none before:z-0",
-        "after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_0%_0%,rgba(255,255,255,0.10),transparent_65%)] after:pointer-events-none after:z-0",
-        "backdrop-blur-xl bg-[#050505]/80 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_4px_28px_-6px_rgba(0,0,0,0.6)]",
+        // Dark gradients to match card hover theme
+        "before:absolute before:inset-0 before:bg-[linear-gradient(to_bottom,rgba(0,0,0,0.3),transparent_60%)] before:pointer-events-none before:z-0",
+        "after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_0%_0%,rgba(59,130,246,0.08),transparent_70%)] after:pointer-events-none after:z-0",
+        "backdrop-blur-xl bg-[#0a0a0a]/95 shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_32px_-8px_rgba(0,0,0,0.8)]",
         "[&_[data-sidebar=menu-button]]:transition-all [&_[data-sidebar=menu-button]]:duration-200",
-        // Active / hover refinement
-        "[&_[data-sidebar=menu-button][data-active=true]]:bg-gradient-to-r [&_[data-sidebar=menu-button][data-active=true]]:from-primary/25 [&_[data-sidebar=menu-button][data-active=true]]:to-primary/5",
-        "[&_[data-sidebar=menu-button][data-active=true]]:shadow-inner [&_[data-sidebar=menu-button][data-active=true]]:border [&_[data-sidebar=menu-button][data-active=true]]:border-primary/30",
+        // Active / hover refinement with darker theme
+        "[&_[data-sidebar=menu-button][data-active=true]]:bg-gradient-to-r [&_[data-sidebar=menu-button][data-active=true]]:from-primary/20 [&_[data-sidebar=menu-button][data-active=true]]:to-primary/5",
+        "[&_[data-sidebar=menu-button][data-active=true]]:shadow-[inset_0_1px_0_rgba(59,130,246,0.1),inset_0_-1px_0_rgba(0,0,0,0.2)] [&_[data-sidebar=menu-button][data-active=true]]:border [&_[data-sidebar=menu-button][data-active=true]]:border-primary/20",
         // Icon tinting
         "[&_[data-sidebar=menu-button][data-active=true]_svg]:text-primary",
-        // Hover subtle lift
-        "[&_[data-sidebar=menu-button]:not([data-active=true])]:hover:bg-white/5",
-        "[&_[data-sidebar=menu-button]:not([data-active=true])]:hover:text-white/90"
+        // Hover effects matching card hover theme
+        "[&_[data-sidebar=menu-button]:not([data-active=true])]:hover:bg-white/8",
+        "[&_[data-sidebar=menu-button]:not([data-active=true])]:hover:text-white/95",
+        "[&_[data-sidebar=menu-button]:not([data-active=true])]:hover:shadow-[0_0_20px_rgba(255,255,255,0.02)]"
       )}
     >
-      <div className="relative h-full flex flex-col before:absolute before:inset-0 before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.04),transparent_40%)] before:pointer-events-none after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_0%_0%,rgba(255,255,255,0.10),transparent_65%)] after:pointer-events-none">
+      <div className="relative h-full flex flex-col before:absolute before:inset-0 before:bg-[linear-gradient(to_bottom,rgba(0,0,0,0.2),transparent_50%)] before:pointer-events-none after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_0%_0%,rgba(59,130,246,0.06),transparent_75%)] after:pointer-events-none">
         <SidebarHeader className="relative z-10">
           <SidebarMenu>
             <SidebarMenuItem>
@@ -173,8 +174,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                 className={cn(
                   "data-[slot=sidebar-menu-button]:!p-1.5 justify-start",
                   "relative group",
-                  // Logo hover aura
-                  "hover:bg-white/5"
+                  // Logo hover aura matching dark theme
+                  "hover:bg-white/8 hover:shadow-[0_0_20px_rgba(255,255,255,0.02)]"
                 )}
               >
                 <Link href="#" className="flex items-center gap-2">

@@ -26,11 +26,11 @@ export function SiteHeader() {
         // Sticky inside the content area (excludes the sidebar automatically)
         "sticky top-0 z-40 h-(--header-height) flex items-center gap-2 shrink-0 w-full",
         "transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)",
-        // Glass + layered gradients aligned with sidebar
-        "border-b border-white/10 backdrop-blur-xl bg-[#050505]/70",
+        // Dark gradients to match card hover theme
+        "border-b border-white/10 backdrop-blur-xl bg-[#0a0a0a]/90",
         "relative",
-        "before:absolute before:inset-0 before:bg-[linear-gradient(to_right,rgba(255,255,255,0.06),transparent_30%,transparent_70%,rgba(255,255,255,0.05))] before:pointer-events-none",
-        "after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_10%_45%,rgba(255,255,255,0.12),transparent_60%)] after:opacity-70 after:mix-blend-overlay after:pointer-events-none"
+        "before:absolute before:inset-0 before:bg-[linear-gradient(to_right,rgba(0,0,0,0.4),transparent_40%,transparent_60%,rgba(0,0,0,0.3))] before:pointer-events-none",
+        "after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_15%_50%,rgba(59,130,246,0.08),transparent_65%)] after:pointer-events-none"
       )}
     >
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6 relative z-10">
@@ -67,7 +67,7 @@ export function SiteHeader() {
               className={cn(
                 "rounded-full relative",
                 "hover:bg-white/10 text-white/70 hover:text-white",
-                "after:absolute after:-inset-px after:rounded-full after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.18),transparent_70%)] after:opacity-0 hover:after:opacity-100 after:transition-opacity"
+                "after:absolute after:-inset-px after:rounded-full after:bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.12),transparent_70%)] after:opacity-0 hover:after:opacity-100 after:transition-opacity"
               )}
             >
               <IconBell className="size-4" />
@@ -77,7 +77,7 @@ export function SiteHeader() {
         </motion.div>
       </div>
       {/* Subtle bottom fade for content separation */}
-      <div className="pointer-events-none absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+      <div className="pointer-events-none absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
     </header>
   );
 }
