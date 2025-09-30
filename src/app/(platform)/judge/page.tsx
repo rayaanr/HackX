@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { useActiveAccount } from "thirdweb/react";
 import { ArrowRight, Calendar, MapPin, Award, Code } from "lucide-react";
 import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
@@ -77,18 +78,7 @@ export default function JudgeDashboardPage() {
                       <h3 className="text-xl font-semibold group-hover:text-white transition-colors">
                         {hackathon.name}
                       </h3>
-                      <Badge
-                        variant={
-                          status === "Live"
-                            ? "default"
-                            : status === "Voting"
-                            ? "secondary"
-                            : "outline"
-                        }
-                        className="text-[10px] uppercase tracking-wide py-1"
-                      >
-                        {status}
-                      </Badge>
+                      <StatusBadge status={status} type="hackathon" size="xs" />
                     </div>
                     <Button asChild>
                       <Link href={`/judge/${hackathon.id}`}>

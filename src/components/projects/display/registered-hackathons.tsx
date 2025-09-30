@@ -27,7 +27,7 @@ import {
   formatDateRange,
   getUIHackathonStatus,
 } from "@/lib/helpers/date";
-import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
+import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import Image from "next/image";
@@ -146,7 +146,7 @@ export function RegisteredHackathons() {
               ...hackathon,
               votingPeriod: hackathon.votingPeriod || undefined,
             });
-            const statusVariant = getStatusVariant(status);
+            const statusVariant = getHackathonStatusVariant(status);
 
             return (
               <motion.div

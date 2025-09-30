@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import { Plus } from "lucide-react";
 import type { UIHackathon } from "@/types/hackathon";
-import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
+import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import { format } from "date-fns";
@@ -51,7 +51,7 @@ export function RecentHackathons({
     .sort(
       (a, b) =>
         new Date(b.hackathonPeriod?.hackathonStartDate || 0).getTime() -
-        new Date(a.hackathonPeriod?.hackathonStartDate || 0).getTime(),
+        new Date(a.hackathonPeriod?.hackathonStartDate || 0).getTime()
     )
     .slice(0, 5);
 
@@ -88,9 +88,9 @@ export function RecentHackathons({
                 ...hackathon,
                 votingPeriod: hackathon.votingPeriod || undefined,
               });
-              const variant = getStatusVariant(status);
+              const variant = getHackathonStatusVariant(status);
               const totalPrize = calculateTotalPrizeAmount(
-                hackathon.prizeCohorts || [],
+                hackathon.prizeCohorts || []
               );
 
               return (
@@ -117,7 +117,7 @@ export function RecentHackathons({
                           {hackathon.hackathonPeriod?.hackathonStartDate
                             ? format(
                                 hackathon.hackathonPeriod.hackathonStartDate,
-                                "dd MMM yyyy",
+                                "dd MMM yyyy"
                               )
                             : "TBD"}
                         </span>

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AvatarList } from "@/components/ui/avatar-list";
 import type { UIHackathon } from "@/types/hackathon";
-import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
+import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import {
   safeToDate,
   getDaysLeft,
@@ -23,7 +23,9 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
     ...hackathon,
     votingPeriod: hackathon.votingPeriod || undefined,
   });
-  const statusVariant = getStatusVariant(hackathonStatus as HackathonStatus);
+  const statusVariant = getHackathonStatusVariant(
+    hackathonStatus as HackathonStatus
+  );
 
   // Get the relevant deadline based on current status
   const deadline = (() => {

@@ -3,35 +3,18 @@ import type {
   HackathonStatus,
   JudgeStatus,
 } from "@/types/hackathon";
+import {
+  getHackathonStatusVariant,
+  getStatusDisplayText,
+  type StatusVariant,
+} from "./status";
 
-// Get status variant for badge styling
-export function getStatusVariant(
-  status: HackathonStatus,
-):
-  | "default"
-  | "secondary"
-  | "destructive"
-  | "outline"
-  | "green"
-  | "red"
-  | "blue"
-  | "purple"
-  | "orange"
-  | "yellow" {
-  switch (status) {
-    case "Live":
-    case "Registration Open":
-      return "green";
-    case "Voting":
-      return "blue";
-    case "Registration Closed":
-      return "yellow";
-    case "Ended":
-      return "red";
-    default:
-      return "default";
-  }
+// Re-export the centralized status utilities for backward compatibility
+export function getStatusVariant(status: HackathonStatus): StatusVariant {
+  return getHackathonStatusVariant(status);
 }
+
+export { getStatusDisplayText };
 
 // All database-related functions removed
 // Use blockchain-transforms.ts for blockchain data transformations
