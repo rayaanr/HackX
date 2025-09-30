@@ -20,8 +20,18 @@ import {
 } from "@/components/ui/form";
 import { Rating, RatingButton } from "@/components/ui/rating";
 import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
-import { ArrowLeft, Clock, Award } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  Award,
+  ExternalLink,
+  Star,
+  Target,
+  Lightbulb,
+  CheckCircle,
+} from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import type { ProjectWithHackathon } from "@/types/hackathon";
 import { useJudgeEvaluation } from "@/hooks/use-judge";
@@ -87,7 +97,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   // Find the specific project
   const project = projects.find(
-    (p: ProjectWithHackathon) => p.id.toString() === projectId,
+    (p: ProjectWithHackathon) => p.id.toString() === projectId
   );
 
   if (!project) {
@@ -143,7 +153,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     } else {
       toast.error(
         result.error || "Failed to submit evaluation. Please try again.",
-        { id: "evaluation-submission" },
+        { id: "evaluation-submission" }
       );
     }
   };
@@ -151,18 +161,48 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={`/judge/${hackathon.id}`}>
-            <ArrowLeft className="size-4 mr-2" />
-            Back to Projects
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-          <p className="text-muted-foreground">
-            Evaluating project for {hackathon.name}
-          </p>
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/judge/${hackathon.id}`}>
+              <ArrowLeft className="size-4 mr-2" />
+              Back to Projects
+            </Link>
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold tracking-tight">
+              {project.name}
+            </h1>
+            <p className="text-muted-foreground">
+              Evaluating project for {hackathon.name}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <Link
+              href={`/projects/${project.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="size-4 mr-2" />
+              View Project
+            </Link>
+          </Button>
+        </div>
+
+        {/* Project Quick Info */}
+        <div className="flex flex-wrap gap-2">
+          {project.techStack &&
+            project.techStack.length > 0 &&
+            project.techStack.slice(0, 3).map((tech: string) => (
+              <Badge key={tech} variant="secondary" className="text-xs">
+                {tech}
+              </Badge>
+            ))}
+          {project.techStack && project.techStack.length > 3 && (
+            <Badge variant="outline" className="text-xs">
+              +{project.techStack.length - 3} more
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -170,73 +210,100 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         {/* Evaluation Form */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="size-4" />
-              Judge Evaluation
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Award className="size-5" />
+                Judge Evaluation
+              </div>
+              <Badge variant="outline" className="text-xs">
+                <Star className="size-3 mr-1" />
+                {totalScore.toFixed(1)}/10
+              </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmitEvaluation)}
-                className="space-y-6"
+                className="space-y-8"
               >
                 {/* Total Score Display */}
-                <div className="text-center p-4 bg-primary/5 rounded-lg mb-6">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Average Score
+                <div className="text-center p-4 bg-muted/30 rounded-lg">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">
+                    Current Average Score
                   </p>
                   <p className="text-2xl font-bold text-primary">
-                    {totalScore}/10
+                    {totalScore.toFixed(1)}/10
+                  </p>
+                </div>{" "}
+                {/* Scoring Criteria */}
+                <div className="space-y-2 mb-6">
+                  <div className="flex items-center gap-2">
+                    <Target className="size-4 text-muted-foreground" />
+                    <h3 className="font-semibold text-lg">
+                      Evaluation Criteria
+                    </h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Rate each aspect of the project from 1-10
                   </p>
                 </div>
-
-                {/* Scoring Criteria */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  {evaluationCriteria.map((criteria) => (
+                <div className="grid grid-cols-1 gap-6">
+                  {evaluationCriteria.map((criteria, index) => (
                     <FormField
                       key={criteria.key}
                       control={form.control}
                       name={criteria.key}
                       render={({ field }) => (
-                        <FormItem className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <FormLabel className="text-sm font-medium">
-                                {criteria.label}
-                              </FormLabel>
-                              <FormDescription className="text-xs text-muted-foreground">
-                                {criteria.description}
-                              </FormDescription>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-muted-foreground">
+                        <FormItem>
+                          <Card className="p-4 border-l-4 border-l-blue-500/30 hover:border-l-blue-500/60 transition-colors">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <FormLabel className="text-base font-semibold flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400">
+                                    {index + 1}
+                                  </div>
+                                  {criteria.label}
+                                </FormLabel>
+                                <FormDescription className="text-sm text-muted-foreground mt-1 ml-8">
+                                  {criteria.description}
+                                </FormDescription>
+                              </div>
+                              <Badge variant="outline" className="ml-4">
                                 {field.value || 0}/10
-                              </p>
+                              </Badge>
                             </div>
-                          </div>
-                          <FormControl>
-                            <Rating
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              className="justify-start gap-1"
-                            >
-                              {Array.from({ length: 10 }, (_, i) => (
-                                <RatingButton key={i + 1} className="w-5 h-5" />
-                              ))}
-                            </Rating>
-                          </FormControl>
-                          <FormMessage />
+                            <div className="ml-8">
+                              <FormControl>
+                                <Rating
+                                  value={field.value}
+                                  onValueChange={field.onChange}
+                                  className="justify-start gap-1"
+                                >
+                                  {Array.from({ length: 10 }, (_, i) => (
+                                    <RatingButton
+                                      key={i + 1}
+                                      className="w-6 h-6 hover:scale-110 transition-transform"
+                                    />
+                                  ))}
+                                </Rating>
+                              </FormControl>
+                              <FormMessage />
+                            </div>
+                          </Card>
                         </FormItem>
                       )}
                     />
                   ))}
                 </div>
-
                 <Separator />
-
                 {/* Feedback Sections */}
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2">
+                    <Lightbulb className="size-4 text-muted-foreground" />
+                    <h3 className="font-semibold text-lg">Written Feedback</h3>
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="overallFeedback"
@@ -302,9 +369,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                     />
                   </div>
                 </div>
-
                 <Separator />
-
                 {/* Submit Button */}
                 <Button
                   type="submit"
@@ -324,7 +389,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                     </>
                   ) : submissionStage === "success" ? (
                     <>
-                      <Award className="size-4 mr-2" />
+                      <CheckCircle className="size-4 mr-2" />
                       Submitted Successfully!
                     </>
                   ) : (
