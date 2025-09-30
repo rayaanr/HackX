@@ -18,23 +18,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="relative space-y-14">
-      <div className="absolute inset-0 pointer-events-none [mask-image:radial-gradient(circle_at_25%_10%,black,transparent_70%)] bg-[radial-gradient(circle_at_0%_0%,rgba(255,255,255,0.08),transparent_55%),radial-gradient(circle_at_100%_0%,rgba(59,130,246,0.15),transparent_60%)]" />
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        custom={0}
-        variants={fade}
-        className="relative space-y-3"
-      >
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-          Your Projects
-        </h1>
-        <p className="text-sm md:text-base text-white/50 max-w-2xl">
-          Manage active submissions, track updates, and explore the hackathons
-          you&apos;ve registered for.
-        </p>
-      </motion.div>
-
+      <div className="absolute inset-0 pointer-events-none" />
       <motion.div
         initial="hidden"
         animate="visible"

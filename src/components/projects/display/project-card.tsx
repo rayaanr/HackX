@@ -62,13 +62,7 @@ export function ProjectCard({
   variant = "default",
 }: ProjectCardProps) {
   const Root = ({ children }: { children: React.ReactNode }) => (
-    <Card
-      className={`group relative overflow-hidden border border-white/5 bg-white/[0.015] backdrop-blur-md transition-all duration-300 hover:border-primary/30 hover:shadow-[0_4px_32px_-8px_rgba(59,130,246,0.35),0_0_0_1px_rgba(59,130,246,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${className}`}
-    >
-      {/* gradient border effect */}
-      <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(140deg,rgba(59,130,246,0.15),transparent_40%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      {/* radial glow */}
-      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_20%_18%,rgba(59,130,246,0.25),transparent_65%)]" />
+    <Card className={`project-card-hover ${className}`}>
       <div className="relative z-10 h-full flex flex-col">{children}</div>
     </Card>
   );

@@ -376,3 +376,63 @@ pre::-webkit-scrollbar-thumb {
     opacity: 1;
   }
 }
+
+/* Project Card Hover Effects */
+.project-card-hover {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.project-card-hover:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 32px -8px rgba(59, 130, 246, 0.35),
+    0 0 0 1px rgba(59, 130, 246, 0.25);
+}
+
+.project-card-hover:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+.project-card-hover::before {
+  /* Gradient border effect */
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  background: linear-gradient(
+    140deg,
+    rgba(59, 130, 246, 0.15),
+    transparent 40%
+  );
+}
+
+.project-card-hover:hover::before {
+  opacity: 1;
+}
+
+.project-card-hover::after {
+  /* Radial glow effect */
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  background: radial-gradient(
+    circle at 20% 18%,
+    rgba(59, 130, 246, 0.25),
+    transparent 65%
+  );
+}
+
+.project-card-hover:hover::after {
+  opacity: 1;
+}
