@@ -19,7 +19,7 @@ import { Trash2, Plus } from "lucide-react";
 import { ImageUploader } from "@/components/ui/file-upload";
 
 export function ScheduleStep() {
-  const { control, watch, setValue } = useFormContext<HackathonFormData>();
+  const { control } = useFormContext<HackathonFormData>();
 
   const {
     fields: scheduleSlots,

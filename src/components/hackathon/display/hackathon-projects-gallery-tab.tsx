@@ -1,10 +1,10 @@
 import { type UIHackathon } from "@/types/hackathon";
-import { useHackathonProjectsWithDetails } from "@/hooks/blockchain/useBlockchainHackathons";
 import {
   ProjectCard,
   type ProjectCardData,
 } from "@/components/projects/display/project-card";
 import { useMemo } from "react";
+import { useHackathonProjectsWithDetails } from "@/hooks/use-hackathons";
 
 interface SubmittedProjectsTabProps {
   hackathon: UIHackathon;

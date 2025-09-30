@@ -23,18 +23,18 @@ import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-pr
 import { ArrowLeft, Clock, Award } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import {
-  useHackathon,
-  useHackathonProjectsWithDetails,
-} from "@/hooks/blockchain/useBlockchainHackathons";
 import type { ProjectWithHackathon } from "@/types/hackathon";
-import { useJudgeEvaluation } from "@/hooks/blockchain/use-judge";
+import { useJudgeEvaluation } from "@/hooks/use-judge";
 import {
   judgeRatingSchema,
   defaultJudgeRatingValues,
   evaluationCriteria,
   type JudgeRatingFormData,
 } from "@/lib/schemas/judge-schema";
+import {
+  useHackathon,
+  useHackathonProjectsWithDetails,
+} from "@/hooks/use-hackathons";
 
 interface ProjectReviewPageProps {
   params: Promise<{ id: string; projectId: string }>;

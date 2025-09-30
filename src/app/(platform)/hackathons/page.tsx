@@ -12,86 +12,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
-import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 import type { UIHackathon, PrizeCohort } from "@/types/hackathon";
+import { useAllHackathons } from "@/hooks/use-hackathons";
 
-// Filter types
-type FilterKey = "prizeRange" | "techStack" | "status";
-
-type FilterConfig = {
-  key: FilterKey;
-  label: string;
-  options: { value: string; label: string }[];
-};
-
-// Filter configuration
-const filterConfig: FilterConfig[] = [
-  {
-    key: "prizeRange",
-    label: "Total Prize",
-    options: [
-      { value: "", label: "All Prizes" },
-      { value: "$10,000+", label: "$10,000+" },
-      { value: "$50,000+", label: "$50,000+" },
-      { value: "$100,000+", label: "$100,000+" },
-    ],
-  },
-  {
-    key: "techStack",
-    label: "Tech Stack",
-    options: [
-      { value: "", label: "All Tech" },
-      { value: "AI", label: "AI" },
-      { value: "Web3", label: "Web3" },
-      { value: "React", label: "React" },
-      { value: "TypeScript", label: "TypeScript" },
-      { value: "Mobile", label: "Mobile" },
-    ],
-  },
-  {
-    key: "status",
-    label: "Status",
-    options: [
-      { value: "", label: "All Status" },
-      { value: "Registration Open", label: "Registration Open" },
-      { value: "Live", label: "Live" },
-      { value: "Voting", label: "Voting" },
-      { value: "Ended", label: "Ended" },
-    ],
-  },
+// Filter options
+const prizeRangeOptions = [
+  { value: "", label: "All Prizes" },
+  { value: "10000", label: "$10,000+" },
+  { value: "50000", label: "$50,000+" },
+  { value: "100000", label: "$100,000+" },
 ];
 
-// Reusable filter dropdown component
-interface FilterDropdownProps {
-  filterKey: FilterKey;
-  label: string;
-  options: { value: string; label: string }[];
-  currentValue: string;
-  onValueChange: (key: FilterKey, value: string) => void;
-}
+const techStackOptions = [
+  { value: "", label: "All Tech" },
+  { value: "AI", label: "AI" },
+  { value: "Web3", label: "Web3" },
+  { value: "React", label: "React" },
+  { value: "TypeScript", label: "TypeScript" },
+  { value: "Mobile", label: "Mobile" },
+];
 
-function FilterDropdown({ filterKey, label, options, currentValue, onValueChange }: FilterDropdownProps) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline">
-          {currentValue || label} <ChevronDown className="ml-2" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {options.map((option) => (
-          <DropdownMenuItem
-            key={option.value}
-            onClick={() => onValueChange(filterKey, option.value)}
-          >
-            {option.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
+const statusOptions = [
+  { value: "", label: "All Status" },
+  { value: "Registration Open", label: "Registration Open" },
+  { value: "Live", label: "Live" },
+  { value: "Voting", label: "Voting" },
+  { value: "Ended", label: "Ended" },
+];
 
 export default function ExplorePage() {
   const {
@@ -107,11 +55,6 @@ export default function ExplorePage() {
     status: "",
   });
 
-  // Handle filter changes
-  const handleFilterChange = (key: FilterKey, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
   // Get data with fallbacks - hackathonData is now the direct array
   const allHackathons = hackathonData || [];
   const initialLiveHackathons = hackathonData || [];
@@ -126,15 +69,18 @@ export default function ExplorePage() {
         // Prize range filter
         if (filters.prizeRange) {
           const totalPrizePool =
-            hackathon.prizeCohorts?.reduce((sum: number, cohort: PrizeCohort) => {
-              const amount =
-                typeof cohort.prizeAmount === "string"
-                  ? parseInt(cohort.prizeAmount.replace(/[^0-9]/g, ""))
-                  : Number(cohort.prizeAmount);
-              return sum + (amount || 0);
-            }, 0) || 0;
+            hackathon.prizeCohorts?.reduce(
+              (sum: number, cohort: PrizeCohort) => {
+                const amount =
+                  typeof cohort.prizeAmount === "string"
+                    ? parseFloat(cohort.prizeAmount.replace(/[^0-9.]/g, ""))
+                    : Number(cohort.prizeAmount);
+                return sum + (amount || 0);
+              },
+              0,
+            ) || 0;
 
-          const minPrize = parseInt(filters.prizeRange.replace(/[^0-9]/g, ""));
+          const minPrize = Number(filters.prizeRange);
           if (totalPrizePool < minPrize) return false;
         }
 
@@ -208,16 +154,76 @@ export default function ExplorePage() {
 
       {/* Filter Bar */}
       <div className="flex flex-wrap gap-4 mb-8">
-        {filterConfig.map((config) => (
-          <FilterDropdown
-            key={config.key}
-            filterKey={config.key}
-            label={config.label}
-            options={config.options}
-            currentValue={filters[config.key]}
-            onValueChange={handleFilterChange}
-          />
-        ))}
+        {/* Prize Range Filter */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              {prizeRangeOptions.find(
+                (option) => option.value === filters.prizeRange,
+              )?.label || "Total Prize"}{" "}
+              <ChevronDown className="ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {prizeRangeOptions.map((option) => (
+              <DropdownMenuItem
+                key={option.value}
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, prizeRange: option.value }))
+                }
+              >
+                {option.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Tech Stack Filter */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              {techStackOptions.find(
+                (option) => option.value === filters.techStack,
+              )?.label || "Tech Stack"}{" "}
+              <ChevronDown className="ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {techStackOptions.map((option) => (
+              <DropdownMenuItem
+                key={option.value}
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, techStack: option.value }))
+                }
+              >
+                {option.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Status Filter */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              {statusOptions.find((option) => option.value === filters.status)
+                ?.label || "Status"}{" "}
+              <ChevronDown className="ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {statusOptions.map((option) => (
+              <DropdownMenuItem
+                key={option.value}
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, status: option.value }))
+                }
+              >
+                {option.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Hackathon Grid */}

@@ -22,7 +22,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import {
   formatDisplayDate,
   formatDateRange,
@@ -33,6 +32,7 @@ import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import Image from "next/image";
 import type { UIHackathon } from "@/types/hackathon";
+import { useRegisteredHackathons } from "@/hooks/use-hackathons";
 
 type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
 

@@ -3,16 +3,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  useHackathon,
-  useHackathonProjectsWithDetails,
-} from "@/hooks/blockchain/useBlockchainHackathons";
 import { useActiveAccount } from "thirdweb/react";
 import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
 import { notFound } from "next/navigation";
 import { use } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  useHackathon,
+  useHackathonProjectsWithDetails,
+} from "@/hooks/use-hackathons";
 
 interface JudgingPageProps {
   params: Promise<{ id: string }>;

@@ -18,11 +18,11 @@ import {
 } from "@/components/projects/display/hackathon-card";
 import { Button } from "@/components/ui/button";
 import { useState, useMemo } from "react";
-import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import { getUIHackathonStatus, formatDisplayDate } from "@/lib/helpers/date";
+import { useRegisteredHackathons } from "@/hooks/use-hackathons";
 
 function transformHackathonToCardProps(
   hackathon: any, // Blockchain hackathon with combined contract + IPFS data
@@ -85,14 +85,6 @@ export function HackathonSelectionStep() {
       filteredHackathons: filtered,
     };
   }, [hackathonData, filter]);
-
-  const toggleHackathonSelection = (id: string) => {
-    const newSelectedIds = selectedHackathonIds.includes(id)
-      ? selectedHackathonIds.filter((selectedId: string) => selectedId !== id)
-      : [...selectedHackathonIds, id];
-
-    setValue("hackathonIds", newSelectedIds);
-  };
 
   return (
     <div className="space-y-8">

@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, UserCheck, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useActiveAccount } from "thirdweb/react";
-import {
-  useHackathonRegistration,
-  useRegisterForHackathon,
-} from "@/hooks/blockchain/useBlockchainHackathons";
 import { useSendTransaction } from "thirdweb/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  useHackathonRegistration,
+  useRegisterForHackathon,
+} from "@/hooks/use-hackathons";
 
 interface RegistrationButtonProps {
   hackathonId: string;

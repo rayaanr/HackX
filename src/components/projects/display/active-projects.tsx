@@ -3,7 +3,7 @@
 import { Plus, FolderIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
+import { useBlockchainProjects } from "@/hooks/use-projects";
 import {
   ProjectCard,
   type ProjectCardData,

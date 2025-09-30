@@ -3,12 +3,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useJudgeAssignments } from "@/hooks/blockchain/useBlockchainHackathons";
 import { useActiveAccount } from "thirdweb/react";
 import { ArrowRight, Calendar, MapPin, Award } from "lucide-react";
 import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
 import Link from "next/link";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
+import { useJudgeAssignments } from "@/hooks/use-hackathons";
 
 export default function JudgeDashboardPage() {
   const {

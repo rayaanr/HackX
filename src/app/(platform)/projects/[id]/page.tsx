@@ -29,8 +29,7 @@ import {
   useBlockchainProject,
   useProjectTeamMembers,
   useBlockchainProjects,
-} from "@/hooks/blockchain/useBlockchainProjects";
-import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
+} from "@/hooks/use-projects";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 import { useEns } from "@/hooks/use-ens";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -49,6 +48,7 @@ import {
   type DateInput,
 } from "@/lib/helpers/date";
 import type { UIHackathon } from "@/types/hackathon";
+import { useRegisteredHackathons } from "@/hooks/use-hackathons";
 
 type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
 
