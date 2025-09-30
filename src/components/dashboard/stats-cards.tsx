@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Trophy, Users, DollarSign } from "lucide-react";
 import { motion } from "framer-motion";
 import { CardLoading } from "@/components/ui/global-loading";
+import { SlidingNumber } from "../ui/anim/sliding-number";
 import type { DashboardStats } from "@/types/hackathon";
 
 interface StatsCardsProps {
@@ -51,8 +52,8 @@ export function StatsCards({ stats, loading = false }: StatsCardsProps) {
             <Calendar className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold group-hover:text-white transition-colors">
-              {stats.totalHackathons}
+            <div className="text-2xl font-bold group-hover:text-white transition-colors font-mono">
+              <SlidingNumber value={stats.totalHackathons} />
             </div>
             <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">
               All your hackathons
@@ -79,8 +80,8 @@ export function StatsCards({ stats, loading = false }: StatsCardsProps) {
             <Users className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold group-hover:text-white transition-colors">
-              {stats.activeHackathons}
+            <div className="text-2xl font-bold group-hover:text-white transition-colors font-mono">
+              <SlidingNumber value={stats.activeHackathons} />
             </div>
             <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">
               Currently running
@@ -107,8 +108,8 @@ export function StatsCards({ stats, loading = false }: StatsCardsProps) {
             <Trophy className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold group-hover:text-white transition-colors">
-              {stats.completedHackathons}
+            <div className="text-2xl font-bold group-hover:text-white transition-colors font-mono">
+              <SlidingNumber value={stats.completedHackathons} />
             </div>
             <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors">
               Successfully finished

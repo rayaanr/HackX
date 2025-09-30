@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatRelativeDate } from "@/lib/helpers/date";
+import { SlidingNumber } from "../../ui/anim/sliding-number";
 import Link from "next/link";
 
 export interface ProjectCardData {
@@ -181,7 +182,7 @@ function ProjectMeta({
               >
                 <polygon points="12 2 15 8.5 22 9.3 17 14 18.5 21 12 17.8 5.5 21 7 14 2 9.3 9 8.5 12 2" />
               </svg>
-              {project.totalScore}
+              <SlidingNumber value={project.totalScore} />
             </span>
           )}
           {project.judgeCount !== undefined && (
@@ -202,7 +203,7 @@ function ProjectMeta({
                 <path d="M5 8h14" />
                 <path d="M3 13h18" />
               </svg>
-              {project.judgeCount} Judge
+              <SlidingNumber value={project.judgeCount} /> Judge
               {project.judgeCount === 1 ? "" : "s"}
             </span>
           )}

@@ -12,6 +12,7 @@ import {
 } from "@/lib/helpers/date";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import { Calendar, Code, Trophy, Award } from "lucide-react";
+import { SlidingNumber } from "../../ui/anim/sliding-number";
 import type { HackathonStatus } from "@/types/hackathon";
 
 interface HackathonCardProps {
@@ -83,11 +84,15 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                       {hackathonStatus === "Ended" ? "Status" : "Days Left"}
                     </h6>
                     <p className="font-semibold text-white/85 text-sm">
-                      {hackathonStatus === "Ended"
-                        ? "Completed"
-                        : deadline
-                          ? `${daysLeft} days`
-                          : "TBD"}
+                      {hackathonStatus === "Ended" ? (
+                        "Completed"
+                      ) : deadline && daysLeft !== null ? (
+                        <span className="font-mono">
+                          <SlidingNumber value={daysLeft} /> days
+                        </span>
+                      ) : (
+                        "TBD"
+                      )}
                     </p>
                   </div>
                   <div className="space-y-1">
@@ -133,8 +138,11 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                   />
                   <div className="flex items-center text-xs md:text-sm text-white/60">
                     <Trophy className="h-4 w-4 mr-1 text-white/50" />
-                    <span>
-                      {hackathon.prizeCohorts?.length || 0} Prize
+                    <span className="font-mono">
+                      <SlidingNumber
+                        value={hackathon.prizeCohorts?.length || 0}
+                      />{" "}
+                      Prize
                       {hackathon.prizeCohorts &&
                       hackathon.prizeCohorts.length !== 1
                         ? "s"
