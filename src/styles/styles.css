@@ -1,4 +1,5 @@
-/* Cleaned up - removed conflicting Lexical editor styles that interfere with theming */
+@reference "tailwindcss";
+@reference "../app/globals.css";
 
 pre::-webkit-scrollbar {
   background: transparent;
@@ -58,7 +59,7 @@ pre::-webkit-scrollbar-thumb {
   margin: 0 -1px;
 }
 
-.emoji-happysmile {
+/* .emoji-happysmile {
   background-image: url(images/emoji/1F642.png);
 }
 
@@ -72,7 +73,7 @@ pre::-webkit-scrollbar-thumb {
 
 .emoji-heart {
   background-image: url(images/emoji/2764.png);
-}
+} */
 
 .keyword {
   color: #07a;
@@ -95,7 +96,7 @@ pre::-webkit-scrollbar-thumb {
   vertical-align: -0.25em;
 }
 
-.actions i.indent {
+/* .actions i.indent {
   background-image: url(images/icons/indent.svg);
 }
 
@@ -141,7 +142,7 @@ pre::-webkit-scrollbar-thumb {
 
 .actions i.connect {
   background-image: url(images/icons/plug-connect.svg);
-}
+} */
 
 /* Old Lexical styles removed - now using theme-based styles in component */
 
