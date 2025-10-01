@@ -81,7 +81,7 @@ export function SubmissionCountdown({ hackathon }: SubmissionCountdownProps) {
   };
 
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+    <div className="rounded-lg border bg-card/30 text-card-foreground shadow-sm p-6">
       <div className="flex items-center flex-col mb-4">
         <h2 className="text-lg font-semibold">{getCountdownTitle()}</h2>
         <Link

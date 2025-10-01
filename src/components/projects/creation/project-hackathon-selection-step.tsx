@@ -25,7 +25,7 @@ import { getUIHackathonStatus, formatDisplayDate } from "@/lib/helpers/date";
 import { useRegisteredHackathons } from "@/hooks/use-hackathons";
 
 function transformHackathonToCardProps(
-  hackathon: any, // Blockchain hackathon with combined contract + IPFS data
+  hackathon: any // Blockchain hackathon with combined contract + IPFS data
 ): ProjectHackathonCardProps {
   // Use the shared UI hackathon status helper
   const status = getUIHackathonStatus(hackathon);
@@ -35,6 +35,7 @@ function transformHackathonToCardProps(
   if (status === "Voting" || status.toLowerCase().includes("voting")) {
     cardStatus = "live";
   } else if (
+    status === "Coming Soon" ||
     status === "Registration Open" ||
     status === "Registration Closed" ||
     status.toLowerCase().includes("registration")
@@ -73,7 +74,7 @@ export function HackathonSelectionStep() {
     if (!hackathonData) return { hackathons: [], filteredHackathons: [] };
 
     const transformedHackathons = hackathonData.map(
-      transformHackathonToCardProps,
+      transformHackathonToCardProps
     );
     const filtered =
       filter === "all"
@@ -163,7 +164,7 @@ export function HackathonSelectionStep() {
                                 <div className="absolute top-2 right-2">
                                   <Checkbox
                                     checked={selectedHackathonIds.includes(
-                                      hackathon.id,
+                                      hackathon.id
                                     )}
                                     disabled={!isAcceptingSubmissions}
                                     onCheckedChange={(checked) => {
@@ -174,10 +175,10 @@ export function HackathonSelectionStep() {
                                             new Set([
                                               ...selectedHackathonIds,
                                               hackathon.id,
-                                            ]),
+                                            ])
                                           )
                                         : selectedHackathonIds.filter(
-                                            (x: string) => x !== hackathon.id,
+                                            (x: string) => x !== hackathon.id
                                           );
                                       setValue("hackathonIds", next, {
                                         shouldValidate: true,

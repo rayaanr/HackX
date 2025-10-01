@@ -6,6 +6,8 @@ import {
   Trophy,
   Link as LinkIcon,
   MoreHorizontal,
+  Clock,
+  CheckCircle,
 } from "lucide-react";
 import {
   Card,
@@ -195,13 +197,19 @@ export function RegisteredHackathons() {
                                       View Details
                                     </Link>
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem asChild>
-                                    <Link
-                                      href={`/projects/create?hackathon=${hackathon.id}`}
-                                    >
-                                      Submit Project
-                                    </Link>
-                                  </DropdownMenuItem>
+                                  {status === "Live" ? (
+                                    <DropdownMenuItem asChild>
+                                      <Link
+                                        href={`/projects/create?hackathon=${hackathon.id}`}
+                                      >
+                                        Submit Project
+                                      </Link>
+                                    </DropdownMenuItem>
+                                  ) : (
+                                    <DropdownMenuItem disabled>
+                                      Submit Project (Not Available)
+                                    </DropdownMenuItem>
+                                  )}
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </CardAction>
@@ -223,7 +231,7 @@ export function RegisteredHackathons() {
                                   ?.registrationEndDate
                                   ? formatDisplayDate(
                                       hackathon.registrationPeriod
-                                        .registrationEndDate,
+                                        .registrationEndDate
                                     )
                                   : "TBD"}
                               </p>
@@ -263,21 +271,67 @@ export function RegisteredHackathons() {
                           </div>
 
                           <div className="flex flex-wrap items-center gap-5 mt-auto">
-                            <Button
-                              asChild
-                              className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
-                            >
-                              <Link
-                                href={`/projects/create?hackathon=${hackathon.id}`}
+                            {status === "Live" ? (
+                              <Button
+                                asChild
+                                className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
                               >
-                                Submit Project
-                              </Link>
-                            </Button>
+                                <Link
+                                  href={`/projects/create?hackathon=${hackathon.id}`}
+                                >
+                                  Submit Project
+                                </Link>
+                              </Button>
+                            ) : status === "Coming Soon" ? (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                <Clock className="w-4 h-4 mr-2" />
+                                Registration Not Started
+                              </Button>
+                            ) : status === "Registration Open" ? (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                <Clock className="w-4 h-4 mr-2" />
+                                Waiting for Submission Phase
+                              </Button>
+                            ) : status === "Registration Closed" ? (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                <Clock className="w-4 h-4 mr-2" />
+                                Submission Starting Soon
+                              </Button>
+                            ) : status === "Voting" ? (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                In Voting Phase
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                Hackathon Ended
+                              </Button>
+                            )}
                             <div className="text-xs md:text-sm text-white/55">
                               <span className="font-medium">
                                 {formatDateRange(
                                   hackathon.hackathonPeriod?.hackathonStartDate,
-                                  hackathon.hackathonPeriod?.hackathonEndDate,
+                                  hackathon.hackathonPeriod?.hackathonEndDate
                                 )}
                               </span>
                             </div>

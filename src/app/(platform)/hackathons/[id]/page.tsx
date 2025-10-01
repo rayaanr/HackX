@@ -93,7 +93,9 @@ export default function HackathonPage() {
                 <TextShimmerLoader text="Loading description" />
               )}
             </p>
-            <RegistrationButton hackathonId={id} />
+            {hackathon && (
+              <RegistrationButton hackathonId={id} hackathon={hackathon} />
+            )}
           </div>
           <ShareDialog url={`https://hackx.com/hackathons/${id}`}>
             <Button
@@ -117,7 +119,7 @@ export default function HackathonPage() {
                 selectedTab={activeTab}
                 onTabChange={(value) =>
                   setActiveTab(
-                    value as "overview" | "prize" | "schedule" | "projects",
+                    value as "overview" | "prize" | "schedule" | "projects"
                   )
                 }
                 className="h-14 p-1"
@@ -197,7 +199,7 @@ export default function HackathonPage() {
                               "hr",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          }),
+                          })
                         );
                       })()}
                     </div>

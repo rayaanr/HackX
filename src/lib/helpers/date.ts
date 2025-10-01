@@ -151,36 +151,62 @@ export function getUIHackathonStatus(hackathon: {
     votingStartDate?: string | Date | number | null | undefined;
     votingEndDate?: string | Date | number | null | undefined;
   };
-}): "Registration Open" | "Registration Closed" | "Live" | "Voting" | "Ended" {
+}):
+  | "Coming Soon"
+  | "Registration Open"
+  | "Registration Closed"
+  | "Live"
+  | "Voting"
+  | "Ended" {
   const now = new Date();
 
-  // Check registration phase
+  // Get all relevant dates
+  const registrationStart = safeToDate(
+    hackathon.registrationPeriod?.registrationStartDate
+  );
   const registrationEnd = safeToDate(
     hackathon.registrationPeriod?.registrationEndDate
   );
+  const hackathonStart = safeToDate(
+    hackathon.hackathonPeriod?.hackathonStartDate
+  );
+  const hackathonEnd = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+  const votingStart = safeToDate(hackathon.votingPeriod?.votingStartDate);
+  const votingEnd = safeToDate(hackathon.votingPeriod?.votingEndDate);
+
+  // Enhanced timeline logic with start dates
+
+  // Before registration starts (upcoming)
+  if (registrationStart && now < registrationStart) {
+    return "Coming Soon"; // Not started yet, more accurate than "closed"
+  }
+
+  // Registration phase: between registration start and end
   if (registrationEnd && now < registrationEnd) {
     return "Registration Open";
   }
 
-  // Check hackathon phase
-  const hackathonEnd = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+  // Between registration end and hackathon start (gap period)
+  if (hackathonStart && now < hackathonStart) {
+    return "Registration Closed";
+  }
+
+  // Hackathon/Submission phase: between hackathon start and end
   if (hackathonEnd && now < hackathonEnd) {
-    // If we're past registration but before hackathon end
-    const hackathonStart = safeToDate(
-      hackathon.hackathonPeriod?.hackathonStartDate
-    );
-    if (hackathonStart && now < hackathonStart) {
-      return "Registration Closed";
-    }
     return "Live";
   }
 
-  // Check voting phase
-  const votingEnd = safeToDate(hackathon.votingPeriod?.votingEndDate);
+  // Between hackathon end and voting start (gap period)
+  if (votingStart && now < votingStart) {
+    return "Registration Closed"; // Submissions closed, voting not started
+  }
+
+  // Voting phase: between voting start and end
   if (votingEnd && now < votingEnd) {
     return "Voting";
   }
 
+  // After all phases completed
   return "Ended";
 }
 

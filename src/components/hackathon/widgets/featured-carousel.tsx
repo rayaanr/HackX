@@ -30,6 +30,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
       votingPeriod: hackathon.votingPeriod || undefined,
     });
     return (
+      status === "Coming Soon" ||
       status === "Registration Open" ||
       status === "Registration Closed" ||
       status === "Live" ||
@@ -164,7 +165,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
                     className="relative rounded-xl overflow-hidden text-white h-[250px] sm:h-[300px] flex items-end hover:scale-[1.02] transition-transform duration-300"
                     style={{
                       background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${resolveIPFSToHttp(
-                        hackathon.visual,
+                        hackathon.visual
                       )})`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
