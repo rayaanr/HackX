@@ -29,10 +29,12 @@ const { Stepper } = defineStepper(
 
 interface CreateHackathonStepperProps {
   isSubmitting?: boolean;
+  onCreateHackathon?: () => void;
 }
 
 export function CreateHackathonStepper({
   isSubmitting = false,
+  onCreateHackathon,
 }: CreateHackathonStepperProps) {
   return (
     <div className="flex w-full flex-col gap-8">
@@ -88,7 +90,15 @@ export function CreateHackathonStepper({
                 </Button>
               )}
               {methods.isLast ? (
-                <Button type="submit" disabled={isSubmitting}>
+                <Button 
+                  type="button" 
+                  id="stepper-create-hackathon"
+                  onClick={() => {
+                    console.log('🔥 Stepper Create button clicked, onCreateHackathon:', typeof onCreateHackathon);
+                    onCreateHackathon?.();
+                  }}
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? "Creating Hackathon..." : "Create Hackathon"}
                 </Button>
               ) : (

@@ -172,6 +172,7 @@ export function useHackathonForm() {
   return {
     methods,
     onSubmit: handleSubmit(onSubmit),
+    rawOnSubmit: onSubmit, // Expose the raw submission function
     isSubmitting: isCreating,
     isFormValid,
     resetForm,

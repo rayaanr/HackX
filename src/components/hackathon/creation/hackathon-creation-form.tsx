@@ -9,7 +9,31 @@ import { Shuffle, Info } from "lucide-react";
 import { toast } from "sonner";
 
 export function CreateHackathonForm() {
-  const { methods, onSubmit, isSubmitting } = useHackathonForm();
+  const { methods, onSubmit, rawOnSubmit, isSubmitting } = useHackathonForm();
+
+  /**
+   * IMPORTANT: This form is designed to prevent accidental submission.
+   * 
+   * - All submission must go through the final "Create Hackathon" button in the stepper
+   * - Enter key presses are blocked to prevent implicit form submission  
+   * - The form onSubmit handler is a no-op that prevents default behavior
+   * - Only explicit user activation of the Create button will trigger hackathon creation
+   */
+
+  // Explicit creation handler that prevents automatic submission
+  const handleCreateHackathon = () => {
+    console.log('🚀 Create Hackathon button clicked!');
+    
+    // Use React Hook Form's handleSubmit with the raw submission function
+    // This will validate the form and call rawOnSubmit if validation passes
+    methods.handleSubmit(rawOnSubmit)();
+  };
+
+  // Prevent implicit form submission - this is a safety net
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Do nothing - submission must be explicit via handleCreateHackathon
+  };
 
   const handleFillMockData = () => {
     const mockData = getRandomMockHackathon();
@@ -44,20 +68,47 @@ export function CreateHackathonForm() {
 
       <form
         id="create-hackathon-form"
-        onSubmit={onSubmit}
+        onSubmit={handleFormSubmit}
         className="space-y-8"
         onKeyDown={(e) => {
-          // Prevent form submission on Enter key press (except in textareas)
-          if (
-            e.key === "Enter" &&
-            e.target instanceof HTMLElement &&
-            e.target.tagName !== "TEXTAREA"
-          ) {
+          /**
+           * Prevent accidental form submission via Enter key.
+           * 
+           * This handler blocks Enter from triggering implicit form submission
+           * while still allowing Enter to work in specific contexts where it's expected.
+           * 
+           * Elements that still allow Enter:
+           * - TEXTAREA elements (for line breaks)
+           * - Elements with data-allow-enter="true" attribute
+           * - Elements with appropriate ARIA roles (combobox, listbox, menu)
+           * 
+           * To opt into Enter handling for custom components:
+           * - Add data-allow-enter="true" to the interactive element
+           * - Or use appropriate ARIA roles like "combobox"
+           */
+          if (e.key === "Enter") {
+            const target = e.target as HTMLElement;
+            
+            // Allow Enter for textareas and elements with explicit permission
+            if (
+              target.tagName === "TEXTAREA" ||
+              target.dataset.allowEnter === "true" ||
+              target.getAttribute("role") === "combobox" ||
+              target.getAttribute("role") === "listbox" ||
+              target.getAttribute("role") === "menu"
+            ) {
+              return;
+            }
+            
+            // Prevent implicit form submission on all other Enter presses
             e.preventDefault();
           }
         }}
       >
-        <CreateHackathonStepper isSubmitting={isSubmitting} />
+        <CreateHackathonStepper 
+          isSubmitting={isSubmitting} 
+          onCreateHackathon={handleCreateHackathon}
+        />
       </form>
     </Form>
   );

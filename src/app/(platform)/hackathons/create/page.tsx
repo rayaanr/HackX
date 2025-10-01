@@ -5,6 +5,22 @@ import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { Button } from "@/components/ui/button";
 
 export default function CreateHackathonPage() {
+  /**
+   * Handler for the header Create button.
+   * 
+   * This is non-submitting and only works by programmatically clicking
+   * the stepper's Create button (which contains all the validation logic).
+   * This prevents multiple submission paths and ensures consistent behavior.
+   */
+  const handleHeaderCreate = () => {
+    console.log('🔴 Header Create button clicked!');
+    // Find and trigger the stepper's create button
+    const stepperCreateButton = document.getElementById('stepper-create-hackathon');
+    console.log('🔍 Found stepper button:', stepperCreateButton);
+    if (stepperCreateButton) {
+      stepperCreateButton.click();
+    }
+  };
   return (
     <div className="-mx-4 -my-4 md:-mx-6 md:-my-6">
       <StickyPageHeader
@@ -16,7 +32,11 @@ export default function CreateHackathonPage() {
             <Button type="button" variant="outline" disabled>
               Save Draft
             </Button>
-            <Button type="submit" form="create-hackathon-form">
+            <Button 
+              type="button" 
+              id="header-create-hackathon"
+              onClick={handleHeaderCreate}
+            >
               Create Hackathon
             </Button>
           </>
