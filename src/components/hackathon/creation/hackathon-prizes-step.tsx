@@ -23,7 +23,7 @@ import { Trash2, Plus, Trophy, X } from "lucide-react";
 import {
   usePrizeCohorts,
   useEvaluationCriteria,
-} from "@/hooks/usePrizeCohorts";
+} from "@/hooks/use-prize-cohorts";
 
 export function PrizesStep() {
   const { control } = useFormContext<HackathonFormData>();

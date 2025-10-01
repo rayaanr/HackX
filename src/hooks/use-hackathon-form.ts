@@ -7,7 +7,7 @@ import {
   HackathonFormData,
   validateDateConsistency,
 } from "@/lib/schemas/hackathon-schema";
-import { useCreateHackathon } from "@/hooks/blockchain/use-create-hackathon";
+import { useCreateHackathon } from "@/hooks/use-create-hackathon";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -51,7 +51,10 @@ function createSuccessHandler(router: any) {
     transactionHash: string;
   }) => {
     toast.success(
-      `Hackathon created successfully! IPFS: ${data.cid.slice(0, 10)}... TX: ${data.transactionHash.slice(0, 10)}...`,
+      `Hackathon created successfully! IPFS: ${data.cid.slice(
+        0,
+        10,
+      )}... TX: ${data.transactionHash.slice(0, 10)}...`,
     );
     router.push("/dashboard");
   };

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
+import { useBlockchainProjects } from "@/hooks/use-projects";
 import { useRouter } from "next/navigation";
 
 export function CreateProjectForm() {

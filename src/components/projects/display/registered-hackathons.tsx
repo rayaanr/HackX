@@ -22,17 +22,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRegisteredHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import {
   formatDisplayDate,
   formatDateRange,
   getUIHackathonStatus,
 } from "@/lib/helpers/date";
-import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
+import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import Image from "next/image";
 import type { UIHackathon } from "@/types/hackathon";
+import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
+import { useRegisteredHackathons } from "@/hooks/use-hackathons";
 
 type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
 
@@ -82,26 +84,29 @@ export function RegisteredHackathons() {
         <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
         <div className="space-y-6">
           {[1, 2].map((i) => (
-            <Card key={i} className="p-6 animate-pulse">
+            <div
+              key={i}
+              className="border border-white/10 rounded-xl p-6 bg-white/[0.03] backdrop-blur-sm animate-pulse"
+            >
               <div className="flex">
                 <div className="flex-1 space-y-4">
                   <div className="flex items-center gap-4">
-                    <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-                    <div className="h-6 w-20 bg-muted animate-pulse rounded" />
+                    <div className="h-8 w-48 bg-white/10 rounded" />
+                    <div className="h-6 w-20 bg-white/10 rounded" />
                   </div>
-                  <div className="h-4 w-full bg-muted animate-pulse rounded" />
+                  <div className="h-4 w-full bg-white/10 rounded" />
                   <div className="grid grid-cols-4 gap-4">
                     {Array.from({ length: 4 }).map((_, j) => (
                       <div key={j}>
-                        <div className="h-4 w-16 bg-muted animate-pulse rounded mb-1" />
-                        <div className="h-4 w-12 bg-muted animate-pulse rounded" />
+                        <div className="h-4 w-16 bg-white/10 rounded mb-1" />
+                        <div className="h-4 w-12 bg-white/10 rounded" />
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="w-1/3 h-48 bg-muted animate-pulse rounded-lg" />
+                <div className="w-1/3 h-48 bg-white/10 rounded-lg" />
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       </div>
@@ -110,160 +115,190 @@ export function RegisteredHackathons() {
 
   return (
     <div className="mt-12">
-      <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
+      <h2 className="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 tracking-tight">
+        Registered Hackathons
+      </h2>
 
       {registrations.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <Trophy className="w-12 h-12 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">
-              No registered hackathons
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Register for hackathons to track your participation and submit
-              projects
-            </p>
-            <Button asChild>
-              <Link href="/hackathons">Browse Hackathons</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="border border-white/10 rounded-xl p-10 text-center bg-white/[0.02] backdrop-blur-sm">
+          <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
+            <Trophy className="w-12 h-12 text-white/50" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2 text-white/85">
+            No registered hackathons
+          </h3>
+          <p className="text-white/50 mb-6 max-w-md mx-auto">
+            Register for hackathons to track your participation and submit
+            projects
+          </p>
+          <Button
+            asChild
+            className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
+          >
+            <Link href="/hackathons">Browse Hackathons</Link>
+          </Button>
+        </div>
       ) : (
         <div className="space-y-6">
-          {registrations.map((hackathon: RegisteredHackathon) => {
+          {registrations.map((hackathon: RegisteredHackathon, index) => {
             // Get hackathon status using shared helper
             const status = getUIHackathonStatus({
               ...hackathon,
               votingPeriod: hackathon.votingPeriod || undefined,
             });
-            const statusVariant = getStatusVariant(status);
+            const statusVariant = getHackathonStatusVariant(status);
 
             return (
-              <Card
+              <motion.div
                 key={hackathon.id}
-                className="p-6 hover:shadow-md transition-shadow"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: 0.05 * index,
+                  duration: 0.5,
+                  ease: [0.215, 0.61, 0.355, 1],
+                }}
+                className="group relative h-full"
               >
-                <div className="flex">
-                  <div className="flex-1">
-                    <CardHeader className="p-0 mb-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <CardTitle className="text-2xl">
-                            {hackathon.name || `Hackathon ${hackathon.id}`}
-                          </CardTitle>
-                          <Badge variant={statusVariant}>{status}</Badge>
-                        </div>
-                        <CardAction className="p-0">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/hackathons/${hackathon.id}`}>
-                                  <LinkIcon className="w-4 h-4 mr-2" />
-                                  View Details
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link
-                                  href={`/projects/create?hackathon=${hackathon.id}`}
-                                >
-                                  Submit Project
-                                </Link>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </CardAction>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                      <p className="text-muted-foreground mb-4">
-                        {hackathon.shortDescription ||
-                          "No description provided."}
-                      </p>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm [&>div>h6]:text-muted-foreground [&>div>p]:font-semibold [&>div>p]:text-xs">
-                        <div>
-                          <h6 className="flex items-center">
-                            <Calendar className="size-4 mr-1" />
-                            Registration closes
-                          </h6>
-                          <p>
-                            {hackathon.registrationPeriod?.registrationEndDate
-                              ? formatDisplayDate(
-                                  hackathon.registrationPeriod
-                                    .registrationEndDate,
-                                )
-                              : "Registration TBD"}
+                <Card className="project-card-hover h-full p-6 md:p-7">
+                  <div className="relative z-10 h-full">
+                    <div className="flex flex-col md:flex-row gap-6 h-full">
+                      <div className="flex-1 flex flex-col">
+                        <CardHeader className="p-0 mb-5">
+                          <div className="flex flex-wrap items-center justify-between gap-4">
+                            <div className="flex flex-wrap items-center gap-3 md:gap-4">
+                              <CardTitle className="text-xl md:text-2xl font-semibold tracking-tight group-hover:text-white">
+                                {hackathon.name || `Hackathon ${hackathon.id}`}
+                              </CardTitle>
+                              <Badge
+                                variant={statusVariant}
+                                className="text-[10px] uppercase tracking-wide py-1"
+                              >
+                                {status}
+                              </Badge>
+                            </div>
+                            <CardAction className="p-0">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="hover:bg-white/10 text-white/70 hover:text-white"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/hackathons/${hackathon.id}`}>
+                                      <LinkIcon className="w-4 h-4 mr-2" />
+                                      View Details
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild>
+                                    <Link
+                                      href={`/projects/create?hackathon=${hackathon.id}`}
+                                    >
+                                      Submit Project
+                                    </Link>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </CardAction>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-0 flex-1 flex flex-col">
+                          <p className="text-white/60 mb-5 line-clamp-3">
+                            {hackathon.shortDescription ||
+                              "No description provided."}
                           </p>
-                        </div>
-                        <div>
-                          <h6 className="flex items-center">
-                            <Code className="size-4 mr-1" />
-                            Tech stack
-                          </h6>
-                          <p>
-                            {hackathon.techStack &&
-                            hackathon.techStack.length > 0
-                              ? "All tech stack"
-                              : "Any"}
-                          </p>
-                        </div>
-                        <div>
-                          <h6 className="flex items-center">
-                            <Trophy className="size-4 mr-1" />
-                            Level
-                          </h6>
-                          <p className="capitalize">
-                            {hackathon.experienceLevel
-                              ? hackathon.experienceLevel.toLowerCase() +
-                                " levels accepted"
-                              : "All levels accepted"}
-                          </p>
-                        </div>
-                        <div>
-                          <h6 className="flex items-center">
-                            <Trophy className="size-4 mr-1" />
-                            Total prize
-                          </h6>
-                          <p>{"TBD"}</p>
-                        </div>
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs md:text-sm mb-5">
+                            <div className="space-y-1">
+                              <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                                <Calendar className="size-3.5 mr-1.5" />
+                                Registration closes
+                              </h6>
+                              <p className="font-semibold text-white/85 text-sm">
+                                {hackathon.registrationPeriod
+                                  ?.registrationEndDate
+                                  ? formatDisplayDate(
+                                      hackathon.registrationPeriod
+                                        .registrationEndDate,
+                                    )
+                                  : "TBD"}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                                <Code className="size-3.5 mr-1.5" />
+                                Tech Stack
+                              </h6>
+                              <p className="font-semibold text-white/85 text-sm truncate">
+                                {hackathon.techStack &&
+                                hackathon.techStack.length > 0
+                                  ? hackathon.techStack.slice(0, 3).join(", ")
+                                  : "Any"}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                                <Trophy className="size-3.5 mr-1.5" />
+                                Level
+                              </h6>
+                              <p className="font-semibold text-white/85 text-sm capitalize">
+                                {hackathon.experienceLevel
+                                  ? `${hackathon.experienceLevel}`
+                                  : "All"}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
+                                <Trophy className="size-3.5 mr-1.5" />
+                                Total Prize
+                              </h6>
+                              <p className="font-semibold text-white/85 text-sm">
+                                TBD
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-5 mt-auto">
+                            <Button
+                              asChild
+                              className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
+                            >
+                              <Link
+                                href={`/projects/create?hackathon=${hackathon.id}`}
+                              >
+                                Submit Project
+                              </Link>
+                            </Button>
+                            <div className="text-xs md:text-sm text-white/55">
+                              <span className="font-medium">
+                                {formatDateRange(
+                                  hackathon.hackathonPeriod?.hackathonStartDate,
+                                  hackathon.hackathonPeriod?.hackathonEndDate,
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
                       </div>
-                      <div className="flex items-center gap-4 mt-4">
-                        <Button asChild>
-                          <Link
-                            href={`/projects/create?hackathon=${hackathon.id}`}
-                          >
-                            Submit Project
-                          </Link>
-                        </Button>
-                        <div className="text-sm text-muted-foreground">
-                          <span className="font-medium">
-                            {formatDateRange(
-                              hackathon.hackathonPeriod?.hackathonStartDate,
-                              hackathon.hackathonPeriod?.hackathonEndDate,
-                            )}
-                          </span>
-                        </div>
+                      <div className="relative md:w-1/3 overflow-hidden rounded-lg group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Image
+                          height={200}
+                          width={300}
+                          src={resolveIPFSToHttp(hackathon.visual)}
+                          alt={hackathon.name || `Hackathon ${hackathon.id}`}
+                          className="h-40 md:h-full w-full object-cover rounded-lg transform group-hover:scale-[1.03] transition-transform duration-500"
+                          unoptimized
+                        />
                       </div>
-                    </CardContent>
+                    </div>
                   </div>
-                  <div className="relative w-1/3">
-                    <Image
-                      height={200}
-                      width={300}
-                      src={resolveIPFSToHttp(hackathon.visual)}
-                      alt={hackathon.name || `Hackathon ${hackathon.id}`}
-                      className="h-full w-full object-cover rounded-lg"
-                      unoptimized
-                    />
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </motion.div>
             );
           })}
         </div>

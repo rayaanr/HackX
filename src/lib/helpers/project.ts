@@ -2,27 +2,8 @@ import type { UIProject, ProjectWithHackathon } from "@/types/hackathon";
 
 /**
  * Project utility functions
+ * Note: Status utilities have been moved to @/lib/helpers/status.ts
  */
-
-/**
- * Get the variant for a project status badge
- */
-export function getProjectStatusVariant(
-  status: string,
-): "default" | "secondary" | "destructive" | "outline" {
-  switch (status) {
-    case "draft":
-      return "secondary";
-    case "submitted":
-      return "default";
-    case "in_review":
-      return "outline";
-    case "completed":
-      return "destructive";
-    default:
-      return "secondary";
-  }
-}
 
 /**
  * Transform database project to UI project

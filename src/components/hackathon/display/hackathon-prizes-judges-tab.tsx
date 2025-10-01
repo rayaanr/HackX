@@ -1,12 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+"use client";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Trophy, Users, Target, Vote, Scale } from "lucide-react";
+import { motion } from "motion/react";
 import { type UIHackathon } from "@/types/hackathon";
 
 interface PrizeAndJudgeTabProps {
@@ -16,12 +14,24 @@ interface PrizeAndJudgeTabProps {
 export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
   if (!hackathon.prizeCohorts || hackathon.prizeCohorts.length === 0) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Prize & Judge Information</h2>
-        <p className="text-muted-foreground">
-          Prize and judge information will be announced soon.
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-4"
+      >
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+          Prizes & Judges
+        </h2>
+        <Card className="border-dashed border-2 border-muted-foreground/20">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Trophy className="h-12 w-12 text-muted-foreground/40 mb-4" />
+            <p className="text-muted-foreground text-center">
+              Prize and judge information will be announced soon.
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
@@ -30,9 +40,6 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
     const amount = parseFloat(cohort.prizeAmount.replace(/[^\d.]/g, "")) || 0;
     return total + amount;
   }, 0);
-
-  // Get the main prize cohort for judging criteria
-  const mainCohort = hackathon.prizeCohorts[0];
 
   // Sort cohorts by prize amount for ranking display
   const sortedCohorts = [...hackathon.prizeCohorts].sort((a, b) => {
@@ -43,155 +50,214 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
 
   const formatCurrency = (amount: string) => {
     const numericAmount = parseFloat(amount.replace(/[^\d.]/g, "")) || 0;
-    // Extract currency from original amount or use a default
     const currencyMatch = amount.match(/[A-Z]{3,4}/);
     const currency = currencyMatch ? currencyMatch[0] : "USD";
     return `${numericAmount.toLocaleString()} ${currency}`;
   };
 
   const getRankLabel = (index: number) => {
-    switch (index) {
-      case 0:
-        return "First Place";
-      case 1:
-        return "Second Place";
-      case 2:
-        return "Third Place";
-      default:
-        return `${index + 1}th Place`;
-    }
+    const ranks = ["🥇", "🥈", "🥉"];
+    return ranks[index] || `#${index + 1}`;
   };
 
   return (
-    <div className="space-y-8">
-      {/* Render each cohort as a separate card */}
-      {hackathon.prizeCohorts.map((cohort, cohortIndex) => (
-        <Card key={cohort.name} className="overflow-hidden">
-          <CardHeader className="bg-muted/30">
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Total Prize */}
-              <div>
-                <CardTitle className="text-4xl font-bold mb-2">
-                  {formatCurrency(cohort.prizeAmount)}
-                </CardTitle>
-                <p className="text-lg text-muted-foreground">{cohort.name}</p>
-              </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+          Prizes & Judges
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Prize structure and evaluation criteria
+        </p>
+      </div>
 
-              {/* Prize Breakdown - show other cohorts for comparison */}
-              <div className="space-y-3">
-                {sortedCohorts.slice(0, 3).map((otherCohort, index) => (
+      {/* Prize Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {sortedCohorts.slice(0, 3).map((cohort, index) => (
+          <motion.div
+            key={cohort.name}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+          >
+            <Card
+              className={`relative overflow-hidden ${
+                index === 0
+                  ? "border-yellow-500/20 bg-yellow-500/5"
+                  : index === 1
+                    ? "border-gray-400/20 bg-gray-400/5"
+                    : index === 2
+                      ? "border-orange-500/20 bg-orange-500/5"
+                      : "border-muted-foreground/20"
+              }`}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="text-2xl">{getRankLabel(index)}</div>
+                  <div>
+                    <h3 className="font-semibold text-sm">{cohort.name}</h3>
+                    <p className="text-xs text-muted-foreground">Prize Pool</p>
+                  </div>
+                </div>
+                <div className="text-xl font-bold text-foreground">
+                  {formatCurrency(cohort.prizeAmount)}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Detailed Information for Each Cohort */}
+      <div className="grid gap-6">
+        {hackathon.prizeCohorts.map((cohort, cohortIndex) => (
+          <motion.div
+            key={cohort.name}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: cohortIndex * 0.1 }}
+          >
+            <Card className="overflow-hidden">
+              <CardContent className="p-6 space-y-6">
+                {/* Cohort Header */}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-1">
+                      {cohort.name}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {formatCurrency(cohort.prizeAmount)} Prize Pool
+                      </span>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {cohort?.judgingMode?.replace("_", " ") || "TBD"}
+                  </Badge>
+                </div>
+
+                {/* Evaluation Criteria */}
+                {cohort?.evaluationCriteria &&
+                  cohort.evaluationCriteria.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <h4 className="font-medium text-sm">
+                          Evaluation Criteria
+                        </h4>
+                      </div>
+                      <div className="grid gap-2">
+                        {cohort.evaluationCriteria.map((criteria) => (
+                          <div
+                            key={criteria.name}
+                            className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+                          >
+                            <div>
+                              <span className="font-medium text-sm">
+                                {criteria.name}
+                              </span>
+                              <p className="text-xs text-muted-foreground">
+                                {criteria.description}
+                              </p>
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              {criteria.points}%
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Judging Details */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                    <Scale className="h-4 w-4 text-blue-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Judging Mode
+                      </p>
+                      <p className="font-medium text-sm capitalize">
+                        {cohort?.judgingMode?.replace("_", " ") || "TBD"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                    <Vote className="h-4 w-4 text-green-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Voting Mode
+                      </p>
+                      <p className="font-medium text-sm capitalize">
+                        {cohort?.votingMode?.replace("_", " ") || "TBD"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                    <Trophy className="h-4 w-4 text-orange-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Max Votes</p>
+                      <p className="font-medium text-sm">
+                        {cohort?.maxVotesPerJudge || 0} per judge
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Judges Section */}
+      {hackathon.judges && hackathon.judges.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-semibold">Judges</h3>
+                <Badge variant="outline" className="text-xs">
+                  {hackathon.judges.length}{" "}
+                  {hackathon.judges.length === 1 ? "Judge" : "Judges"}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {hackathon.judges.map((judge, index) => (
                   <div
-                    key={otherCohort.name}
-                    className="flex justify-between items-center"
+                    key={judge.address}
+                    className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg"
                   >
-                    <span className="text-muted-foreground">
-                      {getRankLabel(index)}
-                    </span>
-                    <span className="font-semibold">
-                      {formatCurrency(otherCohort.prizeAmount)}
-                    </span>
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="text-xs font-medium">
+                        {judge.address.slice(2, 4).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-xs font-medium">Judge {index + 1}</p>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        {judge.address.slice(0, 6)}...{judge.address.slice(-4)}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-6 space-y-6">
-            <h3 className="text-2xl font-bold">{cohort.name}</h3>
-
-            {/* Judging Criteria */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Judging Criteria</h4>
-              <div className="bg-muted/30 rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="font-semibold">Category</TableHead>
-                      <TableHead className="font-semibold">Details</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {cohort?.evaluationCriteria &&
-                    cohort.evaluationCriteria.length > 0 ? (
-                      cohort.evaluationCriteria.map((criteria) => (
-                        <TableRow key={criteria.name}>
-                          <TableCell className="font-medium">
-                            {criteria.name} {criteria.points}%
-                          </TableCell>
-                          <TableCell>{criteria.description}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell
-                          colSpan={2}
-                          className="text-center text-muted-foreground italic"
-                        >
-                          No evaluation criteria defined
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-
-            {/* Judging Details */}
-            <div className="grid md:grid-cols-2 gap-8 text-sm">
-              <div className="space-y-2">
-                <h5 className="font-semibold text-muted-foreground">
-                  Judging Mode
-                </h5>
-                <p className="font-semibold capitalize">
-                  {cohort?.judgingMode?.replace("_", " ") || "TBD"}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h5 className="font-semibold text-muted-foreground">
-                  Voting Mode
-                </h5>
-                <p className="font-semibold capitalize">
-                  {cohort?.votingMode?.replace("_", " ") || "TBD"}
-                </p>
-              </div>
-            </div>
-
-            {/* Max Votes */}
-            <div className="space-y-2">
-              <h5 className="font-semibold text-muted-foreground">
-                MAX Votes Per Project Per User/Judge
-              </h5>
-              <p className="text-2xl font-bold">
-                {cohort?.maxVotesPerJudge || 0}
-              </p>
-            </div>
-
-            {/* Judging Accounts - only show once, for the first cohort */}
-            {cohortIndex === 0 && (
-              <div className="space-y-2">
-                <h5 className="font-semibold text-muted-foreground">
-                  Judging Accounts
-                </h5>
-                <div className="flex items-center space-x-2">
-                  {hackathon.judges && hackathon.judges.length > 0 ? (
-                    hackathon.judges.slice(0, 4).map((judge) => (
-                      <div
-                        key={judge.address}
-                        className="w-10 h-10 bg-muted rounded-full flex items-center justify-center text-sm font-semibold"
-                        title={judge.address}
-                      >
-                        {judge.address.slice(2, 4).toUpperCase()}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-muted-foreground">No judges assigned</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </motion.div>
   );
 }

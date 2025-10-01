@@ -1,9 +1,14 @@
 "use client";
 
 import { Plus, FolderIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useBlockchainProjects } from "@/hooks/blockchain/useBlockchainProjects";
+import { useBlockchainProjects } from "@/hooks/use-projects";
 import {
   ProjectCard,
   type ProjectCardData,
@@ -90,7 +95,7 @@ export function ActiveProjects() {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
         {allProjects.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
@@ -109,20 +114,29 @@ export function ActiveProjects() {
           </div>
         ) : (
           <>
-            {/* Create New Project Card */}
-            <Link href="/projects/create">
-              <Card className="border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors cursor-pointer group gap-4 h-60">
-                <CardContent className="flex flex-col items-center justify-center text-center p-6 h-full">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <Plus className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-primary mb-2">
-                    New Project
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Create a new project
-                  </p>
-                </CardContent>
+            {/* Create New Project Card - matching default structure */}
+            <Link href="/projects/create" className="group block h-full">
+              <Card className="project-card-hover h-full">
+                <div className="relative z-10 h-full flex flex-col">
+                  <CardHeader className="mb-3 relative z-10 flex items-center justify-center">
+                    <div className="relative mx-auto flex aspect-square size-24 items-center justify-center rounded-full border border-white/10 before:absolute before:-inset-2 before:rounded-full before:border before:border-white/5">
+                      <div className="flex size-14 items-center justify-center rounded-md bg-primary/10 ring-1 ring-white/10">
+                        <Plus className="size-8 text-primary" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-1 relative z-10 text-center items-center">
+                    <h3 className="text-base md:text-lg font-semibold tracking-tight mb-2">
+                      New Project
+                    </h3>
+                    <p className="text-sm text-white/65 mb-3 line-clamp-3">
+                      Create a new project
+                    </p>
+                    <div className="mt-5 flex flex-wrap gap-2 justify-center">
+                      {/* Empty space to match tech badges */}
+                    </div>
+                  </CardContent>
+                </div>
               </Card>
             </Link>
 

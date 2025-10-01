@@ -3,12 +3,15 @@
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { RecentHackathons } from "@/components/dashboard/recent-hackathons";
 import { QuickActions } from "@/components/dashboard/quick-actions";
-import { useDashboardData } from "@/hooks/queries/use-dashboard";
+import { FeaturedCarousel } from "@/components/hackathon/widgets/featured-carousel";
+import { useDashboardData } from "@/hooks/use-dashboard";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { useAllHackathons } from "@/hooks/use-hackathons";
 
 export default function DashboardPage() {
   const { hackathons, stats, loading, error } = useDashboardData();
+  const { hackathons: allHackathons } = useAllHackathons();
 
   useEffect(() => {
     if (error) {
@@ -29,6 +32,9 @@ export default function DashboardPage() {
           Welcome to your hackathon management dashboard
         </p>
       </div>
+
+      {/* Featured Hackathon Carousel */}
+      <FeaturedCarousel hackathons={allHackathons || []} />
 
       <StatsCards stats={stats} loading={loading} />
 

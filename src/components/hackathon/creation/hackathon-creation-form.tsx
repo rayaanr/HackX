@@ -3,7 +3,7 @@
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { CreateHackathonStepper } from "./hackathon-creation-stepper";
-import { useHackathonForm } from "@/hooks/useHackathonForm";
+import { useHackathonForm } from "@/hooks/use-hackathon-form";
 import { getRandomMockHackathon } from "@/data/hackathon";
 import { Shuffle, Info } from "lucide-react";
 import { toast } from "sonner";

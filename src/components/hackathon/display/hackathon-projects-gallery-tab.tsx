@@ -1,10 +1,11 @@
 import { type UIHackathon } from "@/types/hackathon";
-import { useHackathonProjectsWithDetails } from "@/hooks/blockchain/useBlockchainHackathons";
 import {
   ProjectCard,
   type ProjectCardData,
 } from "@/components/projects/display/project-card";
 import { useMemo } from "react";
+import { ComponentLoading } from "@/components/ui/global-loading";
+import { useHackathonProjectsWithDetails } from "@/hooks/use-hackathons";
 
 interface SubmittedProjectsTabProps {
   hackathon: UIHackathon;
@@ -37,11 +38,7 @@ export function SubmittedProjectsTab({ hackathon }: SubmittedProjectsTabProps) {
   return (
     <div className="space-y-6">
       {projectsLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
-          ))}
-        </div>
+        <ComponentLoading text="Loading projects" height="200px" />
       ) : projectsError ? (
         <p className="text-muted-foreground">Failed to load projects.</p>
       ) : projects.length === 0 ? (

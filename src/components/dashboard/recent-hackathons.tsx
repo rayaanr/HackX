@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import { Plus } from "lucide-react";
+import { motion } from "motion/react";
+import { CardLoading } from "@/components/ui/global-loading";
 import type { UIHackathon } from "@/types/hackathon";
-import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
+import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import { format } from "date-fns";
@@ -20,30 +22,7 @@ export function RecentHackathons({
   loading = false,
 }: RecentHackathonsProps) {
   if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="h-6 w-40 bg-muted animate-pulse rounded" />
-            <div className="h-9 w-32 bg-muted animate-pulse rounded" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
-                <div className="h-12 w-12 bg-muted animate-pulse rounded-lg" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-48 bg-muted animate-pulse rounded" />
-                  <div className="h-3 w-32 bg-muted animate-pulse rounded" />
-                </div>
-                <div className="h-6 w-16 bg-muted animate-pulse rounded" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <CardLoading text="Loading recent hackathons" height="300px" />;
   }
 
   // Show most recent hackathons (up to 5)
@@ -56,12 +35,17 @@ export function RecentHackathons({
     .slice(0, 5);
 
   return (
-    <Card>
+    <Card className="project-card-hover">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Recent Hackathons</CardTitle>
+          <CardTitle className="group-hover:text-white transition-colors">
+            Recent Hackathons
+          </CardTitle>
           <Link href="/hackathons/create">
-            <Button size="sm">
+            <Button
+              size="sm"
+              className="hover:bg-white/10 hover:text-white transition-colors"
+            >
               <Plus className="h-4 w-4 mr-2" />
               New Event
             </Button>
@@ -83,58 +67,78 @@ export function RecentHackathons({
           </div>
         ) : (
           <div className="space-y-4">
-            {recentHackathons.map((hackathon) => {
+            {recentHackathons.map((hackathon, index) => {
               const status = getUIHackathonStatus({
                 ...hackathon,
                 votingPeriod: hackathon.votingPeriod || undefined,
               });
-              const variant = getStatusVariant(status);
+              const variant = getHackathonStatusVariant(status);
               const totalPrize = calculateTotalPrizeAmount(
                 hackathon.prizeCohorts || [],
               );
 
               return (
-                <Link key={hackathon.id} href={`/hackathons/${hackathon.id}`}>
-                  <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                    <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <span className="text-lg font-semibold text-primary">
-                        {hackathon.name.charAt(0)}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium truncate">
-                          {hackathon.name}
-                        </h3>
-                        <Badge variant={variant} className="text-xs">
-                          {status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{hackathon.location}</span>
-                        <span>{totalPrize}</span>
-                        <span>
-                          {hackathon.hackathonPeriod?.hackathonStartDate
-                            ? format(
-                                hackathon.hackathonPeriod.hackathonStartDate,
-                                "dd MMM yyyy",
-                              )
-                            : "TBD"}
+                <motion.div
+                  key={hackathon.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: 0.1 * index,
+                    duration: 0.5,
+                    ease: [0.215, 0.61, 0.355, 1],
+                  }}
+                >
+                  <Link href={`/hackathons/${hackathon.id}`}>
+                    <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-white/10 transition-all duration-300 cursor-pointer group border border-transparent hover:border-white/20">
+                      <div className="h-12 w-12 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                        <span className="text-lg font-semibold text-white/80 group-hover:text-white transition-colors">
+                          {hackathon.name.charAt(0)}
                         </span>
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium truncate text-white/90 group-hover:text-white transition-colors">
+                            {hackathon.name}
+                          </h3>
+                          <Badge variant={variant} className="text-xs">
+                            {status}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-white/60 group-hover:text-white/80 transition-colors">
+                          <span>{hackathon.location}</span>
+                          <span>{totalPrize}</span>
+                          <span>
+                            {hackathon.hackathonPeriod?.hackathonStartDate
+                              ? format(
+                                  hackathon.hackathonPeriod.hackathonStartDate,
+                                  "dd MMM yyyy",
+                                )
+                              : "TBD"}
+                          </span>
+                        </div>
+                      </div>
+                      <AvatarList
+                        images={[
+                          {
+                            src: "/placeholder-user.jpg",
+                            alt: "Participant 1",
+                          },
+                          {
+                            src: "/placeholder-user.jpg",
+                            alt: "Participant 2",
+                          },
+                          {
+                            src: "/placeholder-user.jpg",
+                            alt: "Participant 3",
+                          },
+                        ]}
+                        totalCount={50}
+                        additionalCount={0}
+                        className="border-0 shadow-none"
+                      />
                     </div>
-                    <AvatarList
-                      images={[
-                        { src: "/placeholder-user.jpg", alt: "Participant 1" },
-                        { src: "/placeholder-user.jpg", alt: "Participant 2" },
-                        { src: "/placeholder-user.jpg", alt: "Participant 3" },
-                      ]}
-                      totalCount={50}
-                      additionalCount={0}
-                      className="border-0 shadow-none"
-                    />
-                  </div>
-                </Link>
+                  </Link>
+                </motion.div>
               );
             })}
 

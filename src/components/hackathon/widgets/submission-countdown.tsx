@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { SlidingNumber } from "../../ui/anim/sliding-number";
 import type { UIHackathon } from "@/types/hackathon";
 import { safeToDate } from "@/lib/helpers/date";
 
@@ -92,27 +93,27 @@ export function SubmissionCountdown({ hackathon }: SubmissionCountdownProps) {
       </div>
       <div className="grid grid-cols-4 gap-4 text-center">
         <div className="rounded-lg p-3 bg-background">
-          <p className="text-2xl font-bold">
-            {timeLeft.days.toString().padStart(2, "0")}
-          </p>
+          <div className="text-2xl font-bold font-mono">
+            <SlidingNumber value={timeLeft.days} padStart={true} />
+          </div>
           <p className="text-xs text-muted-foreground">D</p>
         </div>
         <div className="bg-background rounded-lg p-3">
-          <p className="text-2xl font-bold">
-            {timeLeft.hours.toString().padStart(2, "0")}
-          </p>
+          <div className="text-2xl font-bold font-mono">
+            <SlidingNumber value={timeLeft.hours} padStart={true} />
+          </div>
           <p className="text-xs text-muted-foreground">H</p>
         </div>
         <div className="bg-background rounded-lg p-3">
-          <p className="text-2xl font-bold">
-            {timeLeft.minutes.toString().padStart(2, "0")}
-          </p>
+          <div className="text-2xl font-bold font-mono">
+            <SlidingNumber value={timeLeft.minutes} padStart={true} />
+          </div>
           <p className="text-xs text-muted-foreground">M</p>
         </div>
         <div className="bg-background rounded-lg p-3">
-          <p className="text-2xl font-bold">
-            {timeLeft.seconds.toString().padStart(2, "0")}
-          </p>
+          <div className="text-2xl font-bold font-mono">
+            <SlidingNumber value={timeLeft.seconds} padStart={true} />
+          </div>
           <p className="text-xs text-muted-foreground">S</p>
         </div>
       </div>

@@ -12,12 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { UIHackathon } from "@/types/hackathon";
-import { getStatusVariant } from "@/lib/helpers/hackathon-transforms";
-import {
-  safeToDate,
-  getDaysLeft,
-  getUIHackathonStatus,
-} from "@/lib/helpers/date";
+import { getHackathonStatusVariant } from "@/lib/helpers/status";
+import { getDaysLeft, getUIHackathonStatus } from "@/lib/helpers/date";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 import React, { useEffect, useState, useRef } from "react";
@@ -127,7 +123,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
 
   return (
     <div
-      className="mb-12 relative"
+      className="mb-12 relative group"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -135,7 +131,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
       <div className="absolute top-4 left-4 z-20">
         <Badge
           variant="default"
-          className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white"
+          className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg backdrop-blur-sm"
         >
           ⭐ Featured
         </Badge>
@@ -155,7 +151,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
               ...hackathon,
               votingPeriod: hackathon.votingPeriod || undefined,
             });
-            const statusVariant = getStatusVariant(status);
+            const statusVariant = getHackathonStatusVariant(status);
             const deadline = hackathon.registrationPeriod?.registrationEndDate;
 
             // Calculate days left until deadline
@@ -167,7 +163,9 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
                   <div
                     className="relative rounded-xl overflow-hidden text-white h-[250px] sm:h-[300px] flex items-end hover:scale-[1.02] transition-transform duration-300"
                     style={{
-                      background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${resolveIPFSToHttp(hackathon.visual)})`,
+                      background: `linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.8) 100%), url(${resolveIPFSToHttp(
+                        hackathon.visual,
+                      )})`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}

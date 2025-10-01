@@ -1,16 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, UserCheck, Loader2 } from "lucide-react";
+import { ArrowRight, UserCheck } from "lucide-react";
+import { InlineLoading } from "@/components/ui/global-loading";
 import Link from "next/link";
 import { useActiveAccount } from "thirdweb/react";
-import {
-  useHackathonRegistration,
-  useRegisterForHackathon,
-} from "@/hooks/blockchain/useBlockchainHackathons";
 import { useSendTransaction } from "thirdweb/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  useHackathonRegistration,
+  useRegisterForHackathon,
+} from "@/hooks/use-hackathons";
 
 interface RegistrationButtonProps {
   hackathonId: string;
@@ -60,8 +61,7 @@ export function RegistrationButton({ hackathonId }: RegistrationButtonProps) {
   if (registrationLoading) {
     return (
       <Button size="lg" disabled>
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Checking Registration...
+        <InlineLoading text="Checking Registration" size="sm" />
       </Button>
     );
   }
@@ -90,10 +90,7 @@ export function RegistrationButton({ hackathonId }: RegistrationButtonProps) {
       variant="default"
     >
       {isRegistering ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Registering...
-        </>
+        <InlineLoading text="Registering" size="sm" />
       ) : (
         "Register to Participate"
       )}

@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAllHackathons } from "@/hooks/blockchain/useBlockchainHackathons";
 import type { DashboardStats, UIHackathon } from "@/types/hackathon";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
+import { useAllHackathons } from "./use-hackathons";
 
 // Calculate dashboard statistics from hackathons data
 function calculateDashboardStats(hackathons: UIHackathon[]): DashboardStats {
