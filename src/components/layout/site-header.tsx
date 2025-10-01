@@ -5,9 +5,11 @@ import { WalletConnect } from "./wallet-connect";
 import { useActiveAccount } from "thirdweb/react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export function SiteHeader() {
   const account = useActiveAccount();
+  const { state, isMobile } = useSidebar();
 
   const easeHeader: [number, number, number, number] = [0.215, 0.61, 0.355, 1];
   const fade = {
@@ -21,16 +23,23 @@ export function SiteHeader() {
 
   return (
     <header
-      className={cn(
-        // Sticky inside the content area (excludes the sidebar automatically)
-        "sticky top-0 z-40 h-(--header-height) flex items-center gap-2 shrink-0 w-full",
-        "transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)",
-        // Dark gradients to match card hover theme
-        "border-b border-white/10 backdrop-blur-xl bg-[#0a0a0a]/90",
-        "relative",
-        "before:absolute before:inset-0 before:bg-[linear-gradient(to_right,rgba(0,0,0,0.4),transparent_40%,transparent_60%,rgba(0,0,0,0.3))] before:pointer-events-none",
-        "after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_15%_50%,rgba(59,130,246,0.08),transparent_65%)] after:pointer-events-none"
-      )}
+      style={{
+        position: "fixed",
+        top: "0",
+        left: "0",
+        right: "0",
+        zIndex: 99999,
+        height: "56px",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        flexShrink: 0,
+        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+        backdropFilter: "blur(12px)",
+        backgroundColor: "rgba(10, 10, 10, 0.95)",
+        marginLeft: !isMobile && state === "expanded" ? "16rem" : !isMobile && state === "collapsed" ? "3rem" : "0",
+        transition: "margin-left 200ms ease-linear"
+      } as React.CSSProperties}
     >
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6 relative z-10">
         <motion.div

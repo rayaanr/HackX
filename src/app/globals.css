@@ -71,6 +71,7 @@
 
 :root {
   --radius: 0.75rem;
+  --header-height: 3.5rem;
   --card: oklch(0.9784 0.0011 197.1387);
   --card-foreground: oklch(0.1884 0.0128 248.5103);
   --popover: oklch(1 0 0);
@@ -136,6 +137,7 @@
 }
 
 .dark {
+  --header-height: 3.5rem;
   --background: oklch(0 0 0);
   --foreground: oklch(0.9328 0.0025 228.7857);
   --card: oklch(0.1684 0 0);
