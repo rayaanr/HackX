@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { motion } from "motion/react";
+import { CircularLoader } from "@/components/ui/loader";
 import type { ProjectWithHackathon } from "@/types/hackathon";
 import { useJudgeEvaluation } from "@/hooks/use-judge";
 import {
@@ -99,7 +100,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   // Find the specific project
   const project = projects.find(
-    (p: ProjectWithHackathon) => p.id.toString() === projectId,
+    (p: ProjectWithHackathon) => p.id.toString() === projectId
   );
 
   if (!project) {
@@ -155,7 +156,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     } else {
       toast.error(
         result.error || "Failed to submit evaluation. Please try again.",
-        { id: "evaluation-submission" },
+        { id: "evaluation-submission" }
       );
     }
   };
@@ -380,12 +381,12 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                       >
                         {submissionStage === "uploading" ? (
                           <>
-                            <Clock className="mr-2 size-4 animate-spin" />
+                            <CircularLoader size="sm" className="mr-2" />
                             Uploading to IPFS...
                           </>
                         ) : submissionStage === "blockchain" ? (
                           <>
-                            <Clock className="mr-2 size-4 animate-spin" />
+                            <CircularLoader size="sm" className="mr-2" />
                             Submitting to Blockchain...
                           </>
                         ) : submissionStage === "success" ? (

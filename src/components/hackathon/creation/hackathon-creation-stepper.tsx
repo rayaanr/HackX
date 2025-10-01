@@ -2,6 +2,7 @@
 
 import { defineStepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
+import { CircularLoader } from "@/components/ui/loader";
 import { Fragment } from "react";
 import { OverviewStep } from "./hackathon-overview-step";
 import { PrizesStep } from "./hackathon-prizes-step";
@@ -24,7 +25,7 @@ const { Stepper } = defineStepper(
   {
     id: "schedule",
     title: "Schedule",
-  },
+  }
 );
 
 interface CreateHackathonStepperProps {
@@ -96,13 +97,20 @@ export function CreateHackathonStepper({
                   onClick={() => {
                     console.log(
                       "🔥 Stepper Create button clicked, onCreateHackathon:",
-                      typeof onCreateHackathon,
+                      typeof onCreateHackathon
                     );
                     onCreateHackathon?.();
                   }}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Creating Hackathon..." : "Create Hackathon"}
+                  {isSubmitting ? (
+                    <>
+                      <CircularLoader size="sm" className="mr-2" />
+                      Creating Hackathon...
+                    </>
+                  ) : (
+                    "Create Hackathon"
+                  )}
                 </Button>
               ) : (
                 <Button

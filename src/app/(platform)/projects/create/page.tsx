@@ -3,9 +3,30 @@
 import { CreateProjectForm } from "@/components/projects/creation/project-creation-form";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { Button } from "@/components/ui/button";
+import { CircularLoader } from "@/components/ui/loader";
 import { Shuffle } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function CreateProjectPage() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Listen for loading state changes from the form
+  useEffect(() => {
+    const handleLoadingChange = (event: CustomEvent) => {
+      setIsLoading(event.detail.isLoading);
+    };
+
+    window.addEventListener(
+      "projectLoadingChange",
+      handleLoadingChange as EventListener
+    );
+    return () => {
+      window.removeEventListener(
+        "projectLoadingChange",
+        handleLoadingChange as EventListener
+      );
+    };
+  }, []);
   /**
    * Handler for the header Create button.
    *
@@ -17,7 +38,7 @@ export default function CreateProjectPage() {
     console.log("🔴 Header Create button clicked!");
     // Find and trigger the stepper's create button
     const stepperCreateButton = document.getElementById(
-      "stepper-create-project",
+      "stepper-create-project"
     );
     console.log("🔍 Found stepper button:", stepperCreateButton);
     if (stepperCreateButton) {
@@ -51,8 +72,16 @@ export default function CreateProjectPage() {
               type="button"
               id="header-create-project"
               onClick={handleHeaderCreate}
+              disabled={isLoading}
             >
-              Create Project
+              {isLoading ? (
+                <>
+                  <CircularLoader size="sm" className="mr-2" />
+                  Creating Project...
+                </>
+              ) : (
+                "Create Project"
+              )}
             </Button>
           </>
         }

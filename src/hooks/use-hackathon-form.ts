@@ -53,8 +53,8 @@ function createSuccessHandler(router: any) {
     toast.success(
       `Hackathon created successfully! IPFS: ${data.cid.slice(
         0,
-        10,
-      )}... TX: ${data.transactionHash.slice(0, 10)}...`,
+        10
+      )}... TX: ${data.transactionHash.slice(0, 10)}...`
     );
     router.push("/dashboard");
   };
@@ -73,7 +73,7 @@ function createErrorHandler(router: any) {
     // Handle transaction rejection
     if (error.message.includes("Transaction was rejected")) {
       toast.error(
-        "Transaction rejected. Please approve the transaction to create your hackathon.",
+        "Transaction rejected. Please approve the transaction to create your hackathon."
       );
       return;
     }
@@ -81,7 +81,7 @@ function createErrorHandler(router: any) {
     // Handle insufficient funds
     if (error.message.includes("insufficient funds")) {
       toast.error(
-        "Insufficient funds for gas fees. Please add ETH to your wallet.",
+        "Insufficient funds for gas fees. Please add ETH to your wallet."
       );
       return;
     }
@@ -94,7 +94,7 @@ function createErrorHandler(router: any) {
 function validateHackathonForm(
   data: HackathonFormData,
   setError: any,
-  clearErrors: any,
+  clearErrors: any
 ): boolean {
   // Validate date consistency (client-side pre-validation)
   const dateErrors = validateDateConsistency(data);
@@ -135,8 +135,21 @@ export function useHackathonForm() {
   const onSubmit = async (data: HackathonFormData) => {
     console.log("Form submitted with data:", data);
 
+    // Dispatch loading state change
+    window.dispatchEvent(
+      new CustomEvent("hackathonLoadingChange", {
+        detail: { isLoading: true },
+      })
+    );
+
     // Validate form
     if (!validateHackathonForm(data, setError, clearErrors)) {
+      // Dispatch loading state change on validation failure
+      window.dispatchEvent(
+        new CustomEvent("hackathonLoadingChange", {
+          detail: { isLoading: false },
+        })
+      );
       return;
     }
 
@@ -156,6 +169,13 @@ export function useHackathonForm() {
       }
     } catch (err) {
       handleCreateError(err as Error);
+    } finally {
+      // Dispatch loading state change
+      window.dispatchEvent(
+        new CustomEvent("hackathonLoadingChange", {
+          detail: { isLoading: false },
+        })
+      );
     }
   };
 
