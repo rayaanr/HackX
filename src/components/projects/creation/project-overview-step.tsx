@@ -63,23 +63,7 @@ export function OverviewStep() {
   return (
     <div className="space-y-8">
       <Card className="bg-transparent border-none">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Project Overview</CardTitle>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={loadRandomMockData}
-              className="flex items-center gap-2"
-            >
-              <Shuffle className="w-4 h-4" />
-              Load Random
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 px-0">
           <div className="grid grid-cols-6 gap-6">
             <div className="col-span-4 space-y-6">
               <FormField

@@ -89,16 +89,13 @@ export function HackathonSelectionStep() {
   return (
     <div className="space-y-8">
       <Card className="bg-transparent/30">
-        <CardHeader>
-          <CardTitle>Select Hackathons</CardTitle>
-        </CardHeader>
         <CardContent className="space-y-6">
           <FormField
             control={control}
             name="hackathonIds"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Hackathon Selection *</FormLabel>
+                <FormLabel required>Hackathon Selection</FormLabel>
                 <FormControl>
                   <div className="space-y-4">
                     {/* Removed filter buttons since we only show registered hackathons */}

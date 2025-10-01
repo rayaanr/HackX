@@ -127,9 +127,9 @@ export default function JudgeDashboardPage() {
                         {hackathon.hackathonPeriod?.hackathonStartDate &&
                         hackathon.hackathonPeriod?.hackathonEndDate
                           ? `${new Date(
-                              hackathon.hackathonPeriod.hackathonStartDate
+                              hackathon.hackathonPeriod.hackathonStartDate,
                             ).toLocaleDateString()} - ${new Date(
-                              hackathon.hackathonPeriod.hackathonEndDate
+                              hackathon.hackathonPeriod.hackathonEndDate,
                             ).toLocaleDateString()}`
                           : "TBD"}
                       </p>

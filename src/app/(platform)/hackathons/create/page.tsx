@@ -7,16 +7,18 @@ import { Button } from "@/components/ui/button";
 export default function CreateHackathonPage() {
   /**
    * Handler for the header Create button.
-   * 
+   *
    * This is non-submitting and only works by programmatically clicking
    * the stepper's Create button (which contains all the validation logic).
    * This prevents multiple submission paths and ensures consistent behavior.
    */
   const handleHeaderCreate = () => {
-    console.log('🔴 Header Create button clicked!');
+    console.log("🔴 Header Create button clicked!");
     // Find and trigger the stepper's create button
-    const stepperCreateButton = document.getElementById('stepper-create-hackathon');
-    console.log('🔍 Found stepper button:', stepperCreateButton);
+    const stepperCreateButton = document.getElementById(
+      "stepper-create-hackathon",
+    );
+    console.log("🔍 Found stepper button:", stepperCreateButton);
     if (stepperCreateButton) {
       stepperCreateButton.click();
     }
@@ -32,8 +34,8 @@ export default function CreateHackathonPage() {
             <Button type="button" variant="outline" disabled>
               Save Draft
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               id="header-create-hackathon"
               onClick={handleHeaderCreate}
             >

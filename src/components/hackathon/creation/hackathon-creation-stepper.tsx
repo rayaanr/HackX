@@ -90,11 +90,14 @@ export function CreateHackathonStepper({
                 </Button>
               )}
               {methods.isLast ? (
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   id="stepper-create-hackathon"
                   onClick={() => {
-                    console.log('🔥 Stepper Create button clicked, onCreateHackathon:', typeof onCreateHackathon);
+                    console.log(
+                      "🔥 Stepper Create button clicked, onCreateHackathon:",
+                      typeof onCreateHackathon,
+                    );
                     onCreateHackathon?.();
                   }}
                   disabled={isSubmitting}
