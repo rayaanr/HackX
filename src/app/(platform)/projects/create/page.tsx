@@ -18,12 +18,12 @@ export default function CreateProjectPage() {
 
     window.addEventListener(
       "projectLoadingChange",
-      handleLoadingChange as EventListener
+      handleLoadingChange as EventListener,
     );
     return () => {
       window.removeEventListener(
         "projectLoadingChange",
-        handleLoadingChange as EventListener
+        handleLoadingChange as EventListener,
       );
     };
   }, []);
@@ -38,7 +38,7 @@ export default function CreateProjectPage() {
     console.log("🔴 Header Create button clicked!");
     // Find and trigger the stepper's create button
     const stepperCreateButton = document.getElementById(
-      "stepper-create-project"
+      "stepper-create-project",
     );
     console.log("🔍 Found stepper button:", stepperCreateButton);
     if (stepperCreateButton) {

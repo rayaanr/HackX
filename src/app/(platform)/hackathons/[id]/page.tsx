@@ -119,7 +119,7 @@ export default function HackathonPage() {
                 selectedTab={activeTab}
                 onTabChange={(value) =>
                   setActiveTab(
-                    value as "overview" | "prize" | "schedule" | "projects"
+                    value as "overview" | "prize" | "schedule" | "projects",
                   )
                 }
                 className="h-14 p-1"
@@ -199,7 +199,7 @@ export default function HackathonPage() {
                               "hr",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          })
+                          }),
                         );
                       })()}
                     </div>

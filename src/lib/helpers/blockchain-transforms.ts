@@ -13,7 +13,7 @@ import type { UIHackathon, UIProject } from "@/types/hackathon";
  * Transform blockchain hackathon data to UI format
  */
 export function transformBlockchainToUI(
-  blockchainHackathon: BlockchainHackathon
+  blockchainHackathon: BlockchainHackathon,
 ): UIHackathon {
   const metadata = blockchainHackathon.metadata;
 
@@ -31,20 +31,20 @@ export function transformBlockchainToUI(
       registrationStartDate: blockchainHackathon.registrationStartDate
         ? new Date(Number(blockchainHackathon.registrationStartDate) * 1000)
         : metadata?.registrationPeriod?.registrationStartDate
-        ? new Date(metadata.registrationPeriod.registrationStartDate)
-        : undefined,
+          ? new Date(metadata.registrationPeriod.registrationStartDate)
+          : undefined,
       registrationEndDate: new Date(
-        Number(blockchainHackathon.registrationDeadline) * 1000
+        Number(blockchainHackathon.registrationDeadline) * 1000,
       ),
     },
     hackathonPeriod: {
       hackathonStartDate: blockchainHackathon.submissionStartDate
         ? new Date(Number(blockchainHackathon.submissionStartDate) * 1000)
         : metadata?.hackathonPeriod?.hackathonStartDate
-        ? new Date(metadata.hackathonPeriod.hackathonStartDate)
-        : new Date(Number(blockchainHackathon.registrationDeadline) * 1000), // Fallback to registration end
+          ? new Date(metadata.hackathonPeriod.hackathonStartDate)
+          : new Date(Number(blockchainHackathon.registrationDeadline) * 1000), // Fallback to registration end
       hackathonEndDate: new Date(
-        Number(blockchainHackathon.submissionDeadline) * 1000
+        Number(blockchainHackathon.submissionDeadline) * 1000,
       ),
     },
     votingPeriod: {
@@ -52,7 +52,7 @@ export function transformBlockchainToUI(
         ? new Date(Number(blockchainHackathon.judgingStartDate) * 1000)
         : new Date(Number(blockchainHackathon.submissionDeadline) * 1000), // Fallback to submission end
       votingEndDate: new Date(
-        Number(blockchainHackathon.judgingDeadline) * 1000
+        Number(blockchainHackathon.judgingDeadline) * 1000,
       ),
     },
     socialLinks: metadata?.socialLinks || {},
@@ -93,7 +93,7 @@ export function transformBlockchainToUI(
  * Transform blockchain project data to UI format
  */
 export function transformBlockchainProjectToUI(
-  blockchainProject: BlockchainProject
+  blockchainProject: BlockchainProject,
 ): UIProject {
   const metadata = blockchainProject.metadata;
 
@@ -105,7 +105,7 @@ export function transformBlockchainProjectToUI(
     hackathon_name: blockchainProject.hackathonMetadata?.name,
     tech_stack: metadata?.techStack || [],
     status: mapProjectStatusToUI(
-      getProjectStatusFromContract(blockchainProject)
+      getProjectStatusFromContract(blockchainProject),
     ),
     updated_at:
       metadata?.uploadedAt || metadata?.createdAt || new Date().toISOString(),
@@ -124,7 +124,7 @@ export function transformBlockchainProjectToUI(
  * Get UI-friendly hackathon status based on pure timeline logic with blockchain timestamps
  */
 export function getHackathonStatus(
-  hackathon: BlockchainHackathon
+  hackathon: BlockchainHackathon,
 ): HackathonPhaseStatus {
   if (!hackathon.isActive) {
     return "cancelled";
@@ -178,7 +178,7 @@ export function getHackathonStatus(
  * Get project status based on contract data
  */
 function getProjectStatusFromContract(
-  project: BlockchainProject
+  project: BlockchainProject,
 ): ProjectStatus {
   if (!project.isSubmitted) {
     return "draft";
@@ -195,7 +195,7 @@ function getProjectStatusFromContract(
  * Map blockchain project status to UI project status
  */
 function mapProjectStatusToUI(
-  status: ProjectStatus
+  status: ProjectStatus,
 ): "draft" | "submitted" | "in_review" | "completed" {
   switch (status) {
     case "under_review":
@@ -278,7 +278,7 @@ export function transformProjectUIToMetadata(formData: any): ProjectMetadata {
  * Get status variant for UI badge styling
  */
 export function getStatusVariant(
-  status: HackathonPhaseStatus
+  status: HackathonPhaseStatus,
 ):
   | "default"
   | "secondary"
@@ -315,7 +315,7 @@ export function getStatusVariant(
  * Calculate total prize amount from prize cohorts
  */
 export function calculateTotalPrizeAmount(
-  prizeCohorts: Array<{ prizeAmount: string }>
+  prizeCohorts: Array<{ prizeAmount: string }>,
 ): string {
   if (!prizeCohorts || prizeCohorts.length === 0) {
     return "$0";

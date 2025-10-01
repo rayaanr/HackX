@@ -179,9 +179,9 @@ export default function JudgeDashboardPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.35, delay: 0.1 }}
           >
-            <Card className="project-card-hover">
+            <Card className="bg-transparent">
               <div className="relative z-10 py-12 text-center">
-                <Award className="mb-4 h-16 w-16 text-muted-foreground" />
+                <Award className="mb-4 h-16 w-16 text-muted-foreground mx-auto" />
                 <h3 className="mb-2 text-lg font-semibold">
                   No Judge Assignments
                 </h3>

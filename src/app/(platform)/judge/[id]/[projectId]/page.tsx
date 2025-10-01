@@ -100,7 +100,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   // Find the specific project
   const project = projects.find(
-    (p: ProjectWithHackathon) => p.id.toString() === projectId
+    (p: ProjectWithHackathon) => p.id.toString() === projectId,
   );
 
   if (!project) {
@@ -156,7 +156,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     } else {
       toast.error(
         result.error || "Failed to submit evaluation. Please try again.",
-        { id: "evaluation-submission" }
+        { id: "evaluation-submission" },
       );
     }
   };

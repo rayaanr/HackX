@@ -25,7 +25,7 @@ const { Stepper } = defineStepper(
   {
     id: "schedule",
     title: "Schedule",
-  }
+  },
 );
 
 interface CreateHackathonStepperProps {
@@ -97,7 +97,7 @@ export function CreateHackathonStepper({
                   onClick={() => {
                     console.log(
                       "🔥 Stepper Create button clicked, onCreateHackathon:",
-                      typeof onCreateHackathon
+                      typeof onCreateHackathon,
                     );
                     onCreateHackathon?.();
                   }}

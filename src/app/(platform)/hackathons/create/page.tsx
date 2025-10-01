@@ -17,12 +17,12 @@ export default function CreateHackathonPage() {
 
     window.addEventListener(
       "hackathonLoadingChange",
-      handleLoadingChange as EventListener
+      handleLoadingChange as EventListener,
     );
     return () => {
       window.removeEventListener(
         "hackathonLoadingChange",
-        handleLoadingChange as EventListener
+        handleLoadingChange as EventListener,
       );
     };
   }, []);
@@ -37,7 +37,7 @@ export default function CreateHackathonPage() {
     console.log("🔴 Header Create button clicked!");
     // Find and trigger the stepper's create button
     const stepperCreateButton = document.getElementById(
-      "stepper-create-hackathon"
+      "stepper-create-hackathon",
     );
     console.log("🔍 Found stepper button:", stepperCreateButton);
     if (stepperCreateButton) {

@@ -41,7 +41,7 @@ export function getDaysLeft(endDate: DateInput): number {
   if (!end) return 0;
 
   const diffInDays = Math.ceil(
-    (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
   );
   return Math.max(0, diffInDays);
 }
@@ -55,7 +55,7 @@ export function formatRelativeDate(dateString: DateInput): string {
 
   const now = new Date();
   const diffInDays = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   if (diffInDays === 0) return "Today";
@@ -92,7 +92,7 @@ export function formatDisplayDate(dateString: DateInput): string {
  */
 export function formatDateRange(
   startDate: DateInput,
-  endDate: DateInput
+  endDate: DateInput,
 ): string {
   const start = safeToDate(startDate);
   const end = safeToDate(endDate);
@@ -162,13 +162,13 @@ export function getUIHackathonStatus(hackathon: {
 
   // Get all relevant dates
   const registrationStart = safeToDate(
-    hackathon.registrationPeriod?.registrationStartDate
+    hackathon.registrationPeriod?.registrationStartDate,
   );
   const registrationEnd = safeToDate(
-    hackathon.registrationPeriod?.registrationEndDate
+    hackathon.registrationPeriod?.registrationEndDate,
   );
   const hackathonStart = safeToDate(
-    hackathon.hackathonPeriod?.hackathonStartDate
+    hackathon.hackathonPeriod?.hackathonStartDate,
   );
   const hackathonEnd = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
   const votingStart = safeToDate(hackathon.votingPeriod?.votingStartDate);
