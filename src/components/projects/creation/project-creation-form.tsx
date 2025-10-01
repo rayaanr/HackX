@@ -132,7 +132,7 @@ export function CreateProjectForm() {
         <CreateProjectStepper />
 
         <div className="flex justify-end gap-4 pt-8">
-          <Button type="button" variant="outline">
+          <Button type="button" variant="outline" disabled>
             Save Draft
           </Button>
           <Button type="submit" disabled={isSubmitting || !isConnected}>

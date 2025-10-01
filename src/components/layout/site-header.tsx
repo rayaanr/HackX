@@ -23,23 +23,30 @@ export function SiteHeader() {
 
   return (
     <header
-      style={{
-        position: "fixed",
-        top: "0",
-        left: "0",
-        right: "0",
-        zIndex: 99999,
-        height: "56px",
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        flexShrink: 0,
-        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-        backdropFilter: "blur(12px)",
-        backgroundColor: "rgba(10, 10, 10, 0.95)",
-        marginLeft: !isMobile && state === "expanded" ? "16rem" : !isMobile && state === "collapsed" ? "3rem" : "0",
-        transition: "margin-left 200ms ease-linear"
-      } as React.CSSProperties}
+      style={
+        {
+          position: "fixed",
+          top: "0",
+          left: "0",
+          right: "0",
+          zIndex: 99999,
+          height: "56px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          flexShrink: 0,
+          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          backdropFilter: "blur(12px)",
+          backgroundColor: "rgba(10, 10, 10, 0.95)",
+          marginLeft:
+            !isMobile && state === "expanded"
+              ? "16rem"
+              : !isMobile && state === "collapsed"
+                ? "3rem"
+                : "0",
+          transition: "margin-left 200ms ease-linear",
+        } as React.CSSProperties
+      }
     >
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6 relative z-10">
         <motion.div
@@ -55,7 +62,7 @@ export function SiteHeader() {
             className={cn(
               "pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40",
               "focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/40",
-              "hover:bg-white/[0.07] transition-colors"
+              "hover:bg-white/[0.07] transition-colors",
             )}
           />
         </motion.div>
@@ -74,7 +81,7 @@ export function SiteHeader() {
               className={cn(
                 "rounded-full relative",
                 "hover:bg-white/10 text-white/70 hover:text-white",
-                "after:absolute after:-inset-px after:rounded-full after:bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.12),transparent_70%)] after:opacity-0 hover:after:opacity-100 after:transition-opacity"
+                "after:absolute after:-inset-px after:rounded-full after:bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.12),transparent_70%)] after:opacity-0 hover:after:opacity-100 after:transition-opacity",
               )}
             >
               <IconBell className="size-4" />

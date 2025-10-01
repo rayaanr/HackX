@@ -167,7 +167,10 @@ export default function HackathonPage() {
                       {/* prettier-ignore */}
                       {/* biome-ignore format */}
                       {(() => {
-                        const raw = hackathon?.fullDescription || hackathon?.shortDescription || "";
+                        const raw =
+                          hackathon?.fullDescription ||
+                          hackathon?.shortDescription ||
+                          "";
                         const html = toHtmlFromDescription(raw);
                         return parse(
                           DOMPurify.sanitize(html, {
@@ -191,13 +194,12 @@ export default function HackathonPage() {
                               "blockquote",
                               "pre",
                               "code",
-                              "hr"
+                              "hr",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
                           }),
                         );
-                      })()
-                    }
+                      })()}
                     </div>
                   </div>
 
