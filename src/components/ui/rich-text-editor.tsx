@@ -27,7 +27,39 @@ import {
   $convertFromMarkdownString,
   TRANSFORMERS,
 } from "@lexical/markdown";
-
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { ListItemNode } from "@lexical/list";
+import { AutoLinkNode, LinkNode } from "@lexical/link";
+import { CodeNode, CodeHighlightNode } from "@lexical/code";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  List,
+  ListOrdered,
+  Quote,
+  Heading1,
+  Heading2,
+  Heading3,
+  Undo,
+  Redo,
+  Code,
+  Type,
+  Link,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Highlighter,
+} from "lucide-react";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -140,43 +172,8 @@ function ClipboardMarkdownPlugin() {
   return null;
 }
 
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { ListItemNode } from "@lexical/list";
-import { AutoLinkNode, LinkNode } from "@lexical/link";
-import { CodeNode, CodeHighlightNode } from "@lexical/code";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  List,
-  ListOrdered,
-  Quote,
-  Heading1,
-  Heading2,
-  Heading3,
-  Undo,
-  Redo,
-  Code,
-  Type,
-  Link,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-  Highlighter,
-} from "lucide-react";
-
 const theme = {
-  root: "p-4 border border-input bg-background text-foreground text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px] rounded-md",
+  root: "p-4 border border-input bg-background/30 text-foreground text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px] rounded-md",
   link: "cursor-pointer text-primary hover:text-primary/80 underline",
   text: {
     bold: "font-bold text-foreground",
@@ -342,7 +339,7 @@ function ToolbarPlugin() {
   return (
     <div className="flex flex-wrap items-center gap-2 p-2 border-b border-border bg-muted/20">
       {/* Text Formatting Group */}
-      <div className="flex items-center border border-border rounded-md bg-background">
+      <div className="flex items-center border border-border rounded-md bg-background/30">
         <Button
           type="button"
           variant={isBold ? "default" : "ghost"}
@@ -636,7 +633,7 @@ export function RichTextEditor({
 
   return (
     <div
-      className={`border border-input rounded-md bg-background ${className}`}
+      className={`border border-input rounded-md bg-background/30 ${className}`}
     >
       <LexicalComposer initialConfig={initialConfig}>
         <ToolbarPlugin />
@@ -644,7 +641,7 @@ export function RichTextEditor({
           <RichTextPlugin
             contentEditable={
               <ContentEditable
-                className="min-h-[200px] p-4 outline-none resize-none overflow-auto prose prose-sm max-w-none text-foreground rounded-t-none border-none"
+                className="min-h-[200px] p-4 outline-none resize-none overflow-auto prose prose-sm max-w-none text-foreground rounded-t-none border-none bg-background/10"
                 style={{ caretColor: "hsl(var(--foreground))" }}
               />
             }
