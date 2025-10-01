@@ -14,9 +14,11 @@ export interface ContractHackathon {
   id: bigint;
   ipfsHash: string;
   organizer: string; // address
+  registrationStartDate: bigint; // timestamp
   registrationDeadline: bigint; // timestamp
   submissionStartDate: bigint; // timestamp
   submissionDeadline: bigint; // timestamp
+  judgingStartDate: bigint; // timestamp
   judgingDeadline: bigint; // timestamp
   isActive: boolean;
 }

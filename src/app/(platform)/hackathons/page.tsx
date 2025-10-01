@@ -156,7 +156,7 @@ export default function ExplorePage() {
 
   return (
     <div className="relative">
-      <div className="absolute inset-0 pointer-events-none [mask-image:radial-gradient(circle_at_30%_20%,black,transparent_70%)] bg-[radial-gradient(circle_at_0%_0%,rgba(255,255,255,0.08),transparent_55%),radial-gradient(circle_at_100%_20%,rgba(59,130,246,0.15),transparent_60%)]" />
+      <div className="absolute inset-0 pointer-events-none" />
       <div className="relative">
         {/* Explore Section */}
         <motion.div

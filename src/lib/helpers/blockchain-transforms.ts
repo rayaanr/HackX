@@ -13,7 +13,7 @@ import type { UIHackathon, UIProject } from "@/types/hackathon";
  * Transform blockchain hackathon data to UI format
  */
 export function transformBlockchainToUI(
-  blockchainHackathon: BlockchainHackathon,
+  blockchainHackathon: BlockchainHackathon
 ): UIHackathon {
   const metadata = blockchainHackathon.metadata;
 
@@ -28,29 +28,31 @@ export function transformBlockchainToUI(
     techStack: metadata?.techStack || [],
     experienceLevel: metadata?.experienceLevel || "all",
     registrationPeriod: {
-      registrationStartDate: metadata?.registrationPeriod?.registrationStartDate
+      registrationStartDate: blockchainHackathon.registrationStartDate
+        ? new Date(Number(blockchainHackathon.registrationStartDate) * 1000)
+        : metadata?.registrationPeriod?.registrationStartDate
         ? new Date(metadata.registrationPeriod.registrationStartDate)
         : undefined,
       registrationEndDate: new Date(
-        Number(blockchainHackathon.registrationDeadline) * 1000,
+        Number(blockchainHackathon.registrationDeadline) * 1000
       ),
     },
     hackathonPeriod: {
       hackathonStartDate: blockchainHackathon.submissionStartDate
         ? new Date(Number(blockchainHackathon.submissionStartDate) * 1000)
         : metadata?.hackathonPeriod?.hackathonStartDate
-          ? new Date(metadata.hackathonPeriod.hackathonStartDate)
-          : new Date(Number(blockchainHackathon.registrationDeadline) * 1000), // Fallback to registration end
+        ? new Date(metadata.hackathonPeriod.hackathonStartDate)
+        : new Date(Number(blockchainHackathon.registrationDeadline) * 1000), // Fallback to registration end
       hackathonEndDate: new Date(
-        Number(blockchainHackathon.submissionDeadline) * 1000,
+        Number(blockchainHackathon.submissionDeadline) * 1000
       ),
     },
     votingPeriod: {
-      votingStartDate: new Date(
-        Number(blockchainHackathon.submissionDeadline) * 1000,
-      ),
+      votingStartDate: blockchainHackathon.judgingStartDate
+        ? new Date(Number(blockchainHackathon.judgingStartDate) * 1000)
+        : new Date(Number(blockchainHackathon.submissionDeadline) * 1000), // Fallback to submission end
       votingEndDate: new Date(
-        Number(blockchainHackathon.judgingDeadline) * 1000,
+        Number(blockchainHackathon.judgingDeadline) * 1000
       ),
     },
     socialLinks: metadata?.socialLinks || {},
@@ -91,7 +93,7 @@ export function transformBlockchainToUI(
  * Transform blockchain project data to UI format
  */
 export function transformBlockchainProjectToUI(
-  blockchainProject: BlockchainProject,
+  blockchainProject: BlockchainProject
 ): UIProject {
   const metadata = blockchainProject.metadata;
 
@@ -103,7 +105,7 @@ export function transformBlockchainProjectToUI(
     hackathon_name: blockchainProject.hackathonMetadata?.name,
     tech_stack: metadata?.techStack || [],
     status: mapProjectStatusToUI(
-      getProjectStatusFromContract(blockchainProject),
+      getProjectStatusFromContract(blockchainProject)
     ),
     updated_at:
       metadata?.uploadedAt || metadata?.createdAt || new Date().toISOString(),
@@ -122,19 +124,26 @@ export function transformBlockchainProjectToUI(
  * Get UI-friendly hackathon status based on pure timeline logic with blockchain timestamps
  */
 export function getHackathonStatus(
-  hackathon: BlockchainHackathon,
+  hackathon: BlockchainHackathon
 ): HackathonPhaseStatus {
   if (!hackathon.isActive) {
     return "cancelled";
   }
 
   const now = Date.now() / 1000; // Current UTC timestamp in seconds (matches blockchain timestamps)
+  const registrationStartDate = Number(hackathon.registrationStartDate);
   const registrationDeadline = Number(hackathon.registrationDeadline);
   const submissionStartDate = Number(hackathon.submissionStartDate);
   const submissionDeadline = Number(hackathon.submissionDeadline);
+  const judgingStartDate = Number(hackathon.judgingStartDate);
   const judgingDeadline = Number(hackathon.judgingDeadline);
 
   // Pure timeline logic: check what phase we're in based on current time vs deadlines
+
+  // Before registration starts
+  if (registrationStartDate && now < registrationStartDate) {
+    return "upcoming";
+  }
 
   // Registration phase: before registration deadline
   if (now < registrationDeadline) {
@@ -143,7 +152,7 @@ export function getHackathonStatus(
 
   // Between registration deadline and submission start (if there's a gap)
   if (submissionStartDate && now < submissionStartDate) {
-    return "registration_closed";
+    return "submission_not_started";
   }
 
   // Submission phase: between submission start and submission deadline
@@ -151,7 +160,12 @@ export function getHackathonStatus(
     return "submission_open";
   }
 
-  // Judging phase: between submission deadline and judging deadline
+  // Between submission deadline and judging start (if there's a gap)
+  if (judgingStartDate && now < judgingStartDate) {
+    return "submission_closed";
+  }
+
+  // Judging phase: between judging start and judging deadline
   if (now < judgingDeadline) {
     return "judging_open";
   }
@@ -164,7 +178,7 @@ export function getHackathonStatus(
  * Get project status based on contract data
  */
 function getProjectStatusFromContract(
-  project: BlockchainProject,
+  project: BlockchainProject
 ): ProjectStatus {
   if (!project.isSubmitted) {
     return "draft";
@@ -181,7 +195,7 @@ function getProjectStatusFromContract(
  * Map blockchain project status to UI project status
  */
 function mapProjectStatusToUI(
-  status: ProjectStatus,
+  status: ProjectStatus
 ): "draft" | "submitted" | "in_review" | "completed" {
   switch (status) {
     case "under_review":
@@ -264,7 +278,7 @@ export function transformProjectUIToMetadata(formData: any): ProjectMetadata {
  * Get status variant for UI badge styling
  */
 export function getStatusVariant(
-  status: HackathonPhaseStatus,
+  status: HackathonPhaseStatus
 ):
   | "default"
   | "secondary"
@@ -301,7 +315,7 @@ export function getStatusVariant(
  * Calculate total prize amount from prize cohorts
  */
 export function calculateTotalPrizeAmount(
-  prizeCohorts: Array<{ prizeAmount: string }>,
+  prizeCohorts: Array<{ prizeAmount: string }>
 ): string {
   if (!prizeCohorts || prizeCohorts.length === 0) {
     return "$0";
@@ -334,10 +348,18 @@ export function isInRegistrationPhase(hackathon: BlockchainHackathon): boolean {
  */
 export function isInSubmissionPhase(hackathon: BlockchainHackathon): boolean {
   const now = Date.now() / 1000;
+  const registrationDeadline = Number(hackathon.registrationDeadline);
   const submissionStartDate = Number(hackathon.submissionStartDate);
   const submissionDeadline = Number(hackathon.submissionDeadline);
+
+  // If submissionStartDate is 0 or not set, use registrationDeadline as fallback
+  const effectiveSubmissionStart =
+    submissionStartDate > 0 ? submissionStartDate : registrationDeadline;
+
   return (
-    hackathon.isActive && now >= submissionStartDate && now < submissionDeadline
+    hackathon.isActive &&
+    now >= effectiveSubmissionStart &&
+    now < submissionDeadline
   );
 }
 
@@ -347,9 +369,15 @@ export function isInSubmissionPhase(hackathon: BlockchainHackathon): boolean {
 export function isInJudgingPhase(hackathon: BlockchainHackathon): boolean {
   const now = Date.now() / 1000;
   const submissionDeadline = Number(hackathon.submissionDeadline);
+  const judgingStartDate = Number(hackathon.judgingStartDate);
   const judgingDeadline = Number(hackathon.judgingDeadline);
+
+  // If judgingStartDate is 0 or not set, use submissionDeadline as fallback
+  const effectiveJudgingStart =
+    judgingStartDate > 0 ? judgingStartDate : submissionDeadline;
+
   return (
-    hackathon.isActive && now >= submissionDeadline && now < judgingDeadline
+    hackathon.isActive && now >= effectiveJudgingStart && now < judgingDeadline
   );
 }
 
