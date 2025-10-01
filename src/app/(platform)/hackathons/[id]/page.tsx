@@ -14,6 +14,7 @@ import { ToDoList } from "@/components/hackathon/widgets/todo-list";
 import { ShareDialog } from "@/components/share-dialog";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
+import { marked } from "marked";
 import { Separator } from "@/components/ui/separator";
 import { TextShimmerLoader } from "@/components/ui/loader";
 import { PageLoading } from "@/components/ui/global-loading";
@@ -22,6 +23,14 @@ import { PrizeAndJudgeTab } from "@/components/hackathon/display/hackathon-prize
 import { ScheduleTab } from "@/components/hackathon/display/hackathon-schedule-tab";
 import { SubmittedProjectsTab } from "@/components/hackathon/display/hackathon-projects-gallery-tab";
 import { useHackathon } from "@/hooks/use-hackathons";
+
+function toHtmlFromDescription(input: string): string {
+  if (!input) return "";
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(input);
+  if (looksLikeHtml) return input;
+  const html = marked.parse(input);
+  return typeof html === "string" ? html : "";
+}
 
 export default function HackathonPage() {
   const params = useParams();
@@ -157,18 +166,18 @@ export default function HackathonPage() {
                     <div className="prose prose-sm prose-invert max-w-none [&>*]:text-white/80 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>h5]:text-white [&>h6]:text-white [&>strong]:text-white">
                       {/* prettier-ignore */}
                       {/* biome-ignore format */}
-                      {parse(
-                        DOMPurify.sanitize(
-                          hackathon?.fullDescription ||
-                            hackathon?.shortDescription ||
-                            "",
-                          {
+                      {(() => {
+                        const raw = hackathon?.fullDescription || hackathon?.shortDescription || "";
+                        const html = toHtmlFromDescription(raw);
+                        return parse(
+                          DOMPurify.sanitize(html, {
                             ALLOWED_TAGS: [
                               "p",
                               "br",
                               "strong",
                               "em",
                               "u",
+                              "del",
                               "h1",
                               "h2",
                               "h3",
@@ -180,11 +189,15 @@ export default function HackathonPage() {
                               "li",
                               "a",
                               "blockquote",
+                              "pre",
+                              "code",
+                              "hr"
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          },
-                        ),
-                      )}
+                          }),
+                        );
+                      })()
+                    }
                     </div>
                   </div>
 

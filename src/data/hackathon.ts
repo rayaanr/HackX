@@ -16,11 +16,32 @@ export const mockHackathons: HackathonFormData[] = [
       "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=400&fit=crop",
     shortDescription:
       "Build the next generation of AI-powered applications that will transform how we work and live.",
-    fullDescription: `Join us for the AI Revolution Hackathon, where developers, designers, and innovators come together to create groundbreaking AI applications. This 48-hour intensive event will challenge participants to leverage cutting-edge AI technologies including machine learning, natural language processing, and computer vision.
+    fullDescription: `# AI Revolution Hackathon
 
-Participants will have access to premium API credits, expert mentorship, and state-of-the-art development tools. Whether you're building a productivity assistant, a creative AI tool, or a revolutionary healthcare solution, this hackathon provides the perfect platform to bring your AI vision to life.
+Join us for the **AI Revolution Hackathon**, where developers, designers, and innovators come together to create groundbreaking AI applications. This 48-hour intensive event will challenge participants to leverage cutting-edge AI technologies including:
 
-The event features workshops on prompt engineering, fine-tuning models, and deploying AI applications at scale. Our panel of AI experts and venture capitalists will provide feedback and guidance throughout the event.`,
+- Machine learning
+- Natural language processing
+- Computer vision
+
+## What You'll Get
+
+Participants will have access to:
+
+1. **Premium API credits** for major AI platforms
+2. **Expert mentorship** from industry leaders
+3. **State-of-the-art development tools**
+
+> Whether you're building a productivity assistant, a creative AI tool, or a revolutionary healthcare solution, this hackathon provides the perfect platform to bring your AI vision to life.
+
+## Event Highlights
+
+The event features workshops on:
+- Prompt engineering
+- Fine-tuning models
+- Deploying AI applications at scale
+
+Our panel of AI experts and venture capitalists will provide feedback and guidance throughout the event.`,
     registrationPeriod: {
       registrationStartDate: createDate(1),
       registrationEndDate: createDate(14),
@@ -170,11 +191,30 @@ The event features workshops on prompt engineering, fine-tuning models, and depl
       "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop",
     shortDescription:
       "Build the future of decentralized finance with cutting-edge blockchain technology.",
-    fullDescription: `The DeFi Summer Hackathon is the premier event for blockchain developers and financial innovators. Over 3 days, teams will compete to build revolutionary DeFi protocols, trading bots, yield farming strategies, and financial infrastructure.
+    fullDescription: `## About DeFi Summer Hackathon
 
-With $100K+ in prizes and direct access to top VCs, this hackathon is your gateway to the DeFi ecosystem. Participants get free access to premium blockchain APIs, development tools, and expert mentorship from DeFi protocol founders.
+The **DeFi Summer Hackathon** is the premier event for blockchain developers and financial innovators. Over 3 days, teams will compete to build revolutionary DeFi protocols, trading bots, yield farming strategies, and financial infrastructure.
 
-Focus areas include: automated market makers, lending protocols, cross-chain bridges, MEV strategies, governance mechanisms, and novel tokenomics models.`,
+### Prize Pool & Benefits
+
+- **$100K+** in total prizes
+- Direct access to top VCs
+- Premium blockchain APIs (free access)
+- Development tools and infrastructure
+- Expert mentorship from DeFi protocol founders
+
+### Focus Areas
+
+Build innovative solutions in:
+
+1. **Automated Market Makers (AMMs)**
+2. **Lending Protocols**
+3. **Cross-chain Bridges**
+4. **MEV Strategies**
+5. **Governance Mechanisms**
+6. **Novel Tokenomics Models**
+
+> This hackathon is your gateway to the DeFi ecosystem and the future of decentralized finance.`,
     registrationPeriod: {
       registrationStartDate: createDate(2),
       registrationEndDate: createDate(20),
@@ -317,11 +357,22 @@ Focus areas include: automated market makers, lending protocols, cross-chain bri
       "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=400&fit=crop",
     shortDescription:
       "Develop technology solutions to combat climate change and build a sustainable future.",
-    fullDescription: `The Climate Tech Innovation Challenge brings together developers, scientists, and entrepreneurs to build impactful solutions for our planet's most pressing environmental challenges.
-
-Focus areas include carbon tracking, renewable energy optimization, sustainable supply chains, climate data analytics, and green finance solutions. Participants will work with real climate datasets and have access to environmental APIs and satellite imagery.
-
-This hackathon partners with leading climate organizations, offering winners the opportunity to pilot their solutions with real-world partners and access to climate-focused accelerator programs.`,
+    fullDescription: `## Climate Tech Innovation Challenge
+The **Climate Tech Innovation Challenge** is a hackathon dedicated to creating technology solutions that address climate change. Over a weekend, participants will form teams to build applications, devices, or systems that promote sustainability, reduce carbon footprints, or enhance climate resilience.    
+### Why Participate?
+### Why Participate?
+- **Make a Difference**: Contribute to meaningful solutions for climate change.
+- **Collaborate**: Work with like-minded individuals and experts in the field.
+- **Win Prizes**: Compete for cash prizes and opportunities to pilot your solutions.
+- **Access Resources**: Gain access to climate data, APIs, and mentorship.
+### Focus Areas
+Key areas of focus include:
+- Carbon Tracking
+- Renewable Energy Optimization
+- Sustainable Supply Chains
+- Climate Data Analytics
+- Green Finance Solutions
+> Join us in leveraging technology to create a sustainable future for our planet.`,
     registrationPeriod: {
       registrationStartDate: createDate(3),
       registrationEndDate: createDate(18),
