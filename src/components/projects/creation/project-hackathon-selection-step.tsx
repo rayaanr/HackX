@@ -88,7 +88,7 @@ export function HackathonSelectionStep() {
 
   return (
     <div className="space-y-8">
-      <Card>
+      <Card className="bg-transparent/30">
         <CardHeader>
           <CardTitle>Select Hackathons</CardTitle>
         </CardHeader>

@@ -19,7 +19,7 @@ export function TechStackStep() {
 
   return (
     <div className="space-y-8">
-      <Card>
+      <Card className="bg-transparent/30">
         <CardHeader>
           <CardTitle>Tech Stack & Links</CardTitle>
         </CardHeader>

@@ -62,7 +62,7 @@ export function OverviewStep() {
 
   return (
     <div className="space-y-8">
-      <Card>
+      <Card className="bg-transparent border-none">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Project Overview</CardTitle>
