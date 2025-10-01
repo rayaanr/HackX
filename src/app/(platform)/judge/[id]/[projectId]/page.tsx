@@ -34,6 +34,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
+import { motion } from "motion/react";
 import type { ProjectWithHackathon } from "@/types/hackathon";
 import { useJudgeEvaluation } from "@/hooks/use-judge";
 import {
@@ -98,7 +99,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
 
   // Find the specific project
   const project = projects.find(
-    (p: ProjectWithHackathon) => p.id.toString() === projectId,
+    (p: ProjectWithHackathon) => p.id.toString() === projectId
   );
 
   if (!project) {
@@ -154,7 +155,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     } else {
       toast.error(
         result.error || "Failed to submit evaluation. Please try again.",
-        { id: "evaluation-submission" },
+        { id: "evaluation-submission" }
       );
     }
   };
@@ -188,191 +189,224 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
         }
       />
       <div className="px-4 py-6 md:px-6">
-        <div className="space-y-4 max-w-4xl mx-auto">
+        <motion.div
+          className="mx-auto max-w-4xl space-y-4"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
           {/* Evaluation Form */}
-          <Card className="bg-transparent border-none shadow-sm">
-            <CardHeader className="py-4">
-              <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-                <Award className="size-7" />
-                Judge Evaluation
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 p-4 md:p-6">
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(handleSubmitEvaluation)}
-                  className="space-y-6"
-                >
-                  {/* Scoring Criteria */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Target className="size-4 text-muted-foreground" />
-                      <h3 className="font-semibold text-lg">
-                        Evaluation Criteria
-                      </h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Rate each aspect of the project from 1-10
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    {evaluationCriteria.map((criteria, index) => (
-                      <FormField
-                        key={criteria.key}
-                        control={form.control}
-                        name={criteria.key}
-                        render={({ field }) => (
-                          <FormItem>
-                            <Card className="space-y-3 rounded-xl border border-border/40 p-3 transition-all hover:border-border/60 md:p-4 bg-background/30">
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="space-y-1">
-                                  <FormLabel className="flex items-center gap-2 text-sm font-semibold md:text-base">
-                                    <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400">
-                                      {index + 1}
-                                    </div>
-                                    {criteria.label}
-                                  </FormLabel>
-                                  <FormDescription className="pl-8 text-xs text-muted-foreground md:text-sm">
-                                    {criteria.description}
-                                  </FormDescription>
-                                </div>
-                                <Badge variant="outline" className="text-xs">
-                                  {field.value || 0}/10
-                                </Badge>
-                              </div>
-                              <div>
-                                <FormControl>
-                                  <Rating
-                                    value={field.value}
-                                    onValueChange={field.onChange}
-                                    className="justify-start gap-1"
-                                  >
-                                    {Array.from({ length: 10 }, (_, i) => (
-                                      <RatingButton
-                                        key={i + 1}
-                                        className="h-5 w-5 transition-transform hover:scale-110"
-                                      />
-                                    ))}
-                                  </Rating>
-                                </FormControl>
-                                <FormMessage />
-                              </div>
-                            </Card>
-                          </FormItem>
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <Separator />
-                  {/* Feedback Sections */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Lightbulb className="size-4 text-muted-foreground" />
-                      <h3 className="font-semibold text-lg">
-                        Written Feedback
-                      </h3>
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="overallFeedback"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel required className="text-sm font-medium">
-                            Overall Feedback
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Provide your overall assessment of this project..."
-                              {...field}
-                              rows={2}
-                              className="resize-none"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <FormField
-                        control={form.control}
-                        name="strengths"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium">
-                              Strengths
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Project's main strengths..."
-                                {...field}
-                                rows={2}
-                                className="resize-none"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="improvements"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium">
-                              Areas for Improvement
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="What could be enhanced..."
-                                {...field}
-                                rows={2}
-                                className="resize-none"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                  <Separator />
-                  {/* Submit Button */}
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full"
-                    size="lg"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.08 }}
+          >
+            <Card className="border-none bg-transparent shadow-sm">
+              <CardHeader className="py-4">
+                <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+                  <Award className="size-7" />
+                  Judge Evaluation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 p-4 md:p-6">
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(handleSubmitEvaluation)}
+                    className="space-y-6"
                   >
-                    {submissionStage === "uploading" ? (
-                      <>
-                        <Clock className="size-4 mr-2 animate-spin" />
-                        Uploading to IPFS...
-                      </>
-                    ) : submissionStage === "blockchain" ? (
-                      <>
-                        <Clock className="size-4 mr-2 animate-spin" />
-                        Submitting to Blockchain...
-                      </>
-                    ) : submissionStage === "success" ? (
-                      <>
-                        <CheckCircle className="size-4 mr-2" />
-                        Submitted Successfully!
-                      </>
-                    ) : (
-                      <>
-                        <Award className="size-4 mr-2" />
-                        Submit Evaluation
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
+                    {/* Scoring Criteria */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <Target className="size-4 text-muted-foreground" />
+                        <h3 className="text-lg font-semibold">
+                          Evaluation Criteria
+                        </h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Rate each aspect of the project from 1-10
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      {evaluationCriteria.map((criteria, index) => (
+                        <FormField
+                          key={criteria.key}
+                          control={form.control}
+                          name={criteria.key}
+                          render={({ field }) => (
+                            <FormItem>
+                              <motion.div
+                                initial={{ opacity: 0, y: 16 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.35,
+                                  delay: index * 0.05,
+                                }}
+                              >
+                                <Card className="space-y-3 rounded-xl border border-border/40 bg-background/30 p-3 transition-all hover:border-border/60 md:p-4">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="space-y-1">
+                                      <FormLabel className="flex items-center gap-2 text-sm font-semibold md:text-base">
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                          {index + 1}
+                                        </div>
+                                        {criteria.label}
+                                      </FormLabel>
+                                      <FormDescription className="pl-8 text-xs text-muted-foreground md:text-sm">
+                                        {criteria.description}
+                                      </FormDescription>
+                                    </div>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {field.value || 0}/10
+                                    </Badge>
+                                  </div>
+                                  <div>
+                                    <FormControl>
+                                      <Rating
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                        className="justify-start gap-1"
+                                      >
+                                        {Array.from({ length: 10 }, (_, i) => (
+                                          <RatingButton
+                                            key={i + 1}
+                                            className="h-5 w-5 transition-transform hover:scale-110"
+                                          />
+                                        ))}
+                                      </Rating>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </div>
+                                </Card>
+                              </motion.div>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <Separator />
+                    {/* Feedback Sections */}
+                    <motion.div
+                      className="space-y-4"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: 0.1 }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Lightbulb className="size-4 text-muted-foreground" />
+                        <h3 className="text-lg font-semibold">
+                          Written Feedback
+                        </h3>
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="overallFeedback"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel required className="text-sm font-medium">
+                              Overall Feedback
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Provide your overall assessment of this project..."
+                                {...field}
+                                rows={2}
+                                className="resize-none"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name="strengths"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">
+                                Strengths
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Project's main strengths..."
+                                  {...field}
+                                  rows={2}
+                                  className="resize-none"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="improvements"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">
+                                Areas for Improvement
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="What could be enhanced..."
+                                  {...field}
+                                  rows={2}
+                                  className="resize-none"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </motion.div>
+                    <Separator />
+                    {/* Submit Button */}
+                    <motion.div
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full"
+                        size="lg"
+                      >
+                        {submissionStage === "uploading" ? (
+                          <>
+                            <Clock className="mr-2 size-4 animate-spin" />
+                            Uploading to IPFS...
+                          </>
+                        ) : submissionStage === "blockchain" ? (
+                          <>
+                            <Clock className="mr-2 size-4 animate-spin" />
+                            Submitting to Blockchain...
+                          </>
+                        ) : submissionStage === "success" ? (
+                          <>
+                            <CheckCircle className="mr-2 size-4" />
+                            Submitted Successfully!
+                          </>
+                        ) : (
+                          <>
+                            <Award className="mr-2 size-4" />
+                            Submit Evaluation
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
