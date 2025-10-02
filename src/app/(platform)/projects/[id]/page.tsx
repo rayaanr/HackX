@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShareDialog } from "@/components/share-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TextShimmerLoader } from "@/components/ui/loader";
@@ -55,6 +56,15 @@ import type { UIHackathon } from "@/types/hackathon";
 import { useEns } from "@/hooks/use-ens";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 import { YouTubeEmbed } from "@next/third-parties/google";
+import { marked } from "marked";
+
+function toHtmlFromDescription(input: string): string {
+  if (!input) return "";
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(input);
+  if (looksLikeHtml) return input;
+  const html = marked.parse(input);
+  return typeof html === "string" ? html : "";
+}
 
 // Team member component with ENS support
 function TeamMember({
@@ -509,16 +519,19 @@ export default function ProjectPage() {
                     <div className="prose prose-sm prose-invert max-w-none [&>*]:text-white/80 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>h5]:text-white [&>h6]:text-white [&>strong]:text-white">
                       {/* prettier-ignore */}
                       {/* biome-ignore format */}
-                      {parse(
-                        DOMPurify.sanitize(
-                          project?.description || project?.intro || "",
-                          {
+                      {(() => {
+                        const raw =
+                          project?.description || project?.intro || "";
+                        const html = toHtmlFromDescription(raw);
+                        return parse(
+                          DOMPurify.sanitize(html, {
                             ALLOWED_TAGS: [
                               "p",
                               "br",
                               "strong",
                               "em",
                               "u",
+                              "del",
                               "h1",
                               "h2",
                               "h3",
@@ -530,11 +543,14 @@ export default function ProjectPage() {
                               "li",
                               "a",
                               "blockquote",
+                              "pre",
+                              "code",
+                              "hr",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          },
-                        ),
-                      )}
+                          }),
+                        );
+                      })()}
                     </div>
                   </div>
 
@@ -571,12 +587,34 @@ export default function ProjectPage() {
                       <h3 className="text-xl font-semibold text-white">
                         Project Videos
                       </h3>
-                      <div className="space-y-6">
-                        {project?.demoVideo && (
-                          <div>
-                            <h4 className="text-lg font-medium mb-3 text-white">
+                      <Tabs
+                        defaultValue={project?.demoVideo ? "demo" : "pitch"}
+                        className="w-full"
+                      >
+                        <TabsList className="h-auto rounded-none border-b bg-transparent p-0  justify-start w-32">
+                          {project?.demoVideo && (
+                            <TabsTrigger
+                              value="demo"
+                              className="data-[state=active]:after:bg-blue-600 relative border-none rounded-t-sm py-2 px-4 text-white/70 data-[state=active]:text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-white transition-colors"
+                            >
                               Demo Video
-                            </h4>
+                            </TabsTrigger>
+                          )}
+                          {project?.pitchVideo && (
+                            <TabsTrigger
+                              value="pitch"
+                              className="data-[state=active]:after:bg-blue-600 relative border-none rounded-t-sm py-2 px-4 text-white/70 data-[state=active]:text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-white transition-colors"
+                            >
+                              Pitch Video
+                            </TabsTrigger>
+                          )}
+                        </TabsList>
+
+                        {project?.demoVideo && (
+                          <TabsContent
+                            value="demo"
+                            className="mt-6 data-[state=active]:block"
+                          >
                             <div className="rounded-xl overflow-hidden border border-white/20 bg-black/20 backdrop-blur-sm shadow-2xl">
                               {isYouTubeUrl(project.demoVideo) ? (
                                 <YouTubeEmbed
@@ -611,14 +649,14 @@ export default function ProjectPage() {
                                 </div>
                               )}
                             </div>
-                          </div>
+                          </TabsContent>
                         )}
 
                         {project?.pitchVideo && (
-                          <div>
-                            <h4 className="text-lg font-medium mb-3 text-white">
-                              Pitch Video
-                            </h4>
+                          <TabsContent
+                            value="pitch"
+                            className="mt-6 data-[state=active]:block"
+                          >
                             <div className="rounded-xl overflow-hidden border border-white/20 bg-black/20 backdrop-blur-sm shadow-2xl">
                               {isYouTubeUrl(project.pitchVideo) ? (
                                 <YouTubeEmbed
@@ -653,9 +691,9 @@ export default function ProjectPage() {
                                 </div>
                               )}
                             </div>
-                          </div>
+                          </TabsContent>
                         )}
-                      </div>
+                      </Tabs>
                     </div>
                   )}
 
