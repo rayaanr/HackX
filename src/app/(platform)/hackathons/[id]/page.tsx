@@ -9,7 +9,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { RegistrationButton } from "@/components/hackathon/widgets/registration-button";
-import { Countdown } from "@/components/hackathon/widgets/countdown";
 import { ToDoList } from "@/components/hackathon/widgets/todo-list";
 import { ShareDialog } from "@/components/share-dialog";
 import parse from "html-react-parser";
@@ -23,6 +22,7 @@ import { PrizeAndJudgeTab } from "@/components/hackathon/display/hackathon-prize
 import { ScheduleTab } from "@/components/hackathon/display/hackathon-schedule-tab";
 import { SubmittedProjectsTab } from "@/components/hackathon/display/hackathon-projects-gallery-tab";
 import { useHackathon } from "@/hooks/use-hackathons";
+import { Countdown } from "@/components/hackathon/widgets/countdown";
 
 function toHtmlFromDescription(input: string): string {
   if (!input) return "";
@@ -108,11 +108,11 @@ export default function HackathonPage() {
           </ShareDialog>
         </div>
 
-        <div className="gap-2">
-          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] pb-2">
+        <div className="">
+          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] pb-[0.1rem]">
             <Separator className="absolute top-0 left-0 right-0" />
           </div>
-          <div className="sticky top-16 backdrop-blur-xl border-white/10 z-10">
+          <div className="sticky top-14 backdrop-blur-xl border-white/10 z-10 pt-2">
             <div className="flex justify-center">
               <AnimatedTabs
                 tabs={hackathonTabs}

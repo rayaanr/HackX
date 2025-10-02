@@ -199,12 +199,25 @@ export function getUIHackathonStatus(hackathon: {
     return "Live";
   }
 
-  // Between submission end and voting start (review/preparation phase)
-  if (votingStart && now < votingStart) {
-    return "Judging Starting";
+  // After submission ends, check what comes next
+  if (hackathonEnd && now >= hackathonEnd) {
+    // Between submission end and voting start (review/preparation phase)
+    if (votingStart && now < votingStart) {
+      return "Judging Starting";
+    }
+
+    // If voting has started
+    if (votingEnd && now < votingEnd) {
+      return "Voting";
+    }
+
+    // If no voting period defined but submission ended, show judging phase
+    if (!votingStart && !votingEnd) {
+      return "Submission Ended";
+    }
   }
 
-  // Voting phase: between voting start and end
+  // Voting phase: between voting start and end (fallback)
   if (votingEnd && now < votingEnd) {
     return "Voting";
   }

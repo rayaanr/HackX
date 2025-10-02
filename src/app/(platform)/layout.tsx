@@ -16,7 +16,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <SidebarInset>
         <SiteHeader />
         <div
-          className="flex flex-1 flex-col min-h-screen bg-gradient-to-br from-black via-gray-900 to-black"
+          className="flex flex-1 flex-col min-h-screen bg-gradient-to-br from-black via-gray-900 to-black overflow-x-clip"
           style={{ paddingTop: "3.5rem" } as React.CSSProperties}
         >
           <div className="@container/main flex flex-1 flex-col gap-2">
