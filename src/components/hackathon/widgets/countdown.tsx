@@ -39,19 +39,19 @@ export function Countdown({ hackathon }: CountdownProps) {
 
       // Get all relevant dates
       const regStartDate = safeToDate(
-        hackathon.registrationPeriod?.registrationStartDate
+        hackathon.registrationPeriod?.registrationStartDate,
       );
       const regEndDate = safeToDate(
-        hackathon.registrationPeriod?.registrationEndDate
+        hackathon.registrationPeriod?.registrationEndDate,
       );
       const hackStartDate = safeToDate(
-        hackathon.hackathonPeriod?.hackathonStartDate
+        hackathon.hackathonPeriod?.hackathonStartDate,
       );
       const hackEndDate = safeToDate(
-        hackathon.hackathonPeriod?.hackathonEndDate
+        hackathon.hackathonPeriod?.hackathonEndDate,
       );
       const votingStartDate = safeToDate(
-        hackathon.votingPeriod?.votingStartDate
+        hackathon.votingPeriod?.votingStartDate,
       );
       const votingEndDate = safeToDate(hackathon.votingPeriod?.votingEndDate);
 
@@ -135,13 +135,13 @@ export function Countdown({ hackathon }: CountdownProps) {
 
     // Get all relevant dates
     const regStartDate = safeToDate(
-      hackathon.registrationPeriod?.registrationStartDate
+      hackathon.registrationPeriod?.registrationStartDate,
     );
     const regEndDate = safeToDate(
-      hackathon.registrationPeriod?.registrationEndDate
+      hackathon.registrationPeriod?.registrationEndDate,
     );
     const hackStartDate = safeToDate(
-      hackathon.hackathonPeriod?.hackathonStartDate
+      hackathon.hackathonPeriod?.hackathonStartDate,
     );
     const hackEndDate = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
     const votingStartDate = safeToDate(hackathon.votingPeriod?.votingStartDate);

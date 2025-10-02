@@ -6,7 +6,7 @@ import { InlineLoading } from "@/components/ui/global-loading";
 import Link from "next/link";
 import { useActiveAccount } from "thirdweb/react";
 import { useSendTransaction } from "thirdweb/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   useHackathonRegistration,
@@ -26,6 +26,7 @@ export function RegistrationButton({
 }: RegistrationButtonProps) {
   const activeAccount = useActiveAccount();
   const [isRegistering, setIsRegistering] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const {
     data: isRegistered,
@@ -36,11 +37,33 @@ export function RegistrationButton({
   const { prepareTransaction } = useRegisterForHackathon();
   const { mutateAsync: sendTransaction } = useSendTransaction();
 
-  // Get current hackathon status
+  // Auto-update current time every 30 seconds for dynamic status changes
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 30000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Get current hackathon status (recalculated each render due to currentTime dependency)
   const hackathonStatus = getUIHackathonStatus({
     ...hackathon,
     votingPeriod: hackathon.votingPeriod || undefined,
   });
+
+  // Check if submission is currently active (even if registration is technically still open)
+  const isSubmissionActive = () => {
+    const hackStartDate = hackathon.hackathonPeriod?.hackathonStartDate;
+    const hackEndDate = hackathon.hackathonPeriod?.hackathonEndDate;
+
+    if (!hackStartDate || !hackEndDate) return false;
+
+    const startDate = new Date(hackStartDate);
+    const endDate = new Date(hackEndDate);
+
+    return currentTime >= startDate && currentTime < endDate;
+  };
 
   const handleRegister = async () => {
     if (!activeAccount) {
@@ -86,6 +109,23 @@ export function RegistrationButton({
           <Button size="lg" disabled>
             <InlineLoading text="Checking Registration" size="sm" />
           </Button>
+        );
+      }
+
+      // Check if submission is active (overrides registration status)
+      if (isSubmissionActive() && isRegistered) {
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center justify-center text-sm text-green-600 dark:text-green-400">
+              <UserCheck className="mr-2 h-4 w-4" />
+              You are registered for this hackathon
+            </div>
+            <Link href={`/projects/create?hackathon=${hackathonId}`}>
+              <Button size="lg" className="w-full">
+                Submit Project <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         );
       }
 
