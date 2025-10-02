@@ -155,7 +155,10 @@ export function getUIHackathonStatus(hackathon: {
   | "Coming Soon"
   | "Registration Open"
   | "Registration Closed"
+  | "Submission Starting"
   | "Live"
+  | "Submission Ended"
+  | "Judging Starting"
   | "Voting"
   | "Ended" {
   const now = new Date();
@@ -174,11 +177,11 @@ export function getUIHackathonStatus(hackathon: {
   const votingStart = safeToDate(hackathon.votingPeriod?.votingStartDate);
   const votingEnd = safeToDate(hackathon.votingPeriod?.votingEndDate);
 
-  // Enhanced timeline logic with start dates
+  // Enhanced timeline logic with more granular status phases
 
   // Before registration starts (upcoming)
   if (registrationStart && now < registrationStart) {
-    return "Coming Soon"; // Not started yet, more accurate than "closed"
+    return "Coming Soon";
   }
 
   // Registration phase: between registration start and end
@@ -186,9 +189,9 @@ export function getUIHackathonStatus(hackathon: {
     return "Registration Open";
   }
 
-  // Between registration end and hackathon start (gap period)
+  // Between registration end and submission start (preparation phase)
   if (hackathonStart && now < hackathonStart) {
-    return "Registration Closed";
+    return "Submission Starting";
   }
 
   // Hackathon/Submission phase: between hackathon start and end
@@ -196,9 +199,9 @@ export function getUIHackathonStatus(hackathon: {
     return "Live";
   }
 
-  // Between hackathon end and voting start (gap period)
+  // Between submission end and voting start (review/preparation phase)
   if (votingStart && now < votingStart) {
-    return "Registration Closed"; // Submissions closed, voting not started
+    return "Judging Starting";
   }
 
   // Voting phase: between voting start and end

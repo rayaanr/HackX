@@ -25,7 +25,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
     votingPeriod: hackathon.votingPeriod || undefined,
   });
   const statusVariant = getHackathonStatusVariant(
-    hackathonStatus as HackathonStatus,
+    hackathonStatus as HackathonStatus
   );
 
   // Get the relevant deadline based on current status
@@ -34,9 +34,13 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
       case "Registration Open":
         return safeToDate(hackathon.registrationPeriod?.registrationEndDate);
       case "Registration Closed":
+      case "Submission Starting":
         return safeToDate(hackathon.hackathonPeriod?.hackathonStartDate);
       case "Live":
         return safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+      case "Submission Ended":
+      case "Judging Starting":
+        return safeToDate(hackathon.votingPeriod?.votingStartDate);
       case "Voting":
         return safeToDate(hackathon.votingPeriod?.votingEndDate);
       case "Ended":
@@ -46,6 +50,66 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
   })();
 
   const daysLeft = deadline ? getDaysLeft(deadline) : 0;
+
+  // Get dynamic status message based on current phase
+  const getStatusMessage = () => {
+    if (hackathonStatus === "Ended") {
+      return { title: "Status", content: "Completed" };
+    }
+
+    if (!deadline || daysLeft === null) {
+      return { title: "Status", content: "TBD" };
+    }
+
+    const timeLeft = deadline.getTime() - new Date().getTime();
+    const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+
+    switch (hackathonStatus) {
+      case "Coming Soon":
+        return {
+          title: "Registration Starts",
+          content:
+            daysLeft > 0 ? `${daysLeft} days` : `${hoursLeft}h ${minutesLeft}m`,
+        };
+      case "Registration Open":
+        return {
+          title: "Registration Ends",
+          content:
+            daysLeft > 0 ? `${daysLeft} days` : `${hoursLeft}h ${minutesLeft}m`,
+        };
+      case "Registration Closed":
+      case "Submission Starting":
+        return {
+          title: "Submission Starts",
+          content:
+            daysLeft > 0 ? `${daysLeft} days` : `${hoursLeft}h ${minutesLeft}m`,
+        };
+      case "Live":
+        return {
+          title: "Submission Ends",
+          content:
+            daysLeft > 0 ? `${daysLeft} days` : `${hoursLeft}h ${minutesLeft}m`,
+        };
+      case "Submission Ended":
+      case "Judging Starting":
+        return {
+          title: "Voting Starts",
+          content:
+            daysLeft > 0 ? `${daysLeft} days` : `${hoursLeft}h ${minutesLeft}m`,
+        };
+      case "Voting":
+        return {
+          title: "Voting Ends",
+          content:
+            daysLeft > 0 ? `${daysLeft} days` : `${hoursLeft}h ${minutesLeft}m`,
+        };
+      default:
+        return { title: "Days Left", content: `${daysLeft} days` };
+    }
+  };
+
+  const statusInfo = getStatusMessage();
 
   const participantAvatars = [
     { src: "https://originui.com/avatar-80-03.jpg", alt: "Participant 1" },
@@ -81,18 +145,10 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                   <div className="space-y-1">
                     <h6 className="flex items-center text-white/40 font-medium text-[11px] uppercase tracking-wide">
                       <Calendar className="size-3.5 mr-1.5" />
-                      {hackathonStatus === "Ended" ? "Status" : "Days Left"}
+                      {statusInfo.title}
                     </h6>
                     <p className="font-semibold text-white/85 text-sm">
-                      {hackathonStatus === "Ended" ? (
-                        "Completed"
-                      ) : deadline && daysLeft !== null ? (
-                        <span className="font-mono">
-                          <SlidingNumber value={daysLeft} /> days
-                        </span>
-                      ) : (
-                        "TBD"
-                      )}
+                      <span className="font-mono">{statusInfo.content}</span>
                     </p>
                   </div>
                   <div className="space-y-1">

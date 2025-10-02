@@ -156,7 +156,10 @@ export type HackathonStatus =
   | "Coming Soon"
   | "Registration Open"
   | "Registration Closed"
+  | "Submission Starting"
   | "Live"
+  | "Submission Ended"
+  | "Judging Starting"
   | "Voting"
   | "Ended";
 

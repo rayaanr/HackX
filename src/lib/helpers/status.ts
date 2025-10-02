@@ -29,9 +29,13 @@ export function getHackathonStatusVariant(
     case "Voting":
       return "blue";
     case "Registration Closed":
+    case "Submission Starting":
+    case "Judging Starting":
       return "yellow";
     case "Coming Soon":
       return "purple"; // Purple for upcoming/future events
+    case "Submission Ended":
+      return "orange";
     case "Ended":
       return "red";
     default:
