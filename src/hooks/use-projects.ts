@@ -9,6 +9,7 @@ import {
 import { waitForReceipt } from "thirdweb";
 import { useWeb3 } from "@/providers/web3-provider";
 import type { ProjectFormData } from "@/lib/schemas/project-schema";
+import type { BlockchainProject } from "@/types/blockchain";
 import {
   uploadProjectToIPFS,
   prepareCreateProjectTransaction,
@@ -16,7 +17,6 @@ import {
   extractProjectIdFromReceipt,
   getUserProjectsWithDetails,
   getProjectById,
-  getTotalProjects,
   getProjectTeamMembers,
 } from "@/lib/helpers/blockchain";
 import { toast } from "sonner";
@@ -371,7 +371,7 @@ export function useBlockchainProjects() {
 export function useBlockchainProject(projectId: string | number) {
   const { contract, client } = useWeb3();
 
-  return useQuery({
+  return useQuery<BlockchainProject | null>({
     queryKey: ["blockchain-project", projectId],
     queryFn: async () => {
       if (!contract || !client) return null;

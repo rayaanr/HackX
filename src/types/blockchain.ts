@@ -187,6 +187,22 @@ export interface BlockchainProject extends ContractProject {
   // Computed properties
   hackathonMetadata?: HackathonMetadata;
   averageScore?: number; // calculated from totalScore/judgeCount
+
+  // UI convenience properties (flattened from metadata) - based on actual project schema
+  name?: string;
+  intro?: string;
+  description?: string;
+  logo?: string;
+  sector?: string[];
+  progress?: string;
+  fundraisingStatus?: string;
+  githubLink?: string;
+  demoVideo?: string;
+  pitchVideo?: string;
+  techStack?: string[];
+  hackathonIds?: string[];
+  version?: string;
+  createdAt?: string;
 }
 
 // API response types

@@ -17,13 +17,7 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { Separator } from "@/components/ui/separator";
 import { ShareDialog } from "@/components/share-dialog";
@@ -41,13 +35,10 @@ import { useQueries } from "@tanstack/react-query";
 import { useWeb3 } from "@/providers/web3-provider";
 import { getHackathonById } from "@/lib/helpers/blockchain";
 import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
-import type { BlockchainHackathon } from "@/types/blockchain";
-
 import {
   formatDisplayDate,
   getUIHackathonStatus,
   formatDateRange,
-  type DateInput,
 } from "@/lib/helpers/date";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
@@ -311,7 +302,7 @@ export default function ProjectPage() {
     error: projectError,
   } = useBlockchainProject(id);
   const { data: hackathon, isLoading: hackathonLoading } = useHackathon(
-    project?.hackathonId,
+    project?.hackathonId ? Number(project.hackathonId) : null,
   );
   const { data: teamMembers, isLoading: teamLoading } =
     useProjectTeamMembers(id);
@@ -425,7 +416,7 @@ export default function ProjectPage() {
               )}
             </h1>
             <p className="text-white/70 mb-4">
-              {project?.tagline || (
+              {project?.intro || (
                 <TextShimmerLoader text="Loading description" />
               )}
             </p>
@@ -481,9 +472,9 @@ export default function ProjectPage() {
                 <div className="lg:col-span-2 space-y-6">
                   <div className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-sm shadow-2xl overflow-hidden">
                     <div className="relative aspect-video">
-                      {project?.coverImage ? (
+                      {project?.logo ? (
                         <Image
-                          src={resolveIPFSToHttp(project.coverImage)}
+                          src={resolveIPFSToHttp(project.logo)}
                           alt={project?.name || "Project"}
                           fill
                           className="object-cover"
@@ -520,7 +511,7 @@ export default function ProjectPage() {
                       {/* biome-ignore format */}
                       {parse(
                         DOMPurify.sanitize(
-                          project?.description || project?.tagline || "",
+                          project?.description || project?.intro || "",
                           {
                             ALLOWED_TAGS: [
                               "p",
@@ -575,9 +566,7 @@ export default function ProjectPage() {
                   </div>
 
                   {/* Videos Section */}
-                  {(project?.demoVideo ||
-                    project?.pitchVideo ||
-                    project?.videoUrl) && (
+                  {(project?.demoVideo || project?.pitchVideo) && (
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-white">
                         Project Videos
@@ -666,82 +655,20 @@ export default function ProjectPage() {
                             </div>
                           </div>
                         )}
-
-                        {project?.videoUrl &&
-                          !project?.demoVideo &&
-                          !project?.pitchVideo && (
-                            <div>
-                              <h4 className="text-lg font-medium mb-3 text-white">
-                                Project Video
-                              </h4>
-                              <div className="rounded-xl overflow-hidden border border-white/20 bg-black/20 backdrop-blur-sm shadow-2xl">
-                                {isYouTubeUrl(project.videoUrl) ? (
-                                  <YouTubeEmbed
-                                    videoid={
-                                      extractYouTubeVideoId(project.videoUrl) ||
-                                      ""
-                                    }
-                                    height={400}
-                                    params="controls=1&modestbranding=1&rel=0"
-                                  />
-                                ) : (
-                                  <div className="aspect-video bg-black/40 rounded-lg flex items-center justify-center">
-                                    <div className="text-center">
-                                      <Play className="w-12 h-12 mx-auto mb-2 text-white/60" />
-                                      <p className="text-sm text-white/70 mb-4">
-                                        Project Video
-                                      </p>
-                                      <Button
-                                        asChild
-                                        className="hover:bg-white/10 hover:border-blue-400/50 transition-all duration-300"
-                                      >
-                                        <Link
-                                          href={project.videoUrl}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                        >
-                                          <ExternalLink className="w-4 h-4 mr-2" />
-                                          Watch Video
-                                        </Link>
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
                       </div>
                     </div>
                   )}
 
                   {/* Links Section */}
-                  {(project?.demoUrl ||
-                    project?.githubUrl ||
-                    project?.githubLink) && (
+                  {project?.githubLink && (
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-white">
                         Project Links
                       </h3>
                       <div className="flex flex-wrap gap-3">
-                        {project?.demoUrl && (
+                        {project?.githubLink && (
                           <Link
-                            href={project.demoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Button
-                              variant="outline"
-                              className="hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all duration-300"
-                            >
-                              <Play className="mr-2 h-4 w-4" />
-                              Live Demo
-                              <ExternalLink className="ml-2 h-3 w-3" />
-                            </Button>
-                          </Link>
-                        )}
-                        {(project?.githubUrl || project?.githubLink) && (
-                          <Link
-                            href={project.githubUrl || project.githubLink}
+                            href={project.githubLink}
                             target="_blank"
                             rel="noopener noreferrer"
                           >

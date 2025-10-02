@@ -129,12 +129,12 @@ export function useBlockchainHackathons() {
 /**
  * Hook for fetching a single hackathon by ID
  */
-export function useHackathon(hackathonId: string | number) {
+export function useHackathon(hackathonId?: string | number | null) {
   const { contract, client } = useWeb3();
 
   return useQuery({
     queryKey: ["hackathon", hackathonId],
-    queryFn: () => getHackathonById(contract, client, hackathonId),
+    queryFn: () => getHackathonById(contract, client, hackathonId!),
     enabled: !!contract && !!client && !!hackathonId,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
