@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageLoading } from "@/components/ui/global-loading";
-import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
+import EmptyComponent from "@/components/empty";
 import {
   useHackathon,
   useHackathonProjectsWithDetails,
@@ -49,9 +49,10 @@ export default function JudgingPage({ params }: JudgingPageProps) {
             Review and judge submitted projects for this hackathon
           </p>
         </div>
-        <WalletConnectionPrompt
+        <EmptyComponent
           title="Connect your wallet"
           description="Connect your wallet to review and judge hackathon submissions"
+          type="wallet-connect"
         />
       </div>
     );

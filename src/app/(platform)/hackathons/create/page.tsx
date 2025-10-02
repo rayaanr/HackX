@@ -5,7 +5,7 @@ import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { Button } from "@/components/ui/button";
 import { CircularLoader } from "@/components/ui/loader";
 import { Card, CardContent } from "@/components/ui/card";
-import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
+import EmptyComponent from "@/components/empty";
 import { useActiveAccount } from "thirdweb/react";
 import { Wallet, Shield, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -92,7 +92,11 @@ export default function CreateHackathonPage() {
                       </span>
                     </div>
                   </div>
-                  <WalletConnectionPrompt />
+                  <EmptyComponent
+                    title="Connect your wallet"
+                    description="Connect your wallet to create hackathons"
+                    type="wallet-connect"
+                  />
                 </CardContent>
               </Card>
             </div>

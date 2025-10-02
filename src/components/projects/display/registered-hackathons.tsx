@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
   Clock,
   CheckCircle,
+  FolderIcon,
 } from "lucide-react";
 import {
   Card,
@@ -35,8 +36,8 @@ import Link from "next/link";
 import Image from "next/image";
 import type { UIHackathon } from "@/types/hackathon";
 import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
 import { useRegisteredHackathons } from "@/hooks/use-hackathons";
+import EmptyComponent from "@/components/empty";
 
 type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
 
@@ -52,17 +53,11 @@ export function RegisteredHackathons() {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
-        <Card className="bg-card/30">
-          <CardContent className="text-center py-12">
-            <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
-              <Trophy className="w-12 h-12 text-white/50" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Connect Your Wallet</h3>
-            <p className="text-muted-foreground mb-4">
-              Connect your wallet to view your registered hackathons
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyComponent
+          title="Connect Your Wallet"
+          description="Connect your wallet to view your registered hackathons"
+          type="wallet-connect"
+        />
       </div>
     );
   }
@@ -71,11 +66,11 @@ export function RegisteredHackathons() {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
-        <div className="text-center py-12">
-          <p className="text-destructive">
-            Failed to load registered hackathons
-          </p>
-        </div>
+        <EmptyComponent
+          title="Failed to load hackathons"
+          description="There was an error loading your registered hackathons. Please try again."
+          type="error"
+        />
       </div>
     );
   }
@@ -122,24 +117,17 @@ export function RegisteredHackathons() {
       </h2>
 
       {registrations.length === 0 ? (
-        <div className="border border-white/10 rounded-xl p-10 text-center bg-white/[0.02] backdrop-blur-sm">
-          <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
-            <Trophy className="w-12 h-12 text-white/50" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2 text-white/85">
-            No registered hackathons
-          </h3>
-          <p className="text-white/50 mb-6 max-w-md mx-auto">
-            Register for hackathons to track your participation and submit
-            projects
-          </p>
-          <Button
-            asChild
-            className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
-          >
-            <Link href="/hackathons">Browse Hackathons</Link>
-          </Button>
-        </div>
+        <EmptyComponent
+          title="No Registered Hackathons"
+          description="You haven't registered for any hackathons yet."
+          type="info"
+          variant="ghost"
+          action={
+            <Link href="/hackathons">
+              <Button>Explore Hackathons</Button>
+            </Link>
+          }
+        />
       ) : (
         <div className="space-y-6">
           {registrations.map((hackathon: RegisteredHackathon, index) => {

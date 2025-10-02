@@ -19,13 +19,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Rating, RatingButton } from "@/components/ui/rating";
-import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
+import EmptyComponent from "@/components/empty";
 import {
   ArrowLeft,
-  Clock,
   Award,
   ExternalLink,
-  Star,
   Target,
   Lightbulb,
   CheckCircle,
@@ -126,9 +124,10 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
             </p>
           </div>
         </div>
-        <WalletConnectionPrompt
+        <EmptyComponent
           title="Connect your wallet"
           description="Connect your wallet to review and evaluate project submissions"
+          type="wallet-connect"
         />
       </div>
     );

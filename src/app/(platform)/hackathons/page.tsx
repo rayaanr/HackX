@@ -17,6 +17,7 @@ import { HackathonCard } from "@/components/hackathon/display/hackathon-overview
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 import type { UIHackathon, PrizeCohort } from "@/types/hackathon";
 import { useAllHackathons } from "@/hooks/use-hackathons";
+import EmptyComponent from "@/components/empty";
 
 // Filter options
 const prizeRangeOptions = [
@@ -418,16 +419,16 @@ export default function ExplorePage() {
               </div>
             ))
           ) : liveHackathons.length === 0 ? (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-semibold mb-2 text-white/90">
-                No active hackathons
-              </h3>
-              <p className="text-white/50">
-                {allHackathons.length === 0
+            <EmptyComponent
+              title="No active hackathons"
+              description={
+                allHackathons.length === 0
                   ? "No hackathons have been created yet."
-                  : "All hackathons have ended or haven't started yet."}
-              </p>
-            </div>
+                  : "All hackathons have ended or haven't started yet."
+              }
+              type="info"
+              variant="ghost"
+            />
           ) : (
             liveHackathons.map((hackathon, i) => (
               <motion.div
@@ -474,9 +475,12 @@ export default function ExplorePage() {
                 </div>
               ))
             ) : pastHackathons.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-white/50">No past hackathons to display</p>
-              </div>
+              <EmptyComponent
+                title="No past hackathons"
+                description="No past hackathons to display"
+                type="info"
+                variant="ghost"
+              />
             ) : (
               pastHackathons.map((hackathon, i) => (
                 <motion.div

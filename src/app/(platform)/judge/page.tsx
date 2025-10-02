@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { PageLoading } from "@/components/ui/global-loading";
 import { useActiveAccount } from "thirdweb/react";
 import { ArrowRight, Calendar, MapPin, Award, Code } from "lucide-react";
-import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
+import EmptyComponent from "@/components/empty";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
@@ -33,9 +33,10 @@ export default function JudgeDashboardPage() {
             Manage your judging assignments and review submissions
           </p>
         </div>
-        <WalletConnectionPrompt
+        <EmptyComponent
           title="Connect your wallet"
           description="Connect your wallet to view your judge assignments and review submissions"
+          type="wallet-connect"
         />
       </div>
     );
@@ -179,20 +180,12 @@ export default function JudgeDashboardPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.35, delay: 0.1 }}
           >
-            <Card className="bg-transparent">
-              <div className="relative z-10 py-12 text-center">
-                <Award className="mb-4 h-16 w-16 text-muted-foreground mx-auto" />
-                <h3 className="mb-2 text-lg font-semibold">
-                  No Judge Assignments
-                </h3>
-                <p className="text-muted-foreground">
-                  You haven't been assigned to judge any hackathons yet.
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Judge assignments are managed by hackathon organizers.
-                </p>
-              </div>
-            </Card>
+            <EmptyComponent
+              title="No judge assignments"
+              description="You have no hackathon judge assignments at the moment. Check back later or contact the organizers."
+              type="info"
+              variant="card"
+            />
           </motion.div>
         )}
       </div>

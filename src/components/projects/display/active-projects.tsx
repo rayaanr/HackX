@@ -1,19 +1,14 @@
 "use client";
 
 import { Plus, FolderIcon } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBlockchainProjects } from "@/hooks/use-projects";
 import {
   ProjectCard,
   type ProjectCardData,
 } from "@/components/projects/display/project-card";
-import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
+import EmptyComponent from "@/components/empty";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -57,9 +52,11 @@ export function ActiveProjects() {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
-        <div className="text-center py-12">
-          <p className="text-destructive">Failed to load projects</p>
-        </div>
+        <EmptyComponent
+          title="Failed to load projects"
+          description="There was an error loading your projects. Please try again."
+          type="error"
+        />
       </div>
     );
   }
@@ -69,7 +66,11 @@ export function ActiveProjects() {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
-        <WalletConnectionPrompt />
+        <EmptyComponent
+          title="Connect Your Wallet"
+          description="Connect your wallet to view and manage your projects"
+          type="wallet-connect"
+        />
       </div>
     );
   }
@@ -97,20 +98,21 @@ export function ActiveProjects() {
       <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
         {allProjects.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
-              <FolderIcon className="w-12 h-12 text-white/50" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Create your first project to get started
-            </p>
-            <Button asChild>
-              <Link href="/projects/create">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Project
-              </Link>
-            </Button>
+          <div className="col-span-full">
+            <EmptyComponent
+              title="No projects yet"
+              description="Create your first project to get started"
+              type="info"
+              icon={<FolderIcon className="size-12 text-white/50" />}
+              action={
+                <Button asChild>
+                  <Link href="/projects/create">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Project
+                  </Link>
+                </Button>
+              }
+            />
           </div>
         ) : (
           <>
