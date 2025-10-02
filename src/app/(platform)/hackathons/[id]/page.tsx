@@ -130,7 +130,7 @@ export default function HackathonPage() {
             </div>
           </div>
 
-          <div className="container mx-auto">
+          <div className="container mx-auto px-5">
             {activeTab === "overview" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Hero Image */}
