@@ -4,7 +4,7 @@ import type { HackathonFormData } from "@/types/hackathon";
 function createDate(
   daysFromNow: number,
   hoursOffset = 0,
-  minutesOffset = 0
+  minutesOffset = 0,
 ): Date {
   const date = new Date();
   date.setDate(date.getDate() + daysFromNow);

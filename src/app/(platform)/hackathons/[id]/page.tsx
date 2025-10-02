@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { RegistrationButton } from "@/components/hackathon/widgets/registration-button";
-import { SubmissionCountdown } from "@/components/hackathon/widgets/submission-countdown";
+import { Countdown } from "@/components/hackathon/widgets/submission-countdown";
 import { ToDoList } from "@/components/hackathon/widgets/todo-list";
 import { ShareDialog } from "@/components/share-dialog";
 import parse from "html-react-parser";
@@ -245,7 +245,7 @@ export default function HackathonPage() {
 
                 {/* Right Column */}
                 <div className="space-y-6">
-                  <SubmissionCountdown hackathon={hackathon} />
+                  <Countdown hackathon={hackathon} />
                   <ToDoList hackathon={hackathon} />
                 </div>
               </div>
