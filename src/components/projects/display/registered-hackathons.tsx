@@ -52,10 +52,10 @@ export function RegisteredHackathons() {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
-        <Card>
+        <Card className="bg-card/30">
           <CardContent className="text-center py-12">
-            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <Trophy className="w-12 h-12 text-muted-foreground" />
+            <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
+              <Trophy className="w-12 h-12 text-white/50" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Connect Your Wallet</h3>
             <p className="text-muted-foreground mb-4">
