@@ -25,7 +25,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
     votingPeriod: hackathon.votingPeriod || undefined,
   });
   const statusVariant = getHackathonStatusVariant(
-    hackathonStatus as HackathonStatus
+    hackathonStatus as HackathonStatus,
   );
 
   // Get the relevant deadline based on current status

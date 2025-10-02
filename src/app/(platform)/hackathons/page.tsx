@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CirclePlus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -119,20 +119,32 @@ export default function ExplorePage() {
       });
     };
 
-    // Filter past hackathons to only show those with judging started or ended
+    // Filter live hackathons to exclude ended ones
+    const filterLiveHackathons = (hackathons: UIHackathon[]) => {
+      return hackathons.filter((hackathon) => {
+        const currentStatus = getUIHackathonStatus({
+          ...hackathon,
+          votingPeriod: hackathon.votingPeriod || undefined,
+        });
+        // Exclude ended hackathons from live section
+        return currentStatus !== "Ended";
+      });
+    };
+
+    // Filter past hackathons to only show ended ones
     const filterPastHackathons = (hackathons: UIHackathon[]) => {
       return hackathons.filter((hackathon) => {
         const currentStatus = getUIHackathonStatus({
           ...hackathon,
           votingPeriod: hackathon.votingPeriod || undefined,
         });
-        // Only show hackathons where judging has started (Voting) or ended
-        return currentStatus === "Voting" || currentStatus === "Ended";
+        // Only show hackathons that are ended
+        return currentStatus === "Ended";
       });
     };
 
     return {
-      liveHackathons: applyFilters(initialLiveHackathons),
+      liveHackathons: applyFilters(filterLiveHackathons(initialLiveHackathons)),
       pastHackathons: applyFilters(filterPastHackathons(initialPastHackathons)),
     };
   }, [initialLiveHackathons, initialPastHackathons, filters]);
@@ -185,7 +197,10 @@ export default function ExplorePage() {
               "transition-all duration-200 hover:scale-[1.02]",
             )}
           >
-            <Link href="/hackathons/create">Host a Hackathon</Link>
+            <Link href="/hackathons/create">
+              <CirclePlus />
+              Host a Hackathon
+            </Link>
           </Button>
         </motion.div>
 
