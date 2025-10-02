@@ -57,7 +57,7 @@ export function ActiveProjects() {
   if (error) {
     return (
       <div>
-        <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
+        <h2 className="text-2xl font-bold mb-6">Projects</h2>
         <EmptyComponent
           title="Failed to load projects"
           description="There was an error loading your projects. Please try again."
@@ -71,7 +71,7 @@ export function ActiveProjects() {
   if (!isConnected) {
     return (
       <div>
-        <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
+        <h2 className="text-2xl font-bold mb-6">Projects</h2>
         <EmptyComponent
           title="Connect Your Wallet"
           description="Connect your wallet to view and manage your projects"
@@ -84,7 +84,7 @@ export function ActiveProjects() {
   if (loading) {
     return (
       <div>
-        <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
+        <h2 className="text-2xl font-bold mb-6">Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="project-card-hover h-full">
@@ -120,7 +120,7 @@ export function ActiveProjects() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
+      <h2 className="text-2xl font-bold mb-6">Projects</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
         {allProjects.length === 0 ? (
           <div className="col-span-full">
