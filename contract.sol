@@ -117,12 +117,17 @@ contract HackX is Ownable, ReentrancyGuard {
         uint256 judgeStart,
         uint256 judgeEnd
     ) {
+        // Registration phase validation
         require(regStart > block.timestamp + MIN_DEADLINE_BUFFER, "HackX: Registration start must be in the future");
-        require(regEnd   > regStart + MIN_DEADLINE_BUFFER,      "HackX: Registration end must be after start + buffer");
-        require(subStart > regEnd   + MIN_DEADLINE_BUFFER,      "HackX: Submission start must be after registration end + buffer");
-        require(subEnd   > subStart + MIN_DEADLINE_BUFFER,      "HackX: Submission end must be after start + buffer");
-        require(judgeStart > subEnd + MIN_DEADLINE_BUFFER,      "HackX: Judging start must be after submission end + buffer");
-        require(judgeEnd   > judgeStart + MIN_DEADLINE_BUFFER,  "HackX: Judging end must be after start + buffer");
+        require(regEnd > regStart + MIN_DEADLINE_BUFFER, "HackX: Registration end must be after start + buffer");
+        
+        // Submission phase validation - can start during or after registration
+        require(subStart >= regStart, "HackX: Submission cannot start before registration");
+        require(subEnd > subStart + MIN_DEADLINE_BUFFER, "HackX: Submission end must be after start + buffer");
+        
+        // Judging phase validation - must start after submission ends
+        require(judgeStart > subEnd + MIN_DEADLINE_BUFFER, "HackX: Judging start must be after submission end + buffer");
+        require(judgeEnd > judgeStart + MIN_DEADLINE_BUFFER, "HackX: Judging end must be after start + buffer");
         _;
     }
     
