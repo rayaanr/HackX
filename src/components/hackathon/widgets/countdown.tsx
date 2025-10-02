@@ -6,6 +6,8 @@ import Link from "next/link";
 import { SlidingNumber } from "../../ui/anim/sliding-number";
 import type { UIHackathon } from "@/types/hackathon";
 import { safeToDate } from "@/lib/helpers/date";
+import { useHackathonRegistration } from "@/hooks/use-hackathons";
+import { useActiveAccount } from "thirdweb/react";
 
 interface CountdownProps {
   hackathon: UIHackathon;
@@ -19,6 +21,11 @@ interface TimeLeft {
 }
 
 export function Countdown({ hackathon }: CountdownProps) {
+  const activeAccount = useActiveAccount();
+
+  // Check if user is registered for this hackathon
+  const { data: isRegistered = false } = useHackathonRegistration(hackathon.id);
+
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -32,43 +39,68 @@ export function Countdown({ hackathon }: CountdownProps) {
 
       // Get all relevant dates
       const regStartDate = safeToDate(
-        hackathon.registrationPeriod?.registrationStartDate,
+        hackathon.registrationPeriod?.registrationStartDate
       );
       const regEndDate = safeToDate(
-        hackathon.registrationPeriod?.registrationEndDate,
+        hackathon.registrationPeriod?.registrationEndDate
       );
       const hackStartDate = safeToDate(
-        hackathon.hackathonPeriod?.hackathonStartDate,
+        hackathon.hackathonPeriod?.hackathonStartDate
       );
       const hackEndDate = safeToDate(
-        hackathon.hackathonPeriod?.hackathonEndDate,
+        hackathon.hackathonPeriod?.hackathonEndDate
       );
       const votingStartDate = safeToDate(
-        hackathon.votingPeriod?.votingStartDate,
+        hackathon.votingPeriod?.votingStartDate
       );
       const votingEndDate = safeToDate(hackathon.votingPeriod?.votingEndDate);
 
       let targetDate: Date | null = null;
 
-      // Determine which phase we're in and what to countdown to
-      if (regStartDate && now < regStartDate) {
-        // Before registration starts
-        targetDate = regStartDate;
-      } else if (regEndDate && now < regEndDate) {
-        // During registration period
-        targetDate = regEndDate;
-      } else if (hackStartDate && now < hackStartDate) {
-        // Between registration end and submission start
-        targetDate = hackStartDate;
-      } else if (hackEndDate && now < hackEndDate) {
-        // During submission period
-        targetDate = hackEndDate;
-      } else if (votingStartDate && now < votingStartDate) {
-        // Between submission end and voting start
-        targetDate = votingStartDate;
-      } else if (votingEndDate && now < votingEndDate) {
-        // During voting period
-        targetDate = votingEndDate;
+      // If user is registered, prioritize submission-related dates
+      if (isRegistered && activeAccount) {
+        // For registered users, focus on submission timeline
+        if (hackStartDate && now < hackStartDate) {
+          targetDate = hackStartDate;
+        } else if (hackEndDate && now < hackEndDate) {
+          targetDate = hackEndDate;
+        } else if (votingStartDate && now < votingStartDate) {
+          targetDate = votingStartDate;
+        } else if (votingEndDate && now < votingEndDate) {
+          targetDate = votingEndDate;
+        }
+      }
+
+      // If no target date set yet (either not registered or no submission phase active)
+      // Use general logic with priority for submission phase over registration
+      if (!targetDate) {
+        if (regStartDate && now < regStartDate) {
+          // Before registration starts
+          targetDate = regStartDate;
+        } else if (
+          hackStartDate &&
+          hackEndDate &&
+          now >= hackStartDate &&
+          now < hackEndDate
+        ) {
+          // Submission phase is active - prioritize this over registration
+          targetDate = hackEndDate;
+        } else if (regEndDate && now < regEndDate) {
+          // During registration period (only if submission not active)
+          targetDate = regEndDate;
+        } else if (hackStartDate && now < hackStartDate) {
+          // Between registration end and submission start
+          targetDate = hackStartDate;
+        } else if (hackEndDate && now < hackEndDate) {
+          // During submission period
+          targetDate = hackEndDate;
+        } else if (votingStartDate && now < votingStartDate) {
+          // Between submission end and voting start
+          targetDate = votingStartDate;
+        } else if (votingEndDate && now < votingEndDate) {
+          // During voting period
+          targetDate = votingEndDate;
+        }
       }
 
       if (!targetDate) {
@@ -103,21 +135,45 @@ export function Countdown({ hackathon }: CountdownProps) {
 
     // Get all relevant dates
     const regStartDate = safeToDate(
-      hackathon.registrationPeriod?.registrationStartDate,
+      hackathon.registrationPeriod?.registrationStartDate
     );
     const regEndDate = safeToDate(
-      hackathon.registrationPeriod?.registrationEndDate,
+      hackathon.registrationPeriod?.registrationEndDate
     );
     const hackStartDate = safeToDate(
-      hackathon.hackathonPeriod?.hackathonStartDate,
+      hackathon.hackathonPeriod?.hackathonStartDate
     );
     const hackEndDate = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
     const votingStartDate = safeToDate(hackathon.votingPeriod?.votingStartDate);
     const votingEndDate = safeToDate(hackathon.votingPeriod?.votingEndDate);
 
-    // Determine current phase and return appropriate title
+    // If user is registered, prioritize submission-related countdowns
+    if (isRegistered && activeAccount) {
+      // For registered users, focus on submission timeline
+      if (hackStartDate && now < hackStartDate) {
+        return "Submission starts in";
+      } else if (hackEndDate && now < hackEndDate) {
+        return "Submission ends in";
+      } else if (votingStartDate && now < votingStartDate) {
+        return "Voting starts in";
+      } else if (votingEndDate && now < votingEndDate) {
+        return "Voting ends in";
+      }
+      // Fall back to general logic if no submission-specific phase
+    }
+
+    // General logic for non-registered users or when no submission phase applies
+    // Prioritize submission phase over registration when both are active
     if (regStartDate && now < regStartDate) {
       return "Registration starts in";
+    } else if (
+      hackStartDate &&
+      hackEndDate &&
+      now >= hackStartDate &&
+      now < hackEndDate
+    ) {
+      // Submission phase is active - prioritize this over registration
+      return "Submission ends in";
     } else if (regEndDate && now < regEndDate) {
       return "Registration ends in";
     } else if (hackStartDate && now < hackStartDate) {
