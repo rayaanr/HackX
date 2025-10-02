@@ -41,6 +41,8 @@ import { useQueries } from "@tanstack/react-query";
 import { useWeb3 } from "@/providers/web3-provider";
 import { getHackathonById } from "@/lib/helpers/blockchain";
 import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
+import type { BlockchainHackathon } from "@/types/blockchain";
+
 import {
   formatDisplayDate,
   getUIHackathonStatus,
@@ -340,6 +342,7 @@ export default function ProjectPage() {
     queries: hackathonQueries,
   });
 
+  // Transform blockchain hackathon data to UIHackathon format
   const submittedHackathons = submittedHackathonQueries
     .map((query) => query.data)
     .filter(Boolean);
@@ -452,10 +455,10 @@ export default function ProjectPage() {
         </div>
 
         <div className="gap-2">
-          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] pb-2">
+          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] pb-[0.1rem]">
             <Separator className="absolute top-0 left-0 right-0" />
           </div>
-          <div className="sticky top-16 backdrop-blur-xl border-white/10 z-10">
+          <div className="sticky top-14 backdrop-blur-xl border-white/10 z-10 pt-2">
             <div className="flex justify-center">
               <AnimatedTabs
                 tabs={projectTabs}
