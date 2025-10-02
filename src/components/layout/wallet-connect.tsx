@@ -66,7 +66,7 @@ export function WalletConnect() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="gap-2 h-9 px-3 bg-background hover:bg-accent border-border"
+            className="gap-2 h-9 px-3 bg-card/20 hover:bg-card/40 border-border/20 backdrop-blur-sm transition-all duration-200 hover:scale-[1.02]"
           >
             <Avatar className="size-6 rounded-sm">
               {ensAvatar && (
@@ -81,14 +81,17 @@ export function WalletConnect() {
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent
+          align="end"
+          className="min-w-56 bg-card/60 backdrop-blur-sm border-border z-[99999]"
+        >
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
                 Connected Wallet
               </p>
               <p className="text-xs leading-none text-muted-foreground truncate">
-                {account.address}
+                {account.address.slice(0, 10)}...{account.address.slice(-12)}
               </p>
             </div>
           </DropdownMenuLabel>

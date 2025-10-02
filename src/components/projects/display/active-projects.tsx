@@ -1,7 +1,12 @@
 "use client";
 
 import { Plus, FolderIcon } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBlockchainProjects } from "@/hooks/use-projects";
 import {
@@ -9,6 +14,7 @@ import {
   type ProjectCardData,
 } from "@/components/projects/display/project-card";
 import EmptyComponent from "@/components/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -81,11 +87,30 @@ export function ActiveProjects() {
         <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
-              </CardContent>
+            <Card key={i} className="project-card-hover h-full">
+              <div className="relative z-10 h-full flex flex-col">
+                <CardHeader className="mb-3 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="size-12 rounded-md" />
+                    <div className="flex-1 min-w-0">
+                      <Skeleton className="h-5 w-3/4 mb-2" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-1 relative z-10 text-center">
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-4/5 mb-3" />
+                  <div className="mt-5 flex flex-wrap gap-2 justify-center">
+                    {[1, 2, 3].map((j) => (
+                      <Skeleton key={j} className="h-6 w-12 rounded-full" />
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter className="mt-4 relative z-10">
+                  <Skeleton className="h-3 w-24" />
+                </CardFooter>
+              </div>
             </Card>
           ))}
         </div>
