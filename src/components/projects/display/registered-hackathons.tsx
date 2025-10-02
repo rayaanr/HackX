@@ -333,7 +333,7 @@ export function RegisteredHackathons() {
                           width={300}
                           src={resolveIPFSToHttp(hackathon.visual)}
                           alt={hackathon.name || `Hackathon ${hackathon.id}`}
-                          className="h-40 md:h-full w-full object-cover rounded-lg transform group-hover:scale-[1.03] transition-transform duration-500"
+                          className="h-40 md:h-48 w-full object-cover rounded-lg transform group-hover:scale-[1.03] transition-transform duration-500"
                           unoptimized
                         />
                       </div>

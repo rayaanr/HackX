@@ -4,12 +4,9 @@ import {
   ArrowLeft,
   Calendar,
   ExternalLink,
-  Star,
-  User,
   Trophy,
   GitBranch,
   Play,
-  Edit,
   Plus,
   Search,
 } from "lucide-react";
@@ -17,7 +14,7 @@ import { IconShare } from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -40,6 +37,10 @@ import {
   useBlockchainProjects,
 } from "@/hooks/use-projects";
 import { useHackathon, useRegisteredHackathons } from "@/hooks/use-hackathons";
+import { useQueries } from "@tanstack/react-query";
+import { useWeb3 } from "@/providers/web3-provider";
+import { getHackathonById } from "@/lib/helpers/blockchain";
+import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
 import {
   formatDisplayDate,
   getUIHackathonStatus,
@@ -312,6 +313,40 @@ export default function ProjectPage() {
   );
   const { data: teamMembers, isLoading: teamLoading } =
     useProjectTeamMembers(id);
+
+  const { contract, client } = useWeb3();
+
+  // Initialize empty queries array
+  const [hackathonQueries, setHackathonQueries] = useState<any[]>([]);
+
+  // Update queries when project data changes
+  useEffect(() => {
+    if (project?.hackathonIds && contract && client) {
+      const newQueries = project.hackathonIds.map(
+        (hackathonId: string | number) => ({
+          queryKey: ["hackathon", hackathonId],
+          queryFn: () => getHackathonById(contract, client, hackathonId),
+          enabled: !!contract && !!client && !!project?.hackathonIds,
+        }),
+      );
+      setHackathonQueries(newQueries);
+    } else {
+      setHackathonQueries([]);
+    }
+  }, [project?.hackathonIds, contract, client]);
+
+  // Fetch submitted hackathons details
+  const submittedHackathonQueries = useQueries({
+    queries: hackathonQueries,
+  });
+
+  const submittedHackathons = submittedHackathonQueries
+    .map((query) => query.data)
+    .filter(Boolean);
+
+  const isLoadingSubmittedHackathons = submittedHackathonQueries.some(
+    (query) => query.isLoading,
+  );
 
   const loading = projectLoading || hackathonLoading;
   const error = projectError;
@@ -878,40 +913,25 @@ export default function ProjectPage() {
                   </div>
 
                   {/* Current Submissions */}
-                  {project.submittedToHackathons &&
-                  project.submittedToHackathons.length > 0 ? (
+                  {submittedHackathons && submittedHackathons.length > 0 ? (
                     <div>
                       <h3 className="text-lg font-medium mb-4 text-white">
                         Current Submissions
                       </h3>
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {project.submittedToHackathons.map(
-                          (
-                            hackathon: { name?: string; description?: string },
-                            index: number,
-                          ) => (
-                            <Card
-                              key={index}
-                              className="border border-white/20 bg-black/20 backdrop-blur-sm"
-                            >
-                              <CardHeader>
-                                <CardTitle className="text-lg text-white">
-                                  {hackathon.name || `Hackathon #${index + 1}`}
-                                </CardTitle>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                        {submittedHackathons.map(
+                          (hackathon: any, index: number) => (
+                            <div key={index} className="relative">
+                              <HackathonCard hackathon={hackathon} />
+                              <div className="absolute top-4 right-4">
                                 <Badge
                                   variant="outline"
-                                  className="w-fit border-green-500/50 text-green-400"
+                                  className="w-fit border-green-500/50 text-green-400 bg-green-500/10"
                                 >
                                   Submitted
                                 </Badge>
-                              </CardHeader>
-                              <CardContent>
-                                <p className="text-sm text-white/70">
-                                  {hackathon.description ||
-                                    "No description available"}
-                                </p>
-                              </CardContent>
-                            </Card>
+                              </div>
+                            </div>
                           ),
                         )}
                       </div>
