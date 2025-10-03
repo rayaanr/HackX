@@ -5,12 +5,11 @@ import {
   Calendar,
   ExternalLink,
   Trophy,
-  GitBranch,
   Play,
   Plus,
   Search,
 } from "lucide-react";
-import { IconShare } from "@tabler/icons-react";
+import { IconBrandGithub, IconShare } from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -121,7 +120,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
         votingPeriod: hackathon.votingPeriod || undefined,
       });
       return status === "Registration Open" || status === "Live";
-    },
+    }
   );
 
   const handleSubmit = (hackathonId: string) => {
@@ -223,7 +222,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                                       hackathon.hackathonPeriod
                                         ?.hackathonStartDate,
                                       hackathon.hackathonPeriod
-                                        ?.hackathonEndDate,
+                                        ?.hackathonEndDate
                                     )}
                                   </span>
                                 </div>
@@ -253,7 +252,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                         </CardContent>
                       </Card>
                     );
-                  },
+                  }
                 )}
               </div>
             ) : (
@@ -303,7 +302,7 @@ export default function ProjectPage() {
   const params = useParams();
   const id = params.id as string;
   const [activeTab, setActiveTab] = useState<"overview" | "hackathon" | "team">(
-    "overview",
+    "overview"
   );
 
   const {
@@ -312,7 +311,7 @@ export default function ProjectPage() {
     error: projectError,
   } = useBlockchainProject(id);
   const { data: hackathon, isLoading: hackathonLoading } = useHackathon(
-    project?.hackathonId ? Number(project.hackathonId) : null,
+    project?.hackathonId ? Number(project.hackathonId) : null
   );
   const { data: teamMembers, isLoading: teamLoading } =
     useProjectTeamMembers(id);
@@ -330,7 +329,7 @@ export default function ProjectPage() {
           queryKey: ["hackathon", hackathonId],
           queryFn: () => getHackathonById(contract, client, hackathonId),
           enabled: !!contract && !!client && !!project?.hackathonIds,
-        }),
+        })
       );
       setHackathonQueries(newQueries);
     } else {
@@ -347,10 +346,6 @@ export default function ProjectPage() {
   const submittedHackathons = submittedHackathonQueries
     .map((query) => query.data)
     .filter(Boolean);
-
-  const isLoadingSubmittedHackathons = submittedHackathonQueries.some(
-    (query) => query.isLoading,
-  );
 
   const loading = projectLoading || hackathonLoading;
   const error = projectError;
@@ -381,30 +376,6 @@ export default function ProjectPage() {
       </div>
     );
   }
-
-  // Simple status logic
-  const getProjectStatus = (project: any) => {
-    if (!project) return "Unknown";
-    if (project.isSubmitted) return "Submitted";
-    if (project.isActive) return "Active";
-    return "Draft";
-  };
-
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case "Submitted":
-        return "bg-green-500/20 text-green-400 border-green-500/50";
-      case "Active":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/50";
-      case "Draft":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/50";
-    }
-  };
-
-  const status = getProjectStatus(project);
-  const statusStyles = getStatusStyles(status);
 
   return (
     <div>
@@ -478,7 +449,7 @@ export default function ProjectPage() {
             </div>
           </div>
 
-          <div className="container mx-auto px-5">
+          <div className="container mx-auto ps-5">
             {activeTab === "overview" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Hero Image */}
@@ -634,92 +605,84 @@ export default function ProjectPage() {
                               "hr",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          }),
+                          })
                         );
                       })()}
                     </div>
                   </div>
+                </div>
 
-                  {/* Quick Info Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">Team Size</h4>
-                      <p className="text-sm text-white/70">
-                        {teamMembers?.length || 0} members
-                      </p>
-                    </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">Created</h4>
-                      <p className="text-sm text-white/70">
-                        {project?.createdAt
-                          ? formatDisplayDate(project.createdAt)
-                          : "Unknown"}
-                      </p>
-                    </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">
-                        Tech Stack
-                      </h4>
-                      <p className="text-sm text-white/70">
-                        {project?.techStack?.slice(0, 3).join(", ") ||
-                          "Not specified"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Links Section */}
+                {/* Right Column */}
+                <div className="space-y-8 sticky top-28 self-start pt-10">
+                  {/* GitHub Repository Card */}
                   {project?.githubLink && (
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-semibold text-white">
-                        Project Links
-                      </h3>
-                      <div className="flex flex-wrap gap-3">
-                        {project?.githubLink && (
+                    <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
+                      <CardContent className="flex gap-4">
+                        <IconBrandGithub className="size-10 text-white mb-4" />
+                        <div>
+                          <h4 className="font-medium text-white">
+                            Github Repository
+                          </h4>
                           <Link
                             href={project.githubLink}
                             target="_blank"
                             rel="noopener noreferrer"
+                            className="text-sm text-blue-400 max-w-1.5 leading-0.5"
                           >
-                            <Button
-                              variant="outline"
-                              className="hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all duration-300"
-                            >
-                              <GitBranch className="mr-2 h-4 w-4" />
-                              Source Code
-                              <ExternalLink className="ml-2 h-3 w-3" />
-                            </Button>
+                            {project.githubLink}
                           </Link>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-6">
-                  {/* Tech Stack Card */}
-                  {project?.techStack && project.techStack.length > 0 && (
-                    <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">Tech Stack</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-2">
-                          {project.techStack.map(
-                            (tech: string, index: number) => (
-                              <Badge
-                                key={index}
-                                variant="secondary"
-                                className="text-xs"
-                              >
-                                {tech}
-                              </Badge>
-                            ),
-                          )}
                         </div>
                       </CardContent>
                     </Card>
                   )}
+
+                  {/* Tech Stack Card */}
+                  {project?.techStack && project.techStack.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-white">Tech Stack</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.techStack.map(
+                          (tech: string, index: number) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {tech}
+                            </Badge>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sectors */}
+                  {project?.sector && project.sector.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-white">Sectors</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.sector.map((sector: string, index: number) => (
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="text-xs uppercase"
+                          >
+                            {sector}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Created At */}
+                  <p className="text-sm">
+                    Created On:{" "}
+                    <span className="text-muted-foreground">
+                      {project?.createdAt
+                        ? formatDisplayDate(project.createdAt)
+                        : "Unknown"}
+                    </span>
+                  </p>
 
                   {/* Hackathon Info */}
                   {hackathon && (
@@ -810,7 +773,7 @@ export default function ProjectPage() {
                                 role="Member"
                                 index={index}
                               />
-                            ),
+                            )
                           )}
                         </div>
                       </CardContent>
@@ -840,7 +803,7 @@ export default function ProjectPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <h2 className="text-xl font-semibold text-white">
-                        Hackathon Submissions
+                        Current Submissions
                       </h2>
                       <p className="text-sm text-white/70">
                         Submit your project to active hackathons to compete for
@@ -852,10 +815,7 @@ export default function ProjectPage() {
 
                   {/* Current Submissions */}
                   {submittedHackathons && submittedHackathons.length > 0 ? (
-                    <div>
-                      <h3 className="text-lg font-medium mb-4 text-white">
-                        Current Submissions
-                      </h3>
+                    <>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                         {submittedHackathons.map(
                           (hackathon: any, index: number) => (
@@ -870,10 +830,10 @@ export default function ProjectPage() {
                                 </Badge>
                               </div>
                             </div>
-                          ),
+                          )
                         )}
                       </div>
-                    </div>
+                    </>
                   ) : (
                     <div className="text-center py-8 border-2 border-dashed border-white/20 rounded-xl bg-black/10 backdrop-blur-sm">
                       <Trophy className="w-12 h-12 mx-auto text-white/40 mb-4" />
