@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { motion } from "motion/react";
 import { ClassicLoader } from "@/components/ui/loader";
+import { PageLoading } from "@/components/ui/global-loading";
 import {
   useJudgeEvaluationSubmission,
   useHasJudgeScored,
@@ -168,7 +169,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   ]);
 
   if (hackathonLoading || projectsLoading) {
-    return <div>Loading...</div>;
+    return <PageLoading text="Loading project details for review" />;
   }
 
   if (!hackathon || !projects) {

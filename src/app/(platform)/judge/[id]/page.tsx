@@ -8,6 +8,7 @@ import { use } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Star, Users } from "lucide-react";
 import {
   Card,
@@ -52,7 +53,16 @@ function ProjectScoreDisplay({
 
   if (isLoading) {
     return (
-      <div className="text-xs text-muted-foreground">Score: Loading...</div>
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-3 w-3 rounded" />
+          <Skeleton className="h-3 w-12" />
+        </div>
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-3 w-3 rounded" />
+          <Skeleton className="h-3 w-4" />
+        </div>
+      </div>
     );
   }
 
@@ -94,8 +104,8 @@ function ProjectJudgeButton({
 
   if (isLoading) {
     return (
-      <Button size="sm" disabled variant="outline">
-        Loading...
+      <Button size="sm" disabled variant="outline" className={className}>
+        <Skeleton className="h-3 w-16" />
       </Button>
     );
   }
