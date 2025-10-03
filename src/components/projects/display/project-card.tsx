@@ -10,7 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatRelativeDate } from "@/lib/helpers/date";
-import { SlidingNumber } from "../../ui/anim/sliding-number";
 import Link from "next/link";
 
 export interface ProjectCardData {
@@ -30,6 +29,7 @@ interface ProjectCardProps {
   project: ProjectCardData;
   className?: string;
   variant?: "default" | "feature";
+  isJudge?: boolean; // Whether the current user is a judge
 }
 
 function TechBadges({ stack }: { stack: string[] }) {
@@ -61,6 +61,7 @@ export function ProjectCard({
   project,
   className = "",
   variant = "default",
+  isJudge = false,
 }: ProjectCardProps) {
   const Root = ({ children }: { children: React.ReactNode }) => (
     <Card className={`project-card-hover ${className}`}>
@@ -101,7 +102,11 @@ export function ProjectCard({
             </p>
             <TechBadges stack={project.tech_stack} />
             <div className="mt-auto pt-2">
-              <ProjectMeta project={project} prefix="Updated" />
+              <ProjectMeta
+                project={project}
+                prefix="Updated"
+                isJudge={isJudge}
+              />
             </div>
           </CardContent>
         </Root>
@@ -144,7 +149,11 @@ export function ProjectCard({
           <TechBadges stack={project.tech_stack} />
         </CardContent>
         <CardFooter className="mt-4 relative z-10">
-          <ProjectMeta project={project} prefix="Last edited" />
+          <ProjectMeta
+            project={project}
+            prefix="Last edited"
+            isJudge={isJudge}
+          />
         </CardFooter>
       </Root>
     </Link>
@@ -154,12 +163,15 @@ export function ProjectCard({
 function ProjectMeta({
   project,
   prefix,
+  isJudge = false,
 }: {
   project: ProjectCardData;
   prefix: string;
+  isJudge?: boolean; // Whether the current user is a judge
 }) {
   const hasExtras =
-    project.totalScore !== undefined || project.judgeCount !== undefined;
+    isJudge &&
+    (project.totalScore !== undefined || project.judgeCount !== undefined);
   return (
     <div className="flex items-center justify-between w-full text-[11px] text-white/45">
       <span>
@@ -182,7 +194,7 @@ function ProjectMeta({
               >
                 <polygon points="12 2 15 8.5 22 9.3 17 14 18.5 21 12 17.8 5.5 21 7 14 2 9.3 9 8.5 12 2" />
               </svg>
-              <SlidingNumber value={project.totalScore} />
+              {project.totalScore}
             </span>
           )}
           {project.judgeCount !== undefined && (
@@ -203,7 +215,7 @@ function ProjectMeta({
                 <path d="M5 8h14" />
                 <path d="M3 13h18" />
               </svg>
-              <SlidingNumber value={project.judgeCount} /> Judge
+              {project.judgeCount} Judge
               {project.judgeCount === 1 ? "" : "s"}
             </span>
           )}
