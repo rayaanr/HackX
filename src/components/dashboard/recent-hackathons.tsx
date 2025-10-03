@@ -92,7 +92,7 @@ export function RecentHackathons({
               className="hover:bg-white/10 hover:text-white transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
-              New Event
+              New Hackathon
             </Button>
           </Link>
         </div>
