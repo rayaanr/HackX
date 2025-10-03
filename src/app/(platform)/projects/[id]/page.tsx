@@ -419,31 +419,34 @@ export default function ProjectPage() {
               Back
             </Button>
           </Link>
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-2 text-white">
-              {project?.name || (
-                <TextShimmerLoader text="Loading project" size="lg" />
+          <div className="flex gap-4">
+            <Avatar className="size-24 border border-white/20 rounded-md shadow-lg mx-auto">
+              {project?.logo ? (
+                <AvatarImage
+                  src={resolveIPFSToHttp(project.logo)}
+                  alt={project?.name || "Project Logo"}
+                  className="object-cover"
+                />
+              ) : (
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
+                  {project?.name?.charAt(0) || "P"}
+                </AvatarFallback>
               )}
-            </h1>
-            <p className="text-white/70 mb-4">
-              {project?.intro || (
-                <TextShimmerLoader text="Loading description" />
-              )}
-            </p>
-            <div className="flex items-center justify-center gap-2">
-              <Badge className={statusStyles}>{status}</Badge>
-              {hackathon && (
-                <Link href={`/hackathons/${hackathon.id}`}>
-                  <Badge
-                    variant="outline"
-                    className="hover:bg-white/10 transition-colors"
-                  >
-                    {hackathon.name}
-                  </Badge>
-                </Link>
-              )}
+            </Avatar>
+            <div className="">
+              <h1 className="text-3xl font-bold mb-2 text-white">
+                {project?.name || (
+                  <TextShimmerLoader text="Loading project" size="lg" />
+                )}
+              </h1>
+              <p className="text-white/70 mb-4 max-w-md">
+                {project?.intro || (
+                  <TextShimmerLoader text="Loading description" />
+                )}
+              </p>
             </div>
           </div>
+
           <ShareDialog url={`https://hackx.com/projects/${id}`}>
             <Button
               variant="outline"
@@ -475,123 +478,22 @@ export default function ProjectPage() {
             </div>
           </div>
 
-          <div className="container mx-auto">
+          <div className="container mx-auto px-5">
             {activeTab === "overview" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Hero Image */}
-                <div className="lg:col-span-2 space-y-6">
-                  <div className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-sm shadow-2xl overflow-hidden">
-                    <div className="relative aspect-video">
-                      {project?.logo ? (
-                        <Image
-                          src={resolveIPFSToHttp(project.logo)}
-                          alt={project?.name || "Project"}
-                          fill
-                          className="object-cover"
-                          priority
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-purple-600/20 to-blue-600/20 flex items-center justify-center">
-                          <Trophy className="w-16 h-16 text-white/40" />
-                        </div>
-                      )}
-                      {/* Overlay with project name */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-end">
-                        <div className="p-6 text-white">
-                          <h2 className="text-2xl font-bold drop-shadow-lg">
-                            {project?.name || (
-                              <TextShimmerLoader
-                                text="Loading project"
-                                size="lg"
-                              />
-                            )}
-                          </h2>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description Section */}
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-white">
-                      About This Project
-                    </h3>
-                    <div className="prose prose-sm prose-invert max-w-none [&>*]:text-white/80 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>h5]:text-white [&>h6]:text-white [&>strong]:text-white">
-                      {/* prettier-ignore */}
-                      {/* biome-ignore format */}
-                      {(() => {
-                        const raw =
-                          project?.description || project?.intro || "";
-                        const html = toHtmlFromDescription(raw);
-                        return parse(
-                          DOMPurify.sanitize(html, {
-                            ALLOWED_TAGS: [
-                              "p",
-                              "br",
-                              "strong",
-                              "em",
-                              "u",
-                              "del",
-                              "h1",
-                              "h2",
-                              "h3",
-                              "h4",
-                              "h5",
-                              "h6",
-                              "ul",
-                              "ol",
-                              "li",
-                              "a",
-                              "blockquote",
-                              "pre",
-                              "code",
-                              "hr",
-                            ],
-                            ALLOWED_ATTR: ["href", "target", "rel"],
-                          }),
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  {/* Quick Info Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">Team Size</h4>
-                      <p className="text-sm text-white/70">
-                        {teamMembers?.length || 0} members
-                      </p>
-                    </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">Created</h4>
-                      <p className="text-sm text-white/70">
-                        {project?.createdAt
-                          ? formatDisplayDate(project.createdAt)
-                          : "Unknown"}
-                      </p>
-                    </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">
-                        Tech Stack
-                      </h4>
-                      <p className="text-sm text-white/70">
-                        {project?.techStack?.slice(0, 3).join(", ") ||
-                          "Not specified"}
-                      </p>
-                    </div>
-                  </div>
-
+                <div className="lg:col-span-2 space-y-8">
                   {/* Videos Section */}
                   {(project?.demoVideo || project?.pitchVideo) && (
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-white">
-                        Project Videos
+                        Videos
                       </h3>
                       <Tabs
                         defaultValue={project?.demoVideo ? "demo" : "pitch"}
                         className="w-full"
                       >
-                        <TabsList className="h-auto rounded-none border-b bg-transparent p-0  justify-start w-32">
+                        <TabsList className="h-auto rounded-none border-b bg-transparent p-0  justify-start w-full">
                           {project?.demoVideo && (
                             <TabsTrigger
                               value="demo"
@@ -696,6 +598,74 @@ export default function ProjectPage() {
                       </Tabs>
                     </div>
                   )}
+
+                  {/* Description Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-white">
+                      Description
+                    </h3>
+                    <div className="prose prose-sm prose-invert max-w-none [&>*]:text-white/80 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>h5]:text-white [&>h6]:text-white [&>strong]:text-white">
+                      {(() => {
+                        const raw =
+                          project?.description || project?.intro || "";
+                        const html = toHtmlFromDescription(raw);
+                        return parse(
+                          DOMPurify.sanitize(html, {
+                            ALLOWED_TAGS: [
+                              "p",
+                              "br",
+                              "strong",
+                              "em",
+                              "u",
+                              "del",
+                              "h1",
+                              "h2",
+                              "h3",
+                              "h4",
+                              "h5",
+                              "h6",
+                              "ul",
+                              "ol",
+                              "li",
+                              "a",
+                              "blockquote",
+                              "pre",
+                              "code",
+                              "hr",
+                            ],
+                            ALLOWED_ATTR: ["href", "target", "rel"],
+                          }),
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Quick Info Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
+                      <h4 className="font-medium mb-2 text-white">Team Size</h4>
+                      <p className="text-sm text-white/70">
+                        {teamMembers?.length || 0} members
+                      </p>
+                    </div>
+                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
+                      <h4 className="font-medium mb-2 text-white">Created</h4>
+                      <p className="text-sm text-white/70">
+                        {project?.createdAt
+                          ? formatDisplayDate(project.createdAt)
+                          : "Unknown"}
+                      </p>
+                    </div>
+                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
+                      <h4 className="font-medium mb-2 text-white">
+                        Tech Stack
+                      </h4>
+                      <p className="text-sm text-white/70">
+                        {project?.techStack?.slice(0, 3).join(", ") ||
+                          "Not specified"}
+                      </p>
+                    </div>
+                  </div>
 
                   {/* Links Section */}
                   {project?.githubLink && (
