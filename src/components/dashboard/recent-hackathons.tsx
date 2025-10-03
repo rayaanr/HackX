@@ -12,10 +12,36 @@ import { getUIHackathonStatus } from "@/lib/helpers/date";
 import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import { format } from "date-fns";
 import EmptyComponent from "@/components/empty";
+import { useHackathonParticipants } from "@/hooks/use-hackathons";
 
 interface RecentHackathonsProps {
   hackathons: UIHackathon[];
   loading?: boolean;
+}
+
+// Component to fetch and display participant count for a single hackathon
+function HackathonParticipantCount({
+  hackathonId,
+}: {
+  hackathonId: string | number;
+}) {
+  const { data: participants = [] } = useHackathonParticipants(hackathonId);
+
+  // Always show up to 3 placeholder avatars, AvatarList will handle the display logic
+  const placeholderImages = [
+    { src: "/placeholder-user.jpg", alt: "Participant 1" },
+    { src: "/placeholder-user.jpg", alt: "Participant 2" },
+    { src: "/placeholder-user.jpg", alt: "Participant 3" },
+  ];
+
+  return (
+    <AvatarList
+      images={placeholderImages}
+      totalCount={participants.length}
+      additionalCount={0}
+      className="border-0 shadow-none"
+    />
+  );
 }
 
 export function RecentHackathons({
@@ -139,25 +165,7 @@ export function RecentHackathons({
                           </span>
                         </div>
                       </div>
-                      <AvatarList
-                        images={[
-                          {
-                            src: "/placeholder-user.jpg",
-                            alt: "Participant 1",
-                          },
-                          {
-                            src: "/placeholder-user.jpg",
-                            alt: "Participant 2",
-                          },
-                          {
-                            src: "/placeholder-user.jpg",
-                            alt: "Participant 3",
-                          },
-                        ]}
-                        totalCount={50}
-                        additionalCount={0}
-                        className="border-0 shadow-none"
-                      />
+                      <HackathonParticipantCount hackathonId={hackathon.id} />
                     </div>
                   </Link>
                 </motion.div>

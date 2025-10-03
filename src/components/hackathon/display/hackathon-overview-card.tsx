@@ -13,12 +13,15 @@ import {
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import { Calendar, Code, Trophy, Award } from "lucide-react";
 import type { HackathonStatus } from "@/types/hackathon";
+import { useHackathonParticipants } from "@/hooks/use-hackathons";
 
 interface HackathonCardProps {
   hackathon: UIHackathon;
 }
 
 export function HackathonCard({ hackathon }: HackathonCardProps) {
+  const { data: participants = [] } = useHackathonParticipants(hackathon.id);
+
   const hackathonStatus = getUIHackathonStatus({
     ...hackathon,
     votingPeriod: hackathon.votingPeriod || undefined,
@@ -187,7 +190,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
                 <div className="flex flex-wrap items-center gap-5 mt-auto">
                   <AvatarList
                     images={participantAvatars}
-                    totalCount={150}
+                    totalCount={participants.length}
                     additionalCount={0}
                     className="border-0 shadow-none"
                   />
