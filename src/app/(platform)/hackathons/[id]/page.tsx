@@ -1,7 +1,15 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { IconShare } from "@tabler/icons-react";
+import {
+  IconShare,
+  IconBrandTwitter,
+  IconBrandGithub,
+  IconBrandLinkedin,
+  IconBrandDiscord,
+  IconBrandTelegram,
+  IconWorld,
+} from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -207,34 +215,6 @@ export default function HackathonPage() {
                       })()}
                     </div>
                   </div>
-
-                  {/* Quick Info Cards - No hover effects since they're not interactive */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">
-                        Participants
-                      </h4>
-                      <p className="text-sm text-white/70">
-                        {hackathon?.participantCount || 0} registered
-                      </p>
-                    </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">
-                        Total Prizes
-                      </h4>
-                      <p className="text-sm text-white/70">
-                        {hackathon?.prizeCohorts
-                          ?.reduce((sum: number, cohort: any) => {
-                            const amount =
-                              typeof cohort.prizeAmount === "string"
-                                ? parseInt(cohort.prizeAmount, 10)
-                                : cohort.prizeAmount;
-                            return sum + (amount || 0);
-                          }, 0)
-                          ?.toLocaleString() || "TBD"}
-                      </p>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Right Column */}
@@ -243,11 +223,6 @@ export default function HackathonPage() {
 
                   {/* Hackathon Details Card */}
                   <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-white text-sm">
-                        Hackathon Details
-                      </CardTitle>
-                    </CardHeader>
                     <CardContent className="space-y-3 pt-0">
                       {/* Experience Level */}
                       <div className="flex justify-between items-center">
@@ -306,9 +281,11 @@ export default function HackathonPage() {
                     </CardContent>
                   </Card>
 
+                  <ToDoList hackathon={hackathon} />
+
                   {/* Tech Stack */}
                   {hackathon?.techStack && hackathon.techStack.length > 0 && (
-                    <div className="space-y-2">
+                    <div className="space-y-2 mt-6">
                       <h4 className="font-semibold text-white text-sm">
                         Tech Stack
                       </h4>
@@ -328,7 +305,72 @@ export default function HackathonPage() {
                     </div>
                   )}
 
-                  <ToDoList hackathon={hackathon} />
+                  {/* Social Media Links */}
+                  {hackathon?.socialLinks &&
+                    Object.entries(hackathon.socialLinks).filter(
+                      ([_, url]) => url,
+                    ).length > 0 && (
+                      <div className="space-y-2 mt-6">
+                        <h4 className="font-semibold text-white text-sm">
+                          Connect
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          {Object.entries(hackathon.socialLinks).map(
+                            ([platform, url]) => {
+                              if (!url) return null;
+
+                              const getIcon = (platform: string) => {
+                                const platformLower = platform.toLowerCase();
+                                if (
+                                  platformLower.includes("twitter") ||
+                                  platformLower.includes("x")
+                                ) {
+                                  return (
+                                    <IconBrandTwitter className="w-4 h-4" />
+                                  );
+                                }
+                                if (platformLower.includes("github")) {
+                                  return (
+                                    <IconBrandGithub className="w-4 h-4" />
+                                  );
+                                }
+                                if (platformLower.includes("linkedin")) {
+                                  return (
+                                    <IconBrandLinkedin className="w-4 h-4" />
+                                  );
+                                }
+                                if (platformLower.includes("discord")) {
+                                  return (
+                                    <IconBrandDiscord className="w-4 h-4" />
+                                  );
+                                }
+                                if (platformLower.includes("telegram")) {
+                                  return (
+                                    <IconBrandTelegram className="w-4 h-4" />
+                                  );
+                                }
+                                return <IconWorld className="w-4 h-4" />;
+                              };
+
+                              return (
+                                <a
+                                  key={platform}
+                                  href={url as string}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors border border-white/20 hover:border-white/30 text-center min-h-[36px]"
+                                >
+                                  {getIcon(platform)}
+                                  <span className="text-xs text-white/80 capitalize truncate">
+                                    {platform}
+                                  </span>
+                                </a>
+                              );
+                            },
+                          )}
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
             )}
