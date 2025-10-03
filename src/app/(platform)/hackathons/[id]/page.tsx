@@ -110,7 +110,7 @@ export default function HackathonPage() {
             )}
           </div>
           <ShareLink
-            url={`https://hackx.com/hackathons/${id}`}
+            url={`${process.env.NEXT_PUBLIC_BASE_URL}/hackathons/${id}`}
             title={hackathon?.name}
           >
             <Button

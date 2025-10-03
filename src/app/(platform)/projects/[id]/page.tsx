@@ -420,7 +420,7 @@ export default function ProjectPage() {
           </div>
 
           <ShareLink
-            url={`https://hackx.com/projects/${id}`}
+            url={`${process.env.NEXT_PUBLIC_BASE_URL}/projects/${id}`}
             title={project?.name}
           >
             <Button
