@@ -6,7 +6,7 @@ export const MOCK_PROJECT_DATA: ProjectFormData[] = [
     name: "DeFi Lending Platform",
     intro:
       "A decentralized lending platform built on Ethereum with automated market makers and risk assessment.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/watch?v=ZyLkuCI3Umw",
     sector: ["defi", "fintech"],
     progress:
       "MVP completed with smart contracts deployed on testnet. Frontend 80% complete with core lending and borrowing features implemented.",
@@ -97,7 +97,7 @@ Traditional lending systems are:
 >
 > *- Team Lead, DeFi Lending Platform*`,
     githubLink: "https://github.com/example/defi-lending",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo: "https://www.youtube.com/watch?v=5lFuIUUqcng",
     techStack: ["Solidity", "React", "Node.js", "Web3.js"],
     hackathonIds: [],
   },
@@ -106,7 +106,7 @@ Traditional lending systems are:
     name: "AI Code Assistant",
     intro:
       "An intelligent code completion and review tool powered by advanced machine learning models.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/watch?v=8BpxqVGiuSk",
     sector: ["ai-ml", "developer-tools"],
     progress:
       "Beta version released with 1000+ active users. Training new models on 50M+ lines of code from open source repositories.",
@@ -263,7 +263,7 @@ Developers spend too much time on:
 
 **Join the AI-powered development revolution!** Experience the future of coding where human creativity meets artificial intelligence. 🚀💻`,
     githubLink: "https://github.com/example/ai-code-assistant",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo: "https://www.youtube.com/watch?v=CZvQHK7CADc",
     techStack: ["Python", "TensorFlow", "TypeScript", "Docker"],
     hackathonIds: [],
   },
@@ -272,7 +272,7 @@ Developers spend too much time on:
     name: "Gaming Metaverse",
     intro:
       "A virtual world where players can build, trade, and compete in immersive blockchain-based games.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/watch?v=Wn_Kb3MR_cU",
     sector: ["gaming", "entertainment"],
     progress:
       "Alpha version with 3 mini-games launched. 5000+ NFT land parcels sold. Working on multiplayer infrastructure and VR integration.",
@@ -473,7 +473,7 @@ To create a gaming ecosystem where:
 
 **Ready to own your gaming experience?** Join the revolution where players, creators, and developers all win together! 🎮✨`,
     githubLink: "https://github.com/example/gaming-metaverse",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo: "https://www.youtube.com/watch?v=7qygLY8ne8o",
     techStack: ["Unity", "C#", "Solidity", "IPFS"],
     hackathonIds: [],
   },
@@ -482,7 +482,7 @@ To create a gaming ecosystem where:
     name: "HealthTech Analytics",
     intro:
       "Advanced health analytics platform using wearable data to predict and prevent chronic diseases.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/watch?v=hsaKM025MEA",
     sector: ["healthcare", "ai-ml"],
     progress:
       "Clinical trials completed with 95% accuracy in early disease detection. FDA approval process initiated for medical device classification.",
@@ -685,7 +685,7 @@ Current healthcare is **reactive, not proactive**:
 
 **Your health is your most valuable asset.** Let AI help you protect it proactively, not reactively. 💓📱`,
     githubLink: "https://github.com/example/healthtech-analytics",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo: "https://www.youtube.com/watch?v=aq3PAwQD1Yo",
     techStack: ["Python", "TensorFlow", "React Native", "PostgreSQL"],
     hackathonIds: [],
   },
@@ -694,7 +694,7 @@ Current healthcare is **reactive, not proactive**:
     name: "EduChain Learning",
     intro:
       "Blockchain-based education platform with verifiable certificates and decentralized course creation.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/watch?v=Hvl81kpOjyI",
     sector: ["education", "defi"],
     progress:
       "Platform launched with 50+ courses and 2000+ students. Integration with major universities in progress for certificate verification.",
@@ -924,7 +924,7 @@ Traditional online education faces critical issues:
 
 **Ready to learn, teach, and earn in the decentralized education revolution?** Join EduChain and be part of the future of learning! 🎓⛓️`,
     githubLink: "https://github.com/example/educhain",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo: "https://www.youtube.com/watch?v=EazeP6Sihcc",
     techStack: ["Next.js", "Solidity", "IPFS", "PostgreSQL"],
     hackathonIds: [],
   },
@@ -933,7 +933,7 @@ Traditional online education faces critical issues:
     name: "Sustainable Supply Chain",
     intro:
       "IoT-powered supply chain tracking for sustainability and transparency in global trade.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/channel/UCJ9zTtvIKcDLNe76CksyM9A",
     sector: ["sustainability", "iot"],
     progress:
       "Pilot program with 3 major retailers completed. 100+ suppliers onboarded with IoT sensors tracking carbon footprint and authenticity.",
@@ -1160,7 +1160,8 @@ Global supply chains face critical transparency issues:
 
 **Ready to make your supply chain transparent and sustainable?** Join the revolution in supply chain accountability! 🔗🌍`,
     githubLink: "https://github.com/example/sustainable-supply",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo:
+      "https://www.youtube.com/playlist?list=PLAY30bf7ZN4x-RAvU8vahN05u9dBKCQcD",
     techStack: ["Python", "Arduino", "React", "Blockchain"],
     hackathonIds: [],
   },
@@ -1169,7 +1170,7 @@ Global supply chains face critical transparency issues:
     name: "Cybersecurity Shield",
     intro:
       "AI-powered cybersecurity platform providing real-time threat detection and automated response.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/c/BlockchainZoo",
     sector: ["cybersecurity", "ai-ml"],
     progress:
       "Enterprise version deployed across 50+ companies. AI models detecting 99.8% of threats with <0.1% false positive rate.",
@@ -1394,7 +1395,7 @@ Modern businesses face unprecedented cyber threats:
 
 **Ready to deploy unbreachable AI-powered cybersecurity?** Join the digital defense revolution! 🔒🤖`,
     githubLink: "https://github.com/example/cybersecurity-shield",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo: "https://www.youtube.com/watch?v=bGgspuW8Op0",
     techStack: ["Python", "Kubernetes", "TensorFlow", "Go"],
     hackathonIds: [],
   },
@@ -1403,7 +1404,7 @@ Modern businesses face unprecedented cyber threats:
     name: "Social Impact Tracker",
     intro:
       "Platform connecting nonprofits with donors through transparent impact measurement and blockchain verification.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/channel/UCUb5TlfM1x35f3Evu_9p-Xg",
     sector: ["social-impact", "fintech"],
     progress:
       "Live platform with 200+ nonprofits and $2M+ in verified donations. Impact data tracked for 10,000+ beneficiaries worldwide.",
@@ -1651,7 +1652,7 @@ The nonprofit sector faces critical transparency challenges:
 
 **Ready to make your charitable giving more impactful?** Join the transparency revolution in philanthropy! 💝🔗`,
     githubLink: "https://github.com/example/social-impact",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo: "https://www.youtube.com/channel/UCJ0oRbeN2WDQYq4m5Vmv1bQ",
     techStack: ["React", "Node.js", "Solidity", "MongoDB"],
     hackathonIds: [],
   },
@@ -1660,7 +1661,7 @@ The nonprofit sector faces critical transparency challenges:
     name: "Productivity AI Suite",
     intro:
       "Comprehensive AI-powered productivity tools for teams including smart scheduling and task automation.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/channel/UCZUAwOrxZZKY1qZZ0wc9RKg",
     sector: ["productivity", "ai-ml"],
     progress:
       "SaaS platform with 10,000+ active users and $50K MRR. Enterprise features launched with Fortune 500 pilot programs.",
@@ -1904,7 +1905,7 @@ Modern professionals face overwhelming productivity challenges:
 
 **Ready to unleash your team's full potential?** Experience the future of productivity with intelligent AI automation! 🚀⚡`,
     githubLink: "https://github.com/example/productivity-ai",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo: "https://www.youtube.com/watch?v=8BpxqVGiuSk",
     techStack: ["Vue.js", "Python", "FastAPI", "Redis"],
     hackathonIds: [],
   },
@@ -1913,7 +1914,7 @@ Modern professionals face overwhelming productivity challenges:
     name: "E-commerce Revolution",
     intro:
       "Next-generation e-commerce platform with AR try-on, AI recommendations, and crypto payments.",
-    pitchVideo: "https://youtu.be/dQw4w9WgXcQ",
+    pitchVideo: "https://www.youtube.com/watch?v=CZvQHK7CADc",
     sector: ["e-commerce", "ai-ml"],
     progress:
       "Beta platform with 500+ merchants and $1M+ GMV. AR technology achieving 60% reduction in return rates.",
@@ -2179,7 +2180,7 @@ The online shopping landscape faces critical challenges:
 
 **Ready to revolutionize your online store?** Experience the future of e-commerce with AI-powered personalization and immersive AR technology! 🛍️🚀`,
     githubLink: "https://github.com/example/ecommerce-revolution",
-    demoVideo: "https://youtu.be/dQw4w9WgXcQ",
+    demoVideo: "https://www.youtube.com/watch?v=Wn_Kb3MR_cU",
     techStack: ["React", "ARCore", "Stripe", "Shopify API"],
     hackathonIds: [],
   },
