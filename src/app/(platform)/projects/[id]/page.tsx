@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShareDialog } from "@/components/share-dialog";
+import { ShareLink } from "@/components/share-link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TextShimmerLoader } from "@/components/ui/loader";
 import { PageLoading } from "@/components/ui/global-loading";
@@ -418,7 +418,10 @@ export default function ProjectPage() {
             </div>
           </div>
 
-          <ShareDialog url={`https://hackx.com/projects/${id}`}>
+          <ShareLink
+            url={`https://hackx.com/projects/${id}`}
+            title={project?.name}
+          >
             <Button
               variant="outline"
               className="hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all duration-300"
@@ -426,7 +429,7 @@ export default function ProjectPage() {
               <IconShare className="mr-2 h-4 w-4" />
               Share Link
             </Button>
-          </ShareDialog>
+          </ShareLink>
         </div>
 
         <div className="gap-2">
