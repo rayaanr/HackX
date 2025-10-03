@@ -103,9 +103,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   }
 
   // Find the specific project
-  const project = projects.find(
-    (p: ProjectWithHackathon) => p.id.toString() === projectId,
-  );
+  const project = projects.find((p) => p && p.id.toString() === projectId);
 
   if (!project) {
     notFound();
