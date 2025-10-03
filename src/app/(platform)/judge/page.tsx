@@ -10,7 +10,29 @@ import EmptyComponent from "@/components/empty";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { getUIHackathonStatus, formatDateRange } from "@/lib/helpers/date";
-import { useJudgeAssignments } from "@/hooks/use-hackathons";
+import {
+  useJudgeAssignments,
+  useHackathonProjectCount,
+} from "@/hooks/use-hackathons";
+
+// Component to display project count for a hackathon
+function ProjectCountDisplay({
+  hackathonId,
+}: {
+  hackathonId: string | number;
+}) {
+  const { projectCount = 0, isLoading } = useHackathonProjectCount(hackathonId);
+
+  if (isLoading) {
+    return <p className="text-sm font-semibold text-white/85">Loading...</p>;
+  }
+
+  return (
+    <p className="text-sm font-semibold text-white/85">
+      {projectCount} Projects
+    </p>
+  );
+}
 
 export default function JudgeDashboardPage() {
   const {
@@ -137,11 +159,9 @@ export default function JudgeDashboardPage() {
                     <div className="space-y-1">
                       <h6 className="flex items-center text-[11px] font-medium uppercase tracking-wide text-white/40">
                         <Award className="mr-1.5 size-3.5" />
-                        Prize Pool
+                        Submitted
                       </h6>
-                      <p className="text-sm font-semibold text-white/85">
-                        ${hackathon.prizePool?.toLocaleString() || "TBD"}
-                      </p>
+                      <ProjectCountDisplay hackathonId={hackathon.id} />
                     </div>
                     {hackathon.location && (
                       <div className="space-y-1">

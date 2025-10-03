@@ -363,3 +363,30 @@ export function useJudgeAssignments() {
     [assignedHackathons, assignedHackathonIds, isLoading, error, activeAccount],
   );
 }
+
+// Custom hook to get project count for a specific hackathon
+export function useHackathonProjectCount(hackathonId: string | number) {
+  const { contract } = useWeb3();
+
+  const {
+    data: projectCount,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["hackathon-projects-count", hackathonId],
+    queryFn: async () => {
+      if (!contract) return 0;
+      try {
+        const projects = await getHackathonProjects(contract, hackathonId);
+        return projects.length;
+      } catch (error) {
+        console.error("Failed to fetch project count:", error);
+        return 0;
+      }
+    },
+    enabled: !!contract && !!hackathonId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  return { projectCount, isLoading, error };
+}
