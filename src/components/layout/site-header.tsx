@@ -75,15 +75,7 @@ export function SiteHeader() {
           variants={fade}
         >
           {account && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "rounded-full relative",
-                "hover:bg-white/10 text-white/70 hover:text-white",
-                "after:absolute after:-inset-px after:rounded-full after:bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.12),transparent_70%)] after:opacity-0 hover:after:opacity-100 after:transition-opacity",
-              )}
-            >
+            <Button variant="ghost" size="icon" disabled>
               <IconBell className="size-4" />
             </Button>
           )}

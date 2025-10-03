@@ -29,6 +29,7 @@ import { ComponentProps } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const nav = {
   main: [
@@ -175,9 +176,15 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                   "relative group",
                 )}
               >
-                <Link href="#" className="flex gap-2">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-primary/20 to-primary/30 border border-white/[0.1] shrink-0">
-                    <div className="w-4 h-4 rounded-full bg-gradient-to-r from-primary/80 to-primary" />
+                <Link href="/" className="flex gap-2">
+                  <div className="flex items-center justify-center w-8 h-8 shrink-0">
+                    <Image
+                      src="/logo-icon.svg"
+                      alt="HackX Logo"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8"
+                    />
                   </div>
                   <div className="flex items-center">
                     <span className="text-base font-semibold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 tracking-tight">

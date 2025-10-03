@@ -9,6 +9,7 @@ import {
   IconBrandGithub,
   IconBrandLinkedin,
 } from "@tabler/icons-react";
+import Image from "next/image";
 
 const YEAR = new Date().getFullYear();
 
@@ -27,8 +28,14 @@ export default function HomePage() {
       </main>
       <Footer
         logo={
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-primary/20 to-primary/30 border border-white/[0.1]">
-            <div className="w-4 h-4 rounded-full bg-gradient-to-r from-primary/80 to-primary" />
+          <div className="flex items-center justify-center w-8 h-8">
+            <Image
+              src="/logo-icon.svg"
+              alt="HackX Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
           </div>
         }
         brandName="HackX"
