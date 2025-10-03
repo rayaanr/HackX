@@ -206,8 +206,8 @@ export function Countdown({ hackathon }: CountdownProps) {
       </div>
 
       {isEventCompleted() ? (
-        <div className="text-center py-8">
-          <div className="text-2xl font-semibold text-green-500 mb-2">
+        <div className="text-center py-2">
+          <div className="text-lg font-semibold text-green-500 mb-2">
             🎉 Complete!
           </div>
           <p className="text-sm text-muted-foreground">
