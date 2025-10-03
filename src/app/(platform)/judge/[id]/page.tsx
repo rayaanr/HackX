@@ -8,6 +8,7 @@ import { use } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Star, Users } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -21,7 +22,7 @@ import {
   useHackathon,
   useHackathonProjectsWithDetails,
 } from "@/hooks/use-hackathons";
-import { useHasJudgeScored } from "@/hooks/use-judge";
+import { useHasJudgeScored, useProjectScore } from "@/hooks/use-judge";
 import { hasJudgingPeriodEnded } from "@/lib/helpers/date";
 
 interface JudgingPageProps {
@@ -33,6 +34,51 @@ interface ProjectJudgeButtonProps {
   projectId: string;
   hackathon: any;
   className?: string;
+}
+
+interface ProjectScoreDisplayProps {
+  hackathonId: string;
+  projectId: string;
+}
+
+function ProjectScoreDisplay({
+  hackathonId,
+  projectId,
+}: ProjectScoreDisplayProps) {
+  const { data: scoreData, isLoading } = useProjectScore(
+    hackathonId,
+    projectId,
+  );
+
+  if (isLoading) {
+    return (
+      <div className="text-xs text-muted-foreground">Score: Loading...</div>
+    );
+  }
+
+  if (!scoreData || scoreData.judgeCount === 0) {
+    return (
+      <div className="text-xs text-muted-foreground">Score: Not scored</div>
+    );
+  }
+
+  // Convert from contract scale (0-100) to display scale (0-10)
+  const avgScore = scoreData.avgScore / 10;
+
+  return (
+    <div className="flex items-center justify-between text-xs text-muted-foreground gap-5">
+      <div className="flex items-center gap-1">
+        <Star className="h-3 w-3 fill-current text-yellow-500" />
+        <span className="font-medium text-foreground">
+          {avgScore.toFixed(1)}/10
+        </span>
+      </div>
+      <div className="flex items-center gap-1">
+        <Users className="h-3 w-3" /> Judges
+        <span className="text-foreground">{scoreData.judgeCount}</span>
+      </div>
+    </div>
+  );
 }
 
 function ProjectJudgeButton({
@@ -218,9 +264,10 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                     )}
                   </CardContent>
                   <CardFooter className="flex-col gap-2">
-                    <p className="text-xs text-muted-foreground">
-                      Score: {project.averageScore?.toFixed(1) || "Not scored"}
-                    </p>
+                    <ProjectScoreDisplay
+                      hackathonId={id}
+                      projectId={project.id.toString()}
+                    />
                     <motion.div
                       whileHover={{ scale: 1.04 }}
                       whileTap={{ scale: 0.96 }}
