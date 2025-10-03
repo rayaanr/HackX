@@ -9,7 +9,8 @@ import { Shuffle, Info } from "lucide-react";
 import { toast } from "sonner";
 
 export function CreateHackathonForm() {
-  const { methods, onSubmit, rawOnSubmit, isSubmitting } = useHackathonForm();
+  const { methods, onSubmit, rawOnSubmit, isSubmitting, isUploadingToIPFS } =
+    useHackathonForm();
 
   /**
    * IMPORTANT: This form is designed to prevent accidental submission.
@@ -107,6 +108,7 @@ export function CreateHackathonForm() {
       >
         <CreateHackathonStepper
           isSubmitting={isSubmitting}
+          isUploadingToIPFS={isUploadingToIPFS}
           onCreateHackathon={handleCreateHackathon}
         />
       </form>

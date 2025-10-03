@@ -50,12 +50,7 @@ function createSuccessHandler(router: any) {
     cid: string;
     transactionHash: string;
   }) => {
-    toast.success(
-      `Hackathon created successfully! IPFS: ${data.cid.slice(
-        0,
-        10,
-      )}... TX: ${data.transactionHash.slice(0, 10)}...`,
-    );
+    // Navigation handled here, success notification handled in useCreateHackathon
     router.push("/dashboard");
   };
 }
@@ -125,7 +120,8 @@ export function useHackathonForm() {
   const { handleSubmit, setError, clearErrors } = methods;
 
   // Create hackathon hook
-  const { createHackathon, isCreating, error } = useCreateHackathon();
+  const { createHackathon, isCreating, isUploadingToIPFS, error } =
+    useCreateHackathon();
 
   // Success and error handlers
   const handleCreateSuccess = createSuccessHandler(router);
@@ -142,12 +138,26 @@ export function useHackathonForm() {
       }),
     );
 
+    // Dispatch IPFS upload state change
+    window.dispatchEvent(
+      new CustomEvent("hackathonIPFSUploadChange", {
+        detail: { isUploadingToIPFS: true },
+      }),
+    );
+
     // Validate form
     if (!validateHackathonForm(data, setError, clearErrors)) {
       // Dispatch loading state change on validation failure
       window.dispatchEvent(
         new CustomEvent("hackathonLoadingChange", {
           detail: { isLoading: false },
+        }),
+      );
+
+      // Dispatch IPFS upload state change on validation failure
+      window.dispatchEvent(
+        new CustomEvent("hackathonIPFSUploadChange", {
+          detail: { isUploadingToIPFS: false },
         }),
       );
       return;
@@ -176,6 +186,13 @@ export function useHackathonForm() {
           detail: { isLoading: false },
         }),
       );
+
+      // Dispatch IPFS upload state change
+      window.dispatchEvent(
+        new CustomEvent("hackathonIPFSUploadChange", {
+          detail: { isUploadingToIPFS: false },
+        }),
+      );
     }
   };
 
@@ -194,6 +211,7 @@ export function useHackathonForm() {
     onSubmit: handleSubmit(onSubmit),
     rawOnSubmit: onSubmit, // Expose the raw submission function
     isSubmitting: isCreating,
+    isUploadingToIPFS,
     isFormValid,
     resetForm,
     formState: methods.formState,

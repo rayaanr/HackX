@@ -30,11 +30,13 @@ const { Stepper } = defineStepper(
 
 interface CreateHackathonStepperProps {
   isSubmitting?: boolean;
+  isUploadingToIPFS?: boolean;
   onCreateHackathon?: () => void;
 }
 
 export function CreateHackathonStepper({
   isSubmitting = false,
+  isUploadingToIPFS = false,
   onCreateHackathon,
 }: CreateHackathonStepperProps) {
   return (
@@ -102,12 +104,17 @@ export function CreateHackathonStepper({
                     onCreateHackathon?.();
                   }}
                   disabled={isSubmitting}
+                  className="min-w-[180px]"
                 >
                   {isSubmitting ? (
-                    <>
-                      <CircularLoader size="sm" className="mr-2" />
-                      Creating Hackathon...
-                    </>
+                    <div className="flex items-center justify-center">
+                      <CircularLoader size="sm" className="border-white" />
+                      <span>
+                        {isUploadingToIPFS
+                          ? "Uploading to IPFS..."
+                          : "Creating Hackathon..."}
+                      </span>
+                    </div>
                   ) : (
                     "Create Hackathon"
                   )}

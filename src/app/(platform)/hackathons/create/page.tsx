@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 
 export default function CreateHackathonPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false);
   const activeAccount = useActiveAccount();
 
   // Listen for loading state changes from the form
@@ -20,14 +21,27 @@ export default function CreateHackathonPage() {
       setIsLoading(event.detail.isLoading);
     };
 
+    const handleIPFSUploadChange = (event: CustomEvent) => {
+      setIsUploadingToIPFS(event.detail.isUploadingToIPFS);
+    };
+
     window.addEventListener(
       "hackathonLoadingChange",
       handleLoadingChange as EventListener,
     );
+    window.addEventListener(
+      "hackathonIPFSUploadChange",
+      handleIPFSUploadChange as EventListener,
+    );
+
     return () => {
       window.removeEventListener(
         "hackathonLoadingChange",
         handleLoadingChange as EventListener,
+      );
+      window.removeEventListener(
+        "hackathonIPFSUploadChange",
+        handleIPFSUploadChange as EventListener,
       );
     };
   }, []);
@@ -122,12 +136,17 @@ export default function CreateHackathonPage() {
               id="header-create-hackathon"
               onClick={handleHeaderCreate}
               disabled={isLoading || !activeAccount}
+              className="min-w-[180px]"
             >
               {isLoading ? (
-                <>
-                  <CircularLoader size="sm" className="mr-2" />
-                  Creating Hackathon...
-                </>
+                <div className="flex items-center justify-center">
+                  <CircularLoader size="sm" className="border-white mr-2" />
+                  <span>
+                    {isUploadingToIPFS
+                      ? "Uploading to IPFS..."
+                      : "Creating Hackathon..."}
+                  </span>
+                </div>
               ) : (
                 "Create Hackathon"
               )}
