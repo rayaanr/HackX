@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { RegistrationButton } from "@/components/hackathon/widgets/registration-button";
 import { ToDoList } from "@/components/hackathon/widgets/todo-list";
-import { ShareDialog } from "@/components/share-dialog";
+import { ShareLink } from "@/components/share-link";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { marked } from "marked";
@@ -34,6 +34,7 @@ import { SubmittedProjectsTab } from "@/components/hackathon/display/hackathon-p
 import { useHackathon } from "@/hooks/use-hackathons";
 import { Countdown } from "@/components/hackathon/widgets/countdown";
 import { formatDisplayDate } from "@/lib/helpers/date";
+import { motion } from "motion/react";
 
 function toHtmlFromDescription(input: string): string {
   if (!input) return "";
@@ -108,7 +109,10 @@ export default function HackathonPage() {
               <RegistrationButton hackathonId={id} hackathon={hackathon} />
             )}
           </div>
-          <ShareDialog url={`https://hackx.com/hackathons/${id}`}>
+          <ShareLink
+            url={`${process.env.NEXT_PUBLIC_BASE_URL}/hackathons/${id}`}
+            title={hackathon?.name}
+          >
             <Button
               variant="outline"
               className="hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all duration-300"
@@ -116,7 +120,7 @@ export default function HackathonPage() {
               <IconShare className="mr-2 h-4 w-4" />
               Share Link
             </Button>
-          </ShareDialog>
+          </ShareLink>
         </div>
 
         <div className="">
@@ -143,10 +147,36 @@ export default function HackathonPage() {
 
           <div className="container mx-auto px-5">
             {activeTab === "overview" && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.1,
+                    },
+                  },
+                }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+              >
                 {/* Left Column - Hero Image */}
                 <div className="lg:col-span-2 space-y-6">
-                  <div className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-sm shadow-2xl overflow-hidden">
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 0.5,
+                          ease: [0.215, 0.61, 0.355, 1],
+                        },
+                      },
+                    }}
+                    className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-sm shadow-2xl overflow-hidden"
+                  >
                     <div className="relative aspect-video">
                       <Image
                         src={resolveIPFSToHttp(hackathon?.visual)}
@@ -169,10 +199,24 @@ export default function HackathonPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* Description Section */}
-                  <div className="space-y-4">
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 0.5,
+                          ease: [0.215, 0.61, 0.355, 1],
+                          delay: 0.1,
+                        },
+                      },
+                    }}
+                    className="space-y-4"
+                  >
                     <h3 className="text-xl font-semibold text-white">
                       About This Hackathon
                     </h3>
@@ -214,41 +258,85 @@ export default function HackathonPage() {
                         );
                       })()}
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
 
                 {/* Right Column */}
-                <div className="space-y-4 sticky top-36 self-start">
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        duration: 0.5,
+                        ease: [0.215, 0.61, 0.355, 1],
+                        delay: 0.2,
+                      },
+                    },
+                  }}
+                  className="space-y-4 sticky top-36 self-start"
+                >
                   <Countdown hackathon={hackathon} />
 
                   {/* Hackathon Details Card */}
                   <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
                     <CardContent className="space-y-3 pt-0">
                       {/* Experience Level */}
-                      <div className="flex justify-between items-center">
+                      <motion.div
+                        variants={{
+                          hidden: { opacity: 0, x: -10 },
+                          visible: {
+                            opacity: 1,
+                            x: 0,
+                            transition: { duration: 0.3, delay: 0.3 },
+                          },
+                        }}
+                        className="flex justify-between items-center"
+                      >
                         <span className="text-xs text-white/60">
                           Experience Level
                         </span>
                         <Badge variant="outline" className="text-xs capitalize">
                           {hackathon?.experienceLevel || "All"}
                         </Badge>
-                      </div>
+                      </motion.div>
 
                       {/* Location */}
                       {hackathon?.location && (
-                        <div className="flex justify-between items-center">
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, x: -10 },
+                            visible: {
+                              opacity: 1,
+                              x: 0,
+                              transition: { duration: 0.3, delay: 0.4 },
+                            },
+                          }}
+                          className="flex justify-between items-center"
+                        >
                           <span className="text-xs text-white/60">
                             Location
                           </span>
                           <span className="text-xs text-white font-medium">
                             {hackathon.location}
                           </span>
-                        </div>
+                        </motion.div>
                       )}
 
                       {/* Judging Mode */}
                       {hackathon?.prizeCohorts?.[0]?.judgingMode && (
-                        <div className="flex justify-between items-center">
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, x: -10 },
+                            visible: {
+                              opacity: 1,
+                              x: 0,
+                              transition: { duration: 0.3, delay: 0.5 },
+                            },
+                          }}
+                          className="flex justify-between items-center"
+                        >
                           <span className="text-xs text-white/60">
                             Judging Mode
                           </span>
@@ -258,12 +346,22 @@ export default function HackathonPage() {
                           >
                             {hackathon.prizeCohorts[0].judgingMode}
                           </Badge>
-                        </div>
+                        </motion.div>
                       )}
 
                       {/* Voting Mode */}
                       {hackathon?.prizeCohorts?.[0]?.votingMode && (
-                        <div className="flex justify-between items-center">
+                        <motion.div
+                          variants={{
+                            hidden: { opacity: 0, x: -10 },
+                            visible: {
+                              opacity: 1,
+                              x: 0,
+                              transition: { duration: 0.3, delay: 0.6 },
+                            },
+                          }}
+                          className="flex justify-between items-center"
+                        >
                           <span className="text-xs text-white/60">
                             Voting Mode
                           </span>
@@ -276,33 +374,68 @@ export default function HackathonPage() {
                               " ",
                             )}
                           </Badge>
-                        </div>
+                        </motion.div>
                       )}
                     </CardContent>
                   </Card>
 
-                  <ToDoList hackathon={hackathon} />
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: { duration: 0.4, delay: 0.7 },
+                      },
+                    }}
+                  >
+                    <ToDoList hackathon={hackathon} />
+                  </motion.div>
 
                   {/* Tech Stack */}
                   {hackathon?.techStack && hackathon.techStack.length > 0 && (
-                    <div className="space-y-2 mt-6">
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.4, delay: 0.8 },
+                        },
+                      }}
+                      className="space-y-2 mt-6"
+                    >
                       <h4 className="font-semibold text-white text-sm">
                         Tech Stack
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {hackathon.techStack.map(
                           (tech: string, index: number) => (
-                            <Badge
+                            <motion.div
                               key={index}
-                              variant="secondary"
-                              className="text-xs px-2 py-1"
+                              variants={{
+                                hidden: { opacity: 0, scale: 0.8 },
+                                visible: {
+                                  opacity: 1,
+                                  scale: 1,
+                                  transition: {
+                                    duration: 0.2,
+                                    delay: 0.9 + index * 0.05,
+                                  },
+                                },
+                              }}
                             >
-                              {tech}
-                            </Badge>
+                              <Badge
+                                variant="secondary"
+                                className="text-xs px-2 py-1"
+                              >
+                                {tech}
+                              </Badge>
+                            </motion.div>
                           ),
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   )}
 
                   {/* Social Media Links */}
@@ -310,7 +443,17 @@ export default function HackathonPage() {
                     Object.entries(hackathon.socialLinks).filter(
                       ([_, url]) => url,
                     ).length > 0 && (
-                      <div className="space-y-2 mt-6">
+                      <motion.div
+                        variants={{
+                          hidden: { opacity: 0, y: 10 },
+                          visible: {
+                            opacity: 1,
+                            y: 0,
+                            transition: { duration: 0.4, delay: 1.1 },
+                          },
+                        }}
+                        className="space-y-2 mt-6"
+                      >
                         <h4 className="font-semibold text-white text-sm">
                           Connect
                         </h4>
@@ -369,10 +512,10 @@ export default function HackathonPage() {
                             },
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     )}
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )}
 
             {activeTab === "prize" && (

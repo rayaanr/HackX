@@ -12,7 +12,7 @@ import { useBlockchainProjects } from "@/hooks/use-projects";
 import { useRouter } from "next/navigation";
 import { MOCK_PROJECT_DATA } from "@/data/mock-project-data";
 import { Shuffle, Info } from "lucide-react";
-import { CircularLoader } from "@/components/ui/loader";
+import { ClassicLoader } from "@/components/ui/loader";
 
 export function CreateProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -183,7 +183,7 @@ export function CreateProjectForm() {
         >
           {isSubmitting ? (
             <>
-              <CircularLoader size="sm" className="mr-2" />
+              <ClassicLoader size="sm" className="mr-2" />
               Creating Project...
             </>
           ) : !isConnected ? (

@@ -20,15 +20,15 @@ function createTestingPeriods(offsetMinutes = 0) {
   return {
     registrationPeriod: {
       registrationStartDate: new Date(baseTime.getTime()), // Start at base time
-      registrationEndDate: new Date(baseTime.getTime() + 3 * 60000), // +3 minutes (ends before submission)
+      registrationEndDate: new Date(baseTime.getTime() + 5 * 60000), // +5 minutes (ends before submission)
     },
     hackathonPeriod: {
-      hackathonStartDate: new Date(baseTime.getTime() + 4 * 60000), // +4 minutes (1 minute gap after registration)
+      hackathonStartDate: new Date(baseTime.getTime() + 3 * 60000), // +3 minutes (1 minute gap after registration)
       hackathonEndDate: new Date(baseTime.getTime() + 9 * 60000), // +9 minutes (5 minute submission window)
     },
     votingPeriod: {
-      votingStartDate: new Date(baseTime.getTime() + 10 * 60000), // +10 minutes (1 minute gap after submission)
-      votingEndDate: new Date(baseTime.getTime() + 15 * 60000), // +15 minutes (5 minute voting window)
+      votingStartDate: new Date(baseTime.getTime() + 11 * 60000), // +11 minutes (2 minute gap after submission)
+      votingEndDate: new Date(baseTime.getTime() + 20 * 60000), // +20 minutes (10 minute voting window)
     },
   };
 }

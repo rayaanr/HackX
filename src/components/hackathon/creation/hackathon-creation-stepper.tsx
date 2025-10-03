@@ -2,7 +2,7 @@
 
 import { defineStepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
-import { CircularLoader } from "@/components/ui/loader";
+import { ClassicLoader } from "@/components/ui/loader";
 import { Fragment } from "react";
 import { OverviewStep } from "./hackathon-overview-step";
 import { PrizesStep } from "./hackathon-prizes-step";
@@ -30,11 +30,13 @@ const { Stepper } = defineStepper(
 
 interface CreateHackathonStepperProps {
   isSubmitting?: boolean;
+  isUploadingToIPFS?: boolean;
   onCreateHackathon?: () => void;
 }
 
 export function CreateHackathonStepper({
   isSubmitting = false,
+  isUploadingToIPFS = false,
   onCreateHackathon,
 }: CreateHackathonStepperProps) {
   return (
@@ -102,12 +104,17 @@ export function CreateHackathonStepper({
                     onCreateHackathon?.();
                   }}
                   disabled={isSubmitting}
+                  className="min-w-[180px]"
                 >
                   {isSubmitting ? (
-                    <>
-                      <CircularLoader size="sm" className="mr-2" />
-                      Creating Hackathon...
-                    </>
+                    <div className="flex items-center justify-center">
+                      <ClassicLoader size="sm" className="border-white" />
+                      <span>
+                        {isUploadingToIPFS
+                          ? "Uploading to IPFS..."
+                          : "Creating Hackathon..."}
+                      </span>
+                    </div>
                   ) : (
                     "Create Hackathon"
                   )}

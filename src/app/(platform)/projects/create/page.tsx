@@ -3,8 +3,7 @@
 import { CreateProjectForm } from "@/components/projects/creation/project-creation-form";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { Button } from "@/components/ui/button";
-import { CircularLoader } from "@/components/ui/loader";
-import { Shuffle } from "lucide-react";
+import { ClassicLoader } from "@/components/ui/loader";
 import { useState, useEffect } from "react";
 
 export default function CreateProjectPage() {
@@ -76,7 +75,7 @@ export default function CreateProjectPage() {
             >
               {isLoading ? (
                 <>
-                  <CircularLoader size="sm" className="mr-2" />
+                  <ClassicLoader size="sm" className="mr-2" />
                   Creating Project...
                 </>
               ) : (

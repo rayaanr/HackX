@@ -7,11 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useFormContext, useFieldArray } from "react-hook-form";
-import {
-  hackathonSchema,
-  type HackathonFormData,
-} from "@/lib/schemas/hackathon-schema";
-import { Trash2, Wallet, Send, Copy, Check } from "lucide-react";
+import { type HackathonFormData } from "@/lib/schemas/hackathon-schema";
+import { Trash2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
 export function JudgesStep() {
@@ -76,23 +73,21 @@ export function JudgesStep() {
                     return (
                       <div
                         key={judge.id}
-                        className="flex items-center gap-3 p-3 py-2 border rounded-lg"
+                        className="flex items-center gap-3 p-3 py-2 border rounded-lg w-full"
                       >
                         <Wallet className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <div className="flex-1">
-                          <FormField
-                            control={control}
-                            name={`judges.${index}.address`}
-                            render={({ field }) => (
-                              <Input
-                                type="text"
-                                placeholder="0x..."
-                                {...field}
-                                className="border-none shadow-none py-0.5 px-0 bg-transparent! h-auto font-medium focus-visible:ring-0 rounded-none w-fit"
-                                readOnly
-                              />
-                            )}
-                          />
+                          <div className="min-w-0 flex-1">
+                            <FormField
+                              control={control}
+                              name={`judges.${index}.address`}
+                              render={({ field }) => (
+                                <div className="font-mono text-sm font-medium text-foreground break-all">
+                                  {field.value}
+                                </div>
+                              )}
+                            />
+                          </div>
                           <p className="text-xs text-muted-foreground capitalize">
                             Status: Added
                           </p>
@@ -147,7 +142,7 @@ export function JudgesStep() {
                     disabled={!newJudgeAddress}
                     className="w-full"
                   >
-                    <Wallet className="h-4 w-4 mr-2" />
+                    <Wallet className="h-4 w-4" />
                     Add Judge
                   </Button>
                   <p className="text-xs text-muted-foreground">

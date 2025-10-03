@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { ComponentLoading } from "@/components/ui/global-loading";
 import { useHackathonProjectsWithDetails } from "@/hooks/use-hackathons";
 import EmptyComponent from "@/components/empty";
+import { motion } from "motion/react";
 
 interface SubmittedProjectsTabProps {
   hackathon: UIHackathon;
@@ -57,11 +58,40 @@ export function SubmittedProjectsTab({ hackathon }: SubmittedProjectsTabProps) {
           variant="ghost"
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {transformedProjects.map((project) => (
-            <ProjectCard key={project.key} project={project} />
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1,
+              },
+            },
+          }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {transformedProjects.map((project, index) => (
+            <motion.div
+              key={project.key}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: 0.5,
+                    ease: [0.215, 0.61, 0.355, 1],
+                    delay: index * 0.05,
+                  },
+                },
+              }}
+            >
+              <ProjectCard project={project} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

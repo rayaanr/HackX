@@ -9,8 +9,30 @@ import { ArrowRight, Calendar, MapPin, Award, Code } from "lucide-react";
 import EmptyComponent from "@/components/empty";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { getUIHackathonStatus } from "@/lib/helpers/date";
-import { useJudgeAssignments } from "@/hooks/use-hackathons";
+import { getUIHackathonStatus, formatDateRange } from "@/lib/helpers/date";
+import {
+  useJudgeAssignments,
+  useHackathonProjectCount,
+} from "@/hooks/use-hackathons";
+
+// Component to display project count for a hackathon
+function ProjectCountDisplay({
+  hackathonId,
+}: {
+  hackathonId: string | number;
+}) {
+  const { projectCount = 0, isLoading } = useHackathonProjectCount(hackathonId);
+
+  if (isLoading) {
+    return <p className="text-sm font-semibold text-white/85">Loading...</p>;
+  }
+
+  return (
+    <p className="text-sm font-semibold text-white/85">
+      {projectCount} Projects
+    </p>
+  );
+}
 
 export default function JudgeDashboardPage() {
   const {
@@ -127,22 +149,19 @@ export default function JudgeDashboardPage() {
                       <p className="text-sm font-semibold text-white/85">
                         {hackathon.hackathonPeriod?.hackathonStartDate &&
                         hackathon.hackathonPeriod?.hackathonEndDate
-                          ? `${new Date(
+                          ? formatDateRange(
                               hackathon.hackathonPeriod.hackathonStartDate,
-                            ).toLocaleDateString()} - ${new Date(
                               hackathon.hackathonPeriod.hackathonEndDate,
-                            ).toLocaleDateString()}`
+                            )
                           : "TBD"}
                       </p>
                     </div>
                     <div className="space-y-1">
                       <h6 className="flex items-center text-[11px] font-medium uppercase tracking-wide text-white/40">
                         <Award className="mr-1.5 size-3.5" />
-                        Prize Pool
+                        Submitted
                       </h6>
-                      <p className="text-sm font-semibold text-white/85">
-                        ${hackathon.prizePool?.toLocaleString() || "TBD"}
-                      </p>
+                      <ProjectCountDisplay hackathonId={hackathon.id} />
                     </div>
                     {hackathon.location && (
                       <div className="space-y-1">

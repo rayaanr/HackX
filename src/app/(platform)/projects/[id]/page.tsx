@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShareDialog } from "@/components/share-dialog";
+import { ShareLink } from "@/components/share-link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TextShimmerLoader } from "@/components/ui/loader";
 import { PageLoading } from "@/components/ui/global-loading";
@@ -56,6 +56,7 @@ import { useEns } from "@/hooks/use-ens";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 import { YouTubeEmbed } from "@next/third-parties/google";
 import { marked } from "marked";
+import { motion } from "motion/react";
 
 function toHtmlFromDescription(input: string): string {
   if (!input) return "";
@@ -83,7 +84,7 @@ function TeamMember({
         {ensAvatar && (
           <AvatarImage src={ensAvatar} alt={ensName || "ENS Avatar"} />
         )}
-        <AvatarFallback className="text-sm font-medium bg-gradient-to-br from-purple-500 to-blue-500 text-white">
+        <AvatarFallback className="text-sm font-medium text-white">
           {initials}
         </AvatarFallback>
       </Avatar>
@@ -418,7 +419,10 @@ export default function ProjectPage() {
             </div>
           </div>
 
-          <ShareDialog url={`https://hackx.com/projects/${id}`}>
+          <ShareLink
+            url={`${process.env.NEXT_PUBLIC_BASE_URL}/projects/${id}`}
+            title={project?.name}
+          >
             <Button
               variant="outline"
               className="hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all duration-300"
@@ -426,7 +430,7 @@ export default function ProjectPage() {
               <IconShare className="mr-2 h-4 w-4" />
               Share Link
             </Button>
-          </ShareDialog>
+          </ShareLink>
         </div>
 
         <div className="gap-2">
@@ -451,12 +455,38 @@ export default function ProjectPage() {
 
           <div className="container mx-auto ps-5">
             {activeTab === "overview" && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.1,
+                    },
+                  },
+                }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+              >
                 {/* Left Column - Hero Image */}
                 <div className="lg:col-span-2 space-y-8">
                   {/* Videos Section */}
                   {(project?.demoVideo || project?.pitchVideo) && (
-                    <div className="space-y-4">
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: -20 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: {
+                            duration: 0.5,
+                            ease: [0.215, 0.61, 0.355, 1],
+                          },
+                        },
+                      }}
+                      className="space-y-4"
+                    >
                       <h3 className="text-xl font-semibold text-white">
                         Videos
                       </h3>
@@ -567,11 +597,25 @@ export default function ProjectPage() {
                           </TabsContent>
                         )}
                       </Tabs>
-                    </div>
+                    </motion.div>
                   )}
 
                   {/* Description Section */}
-                  <div className="space-y-4">
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: -20 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 0.5,
+                          ease: [0.215, 0.61, 0.355, 1],
+                          delay: 0,
+                        },
+                      },
+                    }}
+                    className="space-y-4"
+                  >
                     <h3 className="text-xl font-semibold text-white">
                       Description
                     </h3>
@@ -618,69 +662,141 @@ export default function ProjectPage() {
                         {project.progress}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
 
                 {/* Right Column */}
-                <div className="space-y-8 sticky top-36 self-start">
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: -20 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        duration: 0.5,
+                        ease: [0.215, 0.61, 0.355, 1],
+                        delay: 0,
+                      },
+                    },
+                  }}
+                  className="space-y-8 sticky top-36 self-start"
+                >
                   {/* GitHub Repository Card */}
                   {project?.githubLink && (
-                    <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardContent className="flex gap-4">
-                        <IconBrandGithub className="size-10 text-white mb-4" />
-                        <div>
-                          <h4 className="font-medium text-white">
-                            Github Repository
-                          </h4>
-                          <Link
-                            href={project.githubLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-400 max-w-1.5 leading-0.5"
-                          >
-                            {project.githubLink}
-                          </Link>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.4, delay: 0 },
+                        },
+                      }}
+                    >
+                      <Link
+                        href={project.githubLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Card className="border-white/20 bg-black/20 backdrop-blur-sm py-4 project-card-hover">
+                          <CardContent className="flex gap-4 items-center">
+                            <IconBrandGithub className="size-10 text-white shrink-0" />
+                            <div>
+                              <h4 className="font-medium text-white">
+                                Github Repository
+                              </h4>
+
+                              <p className="max-w-[200px] break-all leading-tight text-sm text-blue-500">
+                                {project.githubLink}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    </motion.div>
                   )}
 
                   {/* Tech Stack Card */}
                   {project?.techStack && project.techStack.length > 0 && (
-                    <div className="space-y-2">
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.4, delay: 0 },
+                        },
+                      }}
+                      className="space-y-2"
+                    >
                       <h4 className="font-semibold text-white">Tech Stack</h4>
                       <div className="flex flex-wrap gap-2">
                         {project.techStack.map(
                           (tech: string, index: number) => (
-                            <Badge
+                            <motion.div
                               key={index}
-                              variant="secondary"
-                              className="text-xs"
+                              variants={{
+                                hidden: { opacity: 0, scale: 0.8 },
+                                visible: {
+                                  opacity: 1,
+                                  scale: 1,
+                                  transition: {
+                                    duration: 0.2,
+                                    delay: 0 + index * 0.05,
+                                  },
+                                },
+                              }}
                             >
-                              {tech}
-                            </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                {tech}
+                              </Badge>
+                            </motion.div>
                           ),
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   )}
 
                   {/* Sectors */}
                   {project?.sector && project.sector.length > 0 && (
-                    <div className="space-y-2">
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.4, delay: 0 },
+                        },
+                      }}
+                      className="space-y-2"
+                    >
                       <h4 className="font-semibold text-white">Sectors</h4>
                       <div className="flex flex-wrap gap-2">
                         {project.sector.map((sector: string, index: number) => (
-                          <Badge
+                          <motion.div
                             key={index}
-                            variant="secondary"
-                            className="text-xs uppercase"
+                            variants={{
+                              hidden: { opacity: 0, scale: 0.8 },
+                              visible: {
+                                opacity: 1,
+                                scale: 1,
+                                transition: {
+                                  duration: 0.2,
+                                  delay: 0 + index * 0.05,
+                                },
+                              },
+                            }}
                           >
-                            {sector}
-                          </Badge>
+                            <Badge
+                              variant="secondary"
+                              className="text-xs uppercase"
+                            >
+                              {sector}
+                            </Badge>
+                          </motion.div>
                         ))}
                       </div>
-                    </div>
+                    </motion.div>
                   )}
 
                   {/* Created At */}
@@ -695,47 +811,86 @@ export default function ProjectPage() {
 
                   {/* Hackathon Info */}
                   {hackathon && (
-                    <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">Hackathon</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          {hackathon.visual && (
-                            <Image
-                              src={resolveIPFSToHttp(hackathon.visual)}
-                              alt={hackathon.name}
-                              width={48}
-                              height={48}
-                              className="rounded-lg object-cover"
-                            />
-                          )}
-                          <div>
-                            <Link href={`/hackathons/${hackathon.id}`}>
-                              <h4 className="font-medium text-white hover:text-blue-400 transition-colors">
-                                {hackathon.name}
-                              </h4>
-                            </Link>
-                            <p className="text-sm text-white/70">
-                              {hackathon.shortDescription}
-                            </p>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.4, delay: 0 },
+                        },
+                      }}
+                    >
+                      <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
+                        <CardHeader>
+                          <CardTitle className="text-white">
+                            Hackathon
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            {hackathon.visual && (
+                              <Image
+                                src={resolveIPFSToHttp(hackathon.visual)}
+                                alt={hackathon.name}
+                                width={48}
+                                height={48}
+                                className="rounded-lg object-cover"
+                              />
+                            )}
+                            <div>
+                              <Link href={`/hackathons/${hackathon.id}`}>
+                                <h4 className="font-medium text-white hover:text-blue-400 transition-colors">
+                                  {hackathon.name}
+                                </h4>
+                              </Link>
+                              <p className="text-sm text-white/70">
+                                {hackathon.shortDescription}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-white/70">
-                          <Calendar className="h-4 w-4" />
-                          {formatDisplayDate(hackathon.startDate)} -{" "}
-                          {formatDisplayDate(hackathon.endDate)}
-                        </div>
-                      </CardContent>
-                    </Card>
+                          <div className="flex items-center gap-2 text-sm text-white/70">
+                            <Calendar className="h-4 w-4" />
+                            {formatDisplayDate(hackathon.startDate)} -{" "}
+                            {formatDisplayDate(hackathon.endDate)}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   )}
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )}
 
             {activeTab === "team" && (
-              <div className="max-w-4xl">
-                <div className="space-y-6">
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.1,
+                    },
+                  },
+                }}
+                className="max-w-4xl"
+              >
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: -20 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        duration: 0.5,
+                        ease: [0.215, 0.61, 0.355, 1],
+                      },
+                    },
+                  }}
+                  className="space-y-6"
+                >
                   {/* Team Leader */}
                   {project?.creator && (
                     <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
@@ -801,13 +956,39 @@ export default function ProjectPage() {
                       </CardContent>
                     </Card>
                   )}
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )}
 
             {activeTab === "hackathon" && (
-              <div className="max-w-4xl">
-                <div className="space-y-6">
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.1,
+                    },
+                  },
+                }}
+                className="max-w-4xl"
+              >
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: -20 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        duration: 0.5,
+                        ease: [0.215, 0.61, 0.355, 1],
+                      },
+                    },
+                  }}
+                  className="space-y-6"
+                >
                   {/* Submit to Hackathon Action */}
                   <div className="flex justify-between items-center">
                     <div>
@@ -856,8 +1037,8 @@ export default function ProjectPage() {
                       <HackathonSubmissionDialog projectId={id} />
                     </div>
                   )}
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )}
           </div>
         </div>

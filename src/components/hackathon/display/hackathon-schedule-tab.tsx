@@ -14,7 +14,7 @@ import {
   TimelineTitle,
 } from "@/components/ui/timeline";
 import { motion } from "motion/react";
-import { safeToDate } from "@/lib/helpers/date";
+import { safeToDate, formatDateRange } from "@/lib/helpers/date";
 
 interface ScheduleTabProps {
   hackathon: UIHackathon;
@@ -28,31 +28,6 @@ function getEventStatus(
   if (now >= startDate && now <= endDate) return "live";
   if (now < startDate) return "upcoming";
   return "completed";
-}
-
-function formatDateRange(startDate: Date, endDate: Date): string {
-  const formatOptions: Intl.DateTimeFormatOptions = {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  };
-
-  const start = startDate.toLocaleDateString("en-US", formatOptions);
-  const end = endDate.toLocaleDateString("en-US", formatOptions);
-
-  return `${start} - ${end}`;
-}
-
-function formatSingleDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 interface SchedulePhase {

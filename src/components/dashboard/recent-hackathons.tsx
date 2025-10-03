@@ -5,17 +5,43 @@ import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import { Plus } from "lucide-react";
 import { motion } from "motion/react";
-import { CardLoading } from "@/components/ui/global-loading";
+import { GlobalLoading } from "@/components/ui/global-loading";
 import type { UIHackathon } from "@/types/hackathon";
 import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import { format } from "date-fns";
 import EmptyComponent from "@/components/empty";
+import { useHackathonParticipants } from "@/hooks/use-hackathons";
 
 interface RecentHackathonsProps {
   hackathons: UIHackathon[];
   loading?: boolean;
+}
+
+// Component to fetch and display participant count for a single hackathon
+function HackathonParticipantCount({
+  hackathonId,
+}: {
+  hackathonId: string | number;
+}) {
+  const { data: participants = [] } = useHackathonParticipants(hackathonId);
+
+  // Always show up to 3 placeholder avatars, AvatarList will handle the display logic
+  const placeholderImages = [
+    { src: "/placeholder-user.jpg", alt: "Participant 1" },
+    { src: "/placeholder-user.jpg", alt: "Participant 2" },
+    { src: "/placeholder-user.jpg", alt: "Participant 3" },
+  ];
+
+  return (
+    <AvatarList
+      images={placeholderImages}
+      totalCount={participants.length}
+      additionalCount={0}
+      className="border-0 shadow-none"
+    />
+  );
 }
 
 export function RecentHackathons({
@@ -23,7 +49,25 @@ export function RecentHackathons({
   loading = false,
 }: RecentHackathonsProps) {
   if (loading) {
-    return <CardLoading text="Loading recent hackathons" height="300px" />;
+    return (
+      <Card className="project-card-hover">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="group-hover:text-white transition-colors">
+              Recent Hackathons
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <GlobalLoading
+            variant="component"
+            text="Loading recent hackathons"
+            height="250px"
+            size="md"
+          />
+        </CardContent>
+      </Card>
+    );
   }
 
   // Show most recent hackathons (up to 5)
@@ -48,7 +92,7 @@ export function RecentHackathons({
               className="hover:bg-white/10 hover:text-white transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
-              New Event
+              New Hackathon
             </Button>
           </Link>
         </div>
@@ -121,25 +165,7 @@ export function RecentHackathons({
                           </span>
                         </div>
                       </div>
-                      <AvatarList
-                        images={[
-                          {
-                            src: "/placeholder-user.jpg",
-                            alt: "Participant 1",
-                          },
-                          {
-                            src: "/placeholder-user.jpg",
-                            alt: "Participant 2",
-                          },
-                          {
-                            src: "/placeholder-user.jpg",
-                            alt: "Participant 3",
-                          },
-                        ]}
-                        totalCount={50}
-                        additionalCount={0}
-                        className="border-0 shadow-none"
-                      />
+                      <HackathonParticipantCount hackathonId={hackathon.id} />
                     </div>
                   </Link>
                 </motion.div>

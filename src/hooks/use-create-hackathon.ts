@@ -7,6 +7,7 @@ import { upload } from "thirdweb/storage";
 import { useWeb3 } from "@/providers/web3-provider";
 import { prepareCreateHackathonTransaction } from "@/lib/helpers/blockchain";
 import type { HackathonFormData } from "@/types/hackathon";
+import { toast } from "sonner";
 
 interface CreateHackathonResult {
   success: boolean;
@@ -21,6 +22,7 @@ interface CreateHackathonResult {
  */
 export function useCreateHackathon() {
   const [isCreating, setIsCreating] = useState(false);
+  const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const queryClient = useQueryClient();
@@ -98,7 +100,26 @@ export function useCreateHackathon() {
       };
 
       // Step 2: Upload to IPFS using pure Thirdweb function
-      const fileName = `hackathon-${formData.name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}.json`;
+      setIsUploadingToIPFS(true);
+
+      // Dispatch IPFS upload start
+      window.dispatchEvent(
+        new CustomEvent("hackathonIPFSUploadChange", {
+          detail: { isUploadingToIPFS: true },
+        }),
+      );
+
+      // Show upload started notification
+      const uploadToastId = toast.loading(
+        "📤 Uploading hackathon data to IPFS...",
+        {
+          description: "This may take a few moments",
+        },
+      );
+
+      const fileName = `hackathon-${formData.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")}-${Date.now()}.json`;
 
       const uris = await upload({
         client, // thirdweb client
@@ -111,12 +132,38 @@ export function useCreateHackathon() {
       });
 
       if (!uris || uris.length === 0) {
+        toast.dismiss(uploadToastId);
+        toast.error("❌ Failed to upload metadata to IPFS");
         throw new Error("Failed to upload metadata to IPFS.");
       }
 
       const cid = uris.replace("ipfs://", "");
 
-      // Step 3: Prepare and send blockchain transaction
+      // Show upload success notification
+      toast.dismiss(uploadToastId);
+      toast.success("Uploaded to IPFS", {
+        description: "Metadata uploaded to IPFS successfully!",
+        action: {
+          label: "View on IPFS",
+          onClick: () => {
+            const gatewayUrl = `${
+              process.env.NEXT_PUBLIC_IPFS_GATEWAY_URL ||
+              "https://ipfs.io/ipfs/"
+            }${cid}`;
+            window.open(gatewayUrl, "_blank");
+          },
+        },
+      });
+
+      setIsUploadingToIPFS(false);
+
+      // Dispatch IPFS upload complete
+      window.dispatchEvent(
+        new CustomEvent("hackathonIPFSUploadChange", {
+          detail: { isUploadingToIPFS: false },
+        }),
+      );
+
       const transaction = prepareCreateHackathonTransaction(
         contract,
         cid,
@@ -128,6 +175,18 @@ export function useCreateHackathon() {
           onSuccess: (result) => {
             // TODO: Parse transaction logs to get exact hackathon ID
             const hackathonId = Date.now();
+
+            // Show blockchain success notification
+            toast.success("Hackathon Created", {
+              description: "Hackathon created successfully!",
+              action: {
+                label: "View on Explorer",
+                onClick: () => {
+                  const explorerUrl = `${process.env.NEXT_PUBLIC_EXPLORER_URL}/tx/${result.transactionHash}`;
+                  window.open(explorerUrl, "_blank");
+                },
+              },
+            });
 
             // Invalidate queries to refresh data
             queryClient.invalidateQueries({ queryKey: ["hackathons"] });
@@ -158,7 +217,9 @@ export function useCreateHackathon() {
               errorMessage =
                 "Network error. Please check your internet connection and try again.";
             } else {
-              errorMessage = `Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`;
+              errorMessage = `Transaction failed: ${
+                error instanceof Error ? error.message : "Unknown error"
+              }`;
             }
 
             setError(new Error(errorMessage));
@@ -172,6 +233,12 @@ export function useCreateHackathon() {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
+
+      // Show error notification
+      toast.error("❌ Failed to create hackathon", {
+        description: errorMessage,
+      });
+
       setError(new Error(errorMessage));
       return {
         success: false,
@@ -179,12 +246,21 @@ export function useCreateHackathon() {
       };
     } finally {
       setIsCreating(false);
+      setIsUploadingToIPFS(false);
+
+      // Dispatch final state cleanup
+      window.dispatchEvent(
+        new CustomEvent("hackathonIPFSUploadChange", {
+          detail: { isUploadingToIPFS: false },
+        }),
+      );
     }
   };
 
   return {
     createHackathon,
     isCreating,
+    isUploadingToIPFS,
     error,
     // Utility methods
     isConnected: !!activeAccount,
