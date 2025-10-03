@@ -120,7 +120,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
         votingPeriod: hackathon.votingPeriod || undefined,
       });
       return status === "Registration Open" || status === "Live";
-    }
+    },
   );
 
   const handleSubmit = (hackathonId: string) => {
@@ -222,7 +222,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                                       hackathon.hackathonPeriod
                                         ?.hackathonStartDate,
                                       hackathon.hackathonPeriod
-                                        ?.hackathonEndDate
+                                        ?.hackathonEndDate,
                                     )}
                                   </span>
                                 </div>
@@ -252,7 +252,7 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                         </CardContent>
                       </Card>
                     );
-                  }
+                  },
                 )}
               </div>
             ) : (
@@ -302,7 +302,7 @@ export default function ProjectPage() {
   const params = useParams();
   const id = params.id as string;
   const [activeTab, setActiveTab] = useState<"overview" | "hackathon" | "team">(
-    "overview"
+    "overview",
   );
 
   const {
@@ -311,7 +311,7 @@ export default function ProjectPage() {
     error: projectError,
   } = useBlockchainProject(id);
   const { data: hackathon, isLoading: hackathonLoading } = useHackathon(
-    project?.hackathonId ? Number(project.hackathonId) : null
+    project?.hackathonId ? Number(project.hackathonId) : null,
   );
   const { data: teamMembers, isLoading: teamLoading } =
     useProjectTeamMembers(id);
@@ -329,7 +329,7 @@ export default function ProjectPage() {
           queryKey: ["hackathon", hackathonId],
           queryFn: () => getHackathonById(contract, client, hackathonId),
           enabled: !!contract && !!client && !!project?.hackathonIds,
-        })
+        }),
       );
       setHackathonQueries(newQueries);
     } else {
@@ -605,9 +605,18 @@ export default function ProjectPage() {
                               "hr",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          })
+                          }),
                         );
                       })()}
+                    </div>
+                    <Separator className="mt-12 mb-5" />
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-white text-lg">
+                        Progress during Hackathon
+                      </h4>
+                      <p className="text-white/80 text-sm">
+                        {project.progress}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -650,7 +659,7 @@ export default function ProjectPage() {
                             >
                               {tech}
                             </Badge>
-                          )
+                          ),
                         )}
                       </div>
                     </div>
@@ -773,7 +782,7 @@ export default function ProjectPage() {
                                 role="Member"
                                 index={index}
                               />
-                            )
+                            ),
                           )}
                         </div>
                       </CardContent>
@@ -830,7 +839,7 @@ export default function ProjectPage() {
                                 </Badge>
                               </div>
                             </div>
-                          )
+                          ),
                         )}
                       </div>
                     </>
