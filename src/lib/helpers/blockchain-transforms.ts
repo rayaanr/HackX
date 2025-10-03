@@ -101,7 +101,7 @@ export function transformBlockchainProjectToUI(
     id: blockchainProject.id.toString(),
     name: metadata?.name || `Project #${blockchainProject.id}`,
     description: metadata?.description || null,
-    hackathon_id: blockchainProject.hackathonId.toString(),
+    hackathon_id: blockchainProject.hackathonIds?.[0] || "0",
     hackathon_name: blockchainProject.hackathonMetadata?.name,
     tech_stack: metadata?.techStack || [],
     status: mapProjectStatusToUI(
@@ -114,8 +114,6 @@ export function transformBlockchainProjectToUI(
     team_members: metadata?.teamMembers || [],
     created_by: blockchainProject.creator,
     created_at: metadata?.createdAt || new Date().toISOString(),
-    totalScore: Number(blockchainProject.totalScore),
-    judgeCount: Number(blockchainProject.judgeCount),
     averageScore: blockchainProject.averageScore,
   };
 }
@@ -180,14 +178,12 @@ export function getHackathonStatus(
 function getProjectStatusFromContract(
   project: BlockchainProject,
 ): ProjectStatus {
-  if (!project.isSubmitted) {
+  if (!project.isCreated) {
     return "draft";
   }
 
-  if (project.judgeCount > BigInt(0)) {
-    return "scored";
-  }
-
+  // We can't determine if it's scored directly anymore
+  // This would need to be determined by calling getProjectScore separately
   return "submitted";
 }
 

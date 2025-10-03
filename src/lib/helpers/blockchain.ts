@@ -418,7 +418,7 @@ export async function getUserProjectsWithDetails(
         const project = await readContract({
           contract,
           method:
-            "function getProject(uint256 projectId) view returns ((uint256 id, string ipfsHash, address creator, address[] teamMembers, bool isCreated, uint256 totalScore, uint256 judgeCount))",
+            "function getProject(uint256 projectId) view returns ((uint256 id, string ipfsHash, address creator, address[] teamMembers, bool isCreated))",
           params: [bigIntProjectId],
         });
 
@@ -467,8 +467,6 @@ export async function getUserProjectsWithDetails(
           creator: project.creator,
           teamMembers: project.teamMembers || [],
           isCreated: project.isCreated,
-          totalScore: Number(project.totalScore),
-          judgeCount: Number(project.judgeCount),
 
           // Flattened IPFS metadata (project details)
           name: metadata.name || "Untitled Project",
@@ -516,19 +514,17 @@ export async function getProjectById(
     const project = await readContract({
       contract,
       method:
-        "function getProject(uint256 projectId) view returns ((uint256 id, string ipfsHash, address creator, address[] teamMembers, bool isCreated, uint256 totalScore, uint256 judgeCount))",
+        "function getProject(uint256 projectId) view returns ((uint256 id, string ipfsHash, address creator, address[] teamMembers, bool isCreated))",
       params: [BigInt(projectId)],
     });
 
     // Convert contract data to proper format
     const contractProject: ContractProject = {
       id: project.id,
-      hackathonId: BigInt(0), // Will be set from metadata if available
       ipfsHash: project.ipfsHash,
       creator: project.creator,
-      isSubmitted: project.isCreated,
-      totalScore: project.totalScore,
-      judgeCount: project.judgeCount,
+      teamMembers: [...project.teamMembers],
+      isCreated: project.isCreated,
     };
 
     // Fetch metadata from IPFS
@@ -575,12 +571,8 @@ export async function getProjectById(
       version: (metadata as any).version || "1.0.0",
       createdAt: (metadata as any).createdAt || new Date().toISOString(),
 
-      // Computed properties
-      averageScore:
-        contractProject.judgeCount > BigInt(0)
-          ? Number(contractProject.totalScore) /
-            Number(contractProject.judgeCount)
-          : undefined,
+      // Computed properties - will be fetched separately using getProjectScore
+      averageScore: undefined,
     };
 
     return blockchainProject;
@@ -634,6 +626,7 @@ export async function getTotalProjects(
 // Prepare submit score transaction
 export function prepareSubmitScoreTransaction(
   contract: ThirdwebContract,
+  hackathonId: string | number,
   projectId: string | number,
   totalScore: number,
   feedbackIpfsHash: string,
@@ -641,7 +634,90 @@ export function prepareSubmitScoreTransaction(
   return prepareContractCall({
     contract,
     method:
-      "function submitScore(uint256 projectId, uint256 score, string feedbackIpfsHash)",
-    params: [BigInt(projectId), BigInt(totalScore), feedbackIpfsHash],
+      "function submitScore(uint256 hackathonId, uint256 projectId, uint256 score, string feedbackIpfsHash)",
+    params: [
+      BigInt(hackathonId),
+      BigInt(projectId),
+      BigInt(totalScore),
+      feedbackIpfsHash,
+    ],
   });
+}
+
+// Get project score for a specific hackathon
+export async function getProjectScore(
+  contract: ThirdwebContract,
+  hackathonId: string | number,
+  projectId: string | number,
+): Promise<{
+  avgScore: number;
+  totalScore: number;
+  judgeCount: number;
+} | null> {
+  try {
+    const result = await readContract({
+      contract,
+      method:
+        "function getProjectScore(uint256 hackathonId, uint256 projectId) view returns (uint256 avgScore, uint256 totalScore, uint256 judgeCount)",
+      params: [BigInt(hackathonId), BigInt(projectId)],
+    });
+
+    return {
+      avgScore: Number(result[0]),
+      totalScore: Number(result[1]),
+      judgeCount: Number(result[2]),
+    };
+  } catch (error) {
+    console.error(
+      `Failed to get project score for hackathon ${hackathonId}, project ${projectId}:`,
+      error,
+    );
+    return null;
+  }
+}
+
+// Check if a judge has already scored a project
+export async function hasJudgeScored(
+  contract: ThirdwebContract,
+  hackathonId: string | number,
+  projectId: string | number,
+  judge: string,
+): Promise<boolean> {
+  try {
+    const result = await readContract({
+      contract,
+      method:
+        "function hasJudgeScored(uint256 hackathonId, uint256 projectId, address judge) view returns (bool)",
+      params: [BigInt(hackathonId), BigInt(projectId), judge],
+    });
+    return result;
+  } catch (error) {
+    console.error(`Failed to check if judge has scored project:`, error);
+    return false;
+  }
+}
+
+// Get judge evaluation (feedback) for a project
+export async function getJudgeEvaluation(
+  contract: ThirdwebContract,
+  hackathonId: string | number,
+  projectId: string | number,
+  judge: string,
+): Promise<{ submitted: boolean; feedbackIpfsHash: string } | null> {
+  try {
+    const result = await readContract({
+      contract,
+      method:
+        "function getJudgeEvaluation(uint256 hackathonId, uint256 projectId, address judge) view returns (bool submitted, string feedbackIpfsHash)",
+      params: [BigInt(hackathonId), BigInt(projectId), judge],
+    });
+
+    return {
+      submitted: result[0],
+      feedbackIpfsHash: result[1],
+    };
+  } catch (error) {
+    console.error(`Failed to get judge evaluation:`, error);
+    return null;
+  }
 }

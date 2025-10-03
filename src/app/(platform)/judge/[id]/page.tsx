@@ -15,7 +15,6 @@ import {
   useHackathon,
   useHackathonProjectsWithDetails,
 } from "@/hooks/use-hackathons";
-import type { ProjectWithHackathon } from "@/types/hackathon";
 
 interface JudgingPageProps {
   params: Promise<{ id: string }>;
@@ -154,8 +153,8 @@ export default function JudgingPage({ params }: JudgingPageProps) {
 
                     <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
                       <div>
-                        Score: {project.totalScore || 0} (
-                        {project.judgeCount || 0} judges)
+                        Score:{" "}
+                        {project.averageScore?.toFixed(1) || "Not scored"}
                       </div>
                       <motion.div
                         whileHover={{ scale: 1.04 }}

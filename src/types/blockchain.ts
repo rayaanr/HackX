@@ -25,12 +25,10 @@ export interface ContractHackathon {
 
 export interface ContractProject {
   id: bigint;
-  hackathonId: bigint;
   ipfsHash: string;
   creator: string; // address
-  isSubmitted: boolean;
-  totalScore: bigint;
-  judgeCount: bigint;
+  teamMembers: string[]; // address[]
+  isCreated: boolean;
 }
 
 export interface ContractProjectScore {

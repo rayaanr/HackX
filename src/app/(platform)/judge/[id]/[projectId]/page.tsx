@@ -40,7 +40,7 @@ import { toast } from "sonner";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { motion } from "motion/react";
 import { ClassicLoader } from "@/components/ui/loader";
-import { useJudgeEvaluation } from "@/hooks/use-judge";
+import { useJudgeEvaluationSubmission } from "@/hooks/use-judge";
 import {
   judgeRatingSchema,
   defaultJudgeRatingValues,
@@ -72,7 +72,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     submissionStage,
     submitEvaluation,
     calculateTotalScore,
-  } = useJudgeEvaluation();
+  } = useJudgeEvaluationSubmission();
 
   // Reactive total score calculation
   const [totalScore, setTotalScore] = useState(0);
@@ -148,7 +148,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     });
 
     // Start the submission process
-    const result = await submitEvaluation(projectId, data);
+    const result = await submitEvaluation(hackathonId, projectId, data);
 
     if (result.success) {
       toast.success("Evaluation submitted successfully to blockchain!", {

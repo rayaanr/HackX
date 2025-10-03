@@ -32,8 +32,7 @@ export function SubmittedProjectsTab({ hackathon }: SubmittedProjectsTabProps) {
         hackathon_name: undefined, // Don't show hackathon name in hackathon context
         tech_stack: project.techStack || [],
         updated_at: project.createdAt || new Date().toISOString(),
-        totalScore: Number(project.totalScore),
-        judgeCount: Number(project.judgeCount),
+        averageScore: project.averageScore,
         logo: project.logo,
         key: `hackathon-project-${project.id}`,
       }));

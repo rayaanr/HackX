@@ -1,4 +1,5 @@
 import type { UIProject, ProjectWithHackathon } from "@/types/hackathon";
+import type { BlockchainProject } from "@/types/blockchain";
 
 /**
  * Project utility functions
@@ -6,7 +7,7 @@ import type { UIProject, ProjectWithHackathon } from "@/types/hackathon";
  */
 
 /**
- * Transform database project to UI project
+ * Transform database project to UI project (legacy support)
  */
 export function transformProjectToUI(project: ProjectWithHackathon): UIProject {
   return {
@@ -29,6 +30,53 @@ export function transformProjectToUI(project: ProjectWithHackathon): UIProject {
     created_by: project.created_by,
     created_at: project.created_at,
   };
+}
+
+/**
+ * Check if a project has been scored by calculating if it has any scores
+ * This replaces the old judgeCount field which was removed from the contract
+ */
+export function hasProjectBeenScored(
+  projectScore: { judgeCount: number } | null,
+): boolean {
+  return projectScore !== null && projectScore.judgeCount > 0;
+}
+
+/**
+ * Calculate average score from project score data
+ * This replaces the old averageScore calculation which was done in the contract
+ */
+export function calculateAverageScore(
+  projectScore: {
+    avgScore: number;
+    totalScore: number;
+    judgeCount: number;
+  } | null,
+): number | undefined {
+  if (!projectScore || projectScore.judgeCount === 0) {
+    return undefined;
+  }
+  // The contract now returns avgScore directly, but we can verify it
+  return projectScore.avgScore;
+}
+
+/**
+ * Get project status with scoring information
+ * Enhanced version that works with the new contract structure
+ */
+export function getProjectStatusWithScoring(
+  project: BlockchainProject,
+  projectScore: { judgeCount: number } | null,
+): "draft" | "submitted" | "scored" {
+  if (!project.isCreated) {
+    return "draft";
+  }
+
+  if (hasProjectBeenScored(projectScore)) {
+    return "scored";
+  }
+
+  return "submitted";
 }
 
 // Note: Database-specific transformations removed since we moved to blockchain approach
