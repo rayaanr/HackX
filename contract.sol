@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title HackX
+ * @notice A decentralized platform for hackathon management
  */
 contract HackX is Ownable, ReentrancyGuard {
     
@@ -28,8 +29,6 @@ contract HackX is Ownable, ReentrancyGuard {
         address creator;
         address[] teamMembers;
         bool isCreated;
-        uint256 totalScore;
-        uint256 judgeCount;
     }
     
     // Events
@@ -58,7 +57,14 @@ contract HackX is Ownable, ReentrancyGuard {
     mapping(uint256 => mapping(address => bool)) public isRegistered;
     mapping(uint256 => mapping(address => bool)) public isJudge;
     mapping(uint256 => mapping(uint256 => bool)) public isProjectSubmitted;
-    mapping(uint256 => mapping(address => uint256)) public projectScores;
+
+    // Per-hackathon scoring & feedback
+    mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public projectScoresByHack;
+    mapping(uint256 => mapping(uint256 => mapping(address => string))) public judgeFeedbackIpfsByHack;
+
+    // Per-hackathon aggregates
+    mapping(uint256 => mapping(uint256 => uint256)) public projectTotalScoreByHack;
+    mapping(uint256 => mapping(uint256 => uint256)) public projectJudgeCountByHack;
     
     // Enumeration mappings
     mapping(uint256 => address[]) public hackathonParticipants;
@@ -66,8 +72,8 @@ contract HackX is Ownable, ReentrancyGuard {
     mapping(uint256 => address[]) public hackathonJudges;
     mapping(address => uint256[]) public userProjects;
     mapping(address => uint256[]) public judgeAssignments;
-    mapping(address => uint256[]) public userHackathons; // User's hackathon participations
-    mapping(address => uint256[]) public organizerHackathons; // Organizer's created hackathons
+    mapping(address => uint256[]) public userHackathons;
+    mapping(address => uint256[]) public organizerHackathons;
     
     // Constants
     uint256 private constant MIN_DEADLINE_BUFFER = 1 minutes;
@@ -108,7 +114,7 @@ contract HackX is Ownable, ReentrancyGuard {
         _;
     }
 
-    // NEW: full timeline validation (all phase starts/ends explicit)
+    // Timeline validation (all phase starts/ends explicit)
     modifier validDeadlines(
         uint256 regStart,
         uint256 regEnd,
@@ -214,7 +220,7 @@ contract HackX is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Deactivate hackathon (organizer can deactivate their own hackathon)
+     * @dev Deactivate hackathon (only organizer)
      */
     function deactivateHackathon(uint256 hackathonId) 
         external 
@@ -228,7 +234,7 @@ contract HackX is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Delete hackathon completely (only contract owner can delete any hackathon)
+     * @dev Delete hackathon completely (only contract owner)
      */
     function deleteHackathon(uint256 hackathonId) 
         external 
@@ -291,6 +297,8 @@ contract HackX is Ownable, ReentrancyGuard {
         uint256[] storage submittedProjects = hackathonProjects[hackathonId];
         for (uint256 i = 0; i < submittedProjects.length; i++) {
             isProjectSubmitted[hackathonId][submittedProjects[i]] = false;
+            delete projectTotalScoreByHack[hackathonId][submittedProjects[i]];
+            delete projectJudgeCountByHack[hackathonId][submittedProjects[i]];
         }
         delete hackathonProjects[hackathonId];
         
@@ -361,7 +369,7 @@ contract HackX is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Register for hackathon - timestamp validation with explicit start
+     * @dev Register for hackathon
      */
     function registerForHackathon(uint256 hackathonId) 
         external 
@@ -398,9 +406,7 @@ contract HackX is Ownable, ReentrancyGuard {
             ipfsHash: projectIpfsHash,
             creator: msg.sender,
             teamMembers: new address[](0),
-            isCreated: true,
-            totalScore: 0,
-            judgeCount: 0
+            isCreated: true
         });
         
         userProjects[msg.sender].push(projectId);
@@ -482,7 +488,7 @@ contract HackX is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Submit project to hackathon - timestamp validation
+     * @dev Submit project to hackathon
      */
     function submitProjectToHackathon(uint256 hackathonId, uint256 projectId) 
         external 
@@ -518,37 +524,33 @@ contract HackX is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Submit score - timestamp validation with explicit judging start
+     * @dev Submit score for a project in a specific hackathon
      */
-    function submitScore(uint256 projectId, uint256 score, string memory feedbackIpfsHash) 
-        external 
+    function submitScore(
+        uint256 hackathonId,
+        uint256 projectId,
+        uint256 score,
+        string memory feedbackIpfsHash
+    )
+        external
         projectExists(projectId)
+        hackathonExists(hackathonId)
         validIpfsHash(feedbackIpfsHash)
     {
+        Hackathon storage h = hackathons[hackathonId];
+        require(h.isActive, "HackX: Inactive hackathon");
+        require(isProjectSubmitted[hackathonId][projectId], "HackX: Project not submitted to this hackathon");
+        require(isJudge[hackathonId][msg.sender], "HackX: Not a judge for this hackathon");
+        require(block.timestamp >= h.judgingStartDate, "HackX: Judging period has not started yet");
+        require(block.timestamp <= h.judgingDeadline, "HackX: Judging deadline has passed");
         require(score >= MIN_SCORE && score <= MAX_SCORE, "HackX: Score must be between 1 and 100");
-        require(projectScores[projectId][msg.sender] == 0, "HackX: Already scored this project");
+        require(projectScoresByHack[hackathonId][projectId][msg.sender] == 0, "HackX: Already scored this project");
         
-        // Find hackathon and validate judge authorization
-        bool isAuthorizedJudge = false;
-        uint256 hackathonId = 0;
-        
-        for (uint256 i = 1; i < nextHackathonId; i++) {
-            if (isProjectSubmitted[i][projectId] && isJudge[i][msg.sender]) {
-                Hackathon storage h = hackathons[i];
-                require(block.timestamp >= h.judgingStartDate, "HackX: Judging period has not started yet");
-                require(block.timestamp <= h.judgingDeadline, "HackX: Judging deadline has passed");
-                require(h.isActive, "HackX: Cannot judge projects in inactive hackathon");
-                isAuthorizedJudge = true;
-                hackathonId = i;
-                break;
-            }
-        }
-        
-        require(isAuthorizedJudge, "HackX: Not an authorized judge for this project");
-        
-        projectScores[projectId][msg.sender] = score;
-        projects[projectId].totalScore += score;
-        projects[projectId].judgeCount++;
+        projectScoresByHack[hackathonId][projectId][msg.sender] = score;
+        judgeFeedbackIpfsByHack[hackathonId][projectId][msg.sender] = feedbackIpfsHash;
+
+        projectTotalScoreByHack[hackathonId][projectId] += score;
+        projectJudgeCountByHack[hackathonId][projectId] += 1;
         
         emit ScoreSubmitted(hackathonId, projectId, msg.sender, score, feedbackIpfsHash);
     }
@@ -584,28 +586,45 @@ contract HackX is Ownable, ReentrancyGuard {
         require(hackathons[hackathonId].id != 0, "HackX: Hackathon does not exist");
         return hackathonJudges[hackathonId];
     }
-    
-    function getUserProjects(address user) external view validAddress(user) returns (uint256[] memory) {
-        return userProjects[user];
+
+    /**
+     * @dev Check if a judge has submitted and get their feedback IPFS
+     */
+    function getJudgeEvaluation(uint256 hackathonId, uint256 projectId, address judge)
+        external
+        view
+        projectExists(projectId)
+        hackathonExists(hackathonId)
+        validAddress(judge)
+        returns (bool submitted, string memory feedbackIpfsHash)
+    {
+        submitted = projectScoresByHack[hackathonId][projectId][judge] != 0;
+        feedbackIpfsHash = judgeFeedbackIpfsByHack[hackathonId][projectId][judge];
     }
-    
-    function getUserHackathons(address user) external view validAddress(user) returns (uint256[] memory) {
-        return userHackathons[user];
+
+    /**
+     * @dev Check if judge has scored a project
+     */
+    function hasJudgeScored(uint256 hackathonId, uint256 projectId, address judge)
+        external
+        view
+        returns (bool)
+    {
+        return projectScoresByHack[hackathonId][projectId][judge] != 0;
     }
-    
-    function getOrganizerHackathons(address organizer) external view validAddress(organizer) returns (uint256[] memory) {
-        return organizerHackathons[organizer];
-    }
-    
-    function getJudgeAssignments(address judge) external view validAddress(judge) returns (uint256[] memory) {
-        return judgeAssignments[judge];
-    }
-    
-    function getProjectScore(uint256 projectId) external view returns (uint256 avgScore, uint256 totalScore, uint256 judgeCount) {
-        require(projects[projectId].isCreated, "HackX: Project does not exist");
-        Project memory project = projects[projectId];
-        totalScore = project.totalScore;
-        judgeCount = project.judgeCount;
+
+    /**
+     * @dev Get per-hackathon score statistics for a project
+     */
+    function getProjectScore(uint256 hackathonId, uint256 projectId)
+        external
+        view
+        hackathonExists(hackathonId)
+        projectExists(projectId)
+        returns (uint256 avgScore, uint256 totalScore, uint256 judgeCount)
+    {
+        totalScore = projectTotalScoreByHack[hackathonId][projectId];
+        judgeCount = projectJudgeCountByHack[hackathonId][projectId];
         avgScore = judgeCount > 0 ? totalScore / judgeCount : 0;
     }
     
@@ -668,8 +687,23 @@ contract HackX is Ownable, ReentrancyGuard {
         
         return result;
     }
-
     
+    function getUserProjects(address user) external view validAddress(user) returns (uint256[] memory) {
+        return userProjects[user];
+    }
+    
+    function getUserHackathons(address user) external view validAddress(user) returns (uint256[] memory) {
+        return userHackathons[user];
+    }
+    
+    function getOrganizerHackathons(address organizer) external view validAddress(organizer) returns (uint256[] memory) {
+        return organizerHackathons[organizer];
+    }
+    
+    function getJudgeAssignments(address judge) external view validAddress(judge) returns (uint256[] memory) {
+        return judgeAssignments[judge];
+    }
+
     function getTotalHackathons() external view returns (uint256) {
         return nextHackathonId - 1;
     }

@@ -556,6 +556,20 @@
   },
   {
     "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
+      { "internalType": "uint256", "name": "projectId", "type": "uint256" },
+      { "internalType": "address", "name": "judge", "type": "address" }
+    ],
+    "name": "getJudgeEvaluation",
+    "outputs": [
+      { "internalType": "bool", "name": "submitted", "type": "bool" },
+      { "internalType": "string", "name": "feedbackIpfsHash", "type": "string" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
       { "internalType": "address", "name": "organizer", "type": "address" }
     ],
     "name": "getOrganizerHackathons",
@@ -581,13 +595,7 @@
             "name": "teamMembers",
             "type": "address[]"
           },
-          { "internalType": "bool", "name": "isCreated", "type": "bool" },
-          {
-            "internalType": "uint256",
-            "name": "totalScore",
-            "type": "uint256"
-          },
-          { "internalType": "uint256", "name": "judgeCount", "type": "uint256" }
+          { "internalType": "bool", "name": "isCreated", "type": "bool" }
         ],
         "internalType": "struct HackX.Project",
         "name": "",
@@ -599,6 +607,7 @@
   },
   {
     "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
       { "internalType": "uint256", "name": "projectId", "type": "uint256" }
     ],
     "name": "getProjectScore",
@@ -743,6 +752,17 @@
   },
   {
     "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
+      { "internalType": "uint256", "name": "projectId", "type": "uint256" },
+      { "internalType": "address", "name": "judge", "type": "address" }
+    ],
+    "name": "hasJudgeScored",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
       { "internalType": "uint256", "name": "", "type": "uint256" },
       { "internalType": "address", "name": "", "type": "address" }
     ],
@@ -792,6 +812,17 @@
     "type": "function"
   },
   {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "name": "judgeFeedbackIpfsByHack",
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "nextHackathonId",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
@@ -825,9 +856,30 @@
   {
     "inputs": [
       { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "projectJudgeCountByHack",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" },
       { "internalType": "address", "name": "", "type": "address" }
     ],
-    "name": "projectScores",
+    "name": "projectScoresByHack",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "projectTotalScoreByHack",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
@@ -839,9 +891,7 @@
       { "internalType": "uint256", "name": "id", "type": "uint256" },
       { "internalType": "string", "name": "ipfsHash", "type": "string" },
       { "internalType": "address", "name": "creator", "type": "address" },
-      { "internalType": "bool", "name": "isCreated", "type": "bool" },
-      { "internalType": "uint256", "name": "totalScore", "type": "uint256" },
-      { "internalType": "uint256", "name": "judgeCount", "type": "uint256" }
+      { "internalType": "bool", "name": "isCreated", "type": "bool" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -894,6 +944,7 @@
   },
   {
     "inputs": [
+      { "internalType": "uint256", "name": "hackathonId", "type": "uint256" },
       { "internalType": "uint256", "name": "projectId", "type": "uint256" },
       { "internalType": "uint256", "name": "score", "type": "uint256" },
       { "internalType": "string", "name": "feedbackIpfsHash", "type": "string" }
