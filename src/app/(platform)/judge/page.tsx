@@ -9,7 +9,7 @@ import { ArrowRight, Calendar, MapPin, Award, Code } from "lucide-react";
 import EmptyComponent from "@/components/empty";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { getUIHackathonStatus } from "@/lib/helpers/date";
+import { getUIHackathonStatus, formatDateRange } from "@/lib/helpers/date";
 import { useJudgeAssignments } from "@/hooks/use-hackathons";
 
 export default function JudgeDashboardPage() {
@@ -127,11 +127,10 @@ export default function JudgeDashboardPage() {
                       <p className="text-sm font-semibold text-white/85">
                         {hackathon.hackathonPeriod?.hackathonStartDate &&
                         hackathon.hackathonPeriod?.hackathonEndDate
-                          ? `${new Date(
+                          ? formatDateRange(
                               hackathon.hackathonPeriod.hackathonStartDate,
-                            ).toLocaleDateString()} - ${new Date(
                               hackathon.hackathonPeriod.hackathonEndDate,
-                            ).toLocaleDateString()}`
+                            )
                           : "TBD"}
                       </p>
                     </div>
