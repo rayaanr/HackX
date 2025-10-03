@@ -122,7 +122,7 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: cohortIndex * 0.1 }}
           >
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden bg-card/30">
               <CardContent className="p-6 space-y-6">
                 {/* Cohort Header */}
                 <div className="flex items-start justify-between">
@@ -137,7 +137,7 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
                       </span>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs capitalize">
                     {cohort?.judgingMode?.replace("_", " ") || "TBD"}
                   </Badge>
                 </div>
@@ -156,7 +156,7 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
                         {cohort.evaluationCriteria.map((criteria) => (
                           <div
                             key={criteria.name}
-                            className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+                            className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-muted-foreground/20"
                           >
                             <div>
                               <span className="font-medium text-sm">
@@ -177,8 +177,8 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
 
                 {/* Judging Details */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                    <Scale className="h-4 w-4 text-blue-500" />
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-muted-foreground/20">
+                    <Scale className="size-8 text-blue-500" />
                     <div>
                       <p className="text-xs text-muted-foreground">
                         Judging Mode
@@ -189,8 +189,8 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                    <Vote className="h-4 w-4 text-green-500" />
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-muted-foreground/20 ">
+                    <Vote className="size-8 text-green-500" />
                     <div>
                       <p className="text-xs text-muted-foreground">
                         Voting Mode
@@ -201,8 +201,8 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                    <Trophy className="h-4 w-4 text-orange-500" />
+                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-muted-foreground/20">
+                    <Trophy className="size-8 text-orange-500" />
                     <div>
                       <p className="text-xs text-muted-foreground">Max Votes</p>
                       <p className="font-medium text-sm">
@@ -224,38 +224,34 @@ export function PrizeAndJudgeTab({ hackathon }: PrizeAndJudgeTabProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <h3 className="font-semibold">Judges</h3>
-                <Badge variant="outline" className="text-xs">
-                  {hackathon.judges.length}{" "}
-                  {hackathon.judges.length === 1 ? "Judge" : "Judges"}
-                </Badge>
+          <div className="flex items-center gap-2 mb-4 mt-20">
+            <Users className="size-6 text-muted-foreground" />
+            <h3 className="font-semibold text-lg">Judges</h3>
+            <Badge variant="outline" className="text-xs">
+              {hackathon.judges.length}{" "}
+              {hackathon.judges.length === 1 ? "Judge" : "Judges"}
+            </Badge>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {hackathon.judges.map((judge, index) => (
+              <div
+                key={judge.address}
+                className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg border border-muted-foreground/20"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="text-xs font-medium">
+                    {judge.address.slice(2, 4).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-xs font-medium">Judge {index + 1}</p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {judge.address.slice(0, 6)}...{judge.address.slice(-4)}
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                {hackathon.judges.map((judge, index) => (
-                  <div
-                    key={judge.address}
-                    className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg"
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs font-medium">
-                        {judge.address.slice(2, 4).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-xs font-medium">Judge {index + 1}</p>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {judge.address.slice(0, 6)}...{judge.address.slice(-4)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
         </motion.div>
       )}
     </motion.div>

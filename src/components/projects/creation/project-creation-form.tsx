@@ -10,6 +10,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useBlockchainProjects } from "@/hooks/use-projects";
 import { useRouter } from "next/navigation";
+import { MOCK_PROJECT_DATA } from "@/data/mock-project-data";
+import { Shuffle, Info } from "lucide-react";
+import { CircularLoader } from "@/components/ui/loader";
 
 export function CreateProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,8 +39,19 @@ export function CreateProjectForm() {
     },
   });
 
+  const handleFillMockData = () => {
+    const randomIndex = Math.floor(Math.random() * MOCK_PROJECT_DATA.length);
+    const mockData = MOCK_PROJECT_DATA[randomIndex];
+    form.reset(mockData);
+    toast.success(`Form filled with "${mockData.name}" mock data!`);
+  };
+
   const onSubmit = async (data: ProjectFormData) => {
     setIsSubmitting(true);
+    // Dispatch loading state change
+    window.dispatchEvent(
+      new CustomEvent("projectLoadingChange", { detail: { isLoading: true } }),
+    );
 
     try {
       console.log("🚀 Creating project with data:", data);
@@ -123,31 +137,65 @@ export function CreateProjectForm() {
       );
     } finally {
       setIsSubmitting(false);
+      // Dispatch loading state change
+      window.dispatchEvent(
+        new CustomEvent("projectLoadingChange", {
+          detail: { isLoading: false },
+        }),
+      );
     }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <CreateProjectStepper />
-
-        <div className="flex justify-end gap-4 pt-8">
-          <Button type="button" variant="outline">
-            Save Draft
-          </Button>
-          <Button type="submit" disabled={isSubmitting || !isConnected}>
-            {isSubmitting
-              ? "Creating Project..."
-              : !isConnected
-                ? "Connect Wallet Required"
-                : form.watch("hackathonIds")?.length > 0
-                  ? `Create & Submit to ${
-                      form.watch("hackathonIds")?.length
-                    } Hackathon${form.watch("hackathonIds")?.length > 1 ? "s" : ""}`
-                  : "Create Project"}
+      {/* Mock Data Controls */}
+      <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-dashed">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Info className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Testing Mode: Use mock data to quickly test the project creation
+              flow
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleFillMockData}
+            id="fill-mock-data-project"
+            className="gap-2"
+          >
+            <Shuffle className="w-4 h-4" />
+            Fill with Mock Data
           </Button>
         </div>
+      </div>
 
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <CreateProjectStepper />
+        {/* Hidden submit button for programmatic access */}
+        <Button
+          type="submit"
+          id="stepper-create-project"
+          disabled={isSubmitting || !isConnected}
+          className="hidden"
+        >
+          {isSubmitting ? (
+            <>
+              <CircularLoader size="sm" className="mr-2" />
+              Creating Project...
+            </>
+          ) : !isConnected ? (
+            "Connect Wallet Required"
+          ) : form.watch("hackathonIds")?.length > 0 ? (
+            `Create & Submit to ${
+              form.watch("hackathonIds")?.length
+            } Hackathon${form.watch("hackathonIds")?.length > 1 ? "s" : ""}`
+          ) : (
+            "Create Project"
+          )}
+        </Button>{" "}
         {form.watch("hackathonIds")?.length > 0 && isConnected && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
             <p className="text-sm text-green-800">

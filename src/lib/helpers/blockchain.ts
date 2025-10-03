@@ -3,6 +3,11 @@ import { readContract, prepareContractCall } from "thirdweb";
 import type { ThirdwebContract, ThirdwebClient } from "thirdweb";
 import type { HackathonFormData } from "@/types/hackathon";
 import type { ProjectFormData } from "@/lib/schemas/project-schema";
+import type {
+  BlockchainProject,
+  ProjectMetadata,
+  ContractProject,
+} from "@/types/blockchain";
 
 // BigInt serialization utility
 export function serializeBigInts(obj: any): any {
@@ -32,6 +37,9 @@ export function prepareCreateHackathonTransaction(
   cid: string,
   formData: HackathonFormData,
 ) {
+  const registrationStartDate = dateToUnixTimestamp(
+    formData.registrationPeriod?.registrationStartDate,
+  );
   const registrationDeadline = dateToUnixTimestamp(
     formData.registrationPeriod?.registrationEndDate,
   );
@@ -40,6 +48,9 @@ export function prepareCreateHackathonTransaction(
   );
   const submissionDeadline = dateToUnixTimestamp(
     formData.hackathonPeriod?.hackathonEndDate,
+  );
+  const judgingStartDate = dateToUnixTimestamp(
+    formData.votingPeriod?.votingStartDate,
   );
   const judgingDeadline = dateToUnixTimestamp(
     formData.votingPeriod?.votingEndDate,
@@ -51,12 +62,14 @@ export function prepareCreateHackathonTransaction(
   return prepareContractCall({
     contract,
     method:
-      "function createHackathon(string ipfsHash, uint256 registrationDeadline, uint256 submissionStartDate, uint256 submissionDeadline, uint256 judgingDeadline, address[] initialJudges) returns (uint256)",
+      "function createHackathon(string ipfsHash, uint256 registrationStartDate, uint256 registrationDeadline, uint256 submissionStartDate, uint256 submissionDeadline, uint256 judgingStartDate, uint256 judgingDeadline, address[] initialJudges) returns (uint256)",
     params: [
       cid,
+      BigInt(registrationStartDate),
       BigInt(registrationDeadline),
       BigInt(submissionStartDate),
       BigInt(submissionDeadline),
+      BigInt(judgingStartDate),
       BigInt(judgingDeadline),
       initialJudges,
     ],
@@ -186,7 +199,7 @@ export async function getHackathonById(
   const hackathon = await readContract({
     contract,
     method:
-      "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint256 registrationDeadline, uint256 submissionStartDate, uint256 submissionDeadline, uint256 judgingDeadline, bool isActive))",
+      "function getHackathon(uint256 hackathonId) view returns ((uint256 id, string ipfsHash, address organizer, uint256 registrationStartDate, uint256 registrationDeadline, uint256 submissionStartDate, uint256 submissionDeadline, uint256 judgingStartDate, uint256 judgingDeadline, bool isActive))",
     params: [id],
   });
   const metadata = await fetchIPFSMetadata(client, hackathon.ipfsHash);
@@ -498,54 +511,83 @@ export async function getProjectById(
   contract: ThirdwebContract,
   client: ThirdwebClient,
   projectId: string | number,
-) {
-  const project = await readContract({
-    contract,
-    method:
-      "function getProject(uint256 projectId) view returns ((uint256 id, string ipfsHash, address creator, address[] teamMembers, bool isCreated, uint256 totalScore, uint256 judgeCount))",
-    params: [BigInt(projectId)],
-  });
-
-  // Fetch and flatten metadata from IPFS
-  let metadata: any = {};
+): Promise<BlockchainProject | null> {
   try {
-    if (project.ipfsHash) {
-      const rawMetadata = await fetchIPFSMetadata(client, project.ipfsHash);
+    const project = await readContract({
+      contract,
+      method:
+        "function getProject(uint256 projectId) view returns ((uint256 id, string ipfsHash, address creator, address[] teamMembers, bool isCreated, uint256 totalScore, uint256 judgeCount))",
+      params: [BigInt(projectId)],
+    });
 
-      // Flatten nested metadata structure - check if data is nested under 'data' property
-      if (rawMetadata && typeof rawMetadata === "object") {
-        if (rawMetadata.data && typeof rawMetadata.data === "object") {
-          // Use nested data and merge with top-level properties
-          metadata = { ...rawMetadata, ...rawMetadata.data };
-        } else {
-          metadata = rawMetadata;
+    // Convert contract data to proper format
+    const contractProject: ContractProject = {
+      id: project.id,
+      hackathonId: BigInt(0), // Will be set from metadata if available
+      ipfsHash: project.ipfsHash,
+      creator: project.creator,
+      isSubmitted: project.isCreated,
+      totalScore: project.totalScore,
+      judgeCount: project.judgeCount,
+    };
+
+    // Fetch metadata from IPFS
+    let metadata: Partial<ProjectMetadata> = {};
+    try {
+      if (project.ipfsHash) {
+        const rawMetadata = await fetchIPFSMetadata(client, project.ipfsHash);
+
+        // Flatten nested metadata structure - check if data is nested under 'data' property
+        if (rawMetadata && typeof rawMetadata === "object") {
+          if (rawMetadata.data && typeof rawMetadata.data === "object") {
+            // Use nested data and merge with top-level properties
+            metadata = { ...rawMetadata, ...rawMetadata.data };
+          } else {
+            metadata = rawMetadata;
+          }
         }
       }
+    } catch (error) {
+      console.warn(`Failed to fetch metadata for project ${projectId}:`, error);
     }
+
+    // Construct properly typed BlockchainProject
+    const blockchainProject: BlockchainProject = {
+      ...serializeBigInts(contractProject),
+      metadata: metadata as ProjectMetadata,
+
+      // Flattened metadata properties for UI convenience
+      name: (metadata as any).name || "Untitled Project",
+      intro: (metadata as any).intro || "",
+      description: (metadata as any).description || "",
+      logo: (metadata as any).logo || "",
+      sector: (metadata as any).sector || [],
+      progress: (metadata as any).progress || "",
+      fundraisingStatus: (metadata as any).fundraisingStatus || "",
+      githubLink: (metadata as any).githubLink || "",
+      demoVideo: (metadata as any).demoVideo || "",
+      pitchVideo: (metadata as any).pitchVideo || "",
+      techStack: (metadata as any).techStack || [],
+      hackathonIds:
+        (metadata as any).submittedToHackathons ||
+        (metadata as any).hackathonIds ||
+        [],
+      version: (metadata as any).version || "1.0.0",
+      createdAt: (metadata as any).createdAt || new Date().toISOString(),
+
+      // Computed properties
+      averageScore:
+        contractProject.judgeCount > BigInt(0)
+          ? Number(contractProject.totalScore) /
+            Number(contractProject.judgeCount)
+          : undefined,
+    };
+
+    return blockchainProject;
   } catch (error) {
-    console.warn(`Failed to fetch metadata for project ${projectId}:`, error);
+    console.error(`Failed to fetch project ${projectId}:`, error);
+    return null;
   }
-
-  return {
-    // Contract data
-    ...serializeBigInts(project),
-
-    // Flattened IPFS metadata
-    name: metadata.name || "Untitled Project",
-    description: metadata.description || metadata.intro || "",
-    intro: metadata.intro || "",
-    logo: metadata.logo || "",
-    sector: metadata.sector || [],
-    progress: metadata.progress || "",
-    fundraisingStatus: metadata.fundraisingStatus || "",
-    githubLink: metadata.githubLink || "",
-    demoVideo: metadata.demoVideo || "",
-    pitchVideo: metadata.pitchVideo || "",
-    techStack: metadata.techStack || [],
-    hackathonIds: metadata.hackathonIds || metadata.submittedToHackathons || [],
-    version: metadata.version || "1.0.0",
-    createdAt: metadata.createdAt || new Date().toISOString(),
-  };
 }
 
 // Get project team members

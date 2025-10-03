@@ -4,31 +4,22 @@ import {
   ArrowLeft,
   Calendar,
   ExternalLink,
-  Star,
-  User,
   Trophy,
-  GitBranch,
   Play,
-  Edit,
   Plus,
   Search,
 } from "lucide-react";
-import { IconShare } from "@tabler/icons-react";
+import { IconBrandGithub, IconShare } from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShareDialog } from "@/components/share-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TextShimmerLoader } from "@/components/ui/loader";
@@ -40,11 +31,14 @@ import {
   useBlockchainProjects,
 } from "@/hooks/use-projects";
 import { useHackathon, useRegisteredHackathons } from "@/hooks/use-hackathons";
+import { useQueries } from "@tanstack/react-query";
+import { useWeb3 } from "@/providers/web3-provider";
+import { getHackathonById } from "@/lib/helpers/blockchain";
+import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
 import {
   formatDisplayDate,
   getUIHackathonStatus,
   formatDateRange,
-  type DateInput,
 } from "@/lib/helpers/date";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
@@ -61,6 +55,15 @@ import type { UIHackathon } from "@/types/hackathon";
 import { useEns } from "@/hooks/use-ens";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 import { YouTubeEmbed } from "@next/third-parties/google";
+import { marked } from "marked";
+
+function toHtmlFromDescription(input: string): string {
+  if (!input) return "";
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(input);
+  if (looksLikeHtml) return input;
+  const html = marked.parse(input);
+  return typeof html === "string" ? html : "";
+}
 
 // Team member component with ENS support
 function TeamMember({
@@ -308,10 +311,41 @@ export default function ProjectPage() {
     error: projectError,
   } = useBlockchainProject(id);
   const { data: hackathon, isLoading: hackathonLoading } = useHackathon(
-    project?.hackathonId,
+    project?.hackathonId ? Number(project.hackathonId) : null,
   );
   const { data: teamMembers, isLoading: teamLoading } =
     useProjectTeamMembers(id);
+
+  const { contract, client } = useWeb3();
+
+  // Initialize empty queries array
+  const [hackathonQueries, setHackathonQueries] = useState<any[]>([]);
+
+  // Update queries when project data changes
+  useEffect(() => {
+    if (project?.hackathonIds && contract && client) {
+      const newQueries = project.hackathonIds.map(
+        (hackathonId: string | number) => ({
+          queryKey: ["hackathon", hackathonId],
+          queryFn: () => getHackathonById(contract, client, hackathonId),
+          enabled: !!contract && !!client && !!project?.hackathonIds,
+        }),
+      );
+      setHackathonQueries(newQueries);
+    } else {
+      setHackathonQueries([]);
+    }
+  }, [project?.hackathonIds, contract, client]);
+
+  // Fetch submitted hackathons details
+  const submittedHackathonQueries = useQueries({
+    queries: hackathonQueries,
+  });
+
+  // Transform blockchain hackathon data to UIHackathon format
+  const submittedHackathons = submittedHackathonQueries
+    .map((query) => query.data)
+    .filter(Boolean);
 
   const loading = projectLoading || hackathonLoading;
   const error = projectError;
@@ -343,30 +377,6 @@ export default function ProjectPage() {
     );
   }
 
-  // Simple status logic
-  const getProjectStatus = (project: any) => {
-    if (!project) return "Unknown";
-    if (project.isSubmitted) return "Submitted";
-    if (project.isActive) return "Active";
-    return "Draft";
-  };
-
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case "Submitted":
-        return "bg-green-500/20 text-green-400 border-green-500/50";
-      case "Active":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/50";
-      case "Draft":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/50";
-    }
-  };
-
-  const status = getProjectStatus(project);
-  const statusStyles = getStatusStyles(status);
-
   return (
     <div>
       <div className="container mx-auto">
@@ -380,31 +390,34 @@ export default function ProjectPage() {
               Back
             </Button>
           </Link>
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-2 text-white">
-              {project?.name || (
-                <TextShimmerLoader text="Loading project" size="lg" />
+          <div className="flex gap-4">
+            <Avatar className="size-24 border border-white/20 rounded-md shadow-lg mx-auto">
+              {project?.logo ? (
+                <AvatarImage
+                  src={resolveIPFSToHttp(project.logo)}
+                  alt={project?.name || "Project Logo"}
+                  className="object-cover"
+                />
+              ) : (
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
+                  {project?.name?.charAt(0) || "P"}
+                </AvatarFallback>
               )}
-            </h1>
-            <p className="text-white/70 mb-4">
-              {project?.tagline || (
-                <TextShimmerLoader text="Loading description" />
-              )}
-            </p>
-            <div className="flex items-center justify-center gap-2">
-              <Badge className={statusStyles}>{status}</Badge>
-              {hackathon && (
-                <Link href={`/hackathons/${hackathon.id}`}>
-                  <Badge
-                    variant="outline"
-                    className="hover:bg-white/10 transition-colors"
-                  >
-                    {hackathon.name}
-                  </Badge>
-                </Link>
-              )}
+            </Avatar>
+            <div className="">
+              <h1 className="text-3xl font-bold mb-2 text-white">
+                {project?.name || (
+                  <TextShimmerLoader text="Loading project" size="lg" />
+                )}
+              </h1>
+              <p className="text-white/70 mb-4 max-w-md">
+                {project?.intro || (
+                  <TextShimmerLoader text="Loading description" />
+                )}
+              </p>
             </div>
           </div>
+
           <ShareDialog url={`https://hackx.com/projects/${id}`}>
             <Button
               variant="outline"
@@ -417,10 +430,10 @@ export default function ProjectPage() {
         </div>
 
         <div className="gap-2">
-          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] pb-2">
+          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] pb-[0.1rem]">
             <Separator className="absolute top-0 left-0 right-0" />
           </div>
-          <div className="sticky top-16 backdrop-blur-xl border-white/10 z-10">
+          <div className="sticky top-14 backdrop-blur-xl border-white/10 z-10 pt-2">
             <div className="flex justify-center">
               <AnimatedTabs
                 tabs={projectTabs}
@@ -436,120 +449,45 @@ export default function ProjectPage() {
             </div>
           </div>
 
-          <div className="container mx-auto">
+          <div className="container mx-auto ps-5">
             {activeTab === "overview" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Hero Image */}
-                <div className="lg:col-span-2 space-y-6">
-                  <div className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-sm shadow-2xl overflow-hidden">
-                    <div className="relative aspect-video">
-                      {project?.coverImage ? (
-                        <Image
-                          src={resolveIPFSToHttp(project.coverImage)}
-                          alt={project?.name || "Project"}
-                          fill
-                          className="object-cover"
-                          priority
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-purple-600/20 to-blue-600/20 flex items-center justify-center">
-                          <Trophy className="w-16 h-16 text-white/40" />
-                        </div>
-                      )}
-                      {/* Overlay with project name */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-end">
-                        <div className="p-6 text-white">
-                          <h2 className="text-2xl font-bold drop-shadow-lg">
-                            {project?.name || (
-                              <TextShimmerLoader
-                                text="Loading project"
-                                size="lg"
-                              />
-                            )}
-                          </h2>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description Section */}
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-white">
-                      About This Project
-                    </h3>
-                    <div className="prose prose-sm prose-invert max-w-none [&>*]:text-white/80 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>h5]:text-white [&>h6]:text-white [&>strong]:text-white">
-                      {/* prettier-ignore */}
-                      {/* biome-ignore format */}
-                      {parse(
-                        DOMPurify.sanitize(
-                          project?.description || project?.tagline || "",
-                          {
-                            ALLOWED_TAGS: [
-                              "p",
-                              "br",
-                              "strong",
-                              "em",
-                              "u",
-                              "h1",
-                              "h2",
-                              "h3",
-                              "h4",
-                              "h5",
-                              "h6",
-                              "ul",
-                              "ol",
-                              "li",
-                              "a",
-                              "blockquote",
-                            ],
-                            ALLOWED_ATTR: ["href", "target", "rel"],
-                          },
-                        ),
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Quick Info Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">Team Size</h4>
-                      <p className="text-sm text-white/70">
-                        {teamMembers?.length || 0} members
-                      </p>
-                    </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">Created</h4>
-                      <p className="text-sm text-white/70">
-                        {project?.createdAt
-                          ? formatDisplayDate(project.createdAt)
-                          : "Unknown"}
-                      </p>
-                    </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">
-                        Tech Stack
-                      </h4>
-                      <p className="text-sm text-white/70">
-                        {project?.techStack?.slice(0, 3).join(", ") ||
-                          "Not specified"}
-                      </p>
-                    </div>
-                  </div>
-
+                <div className="lg:col-span-2 space-y-8">
                   {/* Videos Section */}
-                  {(project?.demoVideo ||
-                    project?.pitchVideo ||
-                    project?.videoUrl) && (
+                  {(project?.demoVideo || project?.pitchVideo) && (
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-white">
-                        Project Videos
+                        Videos
                       </h3>
-                      <div className="space-y-6">
-                        {project?.demoVideo && (
-                          <div>
-                            <h4 className="text-lg font-medium mb-3 text-white">
+                      <Tabs
+                        defaultValue={project?.demoVideo ? "demo" : "pitch"}
+                        className="w-full"
+                      >
+                        <TabsList className="h-auto rounded-none border-b bg-transparent p-0  justify-start w-full">
+                          {project?.demoVideo && (
+                            <TabsTrigger
+                              value="demo"
+                              className="data-[state=active]:after:bg-blue-600 relative border-none rounded-t-sm py-2 px-4 text-white/70 data-[state=active]:text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-white transition-colors"
+                            >
                               Demo Video
-                            </h4>
+                            </TabsTrigger>
+                          )}
+                          {project?.pitchVideo && (
+                            <TabsTrigger
+                              value="pitch"
+                              className="data-[state=active]:after:bg-blue-600 relative border-none rounded-t-sm py-2 px-4 text-white/70 data-[state=active]:text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-white transition-colors"
+                            >
+                              Pitch Video
+                            </TabsTrigger>
+                          )}
+                        </TabsList>
+
+                        {project?.demoVideo && (
+                          <TabsContent
+                            value="demo"
+                            className="mt-6 data-[state=active]:block"
+                          >
                             <div className="rounded-xl overflow-hidden border border-white/20 bg-black/20 backdrop-blur-sm shadow-2xl">
                               {isYouTubeUrl(project.demoVideo) ? (
                                 <YouTubeEmbed
@@ -584,14 +522,14 @@ export default function ProjectPage() {
                                 </div>
                               )}
                             </div>
-                          </div>
+                          </TabsContent>
                         )}
 
                         {project?.pitchVideo && (
-                          <div>
-                            <h4 className="text-lg font-medium mb-3 text-white">
-                              Pitch Video
-                            </h4>
+                          <TabsContent
+                            value="pitch"
+                            className="mt-6 data-[state=active]:block"
+                          >
                             <div className="rounded-xl overflow-hidden border border-white/20 bg-black/20 backdrop-blur-sm shadow-2xl">
                               {isYouTubeUrl(project.pitchVideo) ? (
                                 <YouTubeEmbed
@@ -626,127 +564,134 @@ export default function ProjectPage() {
                                 </div>
                               )}
                             </div>
-                          </div>
+                          </TabsContent>
                         )}
-
-                        {project?.videoUrl &&
-                          !project?.demoVideo &&
-                          !project?.pitchVideo && (
-                            <div>
-                              <h4 className="text-lg font-medium mb-3 text-white">
-                                Project Video
-                              </h4>
-                              <div className="rounded-xl overflow-hidden border border-white/20 bg-black/20 backdrop-blur-sm shadow-2xl">
-                                {isYouTubeUrl(project.videoUrl) ? (
-                                  <YouTubeEmbed
-                                    videoid={
-                                      extractYouTubeVideoId(project.videoUrl) ||
-                                      ""
-                                    }
-                                    height={400}
-                                    params="controls=1&modestbranding=1&rel=0"
-                                  />
-                                ) : (
-                                  <div className="aspect-video bg-black/40 rounded-lg flex items-center justify-center">
-                                    <div className="text-center">
-                                      <Play className="w-12 h-12 mx-auto mb-2 text-white/60" />
-                                      <p className="text-sm text-white/70 mb-4">
-                                        Project Video
-                                      </p>
-                                      <Button
-                                        asChild
-                                        className="hover:bg-white/10 hover:border-blue-400/50 transition-all duration-300"
-                                      >
-                                        <Link
-                                          href={project.videoUrl}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                        >
-                                          <ExternalLink className="w-4 h-4 mr-2" />
-                                          Watch Video
-                                        </Link>
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                      </div>
+                      </Tabs>
                     </div>
                   )}
 
-                  {/* Links Section */}
-                  {(project?.demoUrl ||
-                    project?.githubUrl ||
-                    project?.githubLink) && (
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-semibold text-white">
-                        Project Links
-                      </h3>
-                      <div className="flex flex-wrap gap-3">
-                        {project?.demoUrl && (
-                          <Link
-                            href={project.demoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Button
-                              variant="outline"
-                              className="hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all duration-300"
-                            >
-                              <Play className="mr-2 h-4 w-4" />
-                              Live Demo
-                              <ExternalLink className="ml-2 h-3 w-3" />
-                            </Button>
-                          </Link>
-                        )}
-                        {(project?.githubUrl || project?.githubLink) && (
-                          <Link
-                            href={project.githubUrl || project.githubLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Button
-                              variant="outline"
-                              className="hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all duration-300"
-                            >
-                              <GitBranch className="mr-2 h-4 w-4" />
-                              Source Code
-                              <ExternalLink className="ml-2 h-3 w-3" />
-                            </Button>
-                          </Link>
-                        )}
-                      </div>
+                  {/* Description Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-white">
+                      Description
+                    </h3>
+                    <div className="prose prose-sm prose-invert max-w-none [&>*]:text-white/80 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>h5]:text-white [&>h6]:text-white [&>strong]:text-white">
+                      {(() => {
+                        const raw =
+                          project?.description || project?.intro || "";
+                        const html = toHtmlFromDescription(raw);
+                        return parse(
+                          DOMPurify.sanitize(html, {
+                            ALLOWED_TAGS: [
+                              "p",
+                              "br",
+                              "strong",
+                              "em",
+                              "u",
+                              "del",
+                              "h1",
+                              "h2",
+                              "h3",
+                              "h4",
+                              "h5",
+                              "h6",
+                              "ul",
+                              "ol",
+                              "li",
+                              "a",
+                              "blockquote",
+                              "pre",
+                              "code",
+                              "hr",
+                            ],
+                            ALLOWED_ATTR: ["href", "target", "rel"],
+                          }),
+                        );
+                      })()}
                     </div>
-                  )}
+                    <Separator className="mt-12 mb-5" />
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-white text-lg">
+                        Progress during Hackathon
+                      </h4>
+                      <p className="text-white/80 text-sm">
+                        {project.progress}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Right Column */}
-                <div className="space-y-6">
-                  {/* Tech Stack Card */}
-                  {project?.techStack && project.techStack.length > 0 && (
+                <div className="space-y-8 sticky top-36 self-start">
+                  {/* GitHub Repository Card */}
+                  {project?.githubLink && (
                     <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">Tech Stack</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-2">
-                          {project.techStack.map(
-                            (tech: string, index: number) => (
-                              <Badge
-                                key={index}
-                                variant="secondary"
-                                className="text-xs"
-                              >
-                                {tech}
-                              </Badge>
-                            ),
-                          )}
+                      <CardContent className="flex gap-4">
+                        <IconBrandGithub className="size-10 text-white mb-4" />
+                        <div>
+                          <h4 className="font-medium text-white">
+                            Github Repository
+                          </h4>
+                          <Link
+                            href={project.githubLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-400 max-w-1.5 leading-0.5"
+                          >
+                            {project.githubLink}
+                          </Link>
                         </div>
                       </CardContent>
                     </Card>
                   )}
+
+                  {/* Tech Stack Card */}
+                  {project?.techStack && project.techStack.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-white">Tech Stack</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.techStack.map(
+                          (tech: string, index: number) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {tech}
+                            </Badge>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sectors */}
+                  {project?.sector && project.sector.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-white">Sectors</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.sector.map((sector: string, index: number) => (
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="text-xs uppercase"
+                          >
+                            {sector}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Created At */}
+                  <p className="text-sm">
+                    Created On:{" "}
+                    <span className="text-muted-foreground">
+                      {project?.createdAt
+                        ? formatDisplayDate(project.createdAt)
+                        : "Unknown"}
+                    </span>
+                  </p>
 
                   {/* Hackathon Info */}
                   {hackathon && (
@@ -867,7 +812,7 @@ export default function ProjectPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <h2 className="text-xl font-semibold text-white">
-                        Hackathon Submissions
+                        Current Submissions
                       </h2>
                       <p className="text-sm text-white/70">
                         Submit your project to active hackathons to compete for
@@ -878,44 +823,26 @@ export default function ProjectPage() {
                   </div>
 
                   {/* Current Submissions */}
-                  {project.submittedToHackathons &&
-                  project.submittedToHackathons.length > 0 ? (
-                    <div>
-                      <h3 className="text-lg font-medium mb-4 text-white">
-                        Current Submissions
-                      </h3>
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {project.submittedToHackathons.map(
-                          (
-                            hackathon: { name?: string; description?: string },
-                            index: number,
-                          ) => (
-                            <Card
-                              key={index}
-                              className="border border-white/20 bg-black/20 backdrop-blur-sm"
-                            >
-                              <CardHeader>
-                                <CardTitle className="text-lg text-white">
-                                  {hackathon.name || `Hackathon #${index + 1}`}
-                                </CardTitle>
+                  {submittedHackathons && submittedHackathons.length > 0 ? (
+                    <>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                        {submittedHackathons.map(
+                          (hackathon: any, index: number) => (
+                            <div key={index} className="relative">
+                              <HackathonCard hackathon={hackathon} />
+                              <div className="absolute top-4 right-4">
                                 <Badge
                                   variant="outline"
-                                  className="w-fit border-green-500/50 text-green-400"
+                                  className="w-fit border-green-500/50 text-green-400 bg-green-500/10"
                                 >
                                   Submitted
                                 </Badge>
-                              </CardHeader>
-                              <CardContent>
-                                <p className="text-sm text-white/70">
-                                  {hackathon.description ||
-                                    "No description available"}
-                                </p>
-                              </CardContent>
-                            </Card>
+                              </div>
+                            </div>
                           ),
                         )}
                       </div>
-                    </div>
+                    </>
                   ) : (
                     <div className="text-center py-8 border-2 border-dashed border-white/20 rounded-xl bg-black/10 backdrop-blur-sm">
                       <Trophy className="w-12 h-12 mx-auto text-white/40 mb-4" />

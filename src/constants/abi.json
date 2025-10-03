@@ -384,6 +384,11 @@
       { "internalType": "string", "name": "ipfsHash", "type": "string" },
       {
         "internalType": "uint256",
+        "name": "registrationStartDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "registrationDeadline",
         "type": "uint256"
       },
@@ -395,6 +400,11 @@
       {
         "internalType": "uint256",
         "name": "submissionDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "judgingStartDate",
         "type": "uint256"
       },
       {
@@ -462,6 +472,11 @@
           { "internalType": "address", "name": "organizer", "type": "address" },
           {
             "internalType": "uint256",
+            "name": "registrationStartDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "registrationDeadline",
             "type": "uint256"
           },
@@ -477,12 +492,17 @@
           },
           {
             "internalType": "uint256",
+            "name": "judgingStartDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "judgingDeadline",
             "type": "uint256"
           },
           { "internalType": "bool", "name": "isActive", "type": "bool" }
         ],
-        "internalType": "struct HackathonPlatform.Hackathon",
+        "internalType": "struct HackX.Hackathon",
         "name": "",
         "type": "tuple"
       }
@@ -569,7 +589,7 @@
           },
           { "internalType": "uint256", "name": "judgeCount", "type": "uint256" }
         ],
-        "internalType": "struct HackathonPlatform.Project",
+        "internalType": "struct HackX.Project",
         "name": "",
         "type": "tuple"
       }
@@ -688,6 +708,11 @@
       { "internalType": "address", "name": "organizer", "type": "address" },
       {
         "internalType": "uint256",
+        "name": "registrationStartDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "registrationDeadline",
         "type": "uint256"
       },
@@ -699,6 +724,11 @@
       {
         "internalType": "uint256",
         "name": "submissionDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "judgingStartDate",
         "type": "uint256"
       },
       {

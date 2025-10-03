@@ -30,6 +30,7 @@ export function FeaturedCarousel({ hackathons }: FeaturedCarouselProps) {
       votingPeriod: hackathon.votingPeriod || undefined,
     });
     return (
+      status === "Coming Soon" ||
       status === "Registration Open" ||
       status === "Registration Closed" ||
       status === "Live" ||

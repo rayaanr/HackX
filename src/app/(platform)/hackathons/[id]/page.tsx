@@ -1,19 +1,29 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { IconShare } from "@tabler/icons-react";
+import {
+  IconShare,
+  IconBrandTwitter,
+  IconBrandGithub,
+  IconBrandLinkedin,
+  IconBrandDiscord,
+  IconBrandTelegram,
+  IconWorld,
+} from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { RegistrationButton } from "@/components/hackathon/widgets/registration-button";
-import { SubmissionCountdown } from "@/components/hackathon/widgets/submission-countdown";
 import { ToDoList } from "@/components/hackathon/widgets/todo-list";
 import { ShareDialog } from "@/components/share-dialog";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
+import { marked } from "marked";
 import { Separator } from "@/components/ui/separator";
 import { TextShimmerLoader } from "@/components/ui/loader";
 import { PageLoading } from "@/components/ui/global-loading";
@@ -22,6 +32,16 @@ import { PrizeAndJudgeTab } from "@/components/hackathon/display/hackathon-prize
 import { ScheduleTab } from "@/components/hackathon/display/hackathon-schedule-tab";
 import { SubmittedProjectsTab } from "@/components/hackathon/display/hackathon-projects-gallery-tab";
 import { useHackathon } from "@/hooks/use-hackathons";
+import { Countdown } from "@/components/hackathon/widgets/countdown";
+import { formatDisplayDate } from "@/lib/helpers/date";
+
+function toHtmlFromDescription(input: string): string {
+  if (!input) return "";
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(input);
+  if (looksLikeHtml) return input;
+  const html = marked.parse(input);
+  return typeof html === "string" ? html : "";
+}
 
 export default function HackathonPage() {
   const params = useParams();
@@ -84,7 +104,9 @@ export default function HackathonPage() {
                 <TextShimmerLoader text="Loading description" />
               )}
             </p>
-            <RegistrationButton hackathonId={id} />
+            {hackathon && (
+              <RegistrationButton hackathonId={id} hackathon={hackathon} />
+            )}
           </div>
           <ShareDialog url={`https://hackx.com/hackathons/${id}`}>
             <Button
@@ -97,11 +119,11 @@ export default function HackathonPage() {
           </ShareDialog>
         </div>
 
-        <div className="gap-2">
-          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] pb-2">
+        <div className="">
+          <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] pb-[0.1rem]">
             <Separator className="absolute top-0 left-0 right-0" />
           </div>
-          <div className="sticky top-16 backdrop-blur-xl border-white/10 z-10">
+          <div className="sticky top-14 backdrop-blur-xl border-white/10 z-10 pt-2">
             <div className="flex justify-center">
               <AnimatedTabs
                 tabs={hackathonTabs}
@@ -119,7 +141,7 @@ export default function HackathonPage() {
             </div>
           </div>
 
-          <div className="container mx-auto">
+          <div className="container mx-auto px-5">
             {activeTab === "overview" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Hero Image */}
@@ -157,18 +179,21 @@ export default function HackathonPage() {
                     <div className="prose prose-sm prose-invert max-w-none [&>*]:text-white/80 [&>h1]:text-white [&>h2]:text-white [&>h3]:text-white [&>h4]:text-white [&>h5]:text-white [&>h6]:text-white [&>strong]:text-white">
                       {/* prettier-ignore */}
                       {/* biome-ignore format */}
-                      {parse(
-                        DOMPurify.sanitize(
+                      {(() => {
+                        const raw =
                           hackathon?.fullDescription ||
-                            hackathon?.shortDescription ||
-                            "",
-                          {
+                          hackathon?.shortDescription ||
+                          "";
+                        const html = toHtmlFromDescription(raw);
+                        return parse(
+                          DOMPurify.sanitize(html, {
                             ALLOWED_TAGS: [
                               "p",
                               "br",
                               "strong",
                               "em",
                               "u",
+                              "del",
                               "h1",
                               "h2",
                               "h3",
@@ -180,56 +205,172 @@ export default function HackathonPage() {
                               "li",
                               "a",
                               "blockquote",
+                              "pre",
+                              "code",
+                              "hr",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          },
-                        ),
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Quick Info Cards - No hover effects since they're not interactive */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">
-                        Participants
-                      </h4>
-                      <p className="text-sm text-white/70">
-                        {hackathon?.participantCount || 0} registered
-                      </p>
-                    </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">
-                        Total Prizes
-                      </h4>
-                      <p className="text-sm text-white/70">
-                        {hackathon?.prizeCohorts
-                          ?.reduce((sum: number, cohort: any) => {
-                            const amount =
-                              typeof cohort.prizeAmount === "string"
-                                ? parseInt(cohort.prizeAmount, 10)
-                                : cohort.prizeAmount;
-                            return sum + (amount || 0);
-                          }, 0)
-                          ?.toLocaleString() || "TBD"}
-                      </p>
-                    </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">
-                        Tech Stack
-                      </h4>
-                      <p className="text-sm text-white/70">
-                        {hackathon?.techStack?.slice(0, 3).join(", ") ||
-                          "Not specified"}
-                      </p>
+                          }),
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
 
                 {/* Right Column */}
-                <div className="space-y-6">
-                  <SubmissionCountdown hackathon={hackathon} />
+                <div className="space-y-4 sticky top-36 self-start">
+                  <Countdown hackathon={hackathon} />
+
+                  {/* Hackathon Details Card */}
+                  <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
+                    <CardContent className="space-y-3 pt-0">
+                      {/* Experience Level */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-white/60">
+                          Experience Level
+                        </span>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {hackathon?.experienceLevel || "All"}
+                        </Badge>
+                      </div>
+
+                      {/* Location */}
+                      {hackathon?.location && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-white/60">
+                            Location
+                          </span>
+                          <span className="text-xs text-white font-medium">
+                            {hackathon.location}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Judging Mode */}
+                      {hackathon?.prizeCohorts?.[0]?.judgingMode && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-white/60">
+                            Judging Mode
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs capitalize"
+                          >
+                            {hackathon.prizeCohorts[0].judgingMode}
+                          </Badge>
+                        </div>
+                      )}
+
+                      {/* Voting Mode */}
+                      {hackathon?.prizeCohorts?.[0]?.votingMode && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-white/60">
+                            Voting Mode
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs capitalize"
+                          >
+                            {hackathon.prizeCohorts[0].votingMode.replace(
+                              "_",
+                              " ",
+                            )}
+                          </Badge>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
                   <ToDoList hackathon={hackathon} />
+
+                  {/* Tech Stack */}
+                  {hackathon?.techStack && hackathon.techStack.length > 0 && (
+                    <div className="space-y-2 mt-6">
+                      <h4 className="font-semibold text-white text-sm">
+                        Tech Stack
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {hackathon.techStack.map(
+                          (tech: string, index: number) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs px-2 py-1"
+                            >
+                              {tech}
+                            </Badge>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Social Media Links */}
+                  {hackathon?.socialLinks &&
+                    Object.entries(hackathon.socialLinks).filter(
+                      ([_, url]) => url,
+                    ).length > 0 && (
+                      <div className="space-y-2 mt-6">
+                        <h4 className="font-semibold text-white text-sm">
+                          Connect
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          {Object.entries(hackathon.socialLinks).map(
+                            ([platform, url]) => {
+                              if (!url) return null;
+
+                              const getIcon = (platform: string) => {
+                                const platformLower = platform.toLowerCase();
+                                if (
+                                  platformLower.includes("twitter") ||
+                                  platformLower.includes("x")
+                                ) {
+                                  return (
+                                    <IconBrandTwitter className="w-4 h-4" />
+                                  );
+                                }
+                                if (platformLower.includes("github")) {
+                                  return (
+                                    <IconBrandGithub className="w-4 h-4" />
+                                  );
+                                }
+                                if (platformLower.includes("linkedin")) {
+                                  return (
+                                    <IconBrandLinkedin className="w-4 h-4" />
+                                  );
+                                }
+                                if (platformLower.includes("discord")) {
+                                  return (
+                                    <IconBrandDiscord className="w-4 h-4" />
+                                  );
+                                }
+                                if (platformLower.includes("telegram")) {
+                                  return (
+                                    <IconBrandTelegram className="w-4 h-4" />
+                                  );
+                                }
+                                return <IconWorld className="w-4 h-4" />;
+                              };
+
+                              return (
+                                <a
+                                  key={platform}
+                                  href={url as string}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors border border-white/20 hover:border-white/30 text-center min-h-[36px]"
+                                >
+                                  {getIcon(platform)}
+                                  <span className="text-xs text-white/80 capitalize truncate">
+                                    {platform}
+                                  </span>
+                                </a>
+                              );
+                            },
+                          )}
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
             )}

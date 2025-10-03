@@ -11,6 +11,7 @@ import {
   REDO_COMMAND,
   FORMAT_ELEMENT_COMMAND,
   KEY_DOWN_COMMAND,
+  PASTE_COMMAND,
 } from "lexical";
 import { useCallback, useEffect, useState } from "react";
 import { $setBlocksType } from "@lexical/selection";
@@ -21,69 +22,15 @@ import {
   ListNode,
 } from "@lexical/list";
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
-
-import { LexicalComposer } from "@lexical/react/LexicalComposer";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
-import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
-
-// Plugin to prevent form submission on Enter
-function PreventFormSubmitPlugin() {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    return editor.registerCommand(
-      KEY_DOWN_COMMAND,
-      (event: KeyboardEvent) => {
-        if (event.key === "Enter" && !event.shiftKey) {
-          event.stopPropagation();
-        }
-        return false;
-      },
-      1,
-    );
-  }, [editor]);
-
-  return null;
-}
-
-// Plugin to handle external value changes (e.g., from form setValue)
-function ValueSyncPlugin({ value }: { value?: string }) {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    if (value !== undefined) {
-      editor.update(() => {
-        const root = $getRoot();
-        const currentText = root.getTextContent();
-
-        // Only update if the content is actually different
-        if (currentText !== value) {
-          root.clear();
-          if (value) {
-            const paragraph = $createParagraphNode();
-            paragraph.append($createTextNode(value));
-            root.append(paragraph);
-          }
-        }
-      });
-    }
-  }, [editor, value]);
-
-  return null;
-}
-
+import {
+  $convertToMarkdownString,
+  $convertFromMarkdownString,
+  TRANSFORMERS,
+} from "@lexical/markdown";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListItemNode } from "@lexical/list";
 import { AutoLinkNode, LinkNode } from "@lexical/link";
-
+import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -113,9 +60,120 @@ import {
   AlignJustify,
   Highlighter,
 } from "lucide-react";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
+
+// Plugin to prevent form submission on Enter
+function PreventFormSubmitPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerCommand(
+      KEY_DOWN_COMMAND,
+      (event: KeyboardEvent) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.stopPropagation();
+        }
+        return false;
+      },
+      1,
+    );
+  }, [editor]);
+
+  return null;
+}
+
+// Plugin to handle external value changes (e.g., from form setValue)
+function ValueSyncPlugin({ value }: { value?: string }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    if (value === undefined) return;
+
+    const currentMarkdown = editor.getEditorState().read(() => {
+      try {
+        return $convertToMarkdownString(TRANSFORMERS);
+      } catch {
+        return "";
+      }
+    });
+
+    if ((currentMarkdown || "") === (value || "")) return;
+
+    editor.update(() => {
+      const root = $getRoot();
+      root.clear();
+      if (value && value.length) {
+        $convertFromMarkdownString(value, TRANSFORMERS);
+      } else {
+        const paragraph = $createParagraphNode();
+        paragraph.append($createTextNode(""));
+        root.append(paragraph);
+      }
+    });
+  }, [editor, value]);
+
+  return null;
+}
+
+// Plugin to handle markdown paste into empty editor
+function ClipboardMarkdownPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerCommand(
+      PASTE_COMMAND,
+      (event: ClipboardEvent) => {
+        const text = event.clipboardData?.getData("text/plain") || "";
+        const html = event.clipboardData?.getData("text/html") || "";
+
+        // If HTML exists, let default paste flow handle it.
+        if (!text || html) return false;
+
+        const looksLikeMarkdown =
+          /^#{1,6}\s|^\s*[-*+]\s|\d+\.\s|^>\s|```|__|\*\*|!\[.*\]\(.*\)|\[(.*?)\]\((.*?)\)/m.test(
+            text,
+          );
+
+        let isEmpty = false;
+        editor.getEditorState().read(() => {
+          const root = $getRoot();
+          const content = root.getTextContent().trim();
+          isEmpty = content.length === 0;
+        });
+
+        // Only intercept when pasting Markdown into an empty editor
+        if (looksLikeMarkdown && isEmpty) {
+          event.preventDefault();
+          editor.update(() => {
+            const root = $getRoot();
+            root.clear();
+            $convertFromMarkdownString(text, TRANSFORMERS);
+          });
+          return true;
+        }
+
+        return false;
+      },
+      0,
+    );
+  }, [editor]);
+
+  return null;
+}
 
 const theme = {
-  root: "p-4 border border-input bg-background text-foreground text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px] rounded-md",
+  root: "p-4 border border-input bg-background/30 text-foreground text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[200px] rounded-md",
   link: "cursor-pointer text-primary hover:text-primary/80 underline",
   text: {
     bold: "font-bold text-foreground",
@@ -141,6 +199,39 @@ const theme = {
     ol: "list-decimal list-inside mb-2 ml-4 text-foreground",
     ul: "list-disc list-inside mb-2 ml-4 text-foreground",
     listitem: "mb-1 text-foreground",
+  },
+  code: "bg-muted text-foreground p-4 rounded-lg font-mono text-sm block my-4 overflow-x-auto",
+  codeHighlight: {
+    atrule: "text-purple-400",
+    attr: "text-blue-400",
+    boolean: "text-orange-400",
+    builtin: "text-red-400",
+    cdata: "text-gray-400",
+    char: "text-green-400",
+    class: "text-yellow-400",
+    "class-name": "text-yellow-400",
+    comment: "text-gray-400",
+    constant: "text-orange-400",
+    deleted: "text-red-400",
+    doctype: "text-gray-400",
+    entity: "text-orange-400",
+    function: "text-blue-400",
+    important: "text-red-400",
+    inserted: "text-green-400",
+    keyword: "text-purple-400",
+    namespace: "text-orange-400",
+    number: "text-orange-400",
+    operator: "text-gray-300",
+    prolog: "text-gray-400",
+    property: "text-blue-400",
+    punctuation: "text-gray-300",
+    regex: "text-green-400",
+    selector: "text-green-400",
+    string: "text-green-400",
+    symbol: "text-orange-400",
+    tag: "text-red-400",
+    url: "text-blue-400",
+    variable: "text-orange-400",
   },
 };
 
@@ -248,7 +339,7 @@ function ToolbarPlugin() {
   return (
     <div className="flex flex-wrap items-center gap-2 p-2 border-b border-border bg-muted/20">
       {/* Text Formatting Group */}
-      <div className="flex items-center border border-border rounded-md bg-background">
+      <div className="flex items-center border border-border rounded-md bg-background/30">
         <Button
           type="button"
           variant={isBold ? "default" : "ghost"}
@@ -535,12 +626,14 @@ export function RichTextEditor({
       QuoteNode,
       AutoLinkNode,
       LinkNode,
+      CodeNode,
+      CodeHighlightNode,
     ],
   };
 
   return (
     <div
-      className={`border border-input rounded-md bg-background ${className}`}
+      className={`border border-input rounded-md bg-background/30 ${className}`}
     >
       <LexicalComposer initialConfig={initialConfig}>
         <ToolbarPlugin />
@@ -548,7 +641,7 @@ export function RichTextEditor({
           <RichTextPlugin
             contentEditable={
               <ContentEditable
-                className="min-h-[200px] p-4 outline-none resize-none overflow-auto prose prose-sm max-w-none text-foreground rounded-t-none border-none"
+                className="min-h-[200px] p-4 outline-none resize-none overflow-auto prose prose-sm max-w-none text-foreground rounded-t-none border-none bg-background/10"
                 style={{ caretColor: "hsl(var(--foreground))" }}
               />
             }
@@ -563,10 +656,8 @@ export function RichTextEditor({
             onChange={(editorState) => {
               if (onChange) {
                 editorState.read(() => {
-                  const root = $getRoot();
-                  const textContent = root.getTextContent();
-                  // Return text content for validation (form expects string)
-                  onChange(textContent || "");
+                  const md = $convertToMarkdownString(TRANSFORMERS);
+                  onChange(md || "");
                 });
               }
             }}
@@ -574,10 +665,12 @@ export function RichTextEditor({
           <HistoryPlugin />
           <ListPlugin />
           <LinkPlugin />
+          <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
           <AutoFocusPlugin />
           <TabIndentationPlugin />
           <PreventFormSubmitPlugin />
           <ValueSyncPlugin value={initialValue} />
+          <ClipboardMarkdownPlugin />
         </div>
       </LexicalComposer>
     </div>

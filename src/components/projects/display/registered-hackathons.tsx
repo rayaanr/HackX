@@ -6,6 +6,9 @@ import {
   Trophy,
   Link as LinkIcon,
   MoreHorizontal,
+  Clock,
+  CheckCircle,
+  FolderIcon,
 } from "lucide-react";
 import {
   Card,
@@ -33,8 +36,8 @@ import Link from "next/link";
 import Image from "next/image";
 import type { UIHackathon } from "@/types/hackathon";
 import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
 import { useRegisteredHackathons } from "@/hooks/use-hackathons";
+import EmptyComponent from "@/components/empty";
 
 type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
 
@@ -50,17 +53,11 @@ export function RegisteredHackathons() {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
-        <Card>
-          <CardContent className="text-center py-12">
-            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <Trophy className="w-12 h-12 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Connect Your Wallet</h3>
-            <p className="text-muted-foreground mb-4">
-              Connect your wallet to view your registered hackathons
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyComponent
+          title="Connect Your Wallet"
+          description="Connect your wallet to view your registered hackathons"
+          type="wallet-connect"
+        />
       </div>
     );
   }
@@ -69,11 +66,11 @@ export function RegisteredHackathons() {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-6">Registered Hackathons</h2>
-        <div className="text-center py-12">
-          <p className="text-destructive">
-            Failed to load registered hackathons
-          </p>
-        </div>
+        <EmptyComponent
+          title="Failed to load hackathons"
+          description="There was an error loading your registered hackathons. Please try again."
+          type="error"
+        />
       </div>
     );
   }
@@ -120,24 +117,17 @@ export function RegisteredHackathons() {
       </h2>
 
       {registrations.length === 0 ? (
-        <div className="border border-white/10 rounded-xl p-10 text-center bg-white/[0.02] backdrop-blur-sm">
-          <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
-            <Trophy className="w-12 h-12 text-white/50" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2 text-white/85">
-            No registered hackathons
-          </h3>
-          <p className="text-white/50 mb-6 max-w-md mx-auto">
-            Register for hackathons to track your participation and submit
-            projects
-          </p>
-          <Button
-            asChild
-            className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
-          >
-            <Link href="/hackathons">Browse Hackathons</Link>
-          </Button>
-        </div>
+        <EmptyComponent
+          title="No Registered Hackathons"
+          description="You haven't registered for any hackathons yet."
+          type="info"
+          variant="ghost"
+          action={
+            <Link href="/hackathons">
+              <Button>Explore Hackathons</Button>
+            </Link>
+          }
+        />
       ) : (
         <div className="space-y-6">
           {registrations.map((hackathon: RegisteredHackathon, index) => {
@@ -195,13 +185,19 @@ export function RegisteredHackathons() {
                                       View Details
                                     </Link>
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem asChild>
-                                    <Link
-                                      href={`/projects/create?hackathon=${hackathon.id}`}
-                                    >
-                                      Submit Project
-                                    </Link>
-                                  </DropdownMenuItem>
+                                  {status === "Live" ? (
+                                    <DropdownMenuItem asChild>
+                                      <Link
+                                        href={`/projects/create?hackathon=${hackathon.id}`}
+                                      >
+                                        Submit Project
+                                      </Link>
+                                    </DropdownMenuItem>
+                                  ) : (
+                                    <DropdownMenuItem disabled>
+                                      Submit Project (Not Available)
+                                    </DropdownMenuItem>
+                                  )}
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </CardAction>
@@ -263,16 +259,62 @@ export function RegisteredHackathons() {
                           </div>
 
                           <div className="flex flex-wrap items-center gap-5 mt-auto">
-                            <Button
-                              asChild
-                              className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
-                            >
-                              <Link
-                                href={`/projects/create?hackathon=${hackathon.id}`}
+                            {status === "Live" ? (
+                              <Button
+                                asChild
+                                className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
                               >
-                                Submit Project
-                              </Link>
-                            </Button>
+                                <Link
+                                  href={`/projects/create?hackathon=${hackathon.id}`}
+                                >
+                                  Submit Project
+                                </Link>
+                              </Button>
+                            ) : status === "Coming Soon" ? (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                <Clock className="w-4 h-4 mr-2" />
+                                Registration Not Started
+                              </Button>
+                            ) : status === "Registration Open" ? (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                <Clock className="w-4 h-4 mr-2" />
+                                Waiting for Submission Phase
+                              </Button>
+                            ) : status === "Registration Closed" ? (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                <Clock className="w-4 h-4 mr-2" />
+                                Submission Starting Soon
+                              </Button>
+                            ) : status === "Voting" ? (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                In Voting Phase
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                disabled
+                                className="border-white/20"
+                              >
+                                Hackathon Ended
+                              </Button>
+                            )}
                             <div className="text-xs md:text-sm text-white/55">
                               <span className="font-medium">
                                 {formatDateRange(
@@ -291,7 +333,7 @@ export function RegisteredHackathons() {
                           width={300}
                           src={resolveIPFSToHttp(hackathon.visual)}
                           alt={hackathon.name || `Hackathon ${hackathon.id}`}
-                          className="h-40 md:h-full w-full object-cover rounded-lg transform group-hover:scale-[1.03] transition-transform duration-500"
+                          className="h-40 md:h-48 w-full object-cover rounded-lg transform group-hover:scale-[1.03] transition-transform duration-500"
                           unoptimized
                         />
                       </div>

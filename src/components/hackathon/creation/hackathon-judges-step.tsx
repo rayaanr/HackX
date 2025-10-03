@@ -51,7 +51,7 @@ export function JudgesStep() {
   };
 
   return (
-    <Card>
+    <Card className="bg-background/30">
       <CardContent>
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_auto_1fr] gap-0 min-h-[300px] relative">
           {/* Left: Invited Judges List */}

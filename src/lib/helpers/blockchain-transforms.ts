@@ -28,9 +28,11 @@ export function transformBlockchainToUI(
     techStack: metadata?.techStack || [],
     experienceLevel: metadata?.experienceLevel || "all",
     registrationPeriod: {
-      registrationStartDate: metadata?.registrationPeriod?.registrationStartDate
-        ? new Date(metadata.registrationPeriod.registrationStartDate)
-        : undefined,
+      registrationStartDate: blockchainHackathon.registrationStartDate
+        ? new Date(Number(blockchainHackathon.registrationStartDate) * 1000)
+        : metadata?.registrationPeriod?.registrationStartDate
+          ? new Date(metadata.registrationPeriod.registrationStartDate)
+          : undefined,
       registrationEndDate: new Date(
         Number(blockchainHackathon.registrationDeadline) * 1000,
       ),
@@ -46,9 +48,9 @@ export function transformBlockchainToUI(
       ),
     },
     votingPeriod: {
-      votingStartDate: new Date(
-        Number(blockchainHackathon.submissionDeadline) * 1000,
-      ),
+      votingStartDate: blockchainHackathon.judgingStartDate
+        ? new Date(Number(blockchainHackathon.judgingStartDate) * 1000)
+        : new Date(Number(blockchainHackathon.submissionDeadline) * 1000), // Fallback to submission end
       votingEndDate: new Date(
         Number(blockchainHackathon.judgingDeadline) * 1000,
       ),
@@ -129,12 +131,19 @@ export function getHackathonStatus(
   }
 
   const now = Date.now() / 1000; // Current UTC timestamp in seconds (matches blockchain timestamps)
+  const registrationStartDate = Number(hackathon.registrationStartDate);
   const registrationDeadline = Number(hackathon.registrationDeadline);
   const submissionStartDate = Number(hackathon.submissionStartDate);
   const submissionDeadline = Number(hackathon.submissionDeadline);
+  const judgingStartDate = Number(hackathon.judgingStartDate);
   const judgingDeadline = Number(hackathon.judgingDeadline);
 
   // Pure timeline logic: check what phase we're in based on current time vs deadlines
+
+  // Before registration starts
+  if (registrationStartDate && now < registrationStartDate) {
+    return "upcoming";
+  }
 
   // Registration phase: before registration deadline
   if (now < registrationDeadline) {
@@ -143,7 +152,7 @@ export function getHackathonStatus(
 
   // Between registration deadline and submission start (if there's a gap)
   if (submissionStartDate && now < submissionStartDate) {
-    return "registration_closed";
+    return "submission_not_started";
   }
 
   // Submission phase: between submission start and submission deadline
@@ -151,7 +160,12 @@ export function getHackathonStatus(
     return "submission_open";
   }
 
-  // Judging phase: between submission deadline and judging deadline
+  // Between submission deadline and judging start (if there's a gap)
+  if (judgingStartDate && now < judgingStartDate) {
+    return "submission_closed";
+  }
+
+  // Judging phase: between judging start and judging deadline
   if (now < judgingDeadline) {
     return "judging_open";
   }
@@ -334,10 +348,18 @@ export function isInRegistrationPhase(hackathon: BlockchainHackathon): boolean {
  */
 export function isInSubmissionPhase(hackathon: BlockchainHackathon): boolean {
   const now = Date.now() / 1000;
+  const registrationDeadline = Number(hackathon.registrationDeadline);
   const submissionStartDate = Number(hackathon.submissionStartDate);
   const submissionDeadline = Number(hackathon.submissionDeadline);
+
+  // If submissionStartDate is 0 or not set, use registrationDeadline as fallback
+  const effectiveSubmissionStart =
+    submissionStartDate > 0 ? submissionStartDate : registrationDeadline;
+
   return (
-    hackathon.isActive && now >= submissionStartDate && now < submissionDeadline
+    hackathon.isActive &&
+    now >= effectiveSubmissionStart &&
+    now < submissionDeadline
   );
 }
 
@@ -347,9 +369,15 @@ export function isInSubmissionPhase(hackathon: BlockchainHackathon): boolean {
 export function isInJudgingPhase(hackathon: BlockchainHackathon): boolean {
   const now = Date.now() / 1000;
   const submissionDeadline = Number(hackathon.submissionDeadline);
+  const judgingStartDate = Number(hackathon.judgingStartDate);
   const judgingDeadline = Number(hackathon.judgingDeadline);
+
+  // If judgingStartDate is 0 or not set, use submissionDeadline as fallback
+  const effectiveJudgingStart =
+    judgingStartDate > 0 ? judgingStartDate : submissionDeadline;
+
   return (
-    hackathon.isActive && now >= submissionDeadline && now < judgingDeadline
+    hackathon.isActive && now >= effectiveJudgingStart && now < judgingDeadline
   );
 }
 

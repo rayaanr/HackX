@@ -5,17 +5,19 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
- * @title HackathonPlatform
+ * @title HackX
  */
-contract HackathonPlatform is Ownable, ReentrancyGuard {
+contract HackX is Ownable, ReentrancyGuard {
     
     struct Hackathon {
         uint256 id;
         string ipfsHash;
         address organizer;
+        uint256 registrationStartDate;
         uint256 registrationDeadline;
         uint256 submissionStartDate;
         uint256 submissionDeadline;
+        uint256 judgingStartDate;
         uint256 judgingDeadline;
         bool isActive;
     }
@@ -30,7 +32,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         uint256 judgeCount;
     }
     
-    // Comprehensive Events
+    // Events
     event HackathonCreated(uint256 indexed hackathonId, address indexed organizer, string ipfsHash);
     event HackathonMetadataUpdated(uint256 indexed hackathonId, address indexed organizer, string newIpfsHash);
     event HackathonDeactivated(uint256 indexed hackathonId, address indexed organizer);
@@ -58,7 +60,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     mapping(uint256 => mapping(uint256 => bool)) public isProjectSubmitted;
     mapping(uint256 => mapping(address => uint256)) public projectScores;
     
-    // Enhanced enumeration mappings
+    // Enumeration mappings
     mapping(uint256 => address[]) public hackathonParticipants;
     mapping(uint256 => uint256[]) public hackathonProjects;
     mapping(uint256 => address[]) public hackathonJudges;
@@ -67,50 +69,65 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     mapping(address => uint256[]) public userHackathons; // User's hackathon participations
     mapping(address => uint256[]) public organizerHackathons; // Organizer's created hackathons
     
-    // Constants for validation
+    // Constants
     uint256 private constant MIN_DEADLINE_BUFFER = 1 minutes;
     uint256 private constant MAX_SCORE = 100;
     uint256 private constant MIN_SCORE = 1;
     
     constructor() Ownable(msg.sender) {}
     
-    // Enhanced modifiers with specific error messages
+    // Modifiers
     modifier hackathonExists(uint256 hackathonId) {
-        require(hackathons[hackathonId].id != 0, "HackathonPlatform: Hackathon does not exist");
+        require(hackathons[hackathonId].id != 0, "HackX: Hackathon does not exist");
         _;
     }
     
     modifier projectExists(uint256 projectId) {
-        require(projects[projectId].isCreated, "HackathonPlatform: Project does not exist");
+        require(projects[projectId].isCreated, "HackX: Project does not exist");
         _;
     }
     
     modifier onlyHackathonOrganizer(uint256 hackathonId) {
-        require(hackathons[hackathonId].organizer == msg.sender, "HackathonPlatform: Only hackathon organizer can perform this action");
+        require(hackathons[hackathonId].organizer == msg.sender, "HackX: Only hackathon organizer can perform this action");
         _;
     }
     
     modifier onlyProjectCreator(uint256 projectId) {
-        require(projects[projectId].creator == msg.sender, "HackathonPlatform: Only project creator can perform this action");
+        require(projects[projectId].creator == msg.sender, "HackX: Only project creator can perform this action");
         _;
     }
     
     modifier validAddress(address addr) {
-        require(addr != address(0), "HackathonPlatform: Invalid zero address provided");
+        require(addr != address(0), "HackX: Invalid zero address provided");
         _;
     }
     
     modifier validIpfsHash(string memory ipfsHash) {
-        require(bytes(ipfsHash).length > 0, "HackathonPlatform: IPFS hash cannot be empty");
-        require(bytes(ipfsHash).length <= 256, "HackathonPlatform: IPFS hash too long");
+        require(bytes(ipfsHash).length > 0, "HackX: IPFS hash cannot be empty");
+        require(bytes(ipfsHash).length <= 256, "HackX: IPFS hash too long");
         _;
     }
-    
-    modifier validDeadlines(uint256 registration, uint256 submissionStart, uint256 submission, uint256 judging) {
-        require(registration > block.timestamp + MIN_DEADLINE_BUFFER, "HackathonPlatform: Registration deadline must be at least 1 min in the future");
-        require(submissionStart > block.timestamp, "HackathonPlatform: Submission start must be in the future");
-        require(submission > submissionStart + MIN_DEADLINE_BUFFER, "HackathonPlatform: Submission deadline must be at least 1 min after submission start");
-        require(judging > submission + MIN_DEADLINE_BUFFER, "HackathonPlatform: Judging deadline must be at least 1 min after submission");
+
+    // NEW: full timeline validation (all phase starts/ends explicit)
+    modifier validDeadlines(
+        uint256 regStart,
+        uint256 regEnd,
+        uint256 subStart,
+        uint256 subEnd,
+        uint256 judgeStart,
+        uint256 judgeEnd
+    ) {
+        // Registration phase validation
+        require(regStart > block.timestamp + MIN_DEADLINE_BUFFER, "HackX: Registration start must be in the future");
+        require(regEnd > regStart + MIN_DEADLINE_BUFFER, "HackX: Registration end must be after start + buffer");
+        
+        // Submission phase validation - can start during or after registration
+        require(subStart >= regStart, "HackX: Submission cannot start before registration");
+        require(subEnd > subStart + MIN_DEADLINE_BUFFER, "HackX: Submission end must be after start + buffer");
+        
+        // Judging phase validation - must start after submission ends
+        require(judgeStart > subEnd + MIN_DEADLINE_BUFFER, "HackX: Judging start must be after submission end + buffer");
+        require(judgeEnd > judgeStart + MIN_DEADLINE_BUFFER, "HackX: Judging end must be after start + buffer");
         _;
     }
     
@@ -119,14 +136,23 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
      */
     function createHackathon(
         string memory ipfsHash,
+        uint256 registrationStartDate,
         uint256 registrationDeadline,
         uint256 submissionStartDate,
         uint256 submissionDeadline,
+        uint256 judgingStartDate,
         uint256 judgingDeadline,
         address[] memory initialJudges
     ) external 
         validIpfsHash(ipfsHash)
-        validDeadlines(registrationDeadline, submissionStartDate, submissionDeadline, judgingDeadline)
+        validDeadlines(
+            registrationStartDate,
+            registrationDeadline,
+            submissionStartDate,
+            submissionDeadline,
+            judgingStartDate,
+            judgingDeadline
+        )
         returns (uint256) 
     {
         uint256 hackathonId = nextHackathonId++;
@@ -136,9 +162,11 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
             id: hackathonId,
             ipfsHash: ipfsHash,
             organizer: msg.sender,
+            registrationStartDate: registrationStartDate,
             registrationDeadline: registrationDeadline,
             submissionStartDate: submissionStartDate,
             submissionDeadline: submissionDeadline,
+            judgingStartDate: judgingStartDate,
             judgingDeadline: judgingDeadline,
             isActive: true
         });
@@ -148,8 +176,8 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
             address judge = initialJudges[i];
             
             // Basic validations
-            require(judge != address(0), "HackathonPlatform: Invalid judge address");
-            require(judge != msg.sender, "HackathonPlatform: Organizer cannot be judge");
+            require(judge != address(0), "HackX: Invalid judge address");
+            require(judge != msg.sender, "HackX: Organizer cannot be judge");
             
             // Skip duplicates (gas efficient approach)
             if (isJudge[hackathonId][judge]) {
@@ -179,7 +207,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         hackathonExists(hackathonId) 
         validIpfsHash(newIpfsHash)
     {
-        require(hackathons[hackathonId].isActive, "HackathonPlatform: Cannot update inactive hackathon");
+        require(hackathons[hackathonId].isActive, "HackX: Cannot update inactive hackathon");
         hackathons[hackathonId].ipfsHash = newIpfsHash;
         
         emit HackathonMetadataUpdated(hackathonId, msg.sender, newIpfsHash);
@@ -193,7 +221,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         onlyHackathonOrganizer(hackathonId) 
         hackathonExists(hackathonId) 
     {
-        require(hackathons[hackathonId].isActive, "HackathonPlatform: Hackathon is already inactive");
+        require(hackathons[hackathonId].isActive, "HackX: Hackathon is already inactive");
         
         hackathons[hackathonId].isActive = false;
         emit HackathonDeactivated(hackathonId, msg.sender);
@@ -278,9 +306,9 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         hackathonExists(hackathonId)
         validAddress(judge)
     {
-        require(hackathons[hackathonId].isActive, "HackathonPlatform: Cannot add judge to inactive hackathon");
-        require(!isJudge[hackathonId][judge], "HackathonPlatform: Address is already a judge for this hackathon");
-        require(judge != hackathons[hackathonId].organizer, "HackathonPlatform: Organizer cannot be a judge");
+        require(hackathons[hackathonId].isActive, "HackX: Cannot add judge to inactive hackathon");
+        require(!isJudge[hackathonId][judge], "HackX: Address is already a judge for this hackathon");
+        require(judge != hackathons[hackathonId].organizer, "HackX: Organizer cannot be a judge");
         
         isJudge[hackathonId][judge] = true;
         judgeAssignments[judge].push(hackathonId);
@@ -298,13 +326,13 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         hackathonExists(hackathonId)
         validAddress(judge)
     {
-        require(isJudge[hackathonId][judge], "HackathonPlatform: Address is not a judge for this hackathon");
+        require(isJudge[hackathonId][judge], "HackX: Address is not a judge for this hackathon");
         
-        // Check if we're in judging period - don't allow removal during judging
+        // Disallow removal during judging period (between judgingStartDate and judgingDeadline)
         require(
-            block.timestamp <= hackathons[hackathonId].submissionDeadline || 
+            block.timestamp < hackathons[hackathonId].judgingStartDate || 
             block.timestamp > hackathons[hackathonId].judgingDeadline, 
-            "HackathonPlatform: Cannot remove judge during judging period"
+            "HackX: Cannot remove judge during judging period"
         );
         
         isJudge[hackathonId][judge] = false;
@@ -333,17 +361,20 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Register for hackathon - pure timestamp validation
+     * @dev Register for hackathon - timestamp validation with explicit start
      */
     function registerForHackathon(uint256 hackathonId) 
         external 
         nonReentrant 
         hackathonExists(hackathonId)
     {
-        require(hackathons[hackathonId].isActive, "HackathonPlatform: Cannot register for inactive hackathon");
-        require(block.timestamp <= hackathons[hackathonId].registrationDeadline, "HackathonPlatform: Registration deadline has passed");
-        require(!isRegistered[hackathonId][msg.sender], "HackathonPlatform: Already registered for this hackathon");
-        require(!isJudge[hackathonId][msg.sender], "HackathonPlatform: Judges cannot register as participants");
+        Hackathon storage h = hackathons[hackathonId];
+
+        require(h.isActive, "HackX: Cannot register for inactive hackathon");
+        require(block.timestamp >= h.registrationStartDate, "HackX: Registration has not started");
+        require(block.timestamp <= h.registrationDeadline, "HackX: Registration deadline has passed");
+        require(!isRegistered[hackathonId][msg.sender], "HackX: Already registered for this hackathon");
+        require(!isJudge[hackathonId][msg.sender], "HackX: Judges cannot register as participants");
         
         isRegistered[hackathonId][msg.sender] = true;
         hackathonParticipants[hackathonId].push(msg.sender);
@@ -400,12 +431,12 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         projectExists(projectId)
         validAddress(member)
     {
-        require(member != projects[projectId].creator, "HackathonPlatform: Project creator is already part of the team");
+        require(member != projects[projectId].creator, "HackX: Project creator is already part of the team");
         
         // Check if member already exists
         address[] memory currentMembers = projects[projectId].teamMembers;
         for (uint256 i = 0; i < currentMembers.length; i++) {
-            require(currentMembers[i] != member, "HackathonPlatform: Address is already a team member");
+            require(currentMembers[i] != member, "HackX: Address is already a team member");
         }
         
         projects[projectId].teamMembers.push(member);
@@ -435,7 +466,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
             }
         }
         
-        require(found, "HackathonPlatform: Address is not a team member");
+        require(found, "HackX: Address is not a team member");
         
         // Remove project from user's projects
         uint256[] storage memberProjects = userProjects[member];
@@ -451,7 +482,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Submit project to hackathon - pure timestamp validation
+     * @dev Submit project to hackathon - timestamp validation
      */
     function submitProjectToHackathon(uint256 hackathonId, uint256 projectId) 
         external 
@@ -459,11 +490,13 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         hackathonExists(hackathonId) 
         projectExists(projectId) 
     {
-        require(hackathons[hackathonId].isActive, "HackathonPlatform: Cannot submit to inactive hackathon");
-        require(block.timestamp >= hackathons[hackathonId].submissionStartDate, "HackathonPlatform: Submission period has not started yet");
-        require(block.timestamp <= hackathons[hackathonId].submissionDeadline, "HackathonPlatform: Submission deadline has passed");
-        require(isRegistered[hackathonId][msg.sender], "HackathonPlatform: Must be registered for hackathon to submit projects");
-        require(!isProjectSubmitted[hackathonId][projectId], "HackathonPlatform: Project already submitted to this hackathon");
+        Hackathon storage h = hackathons[hackathonId];
+
+        require(h.isActive, "HackX: Cannot submit to inactive hackathon");
+        require(block.timestamp >= h.submissionStartDate, "HackX: Submission period has not started yet");
+        require(block.timestamp <= h.submissionDeadline, "HackX: Submission deadline has passed");
+        require(isRegistered[hackathonId][msg.sender], "HackX: Must be registered for hackathon to submit projects");
+        require(!isProjectSubmitted[hackathonId][projectId], "HackX: Project already submitted to this hackathon");
         
         // Check authorization (creator or team member)
         bool isAuthorized = (projects[projectId].creator == msg.sender);
@@ -476,7 +509,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
                 }
             }
         }
-        require(isAuthorized, "HackathonPlatform: Only project creator or team members can submit the project");
+        require(isAuthorized, "HackX: Only project creator or team members can submit the project");
         
         isProjectSubmitted[hackathonId][projectId] = true;
         hackathonProjects[hackathonId].push(projectId);
@@ -485,15 +518,15 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Submit score - pure timestamp validation
+     * @dev Submit score - timestamp validation with explicit judging start
      */
     function submitScore(uint256 projectId, uint256 score, string memory feedbackIpfsHash) 
         external 
         projectExists(projectId)
         validIpfsHash(feedbackIpfsHash)
     {
-        require(score >= MIN_SCORE && score <= MAX_SCORE, "HackathonPlatform: Score must be between 1 and 100");
-        require(projectScores[projectId][msg.sender] == 0, "HackathonPlatform: Already scored this project");
+        require(score >= MIN_SCORE && score <= MAX_SCORE, "HackX: Score must be between 1 and 100");
+        require(projectScores[projectId][msg.sender] == 0, "HackX: Already scored this project");
         
         // Find hackathon and validate judge authorization
         bool isAuthorizedJudge = false;
@@ -501,16 +534,17 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
         
         for (uint256 i = 1; i < nextHackathonId; i++) {
             if (isProjectSubmitted[i][projectId] && isJudge[i][msg.sender]) {
-                require(block.timestamp > hackathons[i].submissionDeadline, "HackathonPlatform: Judging period has not started yet");
-                require(block.timestamp <= hackathons[i].judgingDeadline, "HackathonPlatform: Judging deadline has passed");
-                require(hackathons[i].isActive, "HackathonPlatform: Cannot judge projects in inactive hackathon");
+                Hackathon storage h = hackathons[i];
+                require(block.timestamp >= h.judgingStartDate, "HackX: Judging period has not started yet");
+                require(block.timestamp <= h.judgingDeadline, "HackX: Judging deadline has passed");
+                require(h.isActive, "HackX: Cannot judge projects in inactive hackathon");
                 isAuthorizedJudge = true;
                 hackathonId = i;
                 break;
             }
         }
         
-        require(isAuthorizedJudge, "HackathonPlatform: Not an authorized judge for this project");
+        require(isAuthorizedJudge, "HackX: Not an authorized judge for this project");
         
         projectScores[projectId][msg.sender] = score;
         projects[projectId].totalScore += score;
@@ -522,32 +556,32 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     // ========== VIEW FUNCTIONS ==========
     
     function getHackathon(uint256 hackathonId) external view returns (Hackathon memory) {
-        require(hackathons[hackathonId].id != 0, "HackathonPlatform: Hackathon does not exist");
+        require(hackathons[hackathonId].id != 0, "HackX: Hackathon does not exist");
         return hackathons[hackathonId];
     }
     
     function getProject(uint256 projectId) external view returns (Project memory) {
-        require(projects[projectId].isCreated, "HackathonPlatform: Project does not exist");
+        require(projects[projectId].isCreated, "HackX: Project does not exist");
         return projects[projectId];
     }
     
     function getProjectTeamMembers(uint256 projectId) external view returns (address[] memory) {
-        require(projects[projectId].isCreated, "HackathonPlatform: Project does not exist");
+        require(projects[projectId].isCreated, "HackX: Project does not exist");
         return projects[projectId].teamMembers;
     }
     
     function getHackathonProjects(uint256 hackathonId) external view returns (uint256[] memory) {
-        require(hackathons[hackathonId].id != 0, "HackathonPlatform: Hackathon does not exist");
+        require(hackathons[hackathonId].id != 0, "HackX: Hackathon does not exist");
         return hackathonProjects[hackathonId];
     }
     
     function getHackathonParticipants(uint256 hackathonId) external view returns (address[] memory) {
-        require(hackathons[hackathonId].id != 0, "HackathonPlatform: Hackathon does not exist");
+        require(hackathons[hackathonId].id != 0, "HackX: Hackathon does not exist");
         return hackathonParticipants[hackathonId];
     }
     
     function getHackathonJudges(uint256 hackathonId) external view returns (address[] memory) {
-        require(hackathons[hackathonId].id != 0, "HackathonPlatform: Hackathon does not exist");
+        require(hackathons[hackathonId].id != 0, "HackX: Hackathon does not exist");
         return hackathonJudges[hackathonId];
     }
     
@@ -568,7 +602,7 @@ contract HackathonPlatform is Ownable, ReentrancyGuard {
     }
     
     function getProjectScore(uint256 projectId) external view returns (uint256 avgScore, uint256 totalScore, uint256 judgeCount) {
-        require(projects[projectId].isCreated, "HackathonPlatform: Project does not exist");
+        require(projects[projectId].isCreated, "HackX: Project does not exist");
         Project memory project = projects[projectId];
         totalScore = project.totalScore;
         judgeCount = project.judgeCount;

@@ -13,7 +13,8 @@ import {
   ProjectCard,
   type ProjectCardData,
 } from "@/components/projects/display/project-card";
-import { WalletConnectionPrompt } from "@/components/wallet/wallet-connection-prompt";
+import EmptyComponent from "@/components/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -56,10 +57,12 @@ export function ActiveProjects() {
   if (error) {
     return (
       <div>
-        <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
-        <div className="text-center py-12">
-          <p className="text-destructive">Failed to load projects</p>
-        </div>
+        <h2 className="text-2xl font-bold mb-6">Projects</h2>
+        <EmptyComponent
+          title="Failed to load projects"
+          description="There was an error loading your projects. Please try again."
+          type="error"
+        />
       </div>
     );
   }
@@ -68,8 +71,12 @@ export function ActiveProjects() {
   if (!isConnected) {
     return (
       <div>
-        <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
-        <WalletConnectionPrompt />
+        <h2 className="text-2xl font-bold mb-6">Projects</h2>
+        <EmptyComponent
+          title="Connect Your Wallet"
+          description="Connect your wallet to view and manage your projects"
+          type="wallet-connect"
+        />
       </div>
     );
   }
@@ -77,14 +84,33 @@ export function ActiveProjects() {
   if (loading) {
     return (
       <div>
-        <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
+        <h2 className="text-2xl font-bold mb-6">Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
-              </CardContent>
+            <Card key={i} className="project-card-hover h-full">
+              <div className="relative z-10 h-full flex flex-col">
+                <CardHeader className="mb-3 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="size-12 rounded-md" />
+                    <div className="flex-1 min-w-0">
+                      <Skeleton className="h-5 w-3/4 mb-2" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-1 relative z-10 text-center">
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-4/5 mb-3" />
+                  <div className="mt-5 flex flex-wrap gap-2 justify-center">
+                    {[1, 2, 3].map((j) => (
+                      <Skeleton key={j} className="h-6 w-12 rounded-full" />
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter className="mt-4 relative z-10">
+                  <Skeleton className="h-3 w-24" />
+                </CardFooter>
+              </div>
             </Card>
           ))}
         </div>
@@ -94,23 +120,24 @@ export function ActiveProjects() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Active Projects</h2>
+      <h2 className="text-2xl font-bold mb-6">Projects</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
         {allProjects.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <FolderIcon className="w-12 h-12 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Create your first project to get started
-            </p>
-            <Button asChild>
-              <Link href="/projects/create">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Project
-              </Link>
-            </Button>
+          <div className="col-span-full">
+            <EmptyComponent
+              title="No projects yet"
+              description="Create your first project to get started"
+              type="info"
+              icon={<FolderIcon className="size-12 text-white/50" />}
+              action={
+                <Button asChild>
+                  <Link href="/projects/create">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Project
+                  </Link>
+                </Button>
+              }
+            />
           </div>
         ) : (
           <>

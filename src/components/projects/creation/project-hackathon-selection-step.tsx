@@ -8,7 +8,7 @@ import {
   FormDescription,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useFormContext } from "react-hook-form";
 import { type ProjectFormData } from "@/lib/schemas/project-schema";
@@ -23,6 +23,7 @@ import { ExternalLink } from "lucide-react";
 import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import { getUIHackathonStatus, formatDisplayDate } from "@/lib/helpers/date";
 import { useRegisteredHackathons } from "@/hooks/use-hackathons";
+import EmptyComponent from "@/components/empty";
 
 function transformHackathonToCardProps(
   hackathon: any, // Blockchain hackathon with combined contract + IPFS data
@@ -35,6 +36,7 @@ function transformHackathonToCardProps(
   if (status === "Voting" || status.toLowerCase().includes("voting")) {
     cardStatus = "live";
   } else if (
+    status === "Coming Soon" ||
     status === "Registration Open" ||
     status === "Registration Closed" ||
     status.toLowerCase().includes("registration")
@@ -88,17 +90,14 @@ export function HackathonSelectionStep() {
 
   return (
     <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Select Hackathons</CardTitle>
-        </CardHeader>
+      <Card className="bg-transparent/30">
         <CardContent className="space-y-6">
           <FormField
             control={control}
             name="hackathonIds"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Hackathon Selection *</FormLabel>
+                <FormLabel required>Hackathon Selection</FormLabel>
                 <FormControl>
                   <div className="space-y-4">
                     {/* Removed filter buttons since we only show registered hackathons */}
@@ -108,38 +107,37 @@ export function HackathonSelectionStep() {
                         Loading registered hackathons...
                       </div>
                     ) : error ? (
-                      <div className="text-center py-8 text-destructive">
-                        Failed to load hackathons. Please try again.
-                      </div>
+                      <EmptyComponent
+                        title="Failed to load hackathons"
+                        description="Please try again."
+                        type="error"
+                        variant="ghost"
+                      />
                     ) : !isConnected ? (
-                      <div className="text-center py-8">
-                        <p className="text-muted-foreground mb-4">
-                          Connect your wallet to see registered hackathons
-                        </p>
-                      </div>
+                      <EmptyComponent
+                        title="Connect Your Wallet"
+                        description="Connect your wallet to see registered hackathons"
+                        type="wallet-connect"
+                        variant="ghost"
+                      />
                     ) : hackathonData.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="max-w-sm mx-auto">
-                          <div className="mb-4">
-                            <div className="w-16 h-16 bg-muted rounded-full mx-auto mb-4 flex items-center justify-center">
-                              <ExternalLink className="w-6 h-6 text-muted-foreground" />
-                            </div>
-                            <h3 className="text-lg font-semibold mb-2">
-                              No Registered Hackathons
-                            </h3>
-                            <p className="text-muted-foreground mb-6">
-                              You haven't registered for any hackathons yet.
-                              Register for a hackathon to submit your project.
-                            </p>
-                          </div>
+                      <EmptyComponent
+                        title="No Registered Hackathons"
+                        description="You haven't registered for any hackathons yet. Register for a hackathon to submit your project."
+                        type="info"
+                        variant="ghost"
+                        icon={
+                          <ExternalLink className="size-12 text-white/50" />
+                        }
+                        action={
                           <Link href="/hackathons">
                             <Button className="w-full">
                               <ExternalLink className="mr-2 h-4 w-4" />
                               Explore Hackathons
                             </Button>
                           </Link>
-                        </div>
-                      </div>
+                        }
+                      />
                     ) : (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

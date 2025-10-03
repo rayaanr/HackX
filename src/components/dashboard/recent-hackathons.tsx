@@ -11,6 +11,7 @@ import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import { format } from "date-fns";
+import EmptyComponent from "@/components/empty";
 
 interface RecentHackathonsProps {
   hackathons: UIHackathon[];
@@ -54,17 +55,20 @@ export function RecentHackathons({
       </CardHeader>
       <CardContent>
         {recentHackathons.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">
-              You haven't created any hackathons yet
-            </p>
-            <Link href="/hackathons/create">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Hackathon
-              </Button>
-            </Link>
-          </div>
+          <EmptyComponent
+            title="No hackathons yet"
+            description="You haven't created any hackathons yet"
+            type="info"
+            variant="ghost"
+            action={
+              <Link href="/hackathons/create">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Hackathon
+                </Button>
+              </Link>
+            }
+          />
         ) : (
           <div className="space-y-4">
             {recentHackathons.map((hackathon, index) => {

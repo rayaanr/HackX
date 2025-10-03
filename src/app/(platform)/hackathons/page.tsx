@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CirclePlus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -17,6 +17,7 @@ import { HackathonCard } from "@/components/hackathon/display/hackathon-overview
 import { getUIHackathonStatus } from "@/lib/helpers/date";
 import type { UIHackathon, PrizeCohort } from "@/types/hackathon";
 import { useAllHackathons } from "@/hooks/use-hackathons";
+import EmptyComponent from "@/components/empty";
 
 // Filter options
 const prizeRangeOptions = [
@@ -118,20 +119,32 @@ export default function ExplorePage() {
       });
     };
 
-    // Filter past hackathons to only show those with judging started or ended
+    // Filter live hackathons to exclude ended ones
+    const filterLiveHackathons = (hackathons: UIHackathon[]) => {
+      return hackathons.filter((hackathon) => {
+        const currentStatus = getUIHackathonStatus({
+          ...hackathon,
+          votingPeriod: hackathon.votingPeriod || undefined,
+        });
+        // Exclude ended hackathons from live section
+        return currentStatus !== "Ended";
+      });
+    };
+
+    // Filter past hackathons to only show ended ones
     const filterPastHackathons = (hackathons: UIHackathon[]) => {
       return hackathons.filter((hackathon) => {
         const currentStatus = getUIHackathonStatus({
           ...hackathon,
           votingPeriod: hackathon.votingPeriod || undefined,
         });
-        // Only show hackathons where judging has started (Voting) or ended
-        return currentStatus === "Voting" || currentStatus === "Ended";
+        // Only show hackathons that are ended
+        return currentStatus === "Ended";
       });
     };
 
     return {
-      liveHackathons: applyFilters(initialLiveHackathons),
+      liveHackathons: applyFilters(filterLiveHackathons(initialLiveHackathons)),
       pastHackathons: applyFilters(filterPastHackathons(initialPastHackathons)),
     };
   }, [initialLiveHackathons, initialPastHackathons, filters]);
@@ -156,7 +169,7 @@ export default function ExplorePage() {
 
   return (
     <div className="relative">
-      <div className="absolute inset-0 pointer-events-none [mask-image:radial-gradient(circle_at_30%_20%,black,transparent_70%)] bg-[radial-gradient(circle_at_0%_0%,rgba(255,255,255,0.08),transparent_55%),radial-gradient(circle_at_100%_20%,rgba(59,130,246,0.15),transparent_60%)]" />
+      <div className="absolute inset-0 pointer-events-none" />
       <div className="relative">
         {/* Explore Section */}
         <motion.div
@@ -184,7 +197,10 @@ export default function ExplorePage() {
               "transition-all duration-200 hover:scale-[1.02]",
             )}
           >
-            <Link href="/hackathons/create">Host a Hackathon</Link>
+            <Link href="/hackathons/create">
+              <CirclePlus />
+              Host a Hackathon
+            </Link>
           </Button>
         </motion.div>
 
@@ -418,16 +434,16 @@ export default function ExplorePage() {
               </div>
             ))
           ) : liveHackathons.length === 0 ? (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-semibold mb-2 text-white/90">
-                No active hackathons
-              </h3>
-              <p className="text-white/50">
-                {allHackathons.length === 0
+            <EmptyComponent
+              title="No active hackathons"
+              description={
+                allHackathons.length === 0
                   ? "No hackathons have been created yet."
-                  : "All hackathons have ended or haven't started yet."}
-              </p>
-            </div>
+                  : "All hackathons have ended or haven't started yet."
+              }
+              type="info"
+              variant="ghost"
+            />
           ) : (
             liveHackathons.map((hackathon, i) => (
               <motion.div
@@ -474,9 +490,12 @@ export default function ExplorePage() {
                 </div>
               ))
             ) : pastHackathons.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-white/50">No past hackathons to display</p>
-              </div>
+              <EmptyComponent
+                title="No past hackathons"
+                description="No past hackathons to display"
+                type="info"
+                variant="ghost"
+              />
             ) : (
               pastHackathons.map((hackathon, i) => (
                 <motion.div

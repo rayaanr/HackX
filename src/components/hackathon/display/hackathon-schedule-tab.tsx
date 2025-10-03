@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  CheckCircle2,
-  Circle,
-  Play,
-} from "lucide-react";
+import { Calendar, Clock, CheckCircle2, Circle, Play } from "lucide-react";
 import { type UIHackathon } from "@/types/hackathon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -235,6 +228,8 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
                 </TimelineDate>
 
@@ -270,12 +265,16 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
                         </span>
                       </div>
                       <span>
-                        {phase.startDate.toLocaleTimeString("en-US", {
+                        {phase.startDate.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
                           hour: "2-digit",
                           minute: "2-digit",
                         })}{" "}
                         -{" "}
-                        {phase.endDate.toLocaleTimeString("en-US", {
+                        {phase.endDate.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
@@ -291,6 +290,8 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </div>
                   )}

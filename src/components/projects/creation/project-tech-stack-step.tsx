@@ -19,10 +19,7 @@ export function TechStackStep() {
 
   return (
     <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Tech Stack & Links</CardTitle>
-        </CardHeader>
+      <Card className="bg-transparent/30">
         <CardContent className="space-y-6">
           <FormField
             control={control}

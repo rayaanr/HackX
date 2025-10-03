@@ -62,7 +62,9 @@ export function formatRelativeDate(dateString: DateInput): string {
   if (diffInDays === 1) return "Yesterday";
   if (diffInDays < 7) return `${diffInDays} days ago`;
   if (diffInDays < 30)
-    return `${Math.floor(diffInDays / 7)} week${Math.floor(diffInDays / 7) !== 1 ? "s" : ""} ago`;
+    return `${Math.floor(diffInDays / 7)} week${
+      Math.floor(diffInDays / 7) !== 1 ? "s" : ""
+    } ago`;
 
   return date.toLocaleDateString("en-US", {
     month: "short",
@@ -149,36 +151,78 @@ export function getUIHackathonStatus(hackathon: {
     votingStartDate?: string | Date | number | null | undefined;
     votingEndDate?: string | Date | number | null | undefined;
   };
-}): "Registration Open" | "Registration Closed" | "Live" | "Voting" | "Ended" {
+}):
+  | "Coming Soon"
+  | "Registration Open"
+  | "Registration Closed"
+  | "Submission Starting"
+  | "Live"
+  | "Submission Ended"
+  | "Judging Starting"
+  | "Voting"
+  | "Ended" {
   const now = new Date();
 
-  // Check registration phase
+  // Get all relevant dates
+  const registrationStart = safeToDate(
+    hackathon.registrationPeriod?.registrationStartDate,
+  );
   const registrationEnd = safeToDate(
     hackathon.registrationPeriod?.registrationEndDate,
   );
+  const hackathonStart = safeToDate(
+    hackathon.hackathonPeriod?.hackathonStartDate,
+  );
+  const hackathonEnd = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+  const votingStart = safeToDate(hackathon.votingPeriod?.votingStartDate);
+  const votingEnd = safeToDate(hackathon.votingPeriod?.votingEndDate);
+
+  // Enhanced timeline logic with more granular status phases
+
+  // Before registration starts (upcoming)
+  if (registrationStart && now < registrationStart) {
+    return "Coming Soon";
+  }
+
+  // Registration phase: between registration start and end
   if (registrationEnd && now < registrationEnd) {
     return "Registration Open";
   }
 
-  // Check hackathon phase
-  const hackathonEnd = safeToDate(hackathon.hackathonPeriod?.hackathonEndDate);
+  // Between registration end and submission start (preparation phase)
+  if (hackathonStart && now < hackathonStart) {
+    return "Submission Starting";
+  }
+
+  // Hackathon/Submission phase: between hackathon start and end
   if (hackathonEnd && now < hackathonEnd) {
-    // If we're past registration but before hackathon end
-    const hackathonStart = safeToDate(
-      hackathon.hackathonPeriod?.hackathonStartDate,
-    );
-    if (hackathonStart && now < hackathonStart) {
-      return "Registration Closed";
-    }
     return "Live";
   }
 
-  // Check voting phase
-  const votingEnd = safeToDate(hackathon.votingPeriod?.votingEndDate);
+  // After submission ends, check what comes next
+  if (hackathonEnd && now >= hackathonEnd) {
+    // Between submission end and voting start (review/preparation phase)
+    if (votingStart && now < votingStart) {
+      return "Judging Starting";
+    }
+
+    // If voting has started
+    if (votingEnd && now < votingEnd) {
+      return "Voting";
+    }
+
+    // If no voting period defined but submission ended, show judging phase
+    if (!votingStart && !votingEnd) {
+      return "Submission Ended";
+    }
+  }
+
+  // Voting phase: between voting start and end (fallback)
   if (votingEnd && now < votingEnd) {
     return "Voting";
   }
 
+  // After all phases completed
   return "Ended";
 }
 
@@ -187,9 +231,11 @@ export function getUIHackathonStatus(hackathon: {
  * Pure timeline logic for blockchain hackathon data
  */
 export function getBlockchainHackathonStatus(hackathon: {
+  registrationStartDate?: number;
   registrationDeadline: number;
   submissionStartDate: number;
   submissionDeadline: number;
+  judgingStartDate?: number;
   judgingDeadline: number;
   isActive?: boolean;
 }): "Registration Open" | "Registration Closed" | "Live" | "Voting" | "Ended" {
@@ -198,6 +244,14 @@ export function getBlockchainHackathonStatus(hackathon: {
   }
 
   const now = Date.now() / 1000; // Current UTC timestamp in seconds (matches blockchain timestamps)
+
+  // Before registration starts (if registrationStartDate is set)
+  if (
+    hackathon.registrationStartDate &&
+    now < hackathon.registrationStartDate
+  ) {
+    return "Registration Closed"; // Not started yet
+  }
 
   // Registration phase: before registration deadline
   if (now < hackathon.registrationDeadline) {
@@ -214,7 +268,12 @@ export function getBlockchainHackathonStatus(hackathon: {
     return "Live";
   }
 
-  // Judging phase: between submission deadline and judging deadline
+  // Between submission deadline and judging start (if there's a gap)
+  if (hackathon.judgingStartDate && now < hackathon.judgingStartDate) {
+    return "Registration Closed"; // Submissions closed, judging not started
+  }
+
+  // Judging phase: between judging start and judging deadline
   if (now < hackathon.judgingDeadline) {
     return "Voting";
   }

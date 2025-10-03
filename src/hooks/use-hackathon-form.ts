@@ -135,8 +135,21 @@ export function useHackathonForm() {
   const onSubmit = async (data: HackathonFormData) => {
     console.log("Form submitted with data:", data);
 
+    // Dispatch loading state change
+    window.dispatchEvent(
+      new CustomEvent("hackathonLoadingChange", {
+        detail: { isLoading: true },
+      }),
+    );
+
     // Validate form
     if (!validateHackathonForm(data, setError, clearErrors)) {
+      // Dispatch loading state change on validation failure
+      window.dispatchEvent(
+        new CustomEvent("hackathonLoadingChange", {
+          detail: { isLoading: false },
+        }),
+      );
       return;
     }
 
@@ -156,6 +169,13 @@ export function useHackathonForm() {
       }
     } catch (err) {
       handleCreateError(err as Error);
+    } finally {
+      // Dispatch loading state change
+      window.dispatchEvent(
+        new CustomEvent("hackathonLoadingChange", {
+          detail: { isLoading: false },
+        }),
+      );
     }
   };
 
@@ -172,6 +192,7 @@ export function useHackathonForm() {
   return {
     methods,
     onSubmit: handleSubmit(onSubmit),
+    rawOnSubmit: onSubmit, // Expose the raw submission function
     isSubmitting: isCreating,
     isFormValid,
     resetForm,

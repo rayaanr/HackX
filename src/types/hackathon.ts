@@ -153,9 +153,13 @@ export interface DashboardStats {
 
 // Legacy types - use blockchain types for new development
 export type HackathonStatus =
+  | "Coming Soon"
   | "Registration Open"
   | "Registration Closed"
+  | "Submission Starting"
   | "Live"
+  | "Submission Ended"
+  | "Judging Starting"
   | "Voting"
   | "Ended";
 
