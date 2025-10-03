@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useActiveAccount, useSendTransaction } from "thirdweb/react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWeb3 } from "@/providers/web3-provider";
-import { prepareSubmitScoreTransaction } from "@/lib/helpers/blockchain";
+import {
+  getProjectScore,
+  prepareSubmitScoreTransaction,
+} from "@/lib/helpers/blockchain";
 import type { JudgeRatingFormData } from "@/lib/schemas/judge-schema";
 import { upload } from "thirdweb/storage";
 
@@ -18,7 +21,7 @@ interface SubmitEvaluationResult {
 /**
  * Dedicated hook for judge functionality including evaluation submission
  */
-export function useJudgeEvaluation() {
+export function useJudgeEvaluationSubmission() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStage, setSubmissionStage] = useState<
     "idle" | "uploading" | "blockchain" | "success"
@@ -43,6 +46,7 @@ export function useJudgeEvaluation() {
   };
 
   const submitEvaluation = async (
+    hackathonId: string | number,
     projectId: string | number,
     evaluation: JudgeRatingFormData,
   ): Promise<SubmitEvaluationResult> => {
@@ -129,6 +133,7 @@ export function useJudgeEvaluation() {
       // Prepare blockchain transaction
       const transaction = prepareSubmitScoreTransaction(
         contract,
+        hackathonId,
         projectId,
         Math.round(totalScore * 10), // Convert to scale of 100 for contract (e.g., 8.5 -> 85)
         cid,
@@ -211,4 +216,156 @@ export function useJudgeEvaluation() {
     isEvaluationComplete,
     resetSubmissionState,
   };
+}
+
+/**
+ * Hook to get project score for a specific hackathon
+ */
+export function useProjectScore(
+  hackathonId: string | number,
+  projectId: string | number,
+) {
+  const { contract } = useWeb3();
+
+  return useQuery({
+    queryKey: ["project-score", hackathonId, projectId],
+    queryFn: async () => {
+      if (!contract) return null;
+      return getProjectScore(contract, hackathonId, projectId);
+    },
+    enabled: !!contract && !!hackathonId && !!projectId,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
+/**
+ * Hook to check if a judge has already scored a project
+ */
+export function useHasJudgeScored(
+  hackathonId: string | number,
+  projectId: string | number,
+  judgeAddress?: string,
+) {
+  const { contract } = useWeb3();
+  const activeAccount = useActiveAccount();
+  const judge = judgeAddress || activeAccount?.address;
+
+  return useQuery({
+    queryKey: ["has-judge-scored", hackathonId, projectId, judge],
+    queryFn: async () => {
+      if (!contract || !judge) return false;
+      const { hasJudgeScored } = await import("@/lib/helpers/blockchain");
+      return hasJudgeScored(contract, hackathonId, projectId, judge);
+    },
+    enabled: !!contract && !!hackathonId && !!projectId && !!judge,
+    staleTime: 10 * 1000, // 10 seconds
+  });
+}
+
+/**
+ * Hook to get judge evaluation (feedback) for a project
+ */
+export function useJudgeEvaluation(
+  hackathonId: string | number,
+  projectId: string | number,
+  judgeAddress?: string,
+) {
+  const { contract } = useWeb3();
+  const activeAccount = useActiveAccount();
+  const judge = judgeAddress || activeAccount?.address;
+
+  return useQuery({
+    queryKey: ["judge-evaluation", hackathonId, projectId, judge],
+    queryFn: async () => {
+      if (!contract || !judge) return null;
+      const { getJudgeEvaluation } = await import("@/lib/helpers/blockchain");
+      return getJudgeEvaluation(contract, hackathonId, projectId, judge);
+    },
+    enabled: !!contract && !!hackathonId && !!projectId && !!judge,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
+/**
+ * Hook to get and parse judge evaluation data from IPFS
+ */
+export function useJudgeEvaluationData(
+  hackathonId: string | number,
+  projectId: string | number,
+  judgeAddress?: string,
+) {
+  const { client } = useWeb3();
+  const activeAccount = useActiveAccount();
+  const judge = judgeAddress || activeAccount?.address;
+
+  const { data: evaluation } = useJudgeEvaluation(
+    hackathonId,
+    projectId,
+    judge,
+  );
+
+  return useQuery({
+    queryKey: [
+      "judge-evaluation-data",
+      hackathonId,
+      projectId,
+      judge,
+      evaluation?.feedbackIpfsHash,
+    ],
+    queryFn: async () => {
+      console.log("useJudgeEvaluationData queryFn called with:", {
+        client: !!client,
+        evaluation,
+        feedbackIpfsHash: evaluation?.feedbackIpfsHash,
+      });
+
+      if (!client || !evaluation?.submitted || !evaluation.feedbackIpfsHash) {
+        console.log(
+          "useJudgeEvaluationData: Missing required data, returning null",
+        );
+        return null;
+      }
+
+      try {
+        const { fetchIPFSMetadata } = await import("@/lib/helpers/blockchain");
+        console.log(
+          "Fetching IPFS metadata for hash:",
+          evaluation.feedbackIpfsHash,
+        );
+        const data = await fetchIPFSMetadata(
+          client,
+          evaluation.feedbackIpfsHash,
+        );
+        console.log("Raw IPFS data received:", data);
+
+        const typedData = data as {
+          projectId: number;
+          judgeAddress: string;
+          scores: {
+            technicalExecution: number;
+            innovation: number;
+            usability: number;
+            marketPotential: number;
+            presentation: number;
+          };
+          totalScore: number;
+          feedback: {
+            overallFeedback: string;
+            strengths?: string;
+            improvements?: string;
+          };
+          submittedAt: string;
+        };
+
+        console.log("Returning typed IPFS data:", typedData);
+        return typedData;
+      } catch (error) {
+        console.error("Failed to fetch evaluation data from IPFS:", error);
+        return null;
+      }
+    },
+    enabled:
+      !!client && !!evaluation?.submitted && !!evaluation.feedbackIpfsHash,
+    staleTime: 60 * 1000, // 1 minute - IPFS data doesn't change
+  });
 }

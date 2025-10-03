@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PageLoading } from "@/components/ui/global-loading";
 import { useActiveAccount } from "thirdweb/react";
@@ -24,7 +25,7 @@ function ProjectCountDisplay({
   const { projectCount = 0, isLoading } = useHackathonProjectCount(hackathonId);
 
   if (isLoading) {
-    return <p className="text-sm font-semibold text-white/85">Loading...</p>;
+    return <Skeleton className="h-5 w-20 bg-white/20" />;
   }
 
   return (

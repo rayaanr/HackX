@@ -291,3 +291,153 @@ export function blockchainTimestampToDate(timestamp: bigint | number): Date {
     typeof timestamp === "bigint" ? Number(timestamp) : timestamp;
   return new Date(timestampNum * 1000); // Convert seconds to milliseconds
 }
+
+// ===== JUDGING PERIOD UTILITIES =====
+
+/**
+ * Check if hackathon is currently in judging/voting period
+ * Works with both UI and blockchain hackathon formats
+ */
+export function isInJudgingPeriod(hackathon: any): boolean {
+  if (!hackathon) return false;
+
+  const now = new Date();
+
+  // For blockchain hackathons (with Unix timestamps)
+  if (
+    typeof hackathon.judgingStartDate === "number" &&
+    typeof hackathon.judgingDeadline === "number"
+  ) {
+    const nowTimestamp = now.getTime() / 1000; // Convert to seconds
+    return (
+      nowTimestamp >= hackathon.judgingStartDate &&
+      nowTimestamp <= hackathon.judgingDeadline
+    );
+  }
+
+  // For UI hackathons (with Date objects/strings)
+  if (hackathon.votingPeriod) {
+    const votingStart = safeToDate(hackathon.votingPeriod.votingStartDate);
+    const votingEnd = safeToDate(hackathon.votingPeriod.votingEndDate);
+
+    if (votingStart && votingEnd) {
+      return now >= votingStart && now <= votingEnd;
+    }
+  }
+
+  // Fallback: check if status indicates judging
+  const status = hackathon.status || getHackathonCurrentStatus(hackathon);
+  return status === "Voting" || status === "Judging";
+}
+
+/**
+ * Check if judging period has ended
+ * Works with both UI and blockchain hackathon formats
+ */
+export function hasJudgingPeriodEnded(hackathon: any): boolean {
+  if (!hackathon) return false;
+
+  const now = new Date();
+
+  // For blockchain hackathons (with Unix timestamps)
+  if (typeof hackathon.judgingDeadline === "number") {
+    const nowTimestamp = now.getTime() / 1000; // Convert to seconds
+    return nowTimestamp > hackathon.judgingDeadline;
+  }
+
+  // For UI hackathons (with Date objects/strings)
+  if (hackathon.votingPeriod?.votingEndDate) {
+    const votingEnd = safeToDate(hackathon.votingPeriod.votingEndDate);
+    return votingEnd ? now > votingEnd : false;
+  }
+
+  // Fallback: check if status indicates completion
+  const status = hackathon.status || getHackathonCurrentStatus(hackathon);
+  return status === "Ended";
+}
+
+/**
+ * Check if judging period hasn't started yet
+ * Works with both UI and blockchain hackathon formats
+ */
+export function isJudgingPeriodPending(hackathon: any): boolean {
+  if (!hackathon) return false;
+
+  const now = new Date();
+
+  // For blockchain hackathons (with Unix timestamps)
+  if (typeof hackathon.judgingStartDate === "number") {
+    const nowTimestamp = now.getTime() / 1000; // Convert to seconds
+    return nowTimestamp < hackathon.judgingStartDate;
+  }
+
+  // For UI hackathons (with Date objects/strings)
+  if (hackathon.votingPeriod?.votingStartDate) {
+    const votingStart = safeToDate(hackathon.votingPeriod.votingStartDate);
+    return votingStart ? now < votingStart : false;
+  }
+
+  // Fallback: check if still in submission phase
+  const status = hackathon.status || getHackathonCurrentStatus(hackathon);
+  return (
+    status === "Live" ||
+    status === "Submission Ended" ||
+    status === "Judging Starting"
+  );
+}
+
+/**
+ * Get current hackathon status - unified function that works with any hackathon format
+ */
+export function getHackathonCurrentStatus(hackathon: any): string {
+  if (!hackathon) return "Unknown";
+
+  // If hackathon already has a status, return it
+  if (hackathon.status) return hackathon.status;
+
+  // For blockchain hackathons
+  if (typeof hackathon.judgingDeadline === "number") {
+    return getBlockchainHackathonStatus(hackathon);
+  }
+
+  // For UI hackathons
+  if (hackathon.votingPeriod || hackathon.hackathonPeriod) {
+    return getUIHackathonStatus(hackathon);
+  }
+
+  return "Unknown";
+}
+
+/**
+ * Get judging period dates in a consistent format
+ * Returns null if no judging period is defined
+ */
+export function getJudgingPeriodDates(hackathon: any): {
+  startDate: Date | null;
+  endDate: Date | null;
+} | null {
+  if (!hackathon) return null;
+
+  // For blockchain hackathons (with Unix timestamps)
+  if (
+    typeof hackathon.judgingStartDate === "number" &&
+    typeof hackathon.judgingDeadline === "number"
+  ) {
+    return {
+      startDate: blockchainTimestampToDate(hackathon.judgingStartDate),
+      endDate: blockchainTimestampToDate(hackathon.judgingDeadline),
+    };
+  }
+
+  // For UI hackathons (with Date objects/strings)
+  if (hackathon.votingPeriod) {
+    const startDate = safeToDate(hackathon.votingPeriod.votingStartDate);
+    const endDate = safeToDate(hackathon.votingPeriod.votingEndDate);
+
+    if (startDate || endDate) {
+      return { startDate, endDate };
+    }
+  }
+
+  return null;
+}

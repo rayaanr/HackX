@@ -8,17 +8,138 @@ import { use } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Star, Users } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { PageLoading } from "@/components/ui/global-loading";
 import EmptyComponent from "@/components/empty";
 import {
   useHackathon,
   useHackathonProjectsWithDetails,
 } from "@/hooks/use-hackathons";
-import type { ProjectWithHackathon } from "@/types/hackathon";
+import { useHasJudgeScored, useProjectScore } from "@/hooks/use-judge";
+import { hasJudgingPeriodEnded } from "@/lib/helpers/date";
 
 interface JudgingPageProps {
   params: Promise<{ id: string }>;
+}
+
+interface ProjectJudgeButtonProps {
+  hackathonId: string;
+  projectId: string;
+  hackathon: any;
+  className?: string;
+}
+
+interface ProjectScoreDisplayProps {
+  hackathonId: string;
+  projectId: string;
+}
+
+function ProjectScoreDisplay({
+  hackathonId,
+  projectId,
+}: ProjectScoreDisplayProps) {
+  const { data: scoreData, isLoading } = useProjectScore(
+    hackathonId,
+    projectId,
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-3 w-3 rounded" />
+          <Skeleton className="h-3 w-12" />
+        </div>
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-3 w-3 rounded" />
+          <Skeleton className="h-3 w-4" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!scoreData || scoreData.judgeCount === 0) {
+    return (
+      <div className="text-xs text-muted-foreground">Score: Not scored</div>
+    );
+  }
+
+  // Convert from contract scale (0-100) to display scale (0-10)
+  const avgScore = scoreData.avgScore / 10;
+
+  return (
+    <div className="flex items-center justify-between text-xs text-muted-foreground gap-5">
+      <div className="flex items-center gap-1">
+        <Star className="h-3 w-3 fill-current text-yellow-500" />
+        <span className="font-medium text-foreground">
+          {avgScore.toFixed(1)}/10
+        </span>
+      </div>
+      <div className="flex items-center gap-1">
+        <Users className="h-3 w-3" /> Judges
+        <span className="text-foreground">{scoreData.judgeCount}</span>
+      </div>
+    </div>
+  );
+}
+
+function ProjectJudgeButton({
+  hackathonId,
+  projectId,
+  hackathon,
+  className,
+}: ProjectJudgeButtonProps) {
+  const { data: hasScored, isLoading } = useHasJudgeScored(
+    hackathonId,
+    projectId,
+  );
+
+  if (isLoading) {
+    return (
+      <Button size="sm" disabled variant="outline" className={className}>
+        <Skeleton className="h-3 w-16" />
+      </Button>
+    );
+  }
+
+  const judgingEnded = hasJudgingPeriodEnded(hackathon);
+
+  // If already scored, show "Reviewed" in secondary color
+  if (hasScored) {
+    return (
+      <Link href={`/judge/${hackathonId}/${projectId}`}>
+        <Button size="sm" variant="secondary" className={className}>
+          Already Reviewed
+        </Button>
+      </Link>
+    );
+  }
+
+  // If judging period ended but not scored, show disabled state
+  if (judgingEnded) {
+    return (
+      <Button size="sm" disabled variant="outline" className={className}>
+        Judging Ended
+      </Button>
+    );
+  }
+
+  // Default state - can review
+  return (
+    <Link href={`/judge/${hackathonId}/${projectId}`}>
+      <Button size="sm" className={className}>
+        Review Project
+      </Button>
+    </Link>
+  );
 }
 
 export default function JudgingPage({ params }: JudgingPageProps) {
@@ -151,22 +272,25 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                         )}
                       </motion.div>
                     )}
-
-                    <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
-                      <div>
-                        Score: {project.totalScore || 0} (
-                        {project.judgeCount || 0} judges)
-                      </div>
-                      <motion.div
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.96 }}
-                      >
-                        <Link href={`/judge/${id}/${project.id}`}>
-                          <Button size="sm">Review Project</Button>
-                        </Link>
-                      </motion.div>
-                    </div>
                   </CardContent>
+                  <CardFooter className="flex-col gap-2">
+                    <ProjectScoreDisplay
+                      hackathonId={id}
+                      projectId={project.id.toString()}
+                    />
+                    <motion.div
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
+                      className="w-full"
+                    >
+                      <ProjectJudgeButton
+                        hackathonId={id}
+                        projectId={project.id.toString()}
+                        hackathon={hackathon}
+                        className="w-full"
+                      />
+                    </motion.div>
+                  </CardFooter>
                 </div>
               </Card>
             </motion.div>

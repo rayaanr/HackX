@@ -312,7 +312,7 @@ export default function ProjectPage() {
     error: projectError,
   } = useBlockchainProject(id);
   const { data: hackathon, isLoading: hackathonLoading } = useHackathon(
-    project?.hackathonId ? Number(project.hackathonId) : null,
+    project?.hackathonIds?.[0] ? Number(project.hackathonIds[0]) : null,
   );
   const { data: teamMembers, isLoading: teamLoading } =
     useProjectTeamMembers(id);

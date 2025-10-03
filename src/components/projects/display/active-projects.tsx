@@ -42,8 +42,6 @@ export function ActiveProjects() {
             : undefined,
         tech_stack: project.techStack || [],
         updated_at: project.createdAt || new Date().toISOString(),
-        totalScore: project.totalScore,
-        judgeCount: project.judgeCount,
         logo: project.logo,
         key: `blockchain-${project.id}`,
       }));
