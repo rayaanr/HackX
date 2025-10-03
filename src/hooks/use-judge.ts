@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useActiveAccount, useSendTransaction } from "thirdweb/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWeb3 } from "@/providers/web3-provider";
-import { prepareSubmitScoreTransaction } from "@/lib/helpers/blockchain";
+import {
+  getProjectScore,
+  prepareSubmitScoreTransaction,
+} from "@/lib/helpers/blockchain";
 import type { JudgeRatingFormData } from "@/lib/schemas/judge-schema";
 import { upload } from "thirdweb/storage";
 
@@ -228,7 +231,6 @@ export function useProjectScore(
     queryKey: ["project-score", hackathonId, projectId],
     queryFn: async () => {
       if (!contract) return null;
-      const { getProjectScore } = await import("@/lib/helpers/blockchain");
       return getProjectScore(contract, hackathonId, projectId);
     },
     enabled: !!contract && !!hackathonId && !!projectId,
@@ -281,5 +283,89 @@ export function useJudgeEvaluation(
     },
     enabled: !!contract && !!hackathonId && !!projectId && !!judge,
     staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
+/**
+ * Hook to get and parse judge evaluation data from IPFS
+ */
+export function useJudgeEvaluationData(
+  hackathonId: string | number,
+  projectId: string | number,
+  judgeAddress?: string,
+) {
+  const { client } = useWeb3();
+  const activeAccount = useActiveAccount();
+  const judge = judgeAddress || activeAccount?.address;
+
+  const { data: evaluation } = useJudgeEvaluation(
+    hackathonId,
+    projectId,
+    judge,
+  );
+
+  return useQuery({
+    queryKey: [
+      "judge-evaluation-data",
+      hackathonId,
+      projectId,
+      judge,
+      evaluation?.feedbackIpfsHash,
+    ],
+    queryFn: async () => {
+      console.log("useJudgeEvaluationData queryFn called with:", {
+        client: !!client,
+        evaluation,
+        feedbackIpfsHash: evaluation?.feedbackIpfsHash,
+      });
+
+      if (!client || !evaluation?.submitted || !evaluation.feedbackIpfsHash) {
+        console.log(
+          "useJudgeEvaluationData: Missing required data, returning null",
+        );
+        return null;
+      }
+
+      try {
+        const { fetchIPFSMetadata } = await import("@/lib/helpers/blockchain");
+        console.log(
+          "Fetching IPFS metadata for hash:",
+          evaluation.feedbackIpfsHash,
+        );
+        const data = await fetchIPFSMetadata(
+          client,
+          evaluation.feedbackIpfsHash,
+        );
+        console.log("Raw IPFS data received:", data);
+
+        const typedData = data as {
+          projectId: number;
+          judgeAddress: string;
+          scores: {
+            technicalExecution: number;
+            innovation: number;
+            usability: number;
+            marketPotential: number;
+            presentation: number;
+          };
+          totalScore: number;
+          feedback: {
+            overallFeedback: string;
+            strengths?: string;
+            improvements?: string;
+          };
+          submittedAt: string;
+        };
+
+        console.log("Returning typed IPFS data:", typedData);
+        return typedData;
+      } catch (error) {
+        console.error("Failed to fetch evaluation data from IPFS:", error);
+        return null;
+      }
+    },
+    enabled:
+      !!client && !!evaluation?.submitted && !!evaluation.feedbackIpfsHash,
+    staleTime: 60 * 1000, // 1 minute - IPFS data doesn't change
   });
 }

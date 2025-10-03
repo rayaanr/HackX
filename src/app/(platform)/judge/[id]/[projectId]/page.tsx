@@ -40,7 +40,12 @@ import { toast } from "sonner";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { motion } from "motion/react";
 import { ClassicLoader } from "@/components/ui/loader";
-import { useJudgeEvaluationSubmission } from "@/hooks/use-judge";
+import {
+  useJudgeEvaluationSubmission,
+  useHasJudgeScored,
+  useJudgeEvaluationData,
+} from "@/hooks/use-judge";
+import { hasJudgingPeriodEnded } from "@/lib/helpers/date";
 import {
   judgeRatingSchema,
   defaultJudgeRatingValues,
@@ -77,6 +82,35 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   // Reactive total score calculation
   const [totalScore, setTotalScore] = useState(0);
 
+  // Fetch hackathon and project data
+  const { data: hackathon, isLoading: hackathonLoading } =
+    useHackathon(hackathonId);
+  const { projects, isLoading: projectsLoading } =
+    useHackathonProjectsWithDetails(hackathonId);
+
+  // Check evaluation status
+  const { data: hasScored, isLoading: scoringStatusLoading } =
+    useHasJudgeScored(hackathonId, projectId);
+  const { data: existingEvaluation, isLoading: evaluationDataLoading } =
+    useJudgeEvaluationData(hackathonId, projectId);
+
+  // Debug logging for hook states
+  useEffect(() => {
+    console.log("Hook states:", {
+      hasScored,
+      scoringStatusLoading,
+      existingEvaluation,
+      evaluationDataLoading,
+      account: account?.address,
+    });
+  }, [
+    hasScored,
+    scoringStatusLoading,
+    existingEvaluation,
+    evaluationDataLoading,
+    account,
+  ]);
+
   useEffect(() => {
     const subscription = form.watch((values) => {
       if (values) {
@@ -87,11 +121,51 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     return () => subscription.unsubscribe();
   }, [form.watch, calculateTotalScore]);
 
-  // Fetch hackathon and project data
-  const { data: hackathon, isLoading: hackathonLoading } =
-    useHackathon(hackathonId);
-  const { projects, isLoading: projectsLoading } =
-    useHackathonProjectsWithDetails(hackathonId);
+  // Load existing evaluation data when viewing a review
+  useEffect(() => {
+    console.log("Form reset effect triggered:", {
+      existingEvaluation,
+      hasScored,
+      evaluationDataLoading,
+      scoringStatusLoading,
+    });
+
+    if (existingEvaluation && hasScored) {
+      console.log("Loading existing evaluation data:", existingEvaluation);
+      console.log(
+        "Existing evaluation structure:",
+        JSON.stringify(existingEvaluation, null, 2),
+      );
+
+      const resetData = {
+        // Access scores from nested scores object
+        technicalExecution: existingEvaluation.scores?.technicalExecution || 0,
+        innovation: existingEvaluation.scores?.innovation || 0,
+        usability: existingEvaluation.scores?.usability || 0,
+        marketPotential: existingEvaluation.scores?.marketPotential || 0,
+        presentation: existingEvaluation.scores?.presentation || 0,
+        // Access feedback from nested feedback object
+        overallFeedback: existingEvaluation.feedback?.overallFeedback || "",
+        strengths: existingEvaluation.feedback?.strengths || "",
+        improvements: existingEvaluation.feedback?.improvements || "",
+      };
+
+      console.log("Resetting form with data:", resetData);
+      form.reset(resetData);
+
+      // Verify form values after reset
+      setTimeout(() => {
+        const currentValues = form.getValues();
+        console.log("Form values after reset:", currentValues);
+      }, 100);
+    }
+  }, [
+    existingEvaluation,
+    hasScored,
+    form,
+    evaluationDataLoading,
+    scoringStatusLoading,
+  ]);
 
   if (hackathonLoading || projectsLoading) {
     return <div>Loading...</div>;
@@ -107,6 +181,11 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   if (!project) {
     notFound();
   }
+
+  // Determine evaluation state
+  const judgingEnded = hasJudgingPeriodEnded(hackathon);
+  const isViewMode = hasScored || judgingEnded;
+  const canSubmit = !hasScored && !judgingEnded;
 
   if (!account) {
     return (
@@ -212,6 +291,26 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                 <CardDescription className="text-center mx-auto max-w-lg">
                   {project.intro || "No description provided"}
                 </CardDescription>
+                {isViewMode && (
+                  <div className="mt-4 flex justify-center">
+                    <Badge
+                      variant={hasScored ? "default" : "secondary"}
+                      className="text-sm px-3 py-1"
+                    >
+                      {hasScored
+                        ? "✓ Review Submitted"
+                        : "⏰ Judging Period Ended"}
+                      {existingEvaluation?.submittedAt && (
+                        <span className="ml-2 opacity-75">
+                          •{" "}
+                          {new Date(
+                            existingEvaluation.submittedAt,
+                          ).toLocaleDateString()}
+                        </span>
+                      )}
+                    </Badge>
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="space-y-6 p-4 md:p-6">
                 <Form {...form}>
@@ -228,7 +327,9 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                         </h3>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Rate each aspect of the project from 1-10
+                        {isViewMode
+                          ? "Review the evaluation scores and feedback"
+                          : "Rate each aspect of the project from 1-10"}
                       </p>
                     </div>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -269,18 +370,33 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                                   </div>
                                   <div>
                                     <FormControl>
-                                      <Rating
-                                        value={field.value}
-                                        onValueChange={field.onChange}
-                                        className="justify-start gap-1"
+                                      <div
+                                        className={
+                                          isViewMode
+                                            ? "pointer-events-none opacity-70"
+                                            : ""
+                                        }
                                       >
-                                        {Array.from({ length: 10 }, (_, i) => (
-                                          <RatingButton
-                                            key={i + 1}
-                                            className="h-5 w-5 transition-transform hover:scale-110"
-                                          />
-                                        ))}
-                                      </Rating>
+                                        <Rating
+                                          value={field.value}
+                                          onValueChange={
+                                            isViewMode
+                                              ? () => {}
+                                              : field.onChange
+                                          }
+                                          className="justify-start gap-1"
+                                        >
+                                          {Array.from(
+                                            { length: 10 },
+                                            (_, i) => (
+                                              <RatingButton
+                                                key={i + 1}
+                                                className="h-5 w-5 transition-transform hover:scale-110"
+                                              />
+                                            ),
+                                          )}
+                                        </Rating>
+                                      </div>
                                     </FormControl>
                                     <FormMessage />
                                   </div>
@@ -302,7 +418,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                       <div className="flex items-center gap-2">
                         <Lightbulb className="size-4 text-muted-foreground" />
                         <h3 className="text-lg font-semibold">
-                          Written Feedback
+                          {isViewMode ? "Judge Feedback" : "Written Feedback"}
                         </h3>
                       </div>
 
@@ -320,6 +436,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                                 {...field}
                                 rows={2}
                                 className="resize-none"
+                                disabled={isViewMode}
                               />
                             </FormControl>
                             <FormMessage />
@@ -342,6 +459,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                                   {...field}
                                   rows={2}
                                   className="resize-none"
+                                  disabled={isViewMode}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -363,6 +481,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                                   {...field}
                                   rows={2}
                                   className="resize-none"
+                                  disabled={isViewMode}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -378,12 +497,25 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                       whileTap={{ scale: 0.98 }}
                     >
                       <Button
-                        type="submit"
-                        disabled={isSubmitting}
+                        type={isViewMode ? "button" : "submit"}
+                        disabled={isSubmitting || isViewMode}
                         className="w-full"
                         size="lg"
+                        variant={isViewMode ? "secondary" : "default"}
                       >
-                        {submissionStage === "uploading" ? (
+                        {isViewMode ? (
+                          hasScored ? (
+                            <>
+                              <CheckCircle className="size-4" />
+                              Review Already Submitted
+                            </>
+                          ) : (
+                            <>
+                              <Award className="size-4" />
+                              Judging Period Ended
+                            </>
+                          )
+                        ) : submissionStage === "uploading" ? (
                           <>
                             <ClassicLoader size="sm" className="mr-2" />
                             Uploading to IPFS...

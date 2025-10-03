@@ -8,16 +8,82 @@ import { use } from "react";
 import { useActiveAccount } from "thirdweb/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { PageLoading } from "@/components/ui/global-loading";
 import EmptyComponent from "@/components/empty";
 import {
   useHackathon,
   useHackathonProjectsWithDetails,
 } from "@/hooks/use-hackathons";
+import { useHasJudgeScored } from "@/hooks/use-judge";
+import { hasJudgingPeriodEnded } from "@/lib/helpers/date";
 
 interface JudgingPageProps {
   params: Promise<{ id: string }>;
+}
+
+interface ProjectJudgeButtonProps {
+  hackathonId: string;
+  projectId: string;
+  hackathon: any;
+  className?: string;
+}
+
+function ProjectJudgeButton({
+  hackathonId,
+  projectId,
+  hackathon,
+  className,
+}: ProjectJudgeButtonProps) {
+  const { data: hasScored, isLoading } = useHasJudgeScored(
+    hackathonId,
+    projectId,
+  );
+
+  if (isLoading) {
+    return (
+      <Button size="sm" disabled variant="outline">
+        Loading...
+      </Button>
+    );
+  }
+
+  const judgingEnded = hasJudgingPeriodEnded(hackathon);
+
+  // If already scored, show "Reviewed" in secondary color
+  if (hasScored) {
+    return (
+      <Link href={`/judge/${hackathonId}/${projectId}`}>
+        <Button size="sm" variant="secondary" className={className}>
+          Already Reviewed
+        </Button>
+      </Link>
+    );
+  }
+
+  // If judging period ended but not scored, show disabled state
+  if (judgingEnded) {
+    return (
+      <Button size="sm" disabled variant="outline" className={className}>
+        Judging Ended
+      </Button>
+    );
+  }
+
+  // Default state - can review
+  return (
+    <Link href={`/judge/${hackathonId}/${projectId}`}>
+      <Button size="sm" className={className}>
+        Review Project
+      </Button>
+    </Link>
+  );
 }
 
 export default function JudgingPage({ params }: JudgingPageProps) {
@@ -150,22 +216,24 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                         )}
                       </motion.div>
                     )}
-
-                    <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
-                      <div>
-                        Score:{" "}
-                        {project.averageScore?.toFixed(1) || "Not scored"}
-                      </div>
-                      <motion.div
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.96 }}
-                      >
-                        <Link href={`/judge/${id}/${project.id}`}>
-                          <Button size="sm">Review Project</Button>
-                        </Link>
-                      </motion.div>
-                    </div>
                   </CardContent>
+                  <CardFooter className="flex-col gap-2">
+                    <p className="text-xs text-muted-foreground">
+                      Score: {project.averageScore?.toFixed(1) || "Not scored"}
+                    </p>
+                    <motion.div
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
+                      className="w-full"
+                    >
+                      <ProjectJudgeButton
+                        hackathonId={id}
+                        projectId={project.id.toString()}
+                        hackathon={hackathon}
+                        className="w-full"
+                      />
+                    </motion.div>
+                  </CardFooter>
                 </div>
               </Card>
             </motion.div>
