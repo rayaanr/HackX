@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AvatarList } from "@/components/ui/avatar-list";
 import { Plus } from "lucide-react";
 import { motion } from "motion/react";
-import { CardLoading } from "@/components/ui/global-loading";
+import { GlobalLoading } from "@/components/ui/global-loading";
 import type { UIHackathon } from "@/types/hackathon";
 import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { getUIHackathonStatus } from "@/lib/helpers/date";
@@ -23,7 +23,25 @@ export function RecentHackathons({
   loading = false,
 }: RecentHackathonsProps) {
   if (loading) {
-    return <CardLoading text="Loading recent hackathons" height="300px" />;
+    return (
+      <Card className="project-card-hover">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="group-hover:text-white transition-colors">
+              Recent Hackathons
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <GlobalLoading
+            variant="component"
+            text="Loading recent hackathons"
+            height="250px"
+            size="md"
+          />
+        </CardContent>
+      </Card>
+    );
   }
 
   // Show most recent hackathons (up to 5)
