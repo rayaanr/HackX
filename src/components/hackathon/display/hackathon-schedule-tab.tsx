@@ -1,6 +1,13 @@
 "use client";
 
-import { Calendar, Clock, CheckCircle2, Circle, Play } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  CheckCircle2,
+  Circle,
+  Play,
+  ArrowRight,
+} from "lucide-react";
 import { type UIHackathon } from "@/types/hackathon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,6 +22,7 @@ import {
 } from "@/components/ui/timeline";
 import { motion } from "motion/react";
 import { safeToDate, formatDateRange } from "@/lib/helpers/date";
+import Link from "next/link";
 
 interface ScheduleTabProps {
   hackathon: UIHackathon;
@@ -158,8 +166,8 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      <div className="space-y-1">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+      <div className="space-y-1 text-center mx-auto">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-200 to-blue-600 bg-clip-text text-transparent">
           Schedule
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -167,114 +175,114 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
         </p>
       </div>
 
-      <Timeline
-        defaultValue={currentActiveStep >= 0 ? currentActiveStep + 1 : 1}
-        orientation="vertical"
-        className="w-full max-w-2xl"
-      >
-        {schedulePhases.map((phase, index) => (
-          <TimelineItem key={index} step={index + 1} className="pb-4">
-            <TimelineIndicator className="relative bg-background border-2">
-              {phase.status === "completed" ? (
-                <CheckCircle2 className="h-2.5 w-2.5 fill-green-500 text-white" />
-              ) : phase.status === "live" ? (
-                <Play className="h-2.5 w-2.5 fill-blue-500 text-white animate-pulse" />
-              ) : (
-                <Circle className="h-2.5 w-2.5 text-muted-foreground" />
-              )}
+      <div className="flex justify-center w-full">
+        <Timeline
+          defaultValue={currentActiveStep >= 0 ? currentActiveStep + 1 : 1}
+          orientation="vertical"
+          className="w-full max-w-2xl mx-auto"
+        >
+          {schedulePhases.map((phase, index) => (
+            <TimelineItem
+              key={index}
+              step={index + 1}
+              className="group-data-[orientation=vertical]/timeline:sm:ms-32"
+            >
+              <TimelineHeader>
+                <TimelineSeparator />
 
-              {/* Glow effect for live events */}
-              {phase.status === "live" && (
-                <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-pulse -m-1" />
-              )}
-            </TimelineIndicator>
-
-            <TimelineSeparator />
-
-            <TimelineHeader className="flex-1">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="space-y-2"
-              >
-                <TimelineDate className="text-xs text-muted-foreground">
-                  {phase.startDate.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </TimelineDate>
-
-                <TimelineTitle className="text-base font-semibold text-foreground">
-                  {phase.name}
-                </TimelineTitle>
-
-                <TimelineContent className="space-y-2">
-                  {phase.description && (
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {phase.description}
-                    </p>
-                  )}
-
-                  {/* Time and duration info for events */}
-                  {!phase.isPhase && (
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        <span>
-                          {phase.endDate.getTime() - phase.startDate.getTime() >
-                          3600000
-                            ? `${Math.round(
-                                (phase.endDate.getTime() -
-                                  phase.startDate.getTime()) /
-                                  3600000,
-                              )}h`
-                            : `${Math.round(
-                                (phase.endDate.getTime() -
-                                  phase.startDate.getTime()) /
-                                  60000,
-                              )}min`}
-                        </span>
-                      </div>
-                      <span>
-                        {phase.startDate.toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
+                {/* <TimelineDate className="group-data-[orientation=vertical]/timeline:sm:absolute group-data-[orientation=vertical]/timeline:sm:-left-32 group-data-[orientation=vertical]/timeline:sm:w-28 group-data-[orientation=vertical]/timeline:sm:text-right text-xs text-muted-foreground font-medium">
+                  {!phase.isPhase ? (
+                    // For events, show time range
+                    <div className="space-y-0.5">
+                      <div className="text-foreground">
+                        {phase.startDate.toLocaleTimeString("en-US", {
                           hour: "2-digit",
                           minute: "2-digit",
-                        })}{" "}
-                        -{" "}
-                        {phase.endDate.toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
+                          hour12: false,
                         })}
-                      </span>
+                      </div>
+                      <div className="text-muted-foreground/60">
+                        {phase.endDate.toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })}
+                      </div>
                     </div>
-                  )}
-
-                  {/* End date for phases */}
-                  {phase.isPhase && phase.endDate && (
-                    <div className="text-xs text-muted-foreground">
-                      Ends{" "}
-                      {phase.endDate.toLocaleDateString("en-US", {
+                  ) : (
+                    // For phases, show start date
+                    <span className="text-foreground font-medium">
+                      {phase.startDate.toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
                       })}
+                    </span>
+                  )}
+                </TimelineDate> */}
+
+                <TimelineTitle className="sm:-mt-0.5 text-base font-semibold text-foreground">
+                  {phase.name}
+                  {phase.status === "live" && (
+                    <span className="ml-2 text-xs bg-blue-500/10 text-blue-500 px-2 py-1 rounded-full animate-pulse">
+                      Live
+                    </span>
+                  )}
+                </TimelineTitle>
+
+                <TimelineIndicator className="bg-primary/10 group-data-completed/timeline-item:bg-primary group-data-completed/timeline-item:text-primary-foreground flex size-6 items-center justify-center border-none">
+                  {phase.status === "completed" ? (
+                    <CheckCircle2 className="size-7 fill-green-500 text-white" />
+                  ) : phase.status === "live" ? (
+                    <Play className="size-7 fill-blue-500 text-white animate-pulse" />
+                  ) : (
+                    <Circle className="size-7 text-muted-foreground" />
+                  )}
+
+                  {/* Glow effect for live events */}
+                  {phase.status === "live" && (
+                    <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-pulse -m-1" />
+                  )}
+                </TimelineIndicator>
+              </TimelineHeader>
+              <TimelineContent className="text-foreground mt-2 rounded-lg border px-4 py-3">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className="space-y-2"
+                >
+                  {phase.description && (
+                    <h4 className="leading-relaxed text-md font-semibold">
+                      {phase.description}
+                    </h4>
+                  )}
+
+                  {/* Duration info for events */}
+                  {!phase.isPhase && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span>
+                        {phase.endDate.getTime() - phase.startDate.getTime() >
+                        3600000
+                          ? `${Math.round(
+                              (phase.endDate.getTime() -
+                                phase.startDate.getTime()) /
+                                3600000,
+                            )}h duration`
+                          : `${Math.round(
+                              (phase.endDate.getTime() -
+                                phase.startDate.getTime()) /
+                                60000,
+                            )}min duration`}
+                      </span>
                     </div>
                   )}
 
                   {/* Speaker info */}
                   {phase.speaker && (
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-5 w-5">
+                    <div className="flex items-center gap-2 pb-2">
+                      <Avatar className="size-7 rounded-md">
                         <AvatarImage
                           src={phase.speaker.picture}
                           alt={phase.speaker.name}
@@ -296,14 +304,56 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
                           </span>
                         )}
                       </div>
+                      {phase.speaker.xHandle && (
+                        <Link
+                          href={`https://x.com/${phase.speaker.xHandle.replace(
+                            "@",
+                            "",
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline text-sm"
+                        >
+                          @{phase.speaker.xHandle.replace("@", "")}
+                        </Link>
+                      )}
                     </div>
                   )}
-                </TimelineContent>
-              </motion.div>
-            </TimelineHeader>
-          </TimelineItem>
-        ))}
-      </Timeline>
+                </motion.div>
+
+                <div className="flex items-center gap-2">
+                  <TimelineDate className="text-foreground font-medium text-md">
+                    {phase.startDate.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </TimelineDate>
+
+                  {phase.isPhase && phase.endDate && (
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+
+                  {/* End date for phases */}
+                  {phase.isPhase && phase.endDate && (
+                    <TimelineDate className="text-foreground font-medium text-md">
+                      {phase.endDate.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </TimelineDate>
+                  )}
+                </div>
+              </TimelineContent>
+            </TimelineItem>
+          ))}
+        </Timeline>
+      </div>
     </motion.div>
   );
 }
