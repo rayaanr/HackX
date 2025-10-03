@@ -102,25 +102,29 @@ export function ToDoList({ hackathon }: ToDoListProps) {
   };
 
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-      <h2 className="text-lg font-semibold mb-4">To Do List</h2>
-      <div className="space-y-3">
+    <div className="rounded-lg border border-white/20 bg-black/20 backdrop-blur-sm shadow-sm p-4">
+      <h2 className="text-sm font-semibold mb-3 text-white">To Do List</h2>
+      <div className="space-y-2">
         {todos.map((todo) => (
           <div
             key={todo.id}
-            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-              todo.completed ? " border-green-500" : "border-gray-200"
+            className={`flex items-center gap-2.5 p-2.5 rounded-md border cursor-pointer transition-all duration-200 hover:bg-white/5 ${
+              todo.completed
+                ? "border-green-500/50 bg-green-500/10"
+                : "border-white/10 hover:border-white/20"
             }`}
             onClick={() => !todo.isDefault && toggleTodo(todo.id)}
           >
             <div
-              className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                todo.completed ? "bg-green-500" : "border-2 border-gray-300"
+              className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+                todo.completed
+                  ? "bg-green-500"
+                  : "border-2 border-white/30 hover:border-white/50"
               }`}
             >
               {todo.completed && (
                 <svg
-                  className="w-3 h-3 text-white"
+                  className="w-2.5 h-2.5 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -128,17 +132,15 @@ export function ToDoList({ hackathon }: ToDoListProps) {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={3}
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
               )}
             </div>
             <span
-              className={`text-sm ${
-                todo.completed
-                  ? "font-medium text-green-500"
-                  : "text-muted-foreground"
+              className={`text-xs leading-tight ${
+                todo.completed ? "font-medium text-green-400" : "text-white/70"
               }`}
             >
               {todo.text}

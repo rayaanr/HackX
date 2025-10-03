@@ -7,6 +7,8 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedTabs } from "@/components/ui/anim/animated-tab";
 import { RegistrationButton } from "@/components/hackathon/widgets/registration-button";
 import { ToDoList } from "@/components/hackathon/widgets/todo-list";
@@ -23,6 +25,7 @@ import { ScheduleTab } from "@/components/hackathon/display/hackathon-schedule-t
 import { SubmittedProjectsTab } from "@/components/hackathon/display/hackathon-projects-gallery-tab";
 import { useHackathon } from "@/hooks/use-hackathons";
 import { Countdown } from "@/components/hackathon/widgets/countdown";
+import { formatDisplayDate } from "@/lib/helpers/date";
 
 function toHtmlFromDescription(input: string): string {
   if (!input) return "";
@@ -119,7 +122,7 @@ export default function HackathonPage() {
                 selectedTab={activeTab}
                 onTabChange={(value) =>
                   setActiveTab(
-                    value as "overview" | "prize" | "schedule" | "projects"
+                    value as "overview" | "prize" | "schedule" | "projects",
                   )
                 }
                 className="h-14 p-1"
@@ -199,14 +202,14 @@ export default function HackathonPage() {
                               "hr",
                             ],
                             ALLOWED_ATTR: ["href", "target", "rel"],
-                          })
+                          }),
                         );
                       })()}
                     </div>
                   </div>
 
                   {/* Quick Info Cards - No hover effects since they're not interactive */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
                       <h4 className="font-medium mb-2 text-white">
                         Participants
@@ -231,21 +234,100 @@ export default function HackathonPage() {
                           ?.toLocaleString() || "TBD"}
                       </p>
                     </div>
-                    <div className="p-6 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-                      <h4 className="font-medium mb-2 text-white">
-                        Tech Stack
-                      </h4>
-                      <p className="text-sm text-white/70">
-                        {hackathon?.techStack?.slice(0, 3).join(", ") ||
-                          "Not specified"}
-                      </p>
-                    </div>
                   </div>
                 </div>
 
                 {/* Right Column */}
-                <div className="space-y-6 sticky top-36 self-start">
+                <div className="space-y-4 sticky top-36 self-start">
                   <Countdown hackathon={hackathon} />
+
+                  {/* Hackathon Details Card */}
+                  <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-white text-sm">
+                        Hackathon Details
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 pt-0">
+                      {/* Experience Level */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-white/60">
+                          Experience Level
+                        </span>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {hackathon?.experienceLevel || "All"}
+                        </Badge>
+                      </div>
+
+                      {/* Location */}
+                      {hackathon?.location && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-white/60">
+                            Location
+                          </span>
+                          <span className="text-xs text-white font-medium">
+                            {hackathon.location}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Judging Mode */}
+                      {hackathon?.prizeCohorts?.[0]?.judgingMode && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-white/60">
+                            Judging Mode
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs capitalize"
+                          >
+                            {hackathon.prizeCohorts[0].judgingMode}
+                          </Badge>
+                        </div>
+                      )}
+
+                      {/* Voting Mode */}
+                      {hackathon?.prizeCohorts?.[0]?.votingMode && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-white/60">
+                            Voting Mode
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs capitalize"
+                          >
+                            {hackathon.prizeCohorts[0].votingMode.replace(
+                              "_",
+                              " ",
+                            )}
+                          </Badge>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Tech Stack */}
+                  {hackathon?.techStack && hackathon.techStack.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-white text-sm">
+                        Tech Stack
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {hackathon.techStack.map(
+                          (tech: string, index: number) => (
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs px-2 py-1"
+                            >
+                              {tech}
+                            </Badge>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <ToDoList hackathon={hackathon} />
                 </div>
               </div>
