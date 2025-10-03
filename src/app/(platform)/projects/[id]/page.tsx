@@ -622,7 +622,7 @@ export default function ProjectPage() {
                 </div>
 
                 {/* Right Column */}
-                <div className="space-y-8 sticky top-28 self-start pt-10">
+                <div className="space-y-8 sticky top-36 self-start">
                   {/* GitHub Repository Card */}
                   {project?.githubLink && (
                     <Card className="border-white/20 bg-black/20 backdrop-blur-sm">
