@@ -3,7 +3,7 @@
 import { CreateHackathonForm } from "@/components/hackathon/creation/hackathon-creation-form";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { Button } from "@/components/ui/button";
-import { CircularLoader } from "@/components/ui/loader";
+import { ClassicLoader } from "@/components/ui/loader";
 import EmptyComponent from "@/components/empty";
 import { useActiveAccount } from "thirdweb/react";
 import { useState, useEffect } from "react";
@@ -103,7 +103,7 @@ export default function CreateHackathonPage() {
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
-                  <CircularLoader size="sm" className="border-white mr-2" />
+                  <ClassicLoader size="sm" className="border-white mr-2" />
                   <span>
                     {isUploadingToIPFS
                       ? "Uploading to IPFS..."

@@ -39,8 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { motion } from "motion/react";
-import { CircularLoader } from "@/components/ui/loader";
-import type { ProjectWithHackathon } from "@/types/hackathon";
+import { ClassicLoader } from "@/components/ui/loader";
 import { useJudgeEvaluation } from "@/hooks/use-judge";
 import {
   judgeRatingSchema,
@@ -386,12 +385,12 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                       >
                         {submissionStage === "uploading" ? (
                           <>
-                            <CircularLoader size="sm" className="mr-2" />
+                            <ClassicLoader size="sm" className="mr-2" />
                             Uploading to IPFS...
                           </>
                         ) : submissionStage === "blockchain" ? (
                           <>
-                            <CircularLoader size="sm" className="mr-2" />
+                            <ClassicLoader size="sm" className="mr-2" />
                             Submitting to Blockchain...
                           </>
                         ) : submissionStage === "success" ? (

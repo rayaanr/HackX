@@ -2,7 +2,7 @@
 
 import { defineStepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
-import { CircularLoader } from "@/components/ui/loader";
+import { ClassicLoader } from "@/components/ui/loader";
 import { Fragment } from "react";
 import { OverviewStep } from "./hackathon-overview-step";
 import { PrizesStep } from "./hackathon-prizes-step";
@@ -108,7 +108,7 @@ export function CreateHackathonStepper({
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
-                      <CircularLoader size="sm" className="border-white" />
+                      <ClassicLoader size="sm" className="border-white" />
                       <span>
                         {isUploadingToIPFS
                           ? "Uploading to IPFS..."
