@@ -5,7 +5,13 @@ import { useActiveAccount } from "thirdweb/react";
 import { notFound } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
@@ -204,9 +210,11 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
             <Card className="border-none bg-transparent shadow-sm">
               <CardHeader className="py-4">
                 <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-                  <Award className="size-7" />
-                  Judge Evaluation
+                  {project.name || "Untitled Project"}
                 </CardTitle>
+                <CardDescription className="text-center mx-auto max-w-lg">
+                  {project.intro || "No description provided"}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 p-4 md:p-6">
                 <Form {...form}>
@@ -390,12 +398,12 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                           </>
                         ) : submissionStage === "success" ? (
                           <>
-                            <CheckCircle className="mr-2 size-4" />
+                            <CheckCircle className="size-4" />
                             Submitted Successfully!
                           </>
                         ) : (
                           <>
-                            <Award className="mr-2 size-4" />
+                            <Award className="size-4" />
                             Submit Evaluation
                           </>
                         )}

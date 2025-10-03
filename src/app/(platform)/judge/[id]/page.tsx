@@ -21,12 +21,6 @@ interface JudgingPageProps {
   params: Promise<{ id: string }>;
 }
 
-type JudgeProjectForDisplay = ProjectWithHackathon & {
-  logo?: string | null;
-  intro?: string | null;
-  techStack?: string[];
-};
-
 export default function JudgingPage({ params }: JudgingPageProps) {
   const { id } = use(params);
   const account = useActiveAccount();
@@ -93,8 +87,10 @@ export default function JudgingPage({ params }: JudgingPageProps) {
         initial={false}
         layout
       >
-        {projects.map((project: JudgeProjectForDisplay, index: number) => {
-          const techTags = project.techStack ?? project.tech_stack ?? [];
+        {projects.map((project, index) => {
+          if (!project) return null;
+
+          const techTags = project.techStack ?? [];
 
           return (
             <motion.div
@@ -184,17 +180,11 @@ export default function JudgingPage({ params }: JudgingPageProps) {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.35, delay: 0.1 }}
         >
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <h3 className="mb-2 text-lg font-semibold">
-                No projects submitted yet
-              </h3>
-              <p className="text-muted-foreground">
-                Projects will appear here once participants start submitting
-                their work.
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyComponent
+            title="No projects submitted yet"
+            description="Projects will appear here once participants start submitting their work."
+            type="info"
+          />
         </motion.div>
       )}
     </motion.div>
