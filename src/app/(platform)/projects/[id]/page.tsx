@@ -75,11 +75,11 @@ function toHtmlFromDescription(input: string): string {
 // Team member component with ENS support
 function TeamMember({
   address,
-  isLeader = false,
+  isOwner = false,
   currentUserAddress,
 }: {
   address: string;
-  isLeader?: boolean;
+  isOwner?: boolean;
   currentUserAddress?: string;
 }) {
   const { ensName, ensAvatar, displayName, initials } = useEns(address);
@@ -103,12 +103,12 @@ function TeamMember({
               <h4 className="font-medium text-white truncate">
                 {ensName || displayName}
               </h4>
-              {isLeader && (
+              {isOwner && (
                 <Badge
                   variant="outline"
                   className="text-xs border-blue-500/50 text-blue-400 bg-blue-500/10"
                 >
-                  Leader
+                  Owner
                 </Badge>
               )}
               {isCurrentUser && (
@@ -1126,7 +1126,7 @@ export default function ProjectPage() {
                       {project?.creator && (
                         <TeamMember
                           address={project.creator}
-                          isLeader={true}
+                          isOwner={true}
                           currentUserAddress={activeAccount?.address}
                         />
                       )}
@@ -1137,7 +1137,7 @@ export default function ProjectPage() {
                             <TeamMember
                               key={memberAddress}
                               address={memberAddress}
-                              isLeader={false}
+                              isOwner={false}
                               currentUserAddress={activeAccount?.address}
                             />
                           ))
