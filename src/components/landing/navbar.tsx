@@ -88,8 +88,8 @@ export function LandingNavbar({ className }: LandingNavbarProps) {
               size="lg"
             >
               <Link href="/dashboard">
-                Go to Dashboard
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                Go to Platform
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </Button>
           </div>
@@ -142,8 +142,8 @@ export function LandingNavbar({ className }: LandingNavbarProps) {
                   href="/dashboard"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Go to Dashboard
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  Go to Platform
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </Button>
             </div>

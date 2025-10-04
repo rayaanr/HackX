@@ -187,7 +187,7 @@ function HeroGeometric({
             initial="hidden"
             animate="visible"
           >
-            <p className="text-base sm:text-lg md:text-xl text-white/40 mb-8 md:mb-12 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
+            <p className="text-base sm:text-lg md:text-xl text-white/40 mb-8 md:mb-12 leading-relaxed font-semibold tracking-wide max-w-xl mx-auto px-4">
               {subtitle}
             </p>
           </motion.div>
@@ -199,30 +199,13 @@ function HeroGeometric({
             animate="visible"
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <Button
-              asChild
-              size="lg"
-              className={cn(
-                "bg-primary hover:bg-primary/90",
-                "text-primary-foreground border-0 shadow-lg shadow-primary/20",
-                "transition-all duration-200 transform hover:scale-105",
-                "px-8 py-3 text-lg font-semibold group",
-              )}
-            >
+            <Button asChild size="lg">
               <Link href="/dashboard">
                 Get Started
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight className="size-5 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className={cn(
-                "border-white/20 bg-white/5 hover:bg-white/10 text-white",
-                "backdrop-blur-sm px-8 py-3 text-lg font-medium",
-                "transition-all duration-200 hover:border-white/30",
-              )}
-            >
+            <Button variant="outline" size="lg">
               Learn More
             </Button>
           </motion.div>

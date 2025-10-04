@@ -22,7 +22,7 @@ export default function HomePage() {
           badge="AthenaX"
           title1="Build Amazing"
           title2="Hackathons"
-          subtitle="Discover, Participate, and Showcase Innovation with fully on-chain hackathons."
+          subtitle="Trustless. Transparent. Unstoppable hackathons on IPFS and Smart Contracts."
         />
         <HackXFeatures />
       </main>
