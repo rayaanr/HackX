@@ -131,8 +131,8 @@ export function HackathonSelectionStep() {
                         }
                         action={
                           <Link href="/hackathons">
-                            <Button className="w-full">
-                              <ExternalLink className="mr-2 h-4 w-4" />
+                            <Button>
+                              <ExternalLink className="size-4" />
                               Explore Hackathons
                             </Button>
                           </Link>

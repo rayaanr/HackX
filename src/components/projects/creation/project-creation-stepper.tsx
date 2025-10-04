@@ -6,6 +6,7 @@ import { Fragment } from "react";
 import { OverviewStep } from "./project-overview-step";
 import { TechStackStep } from "./project-tech-stack-step";
 import { HackathonSelectionStep } from "./project-hackathon-selection-step";
+import { ClassicLoader } from "@/components/ui/loader";
 
 const { Stepper } = defineStepper(
   {
@@ -22,7 +23,15 @@ const { Stepper } = defineStepper(
   },
 );
 
-export function CreateProjectStepper() {
+interface CreateProjectStepperProps {
+  isSubmitting?: boolean;
+  isUploadingToIPFS?: boolean;
+}
+
+export function CreateProjectStepper({
+  isSubmitting = false,
+  isUploadingToIPFS = false,
+}: CreateProjectStepperProps) {
   return (
     <div className="flex w-full flex-col gap-8">
       <Stepper.Provider
@@ -61,23 +70,63 @@ export function CreateProjectStepper() {
               ),
             })}
             <Stepper.Controls>
+              {methods.isLast && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={methods.reset}
+                  disabled={isSubmitting}
+                >
+                  Reset
+                </Button>
+              )}
               {!methods.isFirst && (
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={methods.prev}
-                  disabled={methods.isFirst}
+                  disabled={methods.isFirst || isSubmitting}
                 >
                   Previous
                 </Button>
               )}
-              <Button
-                type="button"
-                onClick={methods.isLast ? methods.reset : methods.next}
-                variant={methods.isLast ? "destructive" : "default"}
-              >
-                {methods.isLast ? "Reset" : "Next"}
-              </Button>
+              {methods.isLast ? (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    // Trigger the hidden form submit button
+                    const submitButton = document.getElementById(
+                      "stepper-create-project",
+                    );
+                    if (submitButton) {
+                      submitButton.click();
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="min-w-[180px]"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center">
+                      <ClassicLoader size="sm" className="border-white mr-2" />
+                      <span>
+                        {isUploadingToIPFS
+                          ? "Uploading to IPFS..."
+                          : "Creating Project..."}
+                      </span>
+                    </div>
+                  ) : (
+                    "Create Project"
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={methods.next}
+                  disabled={isSubmitting}
+                >
+                  Next
+                </Button>
+              )}
             </Stepper.Controls>
           </Fragment>
         )}

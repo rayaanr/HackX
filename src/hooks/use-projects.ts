@@ -102,8 +102,44 @@ export function useBlockchainProjects() {
 
       // Step 1: Upload to IPFS using helper function
       console.log("📁 Uploading project metadata to IPFS...");
+
+      // Dispatch IPFS upload start
+      window.dispatchEvent(
+        new CustomEvent("projectIPFSUploadChange", {
+          detail: { isUploadingToIPFS: true },
+        }),
+      );
+
+      // Show upload started notification
+      const uploadToastId = toast.loading(
+        "📤 Uploading project data to IPFS...",
+        {
+          description: "This may take a few moments",
+        },
+      );
+
       const { cid } = await uploadProjectToIPFS(client, projectData);
       console.log("✅ Metadata uploaded:", { cid });
+
+      // Show upload success notification
+      toast.dismiss(uploadToastId);
+      toast.success("Uploaded to IPFS", {
+        description: "Metadata uploaded to IPFS successfully!",
+        action: {
+          label: "View on IPFS",
+          onClick: () => {
+            const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
+            window.open(gatewayUrl, "_blank");
+          },
+        },
+      });
+
+      // Dispatch IPFS upload complete
+      window.dispatchEvent(
+        new CustomEvent("projectIPFSUploadChange", {
+          detail: { isUploadingToIPFS: false },
+        }),
+      );
 
       // Step 2: Create the project on blockchain using helper function
       const createProjectTransaction = prepareCreateProjectTransaction(
@@ -124,6 +160,18 @@ export function useBlockchainProjects() {
               "Create transaction hash:",
               createResult.transactionHash,
             );
+
+            // Show blockchain success notification
+            toast.success("Project Created", {
+              description: "Project created successfully on blockchain!",
+              action: {
+                label: "View on Explorer",
+                onClick: () => {
+                  const explorerUrl = `${process.env.NEXT_PUBLIC_EXPLORER_URL}/tx/${createResult.transactionHash}`;
+                  window.open(explorerUrl, "_blank");
+                },
+              },
+            });
 
             try {
               // Wait for the transaction receipt
@@ -210,6 +258,13 @@ export function useBlockchainProjects() {
     },
     onError: (error) => {
       console.error("❌ Project submission failed:", error);
+
+      // Ensure IPFS upload state is cleared on error
+      window.dispatchEvent(
+        new CustomEvent("projectIPFSUploadChange", {
+          detail: { isUploadingToIPFS: false },
+        }),
+      );
     },
   });
 

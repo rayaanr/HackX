@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 
 export default function CreateProjectPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false);
 
   // Listen for loading state changes from the form
   useEffect(() => {
@@ -15,14 +16,27 @@ export default function CreateProjectPage() {
       setIsLoading(event.detail.isLoading);
     };
 
+    const handleIPFSUploadChange = (event: CustomEvent) => {
+      setIsUploadingToIPFS(event.detail.isUploadingToIPFS);
+    };
+
     window.addEventListener(
       "projectLoadingChange",
       handleLoadingChange as EventListener,
     );
+    window.addEventListener(
+      "projectIPFSUploadChange",
+      handleIPFSUploadChange as EventListener,
+    );
+
     return () => {
       window.removeEventListener(
         "projectLoadingChange",
         handleLoadingChange as EventListener,
+      );
+      window.removeEventListener(
+        "projectIPFSUploadChange",
+        handleIPFSUploadChange as EventListener,
       );
     };
   }, []);
@@ -72,12 +86,17 @@ export default function CreateProjectPage() {
               id="header-create-project"
               onClick={handleHeaderCreate}
               disabled={isLoading}
+              className="min-w-[180px]"
             >
               {isLoading ? (
-                <>
-                  <ClassicLoader size="sm" className="mr-2" />
-                  Creating Project...
-                </>
+                <div className="flex items-center justify-center">
+                  <ClassicLoader size="sm" className="border-white mr-2" />
+                  <span>
+                    {isUploadingToIPFS
+                      ? "Uploading to IPFS..."
+                      : "Creating Project..."}
+                  </span>
+                </div>
               ) : (
                 "Create Project"
               )}

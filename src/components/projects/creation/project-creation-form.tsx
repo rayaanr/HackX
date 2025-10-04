@@ -6,7 +6,7 @@ import { CreateProjectStepper } from "./project-creation-stepper";
 import { projectSchema, ProjectFormData } from "@/lib/schemas/project-schema";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useBlockchainProjects } from "@/hooks/use-projects";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ import { ClassicLoader } from "@/components/ui/loader";
 
 export function CreateProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false);
   const router = useRouter();
 
   const { submitProject, submitToHackathon, isConnected } =
@@ -38,6 +39,25 @@ export function CreateProjectForm() {
       hackathonIds: [],
     },
   });
+
+  // Listen for IPFS upload state changes
+  useEffect(() => {
+    const handleIPFSUploadChange = (event: CustomEvent) => {
+      setIsUploadingToIPFS(event.detail.isUploadingToIPFS);
+    };
+
+    window.addEventListener(
+      "projectIPFSUploadChange" as any,
+      handleIPFSUploadChange,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "projectIPFSUploadChange" as any,
+        handleIPFSUploadChange,
+      );
+    };
+  }, []);
 
   const handleFillMockData = () => {
     const randomIndex = Math.floor(Math.random() * MOCK_PROJECT_DATA.length);
@@ -173,15 +193,23 @@ export function CreateProjectForm() {
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <CreateProjectStepper />
+        <CreateProjectStepper
+          isSubmitting={isSubmitting}
+          isUploadingToIPFS={isUploadingToIPFS}
+        />
         {/* Hidden submit button for programmatic access */}
         <Button
           type="submit"
           id="stepper-create-project"
-          disabled={isSubmitting || !isConnected}
+          disabled={isSubmitting || isUploadingToIPFS || !isConnected}
           className="hidden"
         >
-          {isSubmitting ? (
+          {isUploadingToIPFS ? (
+            <>
+              <ClassicLoader size="sm" className="mr-2" />
+              Uploading to IPFS...
+            </>
+          ) : isSubmitting ? (
             <>
               <ClassicLoader size="sm" className="mr-2" />
               Creating Project...

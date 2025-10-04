@@ -82,6 +82,16 @@ export function CreateHackathonStepper({
               ),
             })}
             <Stepper.Controls>
+              {methods.isLast && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={methods.reset}
+                  disabled={isSubmitting}
+                >
+                  Reset
+                </Button>
+              )}
               {!methods.isFirst && (
                 <Button
                   type="button"
