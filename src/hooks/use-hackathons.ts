@@ -15,6 +15,7 @@ import {
   getProjectById,
 } from "@/lib/helpers/blockchain";
 import { useCreateHackathon } from "./use-create-hackathon";
+import { safeToDate } from "@/lib/helpers/date";
 
 /**
  * Hook for fetching all hackathons with individual caching
@@ -302,6 +303,85 @@ export function useRegisteredHackathons() {
       isConnected: !!activeAccount,
     }),
     [registeredHackathons, isLoading, error, activeAccount],
+  );
+}
+
+/**
+ * Hook for fetching hackathons available for submission
+ * Includes both registered hackathons AND hackathons in submission phase
+ */
+export function useSubmissionEligibleHackathons() {
+  const { contract, client } = useWeb3();
+  const activeAccount = useActiveAccount();
+
+  // First get total hackathons
+  const { data: totalHackathons = 0 } = useQuery({
+    queryKey: ["total-hackathons"],
+    queryFn: () => getTotalHackathons(contract),
+    enabled: !!contract,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Get all hackathons and their registration status
+  const hackathonQueries = useQueries({
+    queries: Array.from({ length: totalHackathons }, (_, i) => ({
+      queryKey: ["hackathon-with-registration", i + 1, activeAccount?.address],
+      queryFn: async () => {
+        const hackathon = await getHackathonById(contract, client, i + 1);
+        const isRegistered = activeAccount?.address
+          ? await isUserRegistered(contract, i + 1, activeAccount.address)
+          : false;
+
+        return { ...hackathon, isRegistered };
+      },
+      enabled:
+        !!contract &&
+        !!client &&
+        totalHackathons > 0 &&
+        !!activeAccount?.address,
+      staleTime: 2 * 60 * 1000,
+    })),
+  });
+
+  // Filter hackathons that are either registered OR in submission phase
+  const eligibleHackathons = useMemo(() => {
+    const allHackathons = hackathonQueries
+      .map((query) => query.data)
+      .filter(Boolean);
+
+    return allHackathons.filter((hackathon) => {
+      // Always include if user is registered
+      if (hackathon.isRegistered) return true;
+
+      // Also include if hackathon is in submission phase (Live status)
+      const now = new Date();
+      const hackathonStart = safeToDate(
+        hackathon.hackathonPeriod?.hackathonStartDate,
+      );
+      const hackathonEnd = safeToDate(
+        hackathon.hackathonPeriod?.hackathonEndDate,
+      );
+
+      // Check if in submission phase (Live)
+      if (hackathonStart && hackathonEnd) {
+        return now >= hackathonStart && now < hackathonEnd;
+      }
+
+      return false;
+    });
+  }, [hackathonQueries]);
+
+  const isLoading = hackathonQueries.some((query) => query.isLoading);
+  const error = hackathonQueries.find((query) => query.error)?.error;
+
+  return useMemo(
+    () => ({
+      hackathons: eligibleHackathons,
+      isLoading: !activeAccount ? false : isLoading,
+      error,
+      isConnected: !!activeAccount,
+    }),
+    [eligibleHackathons, isLoading, error, activeAccount],
   );
 }
 

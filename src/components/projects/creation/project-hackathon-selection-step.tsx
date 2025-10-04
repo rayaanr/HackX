@@ -59,7 +59,7 @@ function transformHackathonToCardProps(
 
 export function HackathonSelectionStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormData>();
-  // Updated to use registered hackathons only
+  // Only show hackathons the user is registered for
   const {
     hackathons: hackathonData,
     isLoading,
@@ -123,7 +123,7 @@ export function HackathonSelectionStep() {
                     ) : hackathonData.length === 0 ? (
                       <EmptyComponent
                         title="No Registered Hackathons"
-                        description="You haven't registered for any hackathons yet. Register for a hackathon to submit your project."
+                        description="You must register for a hackathon before you can submit your project. Explore hackathons to find one to register for."
                         type="info"
                         variant="ghost"
                         icon={
@@ -202,8 +202,7 @@ export function HackathonSelectionStep() {
                   </div>
                 </FormControl>
                 <FormDescription>
-                  Select the hackathons you want to submit your project to. Only
-                  hackathons in the "Live" submission phase can be selected.
+                  Select the hackathons you want to submit your project to. Only hackathons you've registered for and that are in the "Live" submission phase can be selected.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
