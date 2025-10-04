@@ -5,6 +5,7 @@ import { useActiveAccount, useSendTransaction } from "thirdweb/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWeb3 } from "@/providers/web3-provider";
 import {
+  fetchIPFSMetadata,
   getProjectScore,
   prepareSubmitScoreTransaction,
 } from "@/lib/helpers/blockchain";
@@ -327,7 +328,6 @@ export function useJudgeEvaluationData(
       }
 
       try {
-        const { fetchIPFSMetadata } = await import("@/lib/helpers/blockchain");
         console.log(
           "Fetching IPFS metadata for hash:",
           evaluation.feedbackIpfsHash,
@@ -338,26 +338,30 @@ export function useJudgeEvaluationData(
         );
         console.log("Raw IPFS data received:", data);
 
-        const typedData = data as {
-          projectId: number;
-          judgeAddress: string;
-          scores: {
-            technicalExecution: number;
-            innovation: number;
-            usability: number;
-            marketPotential: number;
-            presentation: number;
-          };
-          totalScore: number;
-          feedback: {
-            overallFeedback: string;
-            strengths?: string;
-            improvements?: string;
-          };
-          submittedAt: string;
+        const typedData = {
+          ...(data as {
+            projectId: number;
+            judgeAddress: string;
+            scores: {
+              technicalExecution: number;
+              innovation: number;
+              usability: number;
+              marketPotential: number;
+              presentation: number;
+            };
+            totalScore: number;
+            feedback: {
+              overallFeedback: string;
+              strengths?: string;
+              improvements?: string;
+            };
+            submittedAt: string;
+          }),
+          // Add the IPFS hash to the returned data
+          ipfsHash: evaluation.feedbackIpfsHash,
         };
 
-        console.log("Returning typed IPFS data:", typedData);
+        console.log("Returning typed IPFS data with hash:", typedData);
         return typedData;
       } catch (error) {
         console.error("Failed to fetch evaluation data from IPFS:", error);

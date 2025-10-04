@@ -55,6 +55,7 @@ import type { UIHackathon } from "@/types/hackathon";
 import { useEns } from "@/hooks/use-ens";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 import { YouTubeEmbed } from "@next/third-parties/google";
+import { IPFSHashDisplay } from "@/components/ui/ipfs-hash-display";
 import { marked } from "marked";
 import { motion } from "motion/react";
 
@@ -856,6 +857,22 @@ export default function ProjectPage() {
                           </div>
                         </CardContent>
                       </Card>
+                    </motion.div>
+                  )}
+
+                  {/* IPFS Hash Display */}
+                  {project?.ipfsHash && (
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.4, delay: 0 },
+                        },
+                      }}
+                    >
+                      <IPFSHashDisplay ipfsHash={project.ipfsHash} />
                     </motion.div>
                   )}
                 </motion.div>

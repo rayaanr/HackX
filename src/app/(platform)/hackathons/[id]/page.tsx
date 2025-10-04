@@ -34,6 +34,7 @@ import { SubmittedProjectsTab } from "@/components/hackathon/display/hackathon-p
 import { useHackathon } from "@/hooks/use-hackathons";
 import { Countdown } from "@/components/hackathon/widgets/countdown";
 import { formatDisplayDate } from "@/lib/helpers/date";
+import { IPFSHashDisplay } from "@/components/ui/ipfs-hash-display";
 import { motion } from "motion/react";
 
 function toHtmlFromDescription(input: string): string {
@@ -514,6 +515,23 @@ export default function HackathonPage() {
                         </div>
                       </motion.div>
                     )}
+
+                  {/* IPFS Hash Display */}
+                  {hackathon?.ipfsHash && (
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.4, delay: 1.2 },
+                        },
+                      }}
+                      className="mt-6"
+                    >
+                      <IPFSHashDisplay ipfsHash={hackathon.ipfsHash} />
+                    </motion.div>
+                  )}
                 </motion.div>
               </motion.div>
             )}

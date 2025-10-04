@@ -57,6 +57,7 @@ import {
   useHackathon,
   useHackathonProjectsWithDetails,
 } from "@/hooks/use-hackathons";
+import { IPFSHashDisplay } from "@/components/ui/ipfs-hash-display";
 
 interface ProjectReviewPageProps {
   params: Promise<{ id: string; projectId: string }>;
@@ -293,7 +294,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                   {project.intro || "No description provided"}
                 </CardDescription>
                 {isViewMode && (
-                  <div className="mt-4 flex justify-center">
+                  <div className="mt-4 flex flex-col justify-center items-center gap-4">
                     <Badge
                       variant={hasScored ? "default" : "secondary"}
                       className="text-sm px-3 py-1"
@@ -306,14 +307,22 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                           •{" "}
                           {new Date(
                             existingEvaluation.submittedAt,
-                          ).toLocaleDateString()}
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </span>
                       )}
                     </Badge>
+
+                    {existingEvaluation?.ipfsHash && (
+                      <IPFSHashDisplay ipfsHash={existingEvaluation.ipfsHash} />
+                    )}
                   </div>
                 )}
               </CardHeader>
-              <CardContent className="space-y-6 p-4 md:p-6">
+              <CardContent className="space-y-6">
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(handleSubmitEvaluation)}
