@@ -121,6 +121,21 @@ export function useJudgeEvaluationSubmission() {
 
       console.log("Feedback uploaded to IPFS:", cid);
 
+      // Show IPFS upload success toast
+      if (typeof window !== "undefined") {
+        const { toast } = await import("sonner");
+        toast.success("Uploaded to IPFS", {
+          description: "Evaluation feedback uploaded to IPFS successfully!",
+          action: {
+            label: "View on IPFS",
+            onClick: () => {
+              const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
+              window.open(gatewayUrl, "_blank");
+            },
+          },
+        });
+      }
+
       setSubmissionStage("blockchain");
 
       // Update toast for blockchain stage (this will update any existing toast with the same id)
