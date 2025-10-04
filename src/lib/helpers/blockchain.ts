@@ -174,7 +174,7 @@ export async function fetchIPFSMetadata(
   } catch (error) {
     // Fallback with dweb.link
     try {
-      const response = await fetch(`https://dweb.link/ipfs/${ipfsHash}`);
+      const response = await fetch(`https://ipfs.io/ipfs/${ipfsHash}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
