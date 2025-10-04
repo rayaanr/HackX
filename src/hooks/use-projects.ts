@@ -6,6 +6,7 @@ import {
   useActiveAccount,
   useReadContract,
 } from "thirdweb/react";
+import { prepareContractCall } from "thirdweb";
 import { waitForReceipt } from "thirdweb";
 import { useWeb3 } from "@/providers/web3-provider";
 import type { ProjectFormData } from "@/lib/schemas/project-schema";
@@ -474,4 +475,137 @@ export function useProjectTeamMembers(projectId: string | number) {
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
+}
+
+/**
+ * Hook for adding a team member to a project
+ * Calls the addTeamMember contract function
+ */
+export function useAddTeamMember() {
+  const queryClient = useQueryClient();
+  const activeAccount = useActiveAccount();
+  const { mutateAsync: sendTransaction } = useSendTransaction();
+  const { contract } = useWeb3();
+
+  const addTeamMemberMutation = useMutation({
+    mutationFn: async ({
+      projectId,
+      memberAddress,
+    }: {
+      projectId: string | number;
+      memberAddress: string;
+    }) => {
+      if (!activeAccount) {
+        throw new Error("Please connect your wallet to add a team member.");
+      }
+
+      if (!contract) {
+        throw new Error("Contract not configured.");
+      }
+
+      // Validate Ethereum address format
+      if (!/^0x[a-fA-F0-9]{40}$/.test(memberAddress)) {
+        throw new Error("Invalid Ethereum address format.");
+      }
+
+      console.log(
+        `🚀 Adding team member ${memberAddress} to project ${projectId}...`,
+      );
+
+      // Prepare the contract call
+      const transaction = prepareContractCall({
+        contract,
+        method: "function addTeamMember(uint256 projectId, address member)",
+        params: [BigInt(projectId), memberAddress],
+      });
+
+      return new Promise<{
+        projectId: string | number;
+        memberAddress: string;
+        transactionHash: string;
+      }>((resolve, reject) => {
+        sendTransaction(transaction, {
+          onSuccess: (result) => {
+            console.log("🎉 Team member added successfully!");
+            console.log("Transaction hash:", result.transactionHash);
+
+            resolve({
+              projectId,
+              memberAddress,
+              transactionHash: result.transactionHash,
+            });
+          },
+          onError: (error) => {
+            console.error("❌ Add team member failed:", error);
+            const message =
+              error instanceof Error ? error.message.toLowerCase() : "";
+
+            if (
+              message.includes("user denied") ||
+              message.includes("rejected")
+            ) {
+              reject(
+                new Error(
+                  "Transaction was cancelled. Please approve the transaction to add team member.",
+                ),
+              );
+            } else if (message.includes("insufficient funds")) {
+              reject(
+                new Error(
+                  "Insufficient funds for gas fees. Please add ETH to your wallet and try again.",
+                ),
+              );
+            } else if (message.includes("network")) {
+              reject(
+                new Error(
+                  "Network error. Please check your internet connection and try again.",
+                ),
+              );
+            } else {
+              reject(
+                new Error(
+                  `Failed to add team member: ${
+                    error instanceof Error ? error.message : "Unknown error"
+                  }`,
+                ),
+              );
+            }
+          },
+        });
+      });
+    },
+    onSuccess: (data) => {
+      console.log("🎉 Team member added successfully!", data);
+      toast.success("Team member added successfully!", {
+        id: "add-team-member",
+        action: {
+          label: "View on Explorer",
+          onClick: () => {
+            const explorerUrl = `${process.env.NEXT_PUBLIC_EXPLORER_URL}/tx/${data.transactionHash}`;
+            window.open(explorerUrl, "_blank");
+          },
+        },
+      });
+      // Invalidate and refetch team members
+      queryClient.invalidateQueries({
+        queryKey: ["project-team-members", data.projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["blockchain-project", data.projectId],
+      });
+    },
+    onError: (error) => {
+      console.error("❌ Add team member failed:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add team member",
+        { id: "add-team-member" },
+      );
+    },
+  });
+
+  return {
+    addTeamMember: addTeamMemberMutation.mutateAsync,
+    isAddingTeamMember: addTeamMemberMutation.isPending,
+    addTeamMemberError: addTeamMemberMutation.error,
+  };
 }

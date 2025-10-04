@@ -8,6 +8,8 @@ import {
   Play,
   Plus,
   Search,
+  UserPlus,
+  Loader2,
 } from "lucide-react";
 import { IconBrandGithub, IconShare } from "@tabler/icons-react";
 import Link from "next/link";
@@ -29,10 +31,12 @@ import {
   useBlockchainProject,
   useProjectTeamMembers,
   useBlockchainProjects,
+  useAddTeamMember,
 } from "@/hooks/use-projects";
 import { useHackathon, useRegisteredHackathons } from "@/hooks/use-hackathons";
 import { useQueries } from "@tanstack/react-query";
 import { useWeb3 } from "@/providers/web3-provider";
+import { useActiveAccount } from "thirdweb/react";
 import { getHackathonById } from "@/lib/helpers/blockchain";
 import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
 import {
@@ -106,6 +110,123 @@ function TeamMember({
 }
 
 type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
+
+// Add Team Member Dialog component
+function AddTeamMemberDialog({
+  projectId,
+  isProjectOwner,
+}: {
+  projectId: string;
+  isProjectOwner: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [memberAddress, setMemberAddress] = useState("");
+  const { addTeamMember, isAddingTeamMember } = useAddTeamMember();
+
+  const handleAddMember = async () => {
+    if (!memberAddress) {
+      toast.error("Please enter a valid wallet address");
+      return;
+    }
+
+    // Basic validation for Ethereum address
+    if (!/^0x[a-fA-F0-9]{40}$/.test(memberAddress)) {
+      toast.error("Invalid Ethereum address format");
+      return;
+    }
+
+    try {
+      toast.loading("Adding team member...", { id: "add-team-member" });
+
+      await addTeamMember({
+        projectId,
+        memberAddress,
+      });
+
+      setMemberAddress("");
+      setOpen(false);
+    } catch (error) {
+      // Error handling is done in the hook
+      console.error("Failed to add team member:", error);
+    }
+  };
+
+  if (!isProjectOwner) {
+    return null;
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          size="sm"
+          className="gap-2 bg-blue-600 hover:bg-blue-500 border-blue-500 hover:border-blue-400 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          <UserPlus className="w-4 h-4" />
+          Add Member
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="border border-white/20 bg-black/90 backdrop-blur-sm">
+        <DialogHeader>
+          <DialogTitle className="text-white">Add Team Member</DialogTitle>
+          <DialogDescription className="text-white/70">
+            Enter the wallet address of the team member you want to add to this
+            project.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label
+              htmlFor="memberAddress"
+              className="text-sm font-medium text-white"
+            >
+              Wallet Address
+            </label>
+            <input
+              id="memberAddress"
+              type="text"
+              value={memberAddress}
+              onChange={(e) => setMemberAddress(e.target.value)}
+              placeholder="0x..."
+              className="w-full px-3 py-2 bg-black/40 border border-white/20 rounded-md text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isAddingTeamMember}
+            />
+            <p className="text-xs text-white/50">
+              Enter a valid Ethereum address (starts with 0x)
+            </p>
+          </div>
+        </div>
+
+        <div className="flex gap-3 justify-end">
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isAddingTeamMember}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleAddMember}
+            disabled={isAddingTeamMember || !memberAddress}
+          >
+            {isAddingTeamMember ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              <>
+                <UserPlus className="size-4" />
+                Add Member
+              </>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // Hackathon submission dialog component
 function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
@@ -338,6 +459,11 @@ export default function ProjectPage() {
     useProjectTeamMembers(id);
 
   const { contract, client } = useWeb3();
+  const activeAccount = useActiveAccount();
+
+  // Check if connected user is the project owner
+  const isProjectOwner =
+    activeAccount?.address?.toLowerCase() === project?.creator?.toLowerCase();
 
   // Initialize empty queries array
   const [hackathonQueries, setHackathonQueries] = useState<any[]>([]);
@@ -933,6 +1059,16 @@ export default function ProjectPage() {
                   }}
                   className="space-y-6"
                 >
+                  {/* Add Team Member Button - Only visible to project owner */}
+                  {isProjectOwner && (
+                    <div className="flex justify-end">
+                      <AddTeamMemberDialog
+                        projectId={id}
+                        isProjectOwner={isProjectOwner}
+                      />
+                    </div>
+                  )}
+
                   {/* Team Leader */}
                   {project?.creator && (
                     <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
