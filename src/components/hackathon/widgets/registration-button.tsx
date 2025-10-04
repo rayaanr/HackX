@@ -74,8 +74,16 @@ export function RegistrationButton({
     try {
       setIsRegistering(true);
       const transaction = prepareTransaction(hackathonId);
-      await sendTransaction(transaction);
-      toast.success("Successfully registered for hackathon!");
+      const result = await sendTransaction(transaction);
+      toast.success("Successfully registered for hackathon!", {
+        action: {
+          label: "View on Explorer",
+          onClick: () => {
+            const explorerUrl = `${process.env.NEXT_PUBLIC_EXPLORER_URL}/tx/${result.transactionHash}`;
+            window.open(explorerUrl, "_blank");
+          },
+        },
+      });
       refetchRegistration(); // Refresh registration status
     } catch (error: any) {
       console.error("Registration failed:", error);

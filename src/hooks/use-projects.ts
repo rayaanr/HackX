@@ -358,6 +358,13 @@ export function useBlockchainProjects() {
       console.log("🎉 Project submitted to hackathon successfully!", data);
       toast.success("Project submitted to hackathon successfully!", {
         id: "submit-to-hackathon",
+        action: {
+          label: "View on Explorer",
+          onClick: () => {
+            const explorerUrl = `${process.env.NEXT_PUBLIC_EXPLORER_URL}/tx/${data.transactionHash}`;
+            window.open(explorerUrl, "_blank");
+          },
+        },
       });
       // Invalidate and refetch user projects
       queryClient.invalidateQueries({ queryKey: ["blockchain-user-projects"] });
