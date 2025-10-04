@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Shield, Users, Zap, Trophy, Code, Coins } from "lucide-react";
 
 export function HackXFeatures() {
@@ -60,6 +61,9 @@ export function HackXFeatures() {
 
             {/* Real-time Analytics */}
             <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
+              <Badge className="absolute top-3 right-3 z-10 bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30">
+                Coming Soon
+              </Badge>
               <CardContent className="pt-6">
                 <div className="pt-6 lg:px-6">
                   <svg
@@ -286,6 +290,9 @@ export function HackXFeatures() {
 
             {/* Prize Distribution - New Feature */}
             <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
+              <Badge className="absolute top-3 right-3 z-10 bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30">
+                Coming Soon
+              </Badge>
               <CardContent className="pt-6">
                 <div className="relative mx-auto flex aspect-square size-32 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
                   <Trophy
@@ -329,6 +336,9 @@ export function HackXFeatures() {
 
             {/* Token Rewards - Additional Feature */}
             <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
+              <Badge className="absolute top-3 right-3 z-10 bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30">
+                Coming Soon
+              </Badge>
               <CardContent className="pt-6">
                 <div className="relative mx-auto flex aspect-square size-32 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
                   <Coins

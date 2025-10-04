@@ -44,7 +44,7 @@ export function LandingNavbar({ className }: LandingNavbarProps) {
         className,
       )}
     >
-      <div className="container mx-auto px-2 md:px-4 py-3">
+      <div className="mx-auto px-2 md:px-10 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
