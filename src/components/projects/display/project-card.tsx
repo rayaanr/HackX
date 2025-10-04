@@ -34,9 +34,9 @@ interface ProjectCardProps {
 }
 
 function TechBadges({ stack }: { stack: string[] }) {
-  if (!stack?.length) return null;
+  if (!stack?.length) return <div className="mt-5 h-[28px]" />; // Empty space to maintain height
   return (
-    <div className="mt-5 flex flex-wrap gap-2">
+    <div className="mt-5 flex flex-wrap gap-2 min-h-[28px]">
       {stack.slice(0, 4).map((tech) => (
         <Badge
           key={tech}
@@ -65,7 +65,7 @@ export function ProjectCard({
   isJudge = false,
 }: ProjectCardProps) {
   const Root = ({ children }: { children: React.ReactNode }) => (
-    <Card className={`project-card-hover ${className}`}>
+    <Card className={`project-card-hover h-full ${className}`}>
       <div className="relative z-10 h-full flex flex-col">{children}</div>
     </Card>
   );
@@ -143,8 +143,8 @@ export function ProjectCard({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex-1 relative z-10 items-center">
-          <p className="text-sm text-white/65 mb-3 line-clamp-3">
+        <CardContent className="flex-1 relative z-10 items-center pb-0">
+          <p className="text-sm text-white/65 mb-3 line-clamp-2">
             {project.intro}
           </p>
           <TechBadges stack={project.tech_stack} />
