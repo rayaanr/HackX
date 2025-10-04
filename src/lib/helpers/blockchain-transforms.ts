@@ -8,6 +8,7 @@ import type {
   ProjectStatus,
 } from "@/types/blockchain";
 import type { UIHackathon, UIProject } from "@/types/hackathon";
+import { resolveIPFSToHttp } from "./ipfs";
 
 /**
  * Transform blockchain hackathon data to UI format
@@ -20,7 +21,7 @@ export function transformBlockchainToUI(
   return {
     id: blockchainHackathon.id.toString(),
     name: metadata?.name || `Hackathon #${blockchainHackathon.id}`,
-    visual: metadata?.visual || null,
+    visual: resolveIPFSToHttp(metadata?.visual) || null,
     shortDescription: metadata?.shortDescription || "No description available",
     fullDescription: metadata?.fullDescription || "",
     participantCount: blockchainHackathon.participantCount || 0,
@@ -101,6 +102,8 @@ export function transformBlockchainProjectToUI(
     id: blockchainProject.id.toString(),
     name: metadata?.name || `Project #${blockchainProject.id}`,
     description: metadata?.description || null,
+    logo: resolveIPFSToHttp(metadata?.logo) || null,
+    intro: metadata?.intro || null,
     hackathon_id: blockchainProject.hackathonIds?.[0] || "0",
     hackathon_name: blockchainProject.hackathonMetadata?.name,
     tech_stack: metadata?.techStack || [],

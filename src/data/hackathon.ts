@@ -2728,7 +2728,12 @@ Traditional financial services are failing millions of people:
 // Helper function to get a random mock hackathon
 export function getRandomMockHackathon(): HackathonFormData {
   const randomIndex = Math.floor(Math.random() * mockHackathons.length);
-  return { ...mockHackathons[randomIndex] }; // Return a copy to avoid mutations
+  const mockData = { ...mockHackathons[randomIndex] }; // Return a copy to avoid mutations
+
+  // Remove visual from mock data - users should upload their own images
+  delete mockData.visual;
+
+  return mockData;
 }
 
 // Helper function to get multiple random mock hackathons

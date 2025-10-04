@@ -62,7 +62,11 @@ export function CreateProjectForm() {
   const handleFillMockData = () => {
     const randomIndex = Math.floor(Math.random() * MOCK_PROJECT_DATA.length);
     const mockData = MOCK_PROJECT_DATA[randomIndex];
-    form.reset(mockData);
+
+    // Remove logo from mock data - users should upload their own images
+    const { logo, ...mockDataWithoutLogo } = mockData;
+
+    form.reset(mockDataWithoutLogo);
     toast.success(`Form filled with "${mockData.name}" mock data!`);
   };
 

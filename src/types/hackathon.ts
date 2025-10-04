@@ -237,7 +237,9 @@ export interface ProjectWithHackathon {
 export interface UIProject {
   id: string;
   name: string;
+  intro?: string | null;
   description: string | null;
+  logo?: string | null;
   hackathon_name?: string;
   hackathon_id?: string;
   tech_stack: string[];

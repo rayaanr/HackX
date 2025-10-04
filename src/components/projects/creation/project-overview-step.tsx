@@ -40,8 +40,8 @@ export function OverviewStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormData>();
 
   const loadMockData = (mockData: ProjectFormData) => {
-    // Load all the mock data into the form
-    setValue("logo", mockData.logo);
+    // Load all the mock data into the form (excluding logo - users should upload their own)
+    // setValue("logo", mockData.logo); // Removed - don't load logo from mock data
     setValue("name", mockData.name);
     setValue("intro", mockData.intro);
     setValue("pitchVideo", mockData.pitchVideo);

@@ -2188,5 +2188,10 @@ The online shopping landscape faces critical challenges:
 
 export const getRandomMockProject = (): ProjectFormData => {
   const randomIndex = Math.floor(Math.random() * MOCK_PROJECT_DATA.length);
-  return MOCK_PROJECT_DATA[randomIndex];
+  const mockData = MOCK_PROJECT_DATA[randomIndex];
+
+  // Remove logo from mock data - users should upload their own images
+  const { logo, ...mockDataWithoutLogo } = mockData;
+
+  return mockDataWithoutLogo as ProjectFormData;
 };

@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatRelativeDate } from "@/lib/helpers/date";
+import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 import Link from "next/link";
 
 export interface ProjectCardData {
@@ -78,7 +79,7 @@ export function ProjectCard({
             <div className="flex items-start gap-3">
               <Avatar className="size-12 rounded-md ring-1 ring-white/10 transition-colors group-hover:ring-primary/50">
                 <AvatarImage
-                  src={project.logo}
+                  src={resolveIPFSToHttp(project.logo)}
                   alt={project.name || "Project logo"}
                   className="object-cover"
                 />
@@ -122,7 +123,7 @@ export function ProjectCard({
           <div className="flex items-center gap-3">
             <Avatar className="size-12 rounded-md ring-1 ring-white/10 transition-colors group-hover:ring-primary/50">
               <AvatarImage
-                src={project.logo}
+                src={resolveIPFSToHttp(project.logo)}
                 alt={project.name || "Project logo"}
                 className="object-cover"
               />
