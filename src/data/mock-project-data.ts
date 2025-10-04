@@ -933,7 +933,7 @@ Traditional online education faces critical issues:
     name: "Sustainable Supply Chain",
     intro:
       "IoT-powered supply chain tracking for sustainability and transparency in global trade.",
-    pitchVideo: "https://www.youtube.com/channel/UCJ9zTtvIKcDLNe76CksyM9A",
+    pitchVideo: "https://www.youtube.com/watch?v=Wn_Kb3MR_cU",
     sector: ["sustainability", "iot"],
     progress:
       "Pilot program with 3 major retailers completed. 100+ suppliers onboarded with IoT sensors tracking carbon footprint and authenticity.",
@@ -1160,8 +1160,7 @@ Global supply chains face critical transparency issues:
 
 **Ready to make your supply chain transparent and sustainable?** Join the revolution in supply chain accountability! 🔗🌍`,
     githubLink: "https://github.com/example/sustainable-supply",
-    demoVideo:
-      "https://www.youtube.com/playlist?list=PLAY30bf7ZN4x-RAvU8vahN05u9dBKCQcD",
+    demoVideo: "https://www.youtube.com/watch?v=5lFuIUUqcng",
     techStack: ["Python", "Arduino", "React", "Blockchain"],
     hackathonIds: [],
   },
@@ -1170,7 +1169,7 @@ Global supply chains face critical transparency issues:
     name: "Cybersecurity Shield",
     intro:
       "AI-powered cybersecurity platform providing real-time threat detection and automated response.",
-    pitchVideo: "https://www.youtube.com/c/BlockchainZoo",
+    pitchVideo: "https://www.youtube.com/watch?v=bGgspuW8Op0",
     sector: ["cybersecurity", "ai-ml"],
     progress:
       "Enterprise version deployed across 50+ companies. AI models detecting 99.8% of threats with <0.1% false positive rate.",
@@ -1404,7 +1403,7 @@ Modern businesses face unprecedented cyber threats:
     name: "Social Impact Tracker",
     intro:
       "Platform connecting nonprofits with donors through transparent impact measurement and blockchain verification.",
-    pitchVideo: "https://www.youtube.com/channel/UCUb5TlfM1x35f3Evu_9p-Xg",
+    pitchVideo: "https://www.youtube.com/watch?v=EazeP6Sihcc",
     sector: ["social-impact", "fintech"],
     progress:
       "Live platform with 200+ nonprofits and $2M+ in verified donations. Impact data tracked for 10,000+ beneficiaries worldwide.",
@@ -1652,7 +1651,7 @@ The nonprofit sector faces critical transparency challenges:
 
 **Ready to make your charitable giving more impactful?** Join the transparency revolution in philanthropy! 💝🔗`,
     githubLink: "https://github.com/example/social-impact",
-    demoVideo: "https://www.youtube.com/channel/UCJ0oRbeN2WDQYq4m5Vmv1bQ",
+    demoVideo: "https://www.youtube.com/watch?v=8BpxqVGiuSk",
     techStack: ["React", "Node.js", "Solidity", "MongoDB"],
     hackathonIds: [],
   },
@@ -1661,7 +1660,7 @@ The nonprofit sector faces critical transparency challenges:
     name: "Productivity AI Suite",
     intro:
       "Comprehensive AI-powered productivity tools for teams including smart scheduling and task automation.",
-    pitchVideo: "https://www.youtube.com/channel/UCZUAwOrxZZKY1qZZ0wc9RKg",
+    pitchVideo: "https://www.youtube.com/watch?v=7qygLY8ne8o",
     sector: ["productivity", "ai-ml"],
     progress:
       "SaaS platform with 10,000+ active users and $50K MRR. Enterprise features launched with Fortune 500 pilot programs.",
