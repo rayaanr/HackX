@@ -227,17 +227,7 @@ export function CreateProjectForm() {
           ) : (
             "Create Project"
           )}
-        </Button>{" "}
-        {form.watch("hackathonIds")?.length > 0 && isConnected && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-            <p className="text-sm text-green-800">
-              ✅ <strong>Ready for creation and submission!</strong> Your
-              project will be created and submitted to{" "}
-              {form.watch("hackathonIds")?.length} hackathon
-              {form.watch("hackathonIds")?.length > 1 ? "s" : ""} on blockchain.
-            </p>
-          </div>
-        )}
+        </Button>
       </form>
     </Form>
   );
