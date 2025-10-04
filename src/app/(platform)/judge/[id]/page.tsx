@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { use } from "react";
@@ -26,6 +25,7 @@ import {
 import { useHasJudgeScored, useProjectScore } from "@/hooks/use-judge";
 import { hasJudgingPeriodEnded } from "@/lib/helpers/date";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface JudgingPageProps {
   params: Promise<{ id: string }>;
@@ -228,15 +228,17 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                   <CardHeader className="pb-3">
                     <div className="flex items-start gap-3">
                       {project.logo ? (
-                        <div className="flex-shrink-0 overflow-hidden rounded-lg">
-                          <Image
+                        <Avatar className="rounded-md">
+                          <AvatarImage
                             src={resolveIPFSToHttp(project.logo)}
                             alt={project.name || "Project logo"}
                             width={48}
                             height={48}
-                            className="h-12 w-12 object-cover"
                           />
-                        </div>
+                          <AvatarFallback>
+                            {(project.name || "P").charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                       ) : (
                         <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
                           <span className="text-lg font-bold text-primary">

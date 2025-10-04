@@ -15,7 +15,7 @@ import { IconBrandGithub, IconShare } from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,10 +35,8 @@ import {
 } from "@/hooks/use-projects";
 import { useHackathon, useRegisteredHackathons } from "@/hooks/use-hackathons";
 import { useProjectHackathons } from "@/hooks/use-project-hackathons";
-import { useQueries } from "@tanstack/react-query";
 import { useWeb3 } from "@/providers/web3-provider";
 import { useActiveAccount } from "thirdweb/react";
-import { getHackathonById } from "@/lib/helpers/blockchain";
 import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
 import {
   formatDisplayDate,
@@ -333,14 +331,14 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                             : "border-white/20 opacity-70"
                         }`}
                       >
-                        <CardContent className="p-4">
+                        <CardContent>
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex justify-between gap-2 mb-2">
                                 <h4 className="font-medium text-white">
                                   {hackathon.name}
                                 </h4>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 h-fit">
                                   {isAlreadySubmitted && (
                                     <Badge
                                       variant="outline"

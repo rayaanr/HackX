@@ -520,6 +520,46 @@ export async function getUserProjectsWithDetails(
   }
 }
 
+// Get hackathon IDs that a project has been submitted to
+export async function getProjectHackathons(
+  contract: ThirdwebContract,
+  projectId: string | number,
+): Promise<string[]> {
+  try {
+    const hackathonIds: string[] = [];
+    let index = 0;
+
+    // Keep reading until we get 0 (which means no more hackathons)
+    while (true) {
+      try {
+        const hackathonId = await readContract({
+          contract,
+          method:
+            "function projectHackathons(uint256, uint256) view returns (uint256)",
+          params: [BigInt(projectId), BigInt(index)],
+        });
+
+        // If hackathonId is 0, we've reached the end
+        if (hackathonId === BigInt(0)) break;
+
+        hackathonIds.push(hackathonId.toString());
+        index++;
+      } catch (error) {
+        // If we get an error (out of bounds), we've reached the end
+        break;
+      }
+    }
+
+    return hackathonIds;
+  } catch (error) {
+    console.error(
+      `Failed to fetch hackathons for project ${projectId}:`,
+      error,
+    );
+    return [];
+  }
+}
+
 // Get project details by ID
 export async function getProjectById(
   contract: ThirdwebContract,
@@ -563,6 +603,9 @@ export async function getProjectById(
       console.warn(`Failed to fetch metadata for project ${projectId}:`, error);
     }
 
+    // Fetch hackathon IDs from the contract (source of truth)
+    const hackathonIds = await getProjectHackathons(contract, projectId);
+
     // Construct properly typed BlockchainProject
     const blockchainProject: BlockchainProject = {
       ...serializeBigInts(contractProject),
@@ -580,10 +623,7 @@ export async function getProjectById(
       demoVideo: (metadata as any).demoVideo || "",
       pitchVideo: (metadata as any).pitchVideo || "",
       techStack: (metadata as any).techStack || [],
-      hackathonIds:
-        (metadata as any).submittedToHackathons ||
-        (metadata as any).hackathonIds ||
-        [],
+      hackathonIds: hackathonIds, // Use contract data as source of truth
       version: (metadata as any).version || "1.0.0",
       createdAt: (metadata as any).createdAt || new Date().toISOString(),
 
