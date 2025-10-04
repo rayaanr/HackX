@@ -33,6 +33,7 @@ import {
 } from "@/lib/helpers/date";
 import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
+import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import Link from "next/link";
 import Image from "next/image";
 import type { UIHackathon } from "@/types/hackathon";
@@ -253,7 +254,9 @@ export function RegisteredHackathons() {
                                 Total Prize
                               </h6>
                               <p className="font-semibold text-white/85 text-sm">
-                                TBD
+                                {calculateTotalPrizeAmount(
+                                  hackathon.prizeCohorts || [],
+                                )}
                               </p>
                             </div>
                           </div>
