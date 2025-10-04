@@ -114,16 +114,12 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
     useBlockchainProjects();
   const [open, setOpen] = useState(false);
 
-  // Filter registered hackathons to only show active ones
-  const availableRegisteredHackathons = registeredHackathons.filter(
-    (hackathon: RegisteredHackathon) => {
-      const status = getUIHackathonStatus({
-        ...hackathon,
-        votingPeriod: hackathon.votingPeriod || undefined,
-      });
-      return status === "Registration Open" || status === "Live";
-    },
-  );
+  // Get current project to check already submitted hackathons
+  const { data: currentProject } = useBlockchainProject(projectId);
+  const submittedHackathonIds = currentProject?.hackathonIds || [];
+
+  // Show all registered hackathons (not just active ones)
+  const availableRegisteredHackathons = registeredHackathons;
 
   const handleSubmit = (hackathonId: string) => {
     toast.loading("Submitting project to hackathon...", {
@@ -148,8 +144,8 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
         <DialogHeader>
           <DialogTitle className="text-white">Submit to Hackathon</DialogTitle>
           <DialogDescription className="text-white/70">
-            Submit your project to hackathons you're registered for. Only active
-            hackathons are shown.
+            Submit your project to hackathons you're registered for. Only
+            hackathons in the "Live" submission phase can be submitted to.
           </DialogDescription>
         </DialogHeader>
 
@@ -178,10 +174,20 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                       votingPeriod: hackathon.votingPeriod || undefined,
                     });
 
+                    const isLive = status === "Live";
+                    const isAlreadySubmitted = submittedHackathonIds.includes(
+                      hackathon.id.toString(),
+                    );
+                    const canSubmit = isLive && !isAlreadySubmitted;
+
                     return (
                       <Card
                         key={hackathon.id}
-                        className="border border-green-500/50 bg-black/40 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-green-400/70"
+                        className={`border bg-black/40 backdrop-blur-sm shadow-xl transition-all duration-300 ${
+                          canSubmit
+                            ? "border-green-500/50 hover:shadow-2xl hover:border-green-400/70"
+                            : "border-white/20 opacity-70"
+                        }`}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
@@ -191,6 +197,14 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                                   {hackathon.name}
                                 </h4>
                                 <div className="flex gap-2">
+                                  {isAlreadySubmitted && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-green-400 border-green-400/50 text-xs"
+                                    >
+                                      Submitted
+                                    </Badge>
+                                  )}
                                   <Badge
                                     variant={
                                       status === "Live"
@@ -243,13 +257,17 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                             onClick={() =>
                               handleSubmit(hackathon.id.toString())
                             }
-                            disabled={isSubmittingToHackathon}
+                            disabled={!canSubmit || isSubmittingToHackathon}
                             size="sm"
                             className="w-full mt-4 bg-blue-600 hover:bg-blue-500 border-blue-500 hover:border-blue-400 text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                           >
                             {isSubmittingToHackathon
                               ? "Submitting..."
-                              : "Submit"}
+                              : isAlreadySubmitted
+                                ? "Already Submitted"
+                                : !isLive
+                                  ? `${status}`
+                                  : "Submit"}
                           </Button>
                         </CardContent>
                       </Card>
