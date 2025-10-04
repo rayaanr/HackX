@@ -34,6 +34,7 @@ import {
   useAddTeamMember,
 } from "@/hooks/use-projects";
 import { useHackathon, useRegisteredHackathons } from "@/hooks/use-hackathons";
+import { useProjectHackathons } from "@/hooks/use-project-hackathons";
 import { useQueries } from "@tanstack/react-query";
 import { useWeb3 } from "@/providers/web3-provider";
 import { useActiveAccount } from "thirdweb/react";
@@ -486,36 +487,12 @@ export default function ProjectPage() {
   const isProjectOwner =
     activeAccount?.address?.toLowerCase() === project?.creator?.toLowerCase();
 
-  // Initialize empty queries array
-  const [hackathonQueries, setHackathonQueries] = useState<any[]>([]);
+  // Use new hook to fetch hackathons the project was submitted to
+  const { submittedHackathons, isLoading: submittedHackathonsLoading } =
+    useProjectHackathons(id);
 
-  // Update queries when project data changes
-  useEffect(() => {
-    if (project?.hackathonIds && contract && client) {
-      const newQueries = project.hackathonIds.map(
-        (hackathonId: string | number) => ({
-          queryKey: ["hackathon", hackathonId],
-          queryFn: () => getHackathonById(contract, client, hackathonId),
-          enabled: !!contract && !!client && !!project?.hackathonIds,
-        }),
-      );
-      setHackathonQueries(newQueries);
-    } else {
-      setHackathonQueries([]);
-    }
-  }, [project?.hackathonIds, contract, client]);
-
-  // Fetch submitted hackathons details
-  const submittedHackathonQueries = useQueries({
-    queries: hackathonQueries,
-  });
-
-  // Transform blockchain hackathon data to UIHackathon format
-  const submittedHackathons = submittedHackathonQueries
-    .map((query) => query.data)
-    .filter(Boolean);
-
-  const loading = projectLoading || hackathonLoading;
+  const loading =
+    projectLoading || hackathonLoading || submittedHackathonsLoading;
   const error = projectError;
 
   const projectTabs = [
@@ -1089,7 +1066,9 @@ export default function ProjectPage() {
                       <p className="text-sm text-white/70 mt-1">
                         {teamLoading
                           ? "Loading team members..."
-                          : `${(teamMembers?.length || 0) + 1} member${(teamMembers?.length || 0) + 1 !== 1 ? "s" : ""}`}
+                          : `${(teamMembers?.length || 0) + 1} member${
+                              (teamMembers?.length || 0) + 1 !== 1 ? "s" : ""
+                            }`}
                       </p>
                     </div>
                     {isProjectOwner && (
