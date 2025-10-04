@@ -151,11 +151,7 @@ export function RegistrationButton({
           disabled={isRegistering}
           variant="default"
         >
-          {isRegistering ? (
-            <InlineLoading text="Registering" size="sm" />
-          ) : (
-            "Register to Participate"
-          )}
+          {isRegistering ? "Registering..." : "Register to Participate"}
         </Button>
       );
 
@@ -207,7 +203,7 @@ export function RegistrationButton({
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-center text-sm text-blue-600 dark:text-blue-400">
-              <CheckCircle className="mr-2 h-4 w-4" />
+              <CheckCircle className="size-4" />
               Hackathon in Voting Phase
             </div>
             <Button size="lg" variant="outline" disabled>
@@ -227,7 +223,7 @@ export function RegistrationButton({
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-center text-sm text-gray-600 dark:text-gray-400">
-              <CheckCircle className="mr-2 h-4 w-4" />
+              <CheckCircle className="size-4" />
               Hackathon Completed
             </div>
             <Button size="lg" variant="outline" disabled>
