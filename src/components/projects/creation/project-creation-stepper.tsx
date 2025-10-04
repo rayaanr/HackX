@@ -6,7 +6,6 @@ import { Fragment } from "react";
 import { OverviewStep } from "./project-overview-step";
 import { TechStackStep } from "./project-tech-stack-step";
 import { HackathonSelectionStep } from "./project-hackathon-selection-step";
-import { ClassicLoader } from "@/components/ui/loader";
 
 const { Stepper } = defineStepper(
   {
@@ -105,18 +104,11 @@ export function CreateProjectStepper({
                   disabled={isSubmitting}
                   className="min-w-[180px]"
                 >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <ClassicLoader size="sm" className="border-white mr-2" />
-                      <span>
-                        {isUploadingToIPFS
-                          ? "Uploading to IPFS..."
-                          : "Creating Project..."}
-                      </span>
-                    </div>
-                  ) : (
-                    "Create Project"
-                  )}
+                  {isSubmitting
+                    ? isUploadingToIPFS
+                      ? "Uploading to IPFS..."
+                      : "Creating Project..."
+                    : "Create Project"}
                 </Button>
               ) : (
                 <Button

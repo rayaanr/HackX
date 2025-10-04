@@ -2,7 +2,6 @@
 
 import { defineStepper } from "@/components/ui/stepper";
 import { Button } from "@/components/ui/button";
-import { ClassicLoader } from "@/components/ui/loader";
 import { Fragment } from "react";
 import { OverviewStep } from "./hackathon-overview-step";
 import { PrizesStep } from "./hackathon-prizes-step";
@@ -116,18 +115,11 @@ export function CreateHackathonStepper({
                   disabled={isSubmitting}
                   className="min-w-[180px]"
                 >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <ClassicLoader size="sm" className="border-white" />
-                      <span>
-                        {isUploadingToIPFS
-                          ? "Uploading to IPFS..."
-                          : "Creating Hackathon..."}
-                      </span>
-                    </div>
-                  ) : (
-                    "Create Hackathon"
-                  )}
+                  {isSubmitting
+                    ? isUploadingToIPFS
+                      ? "Uploading to IPFS..."
+                      : "Creating Hackathon..."
+                    : "Create Hackathon"}
                 </Button>
               ) : (
                 <Button

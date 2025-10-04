@@ -3,7 +3,6 @@
 import { CreateProjectForm } from "@/components/projects/creation/project-creation-form";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { Button } from "@/components/ui/button";
-import { ClassicLoader } from "@/components/ui/loader";
 import { useState, useEffect } from "react";
 
 export default function CreateProjectPage() {
@@ -88,18 +87,11 @@ export default function CreateProjectPage() {
               disabled={isLoading}
               className="min-w-[180px]"
             >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <ClassicLoader size="sm" className="border-white mr-2" />
-                  <span>
-                    {isUploadingToIPFS
-                      ? "Uploading to IPFS..."
-                      : "Creating Project..."}
-                  </span>
-                </div>
-              ) : (
-                "Create Project"
-              )}
+              {isLoading
+                ? isUploadingToIPFS
+                  ? "Uploading to IPFS..."
+                  : "Creating Project..."
+                : "Create Project"}
             </Button>
           </>
         }
