@@ -58,6 +58,7 @@ import { YouTubeEmbed } from "@next/third-parties/google";
 import { IPFSHashDisplay } from "@/components/ui/ipfs-hash-display";
 import { marked } from "marked";
 import { motion } from "motion/react";
+import EmptyComponent from "@/components/empty";
 
 function toHtmlFromDescription(input: string): string {
   if (!input) return "";
@@ -1066,17 +1067,13 @@ export default function ProjectPage() {
                       </div>
                     </>
                   ) : (
-                    <div className="text-center py-8 border-2 border-dashed border-white/20 rounded-xl bg-black/10 backdrop-blur-sm">
-                      <Trophy className="w-12 h-12 mx-auto text-white/40 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2 text-white">
-                        No Hackathon Submissions
-                      </h3>
-                      <p className="text-white/70 mb-4">
-                        This project hasn't been submitted to any hackathons
-                        yet.
-                      </p>
-                      <HackathonSubmissionDialog projectId={id} />
-                    </div>
+                    <EmptyComponent
+                      title="No Hackathon Submissions"
+                      description="This project hasn't been submitted to any hackathons yet."
+                      type="info"
+                      variant="card"
+                      action={<HackathonSubmissionDialog projectId={id} />}
+                    />
                   )}
                 </motion.div>
               </motion.div>
