@@ -42,6 +42,7 @@ import {
   formatDisplayDate,
   getUIHackathonStatus,
   formatDateRange,
+  safeToDate,
 } from "@/lib/helpers/date";
 import parse from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
@@ -286,8 +287,8 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
         <DialogHeader>
           <DialogTitle className="text-white">Submit to Hackathon</DialogTitle>
           <DialogDescription className="text-white/70">
-            Submit your project to hackathons you're registered for. Only
-            hackathons in the "Live" submission phase can be submitted to.
+            Submit your project to hackathons you're registered for. You can
+            submit from submission start until the submission deadline.
           </DialogDescription>
         </DialogHeader>
 
@@ -316,11 +317,27 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                       votingPeriod: hackathon.votingPeriod || undefined,
                     });
 
-                    const isLive = status === "Live";
+                    // Check if we're within submission window
+                    // Submission is allowed from submission start to submission end
+                    const now = new Date();
+                    const submissionStart = safeToDate(
+                      hackathon.hackathonPeriod?.hackathonStartDate,
+                    );
+                    const submissionEnd = safeToDate(
+                      hackathon.hackathonPeriod?.hackathonEndDate,
+                    );
+
+                    const isWithinSubmissionWindow =
+                      submissionStart &&
+                      submissionEnd &&
+                      now >= submissionStart &&
+                      now <= submissionEnd;
+
                     const isAlreadySubmitted = submittedHackathonIds.includes(
                       hackathon.id.toString(),
                     );
-                    const canSubmit = isLive && !isAlreadySubmitted;
+                    const canSubmit =
+                      isWithinSubmissionWindow && !isAlreadySubmitted;
 
                     return (
                       <Card
@@ -349,12 +366,12 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                                   )}
                                   <Badge
                                     variant={
-                                      status === "Live"
+                                      isWithinSubmissionWindow
                                         ? "default"
                                         : "secondary"
                                     }
                                     className={
-                                      status === "Live"
+                                      isWithinSubmissionWindow
                                         ? "bg-blue-500/20 text-blue-400 border-blue-500/50"
                                         : ""
                                     }
@@ -407,8 +424,8 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                               ? "Submitting..."
                               : isAlreadySubmitted
                                 ? "Already Submitted"
-                                : !isLive
-                                  ? `${status}`
+                                : !isWithinSubmissionWindow
+                                  ? `${status} - Cannot Submit`
                                   : "Submit"}
                           </Button>
                         </CardContent>
