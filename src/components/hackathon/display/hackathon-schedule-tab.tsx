@@ -189,38 +189,6 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
             >
               <TimelineHeader>
                 <TimelineSeparator />
-
-                {/* <TimelineDate className="group-data-[orientation=vertical]/timeline:sm:absolute group-data-[orientation=vertical]/timeline:sm:-left-32 group-data-[orientation=vertical]/timeline:sm:w-28 group-data-[orientation=vertical]/timeline:sm:text-right text-xs text-muted-foreground font-medium">
-                  {!phase.isPhase ? (
-                    // For events, show time range
-                    <div className="space-y-0.5">
-                      <div className="text-foreground">
-                        {phase.startDate.toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        })}
-                      </div>
-                      <div className="text-muted-foreground/60">
-                        {phase.endDate.toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        })}
-                      </div>
-                    </div>
-                  ) : (
-                    // For phases, show start date
-                    <span className="text-foreground font-medium">
-                      {phase.startDate.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                  )}
-                </TimelineDate> */}
-
                 <TimelineTitle className="sm:-mt-0.5 text-base font-semibold text-foreground">
                   {phase.name}
                   {phase.status === "live" && (
@@ -234,7 +202,7 @@ export function ScheduleTab({ hackathon }: ScheduleTabProps) {
                   {phase.status === "completed" ? (
                     <CheckCircle2 className="size-7 fill-green-500 text-white" />
                   ) : phase.status === "live" ? (
-                    <Play className="size-7 fill-blue-500 text-white animate-pulse" />
+                    <Play className="size-4 fill-blue-500 text-white animate-pulse" />
                   ) : (
                     <Circle className="size-7 text-muted-foreground" />
                   )}

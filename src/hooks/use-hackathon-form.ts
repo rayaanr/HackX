@@ -51,7 +51,7 @@ function createSuccessHandler(router: any) {
     transactionHash: string;
   }) => {
     // Navigation handled here, success notification handled in useCreateHackathon
-    router.push("/hackathons/" + data.hackathonId);
+    router.push("/hackathons");
   };
 }
 

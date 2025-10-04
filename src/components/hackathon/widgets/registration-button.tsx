@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, UserCheck, Clock, CheckCircle } from "lucide-react";
 import { InlineLoading } from "@/components/ui/global-loading";
 import Link from "next/link";
+import { ProjectSubmissionDialog } from "./project-submission-dialog";
 import { useActiveAccount } from "thirdweb/react";
 import { useSendTransaction } from "thirdweb/react";
 import { useState, useEffect } from "react";
@@ -98,7 +99,7 @@ export function RegistrationButton({
     case "Coming Soon":
       return (
         <Button size="lg" variant="outline" disabled>
-          <Clock className="mr-2 h-4 w-4" />
+          <Clock className="size-4" />
           Registration Starts Soon
         </Button>
       );
@@ -123,16 +124,23 @@ export function RegistrationButton({
       // Check if submission is active (overrides registration status)
       if (isSubmissionActive() && isRegistered) {
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-center text-sm text-green-600 dark:text-green-400">
-              <UserCheck className="mr-2 h-4 w-4" />
+              <UserCheck className="size-4" />
               You are registered for this hackathon
             </div>
-            <Link href={`/projects/create?hackathon=${hackathonId}`}>
-              <Button size="lg" className="w-full">
-                Submit Project <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="flex gap-2 justify-center">
+              <ProjectSubmissionDialog hackathonId={hackathonId}>
+                <Button size="lg">
+                  Submit Project <ArrowRight className="size-4" />
+                </Button>
+              </ProjectSubmissionDialog>
+              <Link href={`/projects/create?hackathon=${hackathonId}`}>
+                <Button size="lg" variant="outline">
+                  Create Project
+                </Button>
+              </Link>
+            </div>
           </div>
         );
       }
@@ -141,11 +149,11 @@ export function RegistrationButton({
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-center text-sm text-green-600 dark:text-green-400">
-              <UserCheck className="mr-2 h-4 w-4" />
+              <UserCheck className="size-4" />
               You are registered for this hackathon
             </div>
             <Button size="lg" variant="outline" disabled>
-              <Clock className="mr-2 h-4 w-4" />
+              <Clock className="size-4" />
               Waiting for Submission Phase
             </Button>
           </div>
@@ -169,27 +177,34 @@ export function RegistrationButton({
         // Check if we're actually in submission phase now (overrides status)
         if (isSubmissionActive()) {
           return (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-center text-sm text-green-600 dark:text-green-400">
-                <UserCheck className="mr-2 h-4 w-4" />
+                <UserCheck className="size-4" />
                 You are registered for this hackathon
               </div>
-              <Link href={`/projects/create?hackathon=${hackathonId}`}>
-                <Button size="lg" className="w-full">
-                  Submit Project <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <div className="flex gap-2 justify-center">
+                <ProjectSubmissionDialog hackathonId={hackathonId}>
+                  <Button size="lg">
+                    Submit Project <ArrowRight className="size-4" />
+                  </Button>
+                </ProjectSubmissionDialog>
+                <Link href={`/projects/create?hackathon=${hackathonId}`}>
+                  <Button size="lg" variant="outline">
+                    Create Project
+                  </Button>
+                </Link>
+              </div>
             </div>
           );
         }
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-center text-sm text-green-600 dark:text-green-400">
-              <UserCheck className="mr-2 h-4 w-4" />
+              <UserCheck className="size-4" />
               You are registered for this hackathon
             </div>
             <Button size="lg" variant="outline" disabled>
-              <Clock className="mr-2 h-4 w-4" />
+              <Clock className="size-4" />
               Waiting for Submission Phase
             </Button>
           </div>
@@ -204,16 +219,23 @@ export function RegistrationButton({
     case "Live":
       if (isRegistered) {
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-center text-sm text-green-600 dark:text-green-400">
-              <UserCheck className="mr-2 h-4 w-4" />
+              <UserCheck className="size-4" />
               You are registered for this hackathon
             </div>
-            <Link href={`/projects/create?hackathon=${hackathonId}`}>
-              <Button size="lg" className="w-full">
-                Submit Project <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="flex gap-2 justify-center">
+              <ProjectSubmissionDialog hackathonId={hackathonId}>
+                <Button size="lg">
+                  Submit Project <ArrowRight className="size-4" />
+                </Button>
+              </ProjectSubmissionDialog>
+              <Link href={`/projects/create?hackathon=${hackathonId}`}>
+                <Button size="lg" variant="outline">
+                  Create Project
+                </Button>
+              </Link>
+            </div>
           </div>
         );
       }
