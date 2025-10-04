@@ -119,27 +119,38 @@ export default function ExplorePage() {
       });
     };
 
-    // Filter live hackathons to exclude ended ones
+    // Filter live hackathons to only show those accepting submissions
     const filterLiveHackathons = (hackathons: UIHackathon[]) => {
       return hackathons.filter((hackathon) => {
         const currentStatus = getUIHackathonStatus({
           ...hackathon,
           votingPeriod: hackathon.votingPeriod || undefined,
         });
-        // Exclude ended hackathons from live section
-        return currentStatus !== "Ended";
+        // Only show hackathons in active submission phases
+        return (
+          currentStatus === "Coming Soon" ||
+          currentStatus === "Registration Open" ||
+          currentStatus === "Registration Closed" ||
+          currentStatus === "Submission Starting" ||
+          currentStatus === "Live"
+        );
       });
     };
 
-    // Filter past hackathons to only show ended ones
+    // Filter past hackathons - all hackathons where submission phase has ended
     const filterPastHackathons = (hackathons: UIHackathon[]) => {
       return hackathons.filter((hackathon) => {
         const currentStatus = getUIHackathonStatus({
           ...hackathon,
           votingPeriod: hackathon.votingPeriod || undefined,
         });
-        // Only show hackathons that are ended
-        return currentStatus === "Ended";
+        // Show hackathons that are in voting/judging phase or completely ended
+        return (
+          currentStatus === "Submission Ended" ||
+          currentStatus === "Judging Starting" ||
+          currentStatus === "Voting" ||
+          currentStatus === "Ended"
+        );
       });
     };
 
