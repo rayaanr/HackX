@@ -9,6 +9,7 @@ import {
   Clock,
   CheckCircle,
   FolderIcon,
+  Upload,
 } from "lucide-react";
 import {
   Card,
@@ -181,23 +182,22 @@ export function RegisteredHackathons() {
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem asChild>
                                     <Link href={`/hackathons/${hackathon.id}`}>
-                                      <LinkIcon className="w-4 h-4 mr-2" />
+                                      <LinkIcon className="size-4" />
                                       View Details
                                     </Link>
                                   </DropdownMenuItem>
-                                  {status === "Live" ? (
-                                    <DropdownMenuItem asChild>
-                                      <Link
-                                        href={`/projects/create?hackathon=${hackathon.id}`}
-                                      >
-                                        Submit Project
-                                      </Link>
-                                    </DropdownMenuItem>
-                                  ) : (
-                                    <DropdownMenuItem disabled>
-                                      Submit Project (Not Available)
-                                    </DropdownMenuItem>
-                                  )}
+
+                                  <DropdownMenuItem
+                                    asChild
+                                    disabled={status !== "Live"}
+                                  >
+                                    <Link
+                                      href={`/projects/create?hackathon=${hackathon.id}`}
+                                    >
+                                      <Upload className="size-4" />
+                                      Submit Project
+                                    </Link>
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </CardAction>
@@ -267,6 +267,7 @@ export function RegisteredHackathons() {
                                 <Link
                                   href={`/projects/create?hackathon=${hackathon.id}`}
                                 >
+                                  <Upload className="size-4" />
                                   Submit Project
                                 </Link>
                               </Button>
@@ -312,6 +313,7 @@ export function RegisteredHackathons() {
                                 disabled
                                 className="border-white/20"
                               >
+                                <CheckCircle className="w-4 h-4 mr-2" />
                                 Hackathon Ended
                               </Button>
                             )}
