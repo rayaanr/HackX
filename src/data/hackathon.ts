@@ -15,7 +15,7 @@ function createDate(
 // Helper function to create testing periods with proper phase separation
 function createTestingPeriods(offsetMinutes = 0) {
   const now = new Date();
-  const baseTime = new Date(now.getTime() + (3 + offsetMinutes) * 60000); // Current time + 3 minutes + offset
+  const baseTime = new Date(now.getTime() + (1 + offsetMinutes) * 60000); // Current time + 1 minute + offset
 
   return {
     registrationPeriod: {
@@ -23,7 +23,7 @@ function createTestingPeriods(offsetMinutes = 0) {
       registrationEndDate: new Date(baseTime.getTime() + 5 * 60000), // +5 minutes (ends before submission)
     },
     hackathonPeriod: {
-      hackathonStartDate: new Date(baseTime.getTime() + 3 * 60000), // +3 minutes (1 minute gap after registration)
+      hackathonStartDate: new Date(baseTime.getTime() + 2 * 60000), // +2 minutes (1 minute gap after registration)
       hackathonEndDate: new Date(baseTime.getTime() + 9 * 60000), // +9 minutes (5 minute submission window)
     },
     votingPeriod: {

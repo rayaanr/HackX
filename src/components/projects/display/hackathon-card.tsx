@@ -20,7 +20,7 @@ export function ProjectHackathonCard({
   status,
 }: ProjectHackathonCardProps) {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+    <Card className="overflow-hidden hover:shadow-md transition-shadow bg-card/20">
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg">{name}</CardTitle>
