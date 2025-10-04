@@ -195,6 +195,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.05 }}
+        className="flex flex-col gap-1 items-center"
       >
         <h1 className="text-3xl font-bold tracking-tight">
           {hackathon.name} Projects
