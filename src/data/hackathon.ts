@@ -15,7 +15,7 @@ function createDate(
 // Helper function to create testing periods with proper phase separation
 function createTestingPeriods(offsetMinutes = 0) {
   const now = new Date();
-  const baseTime = new Date(now.getTime() + (1 + offsetMinutes) * 60000); // Current time + 1 minute + offset
+  const baseTime = new Date(now.getTime() + (3 + offsetMinutes) * 60000); // Current time + 3 minute + offset
 
   return {
     registrationPeriod: {
