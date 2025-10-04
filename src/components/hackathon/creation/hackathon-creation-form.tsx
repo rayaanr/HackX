@@ -27,7 +27,12 @@ export function CreateHackathonForm() {
 
     // Use React Hook Form's handleSubmit with the raw submission function
     // This will validate the form and call rawOnSubmit if validation passes
-    methods.handleSubmit(rawOnSubmit)();
+    methods.handleSubmit(rawOnSubmit, (errors) => {
+      console.error("❌ Form validation failed:", errors);
+      toast.error("Please fill in all required fields", {
+        description: "Check the form for missing or invalid fields",
+      });
+    })();
   };
 
   // Prevent implicit form submission - this is a safety net

@@ -59,7 +59,7 @@ function transformHackathonToCardProps(
 
 export function HackathonSelectionStep() {
   const { control, setValue, watch } = useFormContext<ProjectFormData>();
-  // Updated to use registered hackathons only
+  // Only show hackathons the user is registered for
   const {
     hackathons: hackathonData,
     isLoading,
@@ -123,7 +123,7 @@ export function HackathonSelectionStep() {
                     ) : hackathonData.length === 0 ? (
                       <EmptyComponent
                         title="No Registered Hackathons"
-                        description="You haven't registered for any hackathons yet. Register for a hackathon to submit your project."
+                        description="You must register for a hackathon before you can submit your project. Explore hackathons to find one to register for."
                         type="info"
                         variant="ghost"
                         icon={
@@ -131,8 +131,8 @@ export function HackathonSelectionStep() {
                         }
                         action={
                           <Link href="/hackathons">
-                            <Button className="w-full">
-                              <ExternalLink className="mr-2 h-4 w-4" />
+                            <Button>
+                              <ExternalLink className="size-4" />
                               Explore Hackathons
                             </Button>
                           </Link>
@@ -145,19 +145,39 @@ export function HackathonSelectionStep() {
                             // Check if hackathon is accepting submissions
                             const isAcceptingSubmissions =
                               hackathon.status === "live";
+
+                            // Get the actual status from the raw hackathon data
+                            const rawHackathon = hackathonData.find(
+                              (h: any) => h.id?.toString() === hackathon.id,
+                            );
+                            const actualStatus = rawHackathon
+                              ? getUIHackathonStatus({
+                                  ...rawHackathon,
+                                  votingPeriod:
+                                    rawHackathon.votingPeriod || undefined,
+                                })
+                              : hackathon.status;
+
                             return (
                               <div key={hackathon.id} className="relative">
                                 <div
                                   className={`${
-                                    !isAcceptingSubmissions ? "opacity-60" : ""
+                                    !isAcceptingSubmissions ? "opacity-75" : ""
                                   }`}
                                 >
                                   <ProjectHackathonCard {...hackathon} />
                                 </div>
                                 {!isAcceptingSubmissions && (
-                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
-                                    <div className="bg-white dark:bg-gray-900 px-3 py-1 rounded-md text-sm font-medium">
-                                      Not accepting submissions
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg backdrop-blur-sm">
+                                    <div className="bg-white dark:bg-gray-900 px-4 py-2 rounded-lg text-sm font-medium shadow-lg border border-white/10">
+                                      <div className="text-center">
+                                        <div className="text-xs text-muted-foreground mb-1">
+                                          Current Status
+                                        </div>
+                                        <div className="font-semibold">
+                                          {actualStatus}
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
                                 )}
@@ -203,7 +223,8 @@ export function HackathonSelectionStep() {
                 </FormControl>
                 <FormDescription>
                   Select the hackathons you want to submit your project to. Only
-                  hackathons in the "Live" submission phase can be selected.
+                  hackathons you've registered for and that are in the "Live"
+                  submission phase can be selected.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

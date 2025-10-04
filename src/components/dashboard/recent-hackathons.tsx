@@ -27,7 +27,7 @@ function HackathonParticipantCount({
 }) {
   const { data: participants = [] } = useHackathonParticipants(hackathonId);
 
-  // Always show up to 3 placeholder avatars, AvatarList will handle the display logic
+  // Always show placeholder avatars
   const placeholderImages = [
     { src: "/placeholder-user.jpg", alt: "Participant 1" },
     { src: "/placeholder-user.jpg", alt: "Participant 2" },

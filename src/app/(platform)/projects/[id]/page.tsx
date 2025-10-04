@@ -8,6 +8,8 @@ import {
   Play,
   Plus,
   Search,
+  UserPlus,
+  Loader2,
 } from "lucide-react";
 import { IconBrandGithub, IconShare } from "@tabler/icons-react";
 import Link from "next/link";
@@ -29,10 +31,13 @@ import {
   useBlockchainProject,
   useProjectTeamMembers,
   useBlockchainProjects,
+  useAddTeamMember,
 } from "@/hooks/use-projects";
 import { useHackathon, useRegisteredHackathons } from "@/hooks/use-hackathons";
+import { useProjectHackathons } from "@/hooks/use-project-hackathons";
 import { useQueries } from "@tanstack/react-query";
 import { useWeb3 } from "@/providers/web3-provider";
+import { useActiveAccount } from "thirdweb/react";
 import { getHackathonById } from "@/lib/helpers/blockchain";
 import { HackathonCard } from "@/components/hackathon/display/hackathon-overview-card";
 import {
@@ -55,8 +60,10 @@ import type { UIHackathon } from "@/types/hackathon";
 import { useEns } from "@/hooks/use-ens";
 import { extractYouTubeVideoId, isYouTubeUrl } from "@/lib/helpers/video";
 import { YouTubeEmbed } from "@next/third-parties/google";
+import { IPFSHashDisplay } from "@/components/ui/ipfs-hash-display";
 import { marked } from "marked";
 import { motion } from "motion/react";
+import EmptyComponent from "@/components/empty";
 
 function toHtmlFromDescription(input: string): string {
   if (!input) return "";
@@ -69,41 +76,179 @@ function toHtmlFromDescription(input: string): string {
 // Team member component with ENS support
 function TeamMember({
   address,
-  role = "Member",
-  index,
+  isOwner = false,
+  currentUserAddress,
 }: {
   address: string;
-  role?: string;
-  index?: number;
+  isOwner?: boolean;
+  currentUserAddress?: string;
 }) {
   const { ensName, ensAvatar, displayName, initials } = useEns(address);
+  const isCurrentUser =
+    currentUserAddress?.toLowerCase() === address.toLowerCase();
 
   return (
-    <div className="flex items-center gap-4">
-      <Avatar className="h-10 w-10">
-        {ensAvatar && (
-          <AvatarImage src={ensAvatar} alt={ensName || "ENS Avatar"} />
-        )}
-        <AvatarFallback className="text-sm font-medium text-white">
-          {initials}
-        </AvatarFallback>
-      </Avatar>
-      <div>
-        <h4 className="font-medium text-white">
-          {ensName || (index !== undefined ? `${role} ${index + 1}` : role)}
-        </h4>
-        <p className="text-sm text-white/70 font-mono">{displayName}</p>
-        {ensName && (
-          <p className="text-xs text-white/50 font-mono opacity-70">
-            {address}
-          </p>
-        )}
-      </div>
-    </div>
+    <Card className="project-card-hover p-3">
+      <CardContent className="p-0">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-12 w-12">
+            {ensAvatar && (
+              <AvatarImage src={ensAvatar} alt={ensName || "ENS Avatar"} />
+            )}
+            <AvatarFallback className="text-sm font-medium text-white">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="font-medium text-white truncate">
+                {ensName || displayName}
+              </h4>
+              {isOwner && (
+                <Badge
+                  variant="outline"
+                  className="text-xs border-blue-500/50 text-blue-400 bg-blue-500/10"
+                >
+                  Owner
+                </Badge>
+              )}
+              {isCurrentUser && (
+                <Badge
+                  variant="outline"
+                  className="text-xs border-green-500/50 text-green-400 bg-green-500/10"
+                >
+                  You
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground font-mono truncate">
+              {address}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
 type RegisteredHackathon = UIHackathon & { isRegistered: boolean };
+
+// Add Team Member Dialog component
+function AddTeamMemberDialog({
+  projectId,
+  isProjectOwner,
+}: {
+  projectId: string;
+  isProjectOwner: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [memberAddress, setMemberAddress] = useState("");
+  const { addTeamMember, isAddingTeamMember } = useAddTeamMember();
+
+  const handleAddMember = async () => {
+    if (!memberAddress) {
+      toast.error("Please enter a valid wallet address");
+      return;
+    }
+
+    // Basic validation for Ethereum address
+    if (!/^0x[a-fA-F0-9]{40}$/.test(memberAddress)) {
+      toast.error("Invalid Ethereum address format");
+      return;
+    }
+
+    try {
+      toast.loading("Adding team member...", { id: "add-team-member" });
+
+      await addTeamMember({
+        projectId,
+        memberAddress,
+      });
+
+      setMemberAddress("");
+      setOpen(false);
+    } catch (error) {
+      // Error handling is done in the hook
+      console.error("Failed to add team member:", error);
+    }
+  };
+
+  if (!isProjectOwner) {
+    return null;
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          size="sm"
+          className="gap-2 bg-blue-600 hover:bg-blue-500 border-blue-500 hover:border-blue-400 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          <UserPlus className="w-4 h-4" />
+          Add Member
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="border border-white/20 bg-black/90 backdrop-blur-sm">
+        <DialogHeader>
+          <DialogTitle className="text-white">Add Team Member</DialogTitle>
+          <DialogDescription className="text-white/70">
+            Enter the wallet address of the team member you want to add to this
+            project.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label
+              htmlFor="memberAddress"
+              className="text-sm font-medium text-white"
+            >
+              Wallet Address
+            </label>
+            <input
+              id="memberAddress"
+              type="text"
+              value={memberAddress}
+              onChange={(e) => setMemberAddress(e.target.value)}
+              placeholder="0x..."
+              className="w-full px-3 py-2 bg-black/40 border border-white/20 rounded-md text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isAddingTeamMember}
+            />
+            <p className="text-xs text-white/50">
+              Enter a valid Ethereum address (starts with 0x)
+            </p>
+          </div>
+        </div>
+
+        <div className="flex gap-3 justify-end">
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isAddingTeamMember}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleAddMember}
+            disabled={isAddingTeamMember || !memberAddress}
+          >
+            {isAddingTeamMember ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              <>
+                <UserPlus className="size-4" />
+                Add Member
+              </>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // Hackathon submission dialog component
 function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
@@ -113,16 +258,12 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
     useBlockchainProjects();
   const [open, setOpen] = useState(false);
 
-  // Filter registered hackathons to only show active ones
-  const availableRegisteredHackathons = registeredHackathons.filter(
-    (hackathon: RegisteredHackathon) => {
-      const status = getUIHackathonStatus({
-        ...hackathon,
-        votingPeriod: hackathon.votingPeriod || undefined,
-      });
-      return status === "Registration Open" || status === "Live";
-    },
-  );
+  // Get current project to check already submitted hackathons
+  const { data: currentProject } = useBlockchainProject(projectId);
+  const submittedHackathonIds = currentProject?.hackathonIds || [];
+
+  // Show all registered hackathons (not just active ones)
+  const availableRegisteredHackathons = registeredHackathons;
 
   const handleSubmit = (hackathonId: string) => {
     toast.loading("Submitting project to hackathon...", {
@@ -147,8 +288,8 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
         <DialogHeader>
           <DialogTitle className="text-white">Submit to Hackathon</DialogTitle>
           <DialogDescription className="text-white/70">
-            Submit your project to hackathons you're registered for. Only active
-            hackathons are shown.
+            Submit your project to hackathons you're registered for. Only
+            hackathons in the "Live" submission phase can be submitted to.
           </DialogDescription>
         </DialogHeader>
 
@@ -177,10 +318,20 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                       votingPeriod: hackathon.votingPeriod || undefined,
                     });
 
+                    const isLive = status === "Live";
+                    const isAlreadySubmitted = submittedHackathonIds.includes(
+                      hackathon.id.toString(),
+                    );
+                    const canSubmit = isLive && !isAlreadySubmitted;
+
                     return (
                       <Card
                         key={hackathon.id}
-                        className="border border-green-500/50 bg-black/40 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-green-400/70"
+                        className={`border bg-black/40 backdrop-blur-sm shadow-xl transition-all duration-300 ${
+                          canSubmit
+                            ? "border-green-500/50 hover:shadow-2xl hover:border-green-400/70"
+                            : "border-white/20 opacity-70"
+                        }`}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
@@ -190,6 +341,14 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                                   {hackathon.name}
                                 </h4>
                                 <div className="flex gap-2">
+                                  {isAlreadySubmitted && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-green-400 border-green-400/50 text-xs"
+                                    >
+                                      Submitted
+                                    </Badge>
+                                  )}
                                   <Badge
                                     variant={
                                       status === "Live"
@@ -242,13 +401,17 @@ function HackathonSubmissionDialog({ projectId }: { projectId: string }) {
                             onClick={() =>
                               handleSubmit(hackathon.id.toString())
                             }
-                            disabled={isSubmittingToHackathon}
+                            disabled={!canSubmit || isSubmittingToHackathon}
                             size="sm"
                             className="w-full mt-4 bg-blue-600 hover:bg-blue-500 border-blue-500 hover:border-blue-400 text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                           >
                             {isSubmittingToHackathon
                               ? "Submitting..."
-                              : "Submit"}
+                              : isAlreadySubmitted
+                                ? "Already Submitted"
+                                : !isLive
+                                  ? `${status}`
+                                  : "Submit"}
                           </Button>
                         </CardContent>
                       </Card>
@@ -318,37 +481,18 @@ export default function ProjectPage() {
     useProjectTeamMembers(id);
 
   const { contract, client } = useWeb3();
+  const activeAccount = useActiveAccount();
 
-  // Initialize empty queries array
-  const [hackathonQueries, setHackathonQueries] = useState<any[]>([]);
+  // Check if connected user is the project owner
+  const isProjectOwner =
+    activeAccount?.address?.toLowerCase() === project?.creator?.toLowerCase();
 
-  // Update queries when project data changes
-  useEffect(() => {
-    if (project?.hackathonIds && contract && client) {
-      const newQueries = project.hackathonIds.map(
-        (hackathonId: string | number) => ({
-          queryKey: ["hackathon", hackathonId],
-          queryFn: () => getHackathonById(contract, client, hackathonId),
-          enabled: !!contract && !!client && !!project?.hackathonIds,
-        }),
-      );
-      setHackathonQueries(newQueries);
-    } else {
-      setHackathonQueries([]);
-    }
-  }, [project?.hackathonIds, contract, client]);
+  // Use new hook to fetch hackathons the project was submitted to
+  const { submittedHackathons, isLoading: submittedHackathonsLoading } =
+    useProjectHackathons(id);
 
-  // Fetch submitted hackathons details
-  const submittedHackathonQueries = useQueries({
-    queries: hackathonQueries,
-  });
-
-  // Transform blockchain hackathon data to UIHackathon format
-  const submittedHackathons = submittedHackathonQueries
-    .map((query) => query.data)
-    .filter(Boolean);
-
-  const loading = projectLoading || hackathonLoading;
+  const loading =
+    projectLoading || hackathonLoading || submittedHackathonsLoading;
   const error = projectError;
 
   const projectTabs = [
@@ -395,13 +539,19 @@ export default function ProjectPage() {
             <Avatar className="size-24 border border-white/20 rounded-md shadow-lg mx-auto">
               {project?.logo ? (
                 <AvatarImage
-                  src={resolveIPFSToHttp(project.logo)}
+                  src={resolveIPFSToHttp(project.logo) || "/placeholder.svg"}
                   alt={project?.name || "Project Logo"}
                   className="object-cover"
                 />
               ) : (
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
-                  {project?.name?.charAt(0) || "P"}
+                <AvatarFallback className="rounded-md">
+                  <Image
+                    src="/placeholder.svg"
+                    alt={project?.name || "Project Logo"}
+                    className="object-contain"
+                    width={96}
+                    height={96}
+                  />
                 </AvatarFallback>
               )}
             </Avatar>
@@ -858,6 +1008,22 @@ export default function ProjectPage() {
                       </Card>
                     </motion.div>
                   )}
+
+                  {/* IPFS Hash Display */}
+                  {project?.ipfsHash && (
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.4, delay: 0 },
+                        },
+                      }}
+                    >
+                      <IPFSHashDisplay ipfsHash={project.ipfsHash} />
+                    </motion.div>
+                  )}
                 </motion.div>
               </motion.div>
             )}
@@ -891,70 +1057,71 @@ export default function ProjectPage() {
                   }}
                   className="space-y-6"
                 >
-                  {/* Team Leader */}
-                  {project?.creator && (
-                    <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          Team Leader
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <TeamMember address={project.creator} role="Creator" />
-                      </CardContent>
-                    </Card>
-                  )}
+                  {/* Header with Title and Add Button */}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-xl font-semibold text-white">
+                        Project Team
+                      </h2>
+                      <p className="text-sm text-white/70 mt-1">
+                        {teamLoading
+                          ? "Loading team members..."
+                          : `${(teamMembers?.length || 0) + 1} member${
+                              (teamMembers?.length || 0) + 1 !== 1 ? "s" : ""
+                            }`}
+                      </p>
+                    </div>
+                    {isProjectOwner && (
+                      <AddTeamMemberDialog
+                        projectId={id}
+                        isProjectOwner={isProjectOwner}
+                      />
+                    )}
+                  </div>
 
-                  {/* Team Members */}
+                  {/* Team Members Grid */}
                   {teamLoading ? (
-                    <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          Team Members
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="animate-pulse">
-                          <div className="h-4 bg-white/20 rounded w-3/4 mb-2"></div>
-                          <div className="h-4 bg-white/20 rounded w-1/2"></div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ) : teamMembers && teamMembers.length > 0 ? (
-                    <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          Team Members
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {teamMembers.map(
-                            (memberAddress: string, index: number) => (
-                              <TeamMember
-                                key={memberAddress}
-                                address={memberAddress}
-                                role="Member"
-                                index={index}
-                              />
-                            ),
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[1, 2].map((i) => (
+                        <Card
+                          key={i}
+                          className="border border-white/20 bg-black/20 backdrop-blur-sm"
+                        >
+                          <CardContent className="p-4">
+                            <div className="animate-pulse flex gap-4">
+                              <div className="h-12 w-12 bg-white/20 rounded-full"></div>
+                              <div className="flex-1 space-y-2">
+                                <div className="h-4 bg-white/20 rounded w-3/4"></div>
+                                <div className="h-3 bg-white/20 rounded w-1/2"></div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   ) : (
-                    <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          Team Members
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-white/70">
-                          No additional team members found.
-                        </p>
-                      </CardContent>
-                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Team Leader */}
+                      {project?.creator && (
+                        <TeamMember
+                          address={project.creator}
+                          isOwner={true}
+                          currentUserAddress={activeAccount?.address}
+                        />
+                      )}
+
+                      {/* Other Team Members */}
+                      {teamMembers && teamMembers.length > 0
+                        ? teamMembers.map((memberAddress: string) => (
+                            <TeamMember
+                              key={memberAddress}
+                              address={memberAddress}
+                              isOwner={false}
+                              currentUserAddress={activeAccount?.address}
+                            />
+                          ))
+                        : null}
+                    </div>
                   )}
                 </motion.div>
               </motion.div>
@@ -1025,17 +1192,13 @@ export default function ProjectPage() {
                       </div>
                     </>
                   ) : (
-                    <div className="text-center py-8 border-2 border-dashed border-white/20 rounded-xl bg-black/10 backdrop-blur-sm">
-                      <Trophy className="w-12 h-12 mx-auto text-white/40 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2 text-white">
-                        No Hackathon Submissions
-                      </h3>
-                      <p className="text-white/70 mb-4">
-                        This project hasn't been submitted to any hackathons
-                        yet.
-                      </p>
-                      <HackathonSubmissionDialog projectId={id} />
-                    </div>
+                    <EmptyComponent
+                      title="No Hackathon Submissions"
+                      description="This project hasn't been submitted to any hackathons yet."
+                      type="info"
+                      variant="card"
+                      action={<HackathonSubmissionDialog projectId={id} />}
+                    />
                   )}
                 </motion.div>
               </motion.div>

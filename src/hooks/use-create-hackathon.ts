@@ -56,13 +56,29 @@ export function useCreateHackathon() {
     setError(null);
 
     try {
-      // Step 1: Prepare metadata
+      // Step 1: Process the visual image - upload to IPFS
+      console.log("📸 Processing hackathon visual...");
+      console.log("   Input visual URL:", formData.visual);
+      const { processImageForIPFS } = await import("@/lib/helpers/ipfs");
+
+      let visualUri: string | null = null;
+      if (formData.visual) {
+        console.log("   Calling processImageForIPFS with client:", !!client);
+        visualUri = await processImageForIPFS(client, formData.visual);
+        console.log(`✅ Visual processed: ${visualUri}`);
+      } else {
+        console.log("⚠️ No visual provided in formData");
+      }
+
+      // Step 2: Prepare metadata with IPFS visual URI
+      console.log("📦 Preparing metadata...");
+      console.log("   visualUri for metadata:", visualUri);
       const metadata = {
         name: formData.name,
         shortDescription: formData.shortDescription,
         fullDescription: formData.fullDescription,
         location: formData.location,
-        visual: formData.visual,
+        visual: visualUri,
         techStack: formData.techStack,
         experienceLevel: formData.experienceLevel,
         socialLinks: formData.socialLinks || {},
@@ -99,7 +115,7 @@ export function useCreateHackathon() {
         type: "hackathon-metadata" as const,
       };
 
-      // Step 2: Upload to IPFS using pure Thirdweb function
+      // Step 3: Upload metadata to IPFS using pure Thirdweb function
       setIsUploadingToIPFS(true);
 
       // Dispatch IPFS upload start
@@ -146,10 +162,7 @@ export function useCreateHackathon() {
         action: {
           label: "View on IPFS",
           onClick: () => {
-            const gatewayUrl = `${
-              process.env.NEXT_PUBLIC_IPFS_GATEWAY_URL ||
-              "https://ipfs.io/ipfs/"
-            }${cid}`;
+            const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
             window.open(gatewayUrl, "_blank");
           },
         },

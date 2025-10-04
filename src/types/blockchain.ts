@@ -116,12 +116,18 @@ export interface SpeakerMetadata {
 // Project metadata stored on IPFS
 export interface ProjectMetadata {
   name: string;
+  intro?: string; // Short introduction
   description: string;
+  logo?: string; // IPFS hash or URL for project logo
   techStack: string[];
   repositoryUrl?: string;
   demoUrl?: string;
   teamMembers: TeamMemberMetadata[];
   sector?: string[];
+  progress?: string; // Project progress description
+  fundraisingStatus?: string; // Fundraising status
+  githubLink?: string; // GitHub repository link
+  pitchVideo?: string; // Pitch video URL
   createdAt: string; // ISO string
   version: string;
   uploadedAt: string;

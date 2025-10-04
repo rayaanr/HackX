@@ -9,6 +9,7 @@ import {
   Clock,
   CheckCircle,
   FolderIcon,
+  Upload,
 } from "lucide-react";
 import {
   Card,
@@ -32,6 +33,7 @@ import {
 } from "@/lib/helpers/date";
 import { getHackathonStatusVariant } from "@/lib/helpers/status";
 import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
+import { calculateTotalPrizeAmount } from "@/lib/helpers/blockchain-transforms";
 import Link from "next/link";
 import Image from "next/image";
 import type { UIHackathon } from "@/types/hackathon";
@@ -181,23 +183,22 @@ export function RegisteredHackathons() {
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem asChild>
                                     <Link href={`/hackathons/${hackathon.id}`}>
-                                      <LinkIcon className="w-4 h-4 mr-2" />
+                                      <LinkIcon className="size-4" />
                                       View Details
                                     </Link>
                                   </DropdownMenuItem>
-                                  {status === "Live" ? (
-                                    <DropdownMenuItem asChild>
-                                      <Link
-                                        href={`/projects/create?hackathon=${hackathon.id}`}
-                                      >
-                                        Submit Project
-                                      </Link>
-                                    </DropdownMenuItem>
-                                  ) : (
-                                    <DropdownMenuItem disabled>
-                                      Submit Project (Not Available)
-                                    </DropdownMenuItem>
-                                  )}
+
+                                  <DropdownMenuItem
+                                    asChild
+                                    disabled={status !== "Live"}
+                                  >
+                                    <Link
+                                      href={`/projects/create?hackathon=${hackathon.id}`}
+                                    >
+                                      <Upload className="size-4" />
+                                      Submit Project
+                                    </Link>
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </CardAction>
@@ -253,7 +254,9 @@ export function RegisteredHackathons() {
                                 Total Prize
                               </h6>
                               <p className="font-semibold text-white/85 text-sm">
-                                TBD
+                                {calculateTotalPrizeAmount(
+                                  hackathon.prizeCohorts || [],
+                                )}
                               </p>
                             </div>
                           </div>
@@ -267,6 +270,7 @@ export function RegisteredHackathons() {
                                 <Link
                                   href={`/projects/create?hackathon=${hackathon.id}`}
                                 >
+                                  <Upload className="size-4" />
                                   Submit Project
                                 </Link>
                               </Button>
@@ -312,6 +316,7 @@ export function RegisteredHackathons() {
                                 disabled
                                 className="border-white/20"
                               >
+                                <CheckCircle className="w-4 h-4 mr-2" />
                                 Hackathon Ended
                               </Button>
                             )}

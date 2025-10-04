@@ -15,7 +15,7 @@ export function AvatarList({
   additionalCount = 0,
   className,
 }: AvatarListProps) {
-  const actualTotal = totalCount || images.length;
+  const actualTotal = totalCount !== undefined ? totalCount : images.length;
   const displayCount = Math.min(images.length, 4); // Always show up to 4 avatars
   const displayedImages = images.slice(0, displayCount);
 
@@ -40,23 +40,24 @@ export function AvatarList({
           </Avatar>
         ))}
       </div>
-      {(remainingCount > 0 ||
-        (totalCount !== undefined && actualTotal > 0)) && (
+      {totalCount !== undefined ? (
         <span
           className="text-muted-foreground flex items-center justify-center rounded-full px-2 py-1 text-xs"
-          aria-label={
-            totalCount !== undefined
-              ? `${actualTotal} participants`
-              : `${remainingCount} more`
-          }
-          title={
-            totalCount !== undefined
-              ? `${actualTotal} participants`
-              : `${remainingCount} more`
-          }
+          aria-label={`${actualTotal} participants`}
+          title={`${actualTotal} participants`}
         >
-          {totalCount !== undefined ? actualTotal : remainingCount}
+          {actualTotal}
         </span>
+      ) : (
+        remainingCount > 0 && (
+          <span
+            className="text-muted-foreground flex items-center justify-center rounded-full px-2 py-1 text-xs"
+            aria-label={`${remainingCount} more`}
+            title={`${remainingCount} more`}
+          >
+            {remainingCount}
+          </span>
+        )
       )}
     </div>
   );

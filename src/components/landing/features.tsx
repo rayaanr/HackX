@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Shield, Users, Zap, Trophy, Code, Coins } from "lucide-react";
 
 export function HackXFeatures() {
@@ -49,7 +50,7 @@ export function HackXFeatures() {
                   <h2 className="group-hover:text-secondary-950 text-lg font-medium transition dark:text-white">
                     Secure Registration
                   </h2>
-                  <p className="text-foreground text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Wallet-based authentication ensures secure participant
                     registration and identity verification for all hackathon
                     events.
@@ -60,6 +61,9 @@ export function HackXFeatures() {
 
             {/* Real-time Analytics */}
             <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
+              <Badge className="absolute top-3 right-3 z-10 bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30">
+                Coming Soon
+              </Badge>
               <CardContent className="pt-6">
                 <div className="pt-6 lg:px-6">
                   <svg
@@ -147,7 +151,7 @@ export function HackXFeatures() {
                   <h2 className="text-lg font-medium transition">
                     Real-time Analytics
                   </h2>
-                  <p className="text-foreground text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Track hackathon participation, project submissions, and
                     voting progress with comprehensive analytics.
                   </p>
@@ -169,7 +173,7 @@ export function HackXFeatures() {
                     <h2 className="group-hover:text-secondary-950 text-lg font-medium text-zinc-800 transition dark:text-white">
                       Smart Project Management
                     </h2>
-                    <p className="text-foreground text-sm">
+                    <p className="text-muted-foreground text-sm">
                       Create, manage, and submit hackathon projects with
                       integrated GitHub repositories, demo links, and team
                       collaboration tools.
@@ -240,7 +244,7 @@ export function HackXFeatures() {
                     <h2 className="text-lg font-medium transition">
                       Community Collaboration
                     </h2>
-                    <p className="text-foreground text-sm">
+                    <p className="text-muted-foreground text-sm">
                       Connect with developers, judges, and organizers. Build
                       teams, share ideas, and collaborate on innovative
                       projects.
@@ -286,6 +290,9 @@ export function HackXFeatures() {
 
             {/* Prize Distribution - New Feature */}
             <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
+              <Badge className="absolute top-3 right-3 z-10 bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30">
+                Coming Soon
+              </Badge>
               <CardContent className="pt-6">
                 <div className="relative mx-auto flex aspect-square size-32 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
                   <Trophy
@@ -297,7 +304,7 @@ export function HackXFeatures() {
                   <h2 className="group-hover:text-secondary-950 text-lg font-medium transition dark:text-white">
                     Smart Prize Distribution
                   </h2>
-                  <p className="text-foreground text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Automated prize distribution through smart contracts ensures
                     transparent and immediate rewards for hackathon winners.
                   </p>
@@ -318,7 +325,7 @@ export function HackXFeatures() {
                   <h2 className="group-hover:text-secondary-950 text-lg font-medium transition dark:text-white">
                     Lightning Fast
                   </h2>
-                  <p className="text-foreground text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Built on cutting-edge Web3 infrastructure for instant
                     transactions, real-time updates, and seamless user
                     experience.
@@ -329,6 +336,9 @@ export function HackXFeatures() {
 
             {/* Token Rewards - Additional Feature */}
             <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
+              <Badge className="absolute top-3 right-3 z-10 bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30">
+                Coming Soon
+              </Badge>
               <CardContent className="pt-6">
                 <div className="relative mx-auto flex aspect-square size-32 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
                   <Coins
@@ -340,7 +350,7 @@ export function HackXFeatures() {
                   <h2 className="group-hover:text-secondary-950 text-lg font-medium transition dark:text-white">
                     Token Rewards
                   </h2>
-                  <p className="text-foreground text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Earn tokens for participation, voting, and winning
                     hackathons. Build your reputation in the developer
                     community.

@@ -34,7 +34,9 @@ import { SubmittedProjectsTab } from "@/components/hackathon/display/hackathon-p
 import { useHackathon } from "@/hooks/use-hackathons";
 import { Countdown } from "@/components/hackathon/widgets/countdown";
 import { formatDisplayDate } from "@/lib/helpers/date";
+import { IPFSHashDisplay } from "@/components/ui/ipfs-hash-display";
 import { motion } from "motion/react";
+import EmptyComponent from "@/components/empty";
 
 function toHtmlFromDescription(input: string): string {
   if (!input) return "";
@@ -66,18 +68,12 @@ export default function HackathonPage() {
 
   if (error || !hackathon) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center p-8 border border-white/20 rounded-xl bg-black/20 backdrop-blur-sm">
-          <h1 className="text-2xl font-bold mb-4 text-white">
-            Hackathon Not Found
-          </h1>
-          <Link href="/hackathons">
-            <Button className="hover:bg-white/10 hover:border-blue-400/50 transition-all duration-300">
-              Browse Hackathons
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <EmptyComponent
+        title="Hackathon Not Found"
+        description="We couldn't find the hackathon you were looking for."
+        type="info"
+        variant="ghost"
+      />
     );
   }
 
@@ -514,6 +510,23 @@ export default function HackathonPage() {
                         </div>
                       </motion.div>
                     )}
+
+                  {/* IPFS Hash Display */}
+                  {hackathon?.ipfsHash && (
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.4, delay: 1.2 },
+                        },
+                      }}
+                      className="mt-6"
+                    >
+                      <IPFSHashDisplay ipfsHash={hackathon.ipfsHash} />
+                    </motion.div>
+                  )}
                 </motion.div>
               </motion.div>
             )}

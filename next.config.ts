@@ -31,6 +31,11 @@ const nextConfig: NextConfig = {
         hostname: "cloudflare-ipfs.com",
         pathname: "/ipfs/**",
       },
+      {
+        protocol: "https",
+        hostname: "dweb.link",
+        pathname: "/ipfs/**",
+      },
     ],
   },
 };

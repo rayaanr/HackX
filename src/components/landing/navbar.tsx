@@ -44,7 +44,7 @@ export function LandingNavbar({ className }: LandingNavbarProps) {
         className,
       )}
     >
-      <div className="container mx-auto px-2 md:px-4 py-3">
+      <div className="mx-auto px-2 md:px-10 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
@@ -88,8 +88,8 @@ export function LandingNavbar({ className }: LandingNavbarProps) {
               size="lg"
             >
               <Link href="/dashboard">
-                Go to Dashboard
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                Go to Platform
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </Button>
           </div>
@@ -142,8 +142,8 @@ export function LandingNavbar({ className }: LandingNavbarProps) {
                   href="/dashboard"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Go to Dashboard
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  Go to Platform
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </Button>
             </div>

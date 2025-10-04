@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -57,6 +57,7 @@ import {
   useHackathon,
   useHackathonProjectsWithDetails,
 } from "@/hooks/use-hackathons";
+import { IPFSHashDisplay } from "@/components/ui/ipfs-hash-display";
 
 interface ProjectReviewPageProps {
   params: Promise<{ id: string; projectId: string }>;
@@ -65,6 +66,7 @@ interface ProjectReviewPageProps {
 export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
   const { id: hackathonId, projectId } = use(params);
   const account = useActiveAccount();
+  const router = useRouter();
 
   // React Hook Form setup
   const form = useForm<JudgeRatingFormData>({
@@ -233,8 +235,20 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
     if (result.success) {
       toast.success("Evaluation submitted successfully to blockchain!", {
         id: "evaluation-submission",
+        action: {
+          label: "View on Explorer",
+          onClick: () => {
+            const explorerUrl = `${process.env.NEXT_PUBLIC_EXPLORER_URL}/tx/${result.transactionHash}`;
+            window.open(explorerUrl, "_blank");
+          },
+        },
       });
       form.reset(); // Reset form after successful submission
+
+      // Navigate back to the judge page after a short delay
+      setTimeout(() => {
+        router.push(`/judge/${hackathonId}`);
+      }, 2000);
     } else {
       toast.error(
         result.error || "Failed to submit evaluation. Please try again.",
@@ -293,7 +307,7 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                   {project.intro || "No description provided"}
                 </CardDescription>
                 {isViewMode && (
-                  <div className="mt-4 flex justify-center">
+                  <div className="mt-4 flex flex-col justify-center items-center gap-4">
                     <Badge
                       variant={hasScored ? "default" : "secondary"}
                       className="text-sm px-3 py-1"
@@ -306,14 +320,22 @@ export default function ProjectReviewPage({ params }: ProjectReviewPageProps) {
                           •{" "}
                           {new Date(
                             existingEvaluation.submittedAt,
-                          ).toLocaleDateString()}
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </span>
                       )}
                     </Badge>
+
+                    {existingEvaluation?.ipfsHash && (
+                      <IPFSHashDisplay ipfsHash={existingEvaluation.ipfsHash} />
+                    )}
                   </div>
                 )}
               </CardHeader>
-              <CardContent className="space-y-6 p-4 md:p-6">
+              <CardContent className="space-y-6">
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(handleSubmitEvaluation)}

@@ -113,6 +113,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
 
   const statusInfo = getStatusMessage();
 
+  // Always show participant avatars
   const participantAvatars = [
     { src: "https://originui.com/avatar-80-03.jpg", alt: "Participant 1" },
     { src: "https://originui.com/avatar-80-04.jpg", alt: "Participant 2" },

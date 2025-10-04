@@ -6,7 +6,7 @@ import { CreateProjectStepper } from "./project-creation-stepper";
 import { projectSchema, ProjectFormData } from "@/lib/schemas/project-schema";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useBlockchainProjects } from "@/hooks/use-projects";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ import { ClassicLoader } from "@/components/ui/loader";
 
 export function CreateProjectForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false);
   const router = useRouter();
 
   const { submitProject, submitToHackathon, isConnected } =
@@ -39,10 +40,33 @@ export function CreateProjectForm() {
     },
   });
 
+  // Listen for IPFS upload state changes
+  useEffect(() => {
+    const handleIPFSUploadChange = (event: CustomEvent) => {
+      setIsUploadingToIPFS(event.detail.isUploadingToIPFS);
+    };
+
+    window.addEventListener(
+      "projectIPFSUploadChange" as any,
+      handleIPFSUploadChange,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "projectIPFSUploadChange" as any,
+        handleIPFSUploadChange,
+      );
+    };
+  }, []);
+
   const handleFillMockData = () => {
     const randomIndex = Math.floor(Math.random() * MOCK_PROJECT_DATA.length);
     const mockData = MOCK_PROJECT_DATA[randomIndex];
-    form.reset(mockData);
+
+    // Remove logo from mock data - users should upload their own images
+    const { logo, ...mockDataWithoutLogo } = mockData;
+
+    form.reset(mockDataWithoutLogo);
     toast.success(`Form filled with "${mockData.name}" mock data!`);
   };
 
@@ -122,11 +146,18 @@ export function CreateProjectForm() {
         toast.success("Project created successfully!", {
           description:
             "Your project is now stored on IPFS and blockchain. You can submit it to hackathons later.",
+          action: {
+            label: "View on Explorer",
+            onClick: () => {
+              const explorerUrl = `${process.env.NEXT_PUBLIC_EXPLORER_URL}/tx/${createResult.transactionHash}`;
+              window.open(explorerUrl, "_blank");
+            },
+          },
         });
       }
 
       // Redirect to projects page
-      router.push("/dashboard");
+      router.push("/projects/" + createResult.projectId);
     } catch (error) {
       console.error("Error creating project:", error);
       toast.error(
@@ -173,15 +204,23 @@ export function CreateProjectForm() {
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <CreateProjectStepper />
+        <CreateProjectStepper
+          isSubmitting={isSubmitting}
+          isUploadingToIPFS={isUploadingToIPFS}
+        />
         {/* Hidden submit button for programmatic access */}
         <Button
           type="submit"
           id="stepper-create-project"
-          disabled={isSubmitting || !isConnected}
+          disabled={isSubmitting || isUploadingToIPFS || !isConnected}
           className="hidden"
         >
-          {isSubmitting ? (
+          {isUploadingToIPFS ? (
+            <>
+              <ClassicLoader size="sm" className="mr-2" />
+              Uploading to IPFS...
+            </>
+          ) : isSubmitting ? (
             <>
               <ClassicLoader size="sm" className="mr-2" />
               Creating Project...
@@ -195,17 +234,7 @@ export function CreateProjectForm() {
           ) : (
             "Create Project"
           )}
-        </Button>{" "}
-        {form.watch("hackathonIds")?.length > 0 && isConnected && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-            <p className="text-sm text-green-800">
-              ✅ <strong>Ready for creation and submission!</strong> Your
-              project will be created and submitted to{" "}
-              {form.watch("hackathonIds")?.length} hackathon
-              {form.watch("hackathonIds")?.length > 1 ? "s" : ""} on blockchain.
-            </p>
-          </div>
-        )}
+        </Button>
       </form>
     </Form>
   );

@@ -3,7 +3,6 @@
 import { CreateHackathonForm } from "@/components/hackathon/creation/hackathon-creation-form";
 import { StickyPageHeader } from "@/components/layout/sticky-page-header";
 import { Button } from "@/components/ui/button";
-import { ClassicLoader } from "@/components/ui/loader";
 import EmptyComponent from "@/components/empty";
 import { useActiveAccount } from "thirdweb/react";
 import { useState, useEffect } from "react";
@@ -101,18 +100,11 @@ export default function CreateHackathonPage() {
               disabled={isLoading || !activeAccount}
               className="min-w-[180px]"
             >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <ClassicLoader size="sm" className="border-white mr-2" />
-                  <span>
-                    {isUploadingToIPFS
-                      ? "Uploading to IPFS..."
-                      : "Creating Hackathon..."}
-                  </span>
-                </div>
-              ) : (
-                "Create Hackathon"
-              )}
+              {isLoading
+                ? isUploadingToIPFS
+                  ? "Uploading to IPFS..."
+                  : "Creating Hackathon..."
+                : "Create Hackathon"}
             </Button>
           </>
         }

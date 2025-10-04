@@ -22,7 +22,15 @@ const { Stepper } = defineStepper(
   },
 );
 
-export function CreateProjectStepper() {
+interface CreateProjectStepperProps {
+  isSubmitting?: boolean;
+  isUploadingToIPFS?: boolean;
+}
+
+export function CreateProjectStepper({
+  isSubmitting = false,
+  isUploadingToIPFS = false,
+}: CreateProjectStepperProps) {
   return (
     <div className="flex w-full flex-col gap-8">
       <Stepper.Provider
@@ -61,22 +69,56 @@ export function CreateProjectStepper() {
               ),
             })}
             <Stepper.Controls>
+              {methods.isLast && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={methods.reset}
+                  disabled={isSubmitting}
+                >
+                  Reset
+                </Button>
+              )}
               {!methods.isFirst && (
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={methods.prev}
-                  disabled={methods.isFirst}
+                  disabled={methods.isFirst || isSubmitting}
                 >
                   Previous
                 </Button>
               )}
-              <Button
-                type="button"
-                onClick={methods.isLast ? methods.reset : methods.next}
-              >
-                {methods.isLast ? "Reset" : "Next"}
-              </Button>
+              {methods.isLast ? (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    // Trigger the hidden form submit button
+                    const submitButton = document.getElementById(
+                      "stepper-create-project",
+                    );
+                    if (submitButton) {
+                      submitButton.click();
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="min-w-[180px]"
+                >
+                  {isSubmitting
+                    ? isUploadingToIPFS
+                      ? "Uploading to IPFS..."
+                      : "Creating Project..."
+                    : "Create Project"}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={methods.next}
+                  disabled={isSubmitting}
+                >
+                  Next
+                </Button>
+              )}
             </Stepper.Controls>
           </Fragment>
         )}

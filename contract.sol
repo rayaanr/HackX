@@ -69,6 +69,7 @@ contract HackX is Ownable, ReentrancyGuard {
     // Enumeration mappings
     mapping(uint256 => address[]) public hackathonParticipants;
     mapping(uint256 => uint256[]) public hackathonProjects;
+    mapping(uint256 => uint256[]) public projectHackathons; // projectId => hackathonIds
     mapping(uint256 => address[]) public hackathonJudges;
     mapping(address => uint256[]) public userProjects;
     mapping(address => uint256[]) public judgeAssignments;
@@ -299,6 +300,19 @@ contract HackX is Ownable, ReentrancyGuard {
             isProjectSubmitted[hackathonId][submittedProjects[i]] = false;
             delete projectTotalScoreByHack[hackathonId][submittedProjects[i]];
             delete projectJudgeCountByHack[hackathonId][submittedProjects[i]];
+            // Remove hackathon from project's hackathon list
+            uint256[] storage pHackathons = projectHackathons[submittedProjects[i]];
+            for (uint256 k = 0; k < pHackathons.length; k++) {
+                if (pHackathons[k] == hackathonId) {
+                    pHackathons[k] = pHackathons[pHackathons.length - 1];
+                    pHackathons.pop();
+                    break;
+                }
+            }
+            // If no more hackathons for this project, clear the array storage
+            if (pHackathons.length == 0) {
+                delete projectHackathons[submittedProjects[i]];
+            }
         }
         delete hackathonProjects[hackathonId];
         
@@ -519,6 +533,7 @@ contract HackX is Ownable, ReentrancyGuard {
         
         isProjectSubmitted[hackathonId][projectId] = true;
         hackathonProjects[hackathonId].push(projectId);
+        projectHackathons[projectId].push(hackathonId);
         
         emit ProjectSubmittedToHackathon(hackathonId, projectId, msg.sender);
     }

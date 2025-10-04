@@ -174,7 +174,7 @@ export async function fetchIPFSMetadata(
   } catch (error) {
     // Fallback with dweb.link
     try {
-      const response = await fetch(`https://dweb.link/ipfs/${ipfsHash}`);
+      const response = await fetch(`https://ipfs.io/ipfs/${ipfsHash}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -223,11 +223,24 @@ export async function uploadProjectToIPFS(
   client: ThirdwebClient,
   projectData: ProjectFormData,
 ): Promise<{ cid: string }> {
+  // Import processImageForIPFS dynamically to avoid circular dependencies
+  const { processImageForIPFS } = await import("./ipfs");
+
+  // Step 1: Process the logo - upload to IPFS
+  console.log("📸 Processing project logo...");
+  let logoUri: string | null = null;
+
+  if (projectData.logo) {
+    logoUri = await processImageForIPFS(client, projectData.logo);
+    console.log(`✅ Logo processed: ${logoUri}`);
+  }
+
+  // Step 2: Create metadata with IPFS logo URI
   const metadata = {
     name: projectData.name,
     intro: projectData.intro,
     description: projectData.description,
-    logo: projectData.logo || null,
+    logo: logoUri,
     sector: projectData.sector || [],
     progress: projectData.progress,
     fundraisingStatus: projectData.fundraisingStatus,
@@ -244,6 +257,8 @@ export async function uploadProjectToIPFS(
     .toLowerCase()
     .replace(/\\s+/g, "-")}-${Date.now()}.json`;
 
+  // Step 3: Upload metadata JSON to IPFS
+  console.log("📦 Uploading project metadata to IPFS...");
   const uris = await upload({
     client,
     files: [
@@ -255,6 +270,7 @@ export async function uploadProjectToIPFS(
   });
 
   const cid = uris.replace("ipfs://", "");
+  console.log(`✅ Project metadata uploaded: ${cid}`);
 
   return { cid };
 }
