@@ -20,7 +20,7 @@ export function IPFSHashDisplay({
   return (
     <Link
       className={`flex justify-between items-center ${className}`}
-      href={`${process.env.NEXT_PUBLIC_IPFS_GATEWAY_URL || "https://ipfs.io/ipfs/"}${ipfsHash}`}
+      href={`https://ipfs.io/ipfs/${ipfsHash}`}
       target="_blank"
       rel="noopener noreferrer"
     >

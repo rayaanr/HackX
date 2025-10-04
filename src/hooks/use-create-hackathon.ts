@@ -146,10 +146,7 @@ export function useCreateHackathon() {
         action: {
           label: "View on IPFS",
           onClick: () => {
-            const gatewayUrl = `${
-              process.env.NEXT_PUBLIC_IPFS_GATEWAY_URL ||
-              "https://ipfs.io/ipfs/"
-            }${cid}`;
+            const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
             window.open(gatewayUrl, "_blank");
           },
         },
