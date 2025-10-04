@@ -164,7 +164,24 @@ export function RegistrationButton({
       );
 
     case "Registration Closed":
+    case "Submission Starting":
       if (isRegistered) {
+        // Check if we're actually in submission phase now (overrides status)
+        if (isSubmissionActive()) {
+          return (
+            <div className="space-y-2">
+              <div className="flex items-center justify-center text-sm text-green-600 dark:text-green-400">
+                <UserCheck className="mr-2 h-4 w-4" />
+                You are registered for this hackathon
+              </div>
+              <Link href={`/projects/create?hackathon=${hackathonId}`}>
+                <Button size="lg" className="w-full">
+                  Submit Project <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          );
+        }
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-center text-sm text-green-600 dark:text-green-400">

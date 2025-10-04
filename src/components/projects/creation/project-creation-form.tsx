@@ -146,11 +146,18 @@ export function CreateProjectForm() {
         toast.success("Project created successfully!", {
           description:
             "Your project is now stored on IPFS and blockchain. You can submit it to hackathons later.",
+          action: {
+            label: "View on Explorer",
+            onClick: () => {
+              const explorerUrl = `${process.env.NEXT_PUBLIC_EXPLORER_URL}/tx/${createResult.transactionHash}`;
+              window.open(explorerUrl, "_blank");
+            },
+          },
         });
       }
 
       // Redirect to projects page
-      router.push("/dashboard");
+      router.push("/projects/" + createResult.projectId);
     } catch (error) {
       console.error("Error creating project:", error);
       toast.error(
