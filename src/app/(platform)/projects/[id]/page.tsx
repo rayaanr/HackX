@@ -396,13 +396,19 @@ export default function ProjectPage() {
             <Avatar className="size-24 border border-white/20 rounded-md shadow-lg mx-auto">
               {project?.logo ? (
                 <AvatarImage
-                  src={resolveIPFSToHttp(project.logo)}
+                  src={resolveIPFSToHttp(project.logo) || "/placeholder.svg"}
                   alt={project?.name || "Project Logo"}
                   className="object-cover"
                 />
               ) : (
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
-                  {project?.name?.charAt(0) || "P"}
+                <AvatarFallback className="rounded-md">
+                  <Image
+                    src="/placeholder.svg"
+                    alt={project?.name || "Project Logo"}
+                    className="object-contain"
+                    width={96}
+                    height={96}
+                  />
                 </AvatarFallback>
               )}
             </Avatar>

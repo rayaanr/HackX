@@ -202,7 +202,9 @@ export function HackathonSelectionStep() {
                   </div>
                 </FormControl>
                 <FormDescription>
-                  Select the hackathons you want to submit your project to. Only hackathons you've registered for and that are in the "Live" submission phase can be selected.
+                  Select the hackathons you want to submit your project to. Only
+                  hackathons you've registered for and that are in the "Live"
+                  submission phase can be selected.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
