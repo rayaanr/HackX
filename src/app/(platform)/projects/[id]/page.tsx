@@ -75,37 +75,58 @@ function toHtmlFromDescription(input: string): string {
 // Team member component with ENS support
 function TeamMember({
   address,
-  role = "Member",
-  index,
+  isLeader = false,
+  currentUserAddress,
 }: {
   address: string;
-  role?: string;
-  index?: number;
+  isLeader?: boolean;
+  currentUserAddress?: string;
 }) {
   const { ensName, ensAvatar, displayName, initials } = useEns(address);
+  const isCurrentUser =
+    currentUserAddress?.toLowerCase() === address.toLowerCase();
 
   return (
-    <div className="flex items-center gap-4">
-      <Avatar className="h-10 w-10">
-        {ensAvatar && (
-          <AvatarImage src={ensAvatar} alt={ensName || "ENS Avatar"} />
-        )}
-        <AvatarFallback className="text-sm font-medium text-white">
-          {initials}
-        </AvatarFallback>
-      </Avatar>
-      <div>
-        <h4 className="font-medium text-white">
-          {ensName || (index !== undefined ? `${role} ${index + 1}` : role)}
-        </h4>
-        <p className="text-sm text-white/70 font-mono">{displayName}</p>
-        {ensName && (
-          <p className="text-xs text-white/50 font-mono opacity-70">
-            {address}
-          </p>
-        )}
-      </div>
-    </div>
+    <Card className="project-card-hover p-3">
+      <CardContent className="p-0">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-12 w-12">
+            {ensAvatar && (
+              <AvatarImage src={ensAvatar} alt={ensName || "ENS Avatar"} />
+            )}
+            <AvatarFallback className="text-sm font-medium text-white">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="font-medium text-white truncate">
+                {ensName || displayName}
+              </h4>
+              {isLeader && (
+                <Badge
+                  variant="outline"
+                  className="text-xs border-blue-500/50 text-blue-400 bg-blue-500/10"
+                >
+                  Leader
+                </Badge>
+              )}
+              {isCurrentUser && (
+                <Badge
+                  variant="outline"
+                  className="text-xs border-green-500/50 text-green-400 bg-green-500/10"
+                >
+                  You
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground font-mono truncate">
+              {address}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1059,80 +1080,69 @@ export default function ProjectPage() {
                   }}
                   className="space-y-6"
                 >
-                  {/* Add Team Member Button - Only visible to project owner */}
-                  {isProjectOwner && (
-                    <div className="flex justify-end">
+                  {/* Header with Title and Add Button */}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-xl font-semibold text-white">
+                        Project Team
+                      </h2>
+                      <p className="text-sm text-white/70 mt-1">
+                        {teamLoading
+                          ? "Loading team members..."
+                          : `${(teamMembers?.length || 0) + 1} member${(teamMembers?.length || 0) + 1 !== 1 ? "s" : ""}`}
+                      </p>
+                    </div>
+                    {isProjectOwner && (
                       <AddTeamMemberDialog
                         projectId={id}
                         isProjectOwner={isProjectOwner}
                       />
-                    </div>
-                  )}
+                    )}
+                  </div>
 
-                  {/* Team Leader */}
-                  {project?.creator && (
-                    <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          Team Leader
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <TeamMember address={project.creator} role="Creator" />
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Team Members */}
+                  {/* Team Members Grid */}
                   {teamLoading ? (
-                    <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          Team Members
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="animate-pulse">
-                          <div className="h-4 bg-white/20 rounded w-3/4 mb-2"></div>
-                          <div className="h-4 bg-white/20 rounded w-1/2"></div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ) : teamMembers && teamMembers.length > 0 ? (
-                    <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          Team Members
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {teamMembers.map(
-                            (memberAddress: string, index: number) => (
-                              <TeamMember
-                                key={memberAddress}
-                                address={memberAddress}
-                                role="Member"
-                                index={index}
-                              />
-                            ),
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[1, 2].map((i) => (
+                        <Card
+                          key={i}
+                          className="border border-white/20 bg-black/20 backdrop-blur-sm"
+                        >
+                          <CardContent className="p-4">
+                            <div className="animate-pulse flex gap-4">
+                              <div className="h-12 w-12 bg-white/20 rounded-full"></div>
+                              <div className="flex-1 space-y-2">
+                                <div className="h-4 bg-white/20 rounded w-3/4"></div>
+                                <div className="h-3 bg-white/20 rounded w-1/2"></div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   ) : (
-                    <Card className="border border-white/20 bg-black/20 backdrop-blur-sm">
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          Team Members
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-white/70">
-                          No additional team members found.
-                        </p>
-                      </CardContent>
-                    </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Team Leader */}
+                      {project?.creator && (
+                        <TeamMember
+                          address={project.creator}
+                          isLeader={true}
+                          currentUserAddress={activeAccount?.address}
+                        />
+                      )}
+
+                      {/* Other Team Members */}
+                      {teamMembers && teamMembers.length > 0
+                        ? teamMembers.map((memberAddress: string) => (
+                            <TeamMember
+                              key={memberAddress}
+                              address={memberAddress}
+                              isLeader={false}
+                              currentUserAddress={activeAccount?.address}
+                            />
+                          ))
+                        : null}
+                    </div>
                   )}
                 </motion.div>
               </motion.div>
