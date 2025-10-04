@@ -25,6 +25,7 @@ import {
 } from "@/hooks/use-hackathons";
 import { useHasJudgeScored, useProjectScore } from "@/hooks/use-judge";
 import { hasJudgingPeriodEnded } from "@/lib/helpers/date";
+import { resolveIPFSToHttp } from "@/lib/helpers/ipfs";
 
 interface JudgingPageProps {
   params: Promise<{ id: string }>;
@@ -228,7 +229,7 @@ export default function JudgingPage({ params }: JudgingPageProps) {
                       {project.logo ? (
                         <div className="flex-shrink-0 overflow-hidden rounded-lg">
                           <Image
-                            src={project.logo}
+                            src={resolveIPFSToHttp(project.logo)}
                             alt={project.name || "Project logo"}
                             width={48}
                             height={48}
