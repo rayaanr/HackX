@@ -74,6 +74,7 @@ export function CreateProjectStepper() {
               <Button
                 type="button"
                 onClick={methods.isLast ? methods.reset : methods.next}
+                variant={methods.isLast ? "destructive" : "default"}
               >
                 {methods.isLast ? "Reset" : "Next"}
               </Button>
