@@ -35,9 +35,7 @@ export function needsIPFSUpload(url: string | undefined | null): boolean {
  * @param url - The blob URL or data URL to upload
  * @returns IPFS hash (CID) or null if upload fails
  */
-export async function uploadImageToIPFS(
-  url: string,
-): Promise<string | null> {
+export async function uploadImageToIPFS(url: string): Promise<string | null> {
   try {
     // Fetch blob data (this works for blob: and data: URLs)
     const response = await fetch(url);
