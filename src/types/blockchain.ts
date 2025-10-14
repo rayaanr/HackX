@@ -347,8 +347,8 @@ export const CONTRACT_CONSTANTS = {
   MIN_DEADLINE_BUFFER: 3600, // 1 hour in seconds
 } as const;
 
-// IPFS constants
+// IPFS constants (using Pinata)
 export const IPFS_CONSTANTS = {
-  GATEWAY_URL: "https://ipfs.io/ipfs/",
-  PINNING_SERVICE: "pinata", // or "web3storage", etc.
+  GATEWAY_URL: "https://rose-magnificent-capybara-641.mypinata.cloud/ipfs/",
+  PINNING_SERVICE: "pinata",
 } as const;

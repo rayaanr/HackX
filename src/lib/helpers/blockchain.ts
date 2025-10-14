@@ -1,6 +1,6 @@
-import { download, upload } from "thirdweb/storage";
 import { readContract, prepareContractCall } from "thirdweb";
 import type { ThirdwebContract, ThirdwebClient } from "thirdweb";
+import { uploadJSONToPinata, downloadJSONFromPinata } from "./pinata";
 import type { HackathonFormData } from "@/types/hackathon";
 import type { ProjectFormData } from "@/lib/schemas/project-schema";
 import type {
@@ -160,32 +160,19 @@ export function prepareRegisterForHackathonTransaction(
   });
 }
 
-// Fetch metadata from IPFS
+// Fetch metadata from IPFS using Pinata
 export async function fetchIPFSMetadata(
   client: ThirdwebClient,
   ipfsHash: string,
 ) {
   try {
-    const file = await download({
-      client,
-      uri: `ipfs://${ipfsHash}`,
-    });
-    return await file.json();
+    return await downloadJSONFromPinata(ipfsHash);
   } catch (error) {
-    // Fallback with dweb.link
-    try {
-      const response = await fetch(`https://ipfs.io/ipfs/${ipfsHash}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (fallbackError) {
-      console.warn(
-        `Failed to fetch metadata from both IPFS and dweb.link for hash ${ipfsHash}:`,
-        fallbackError,
-      );
-      return {};
-    }
+    console.warn(
+      `Failed to fetch metadata from IPFS for hash ${ipfsHash}:`,
+      error,
+    );
+    return {};
   }
 }
 
@@ -218,7 +205,7 @@ export async function getHackathonById(
 
 // ===== PROJECT BLOCKCHAIN FUNCTIONS =====
 
-// Upload project metadata to IPFS
+// Upload project metadata to IPFS using Pinata
 export async function uploadProjectToIPFS(
   client: ThirdwebClient,
   projectData: ProjectFormData,
@@ -231,7 +218,7 @@ export async function uploadProjectToIPFS(
   let logoUri: string | null = null;
 
   if (projectData.logo) {
-    logoUri = await processImageForIPFS(client, projectData.logo);
+    logoUri = await processImageForIPFS(projectData.logo);
     console.log(`✅ Logo processed: ${logoUri}`);
   }
 
@@ -257,19 +244,9 @@ export async function uploadProjectToIPFS(
     .toLowerCase()
     .replace(/\\s+/g, "-")}-${Date.now()}.json`;
 
-  // Step 3: Upload metadata JSON to IPFS
+  // Step 3: Upload metadata JSON to IPFS using Pinata
   console.log("📦 Uploading project metadata to IPFS...");
-  const uris = await upload({
-    client,
-    files: [
-      {
-        name: fileName,
-        data: metadata,
-      },
-    ],
-  });
-
-  const cid = uris.replace("ipfs://", "");
+  const cid = await uploadJSONToPinata(metadata, fileName);
   console.log(`✅ Project metadata uploaded: ${cid}`);
 
   return { cid };

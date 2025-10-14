@@ -1,12 +1,11 @@
-import type { ThirdwebClient } from "thirdweb";
-import { upload } from "thirdweb/storage";
+import { uploadFileToPinata, getPinataGatewayUrl } from "./pinata";
 
 /**
  * IPFS utility functions for resolving URIs and handling IPFS content
  */
 
 /**
- * Convert IPFS URI to HTTP URL using a public gateway
+ * Convert IPFS URI to HTTP URL using Pinata gateway
  * @param uri - IPFS URI (ipfs://...) or regular URL
  * @returns HTTP URL or original URL if not IPFS
  */
@@ -15,7 +14,7 @@ export function resolveIPFSToHttp(uri: string | undefined | null): string {
 
   if (uri.startsWith("ipfs://")) {
     const cid = uri.replace("ipfs://", "");
-    return `https://dweb.link/ipfs/${cid}`;
+    return getPinataGatewayUrl(cid);
   }
 
   return uri;
@@ -33,12 +32,10 @@ export function needsIPFSUpload(url: string | undefined | null): boolean {
 
 /**
  * Upload an image to IPFS from a blob URL or data URL
- * @param client - Thirdweb client
  * @param url - The blob URL or data URL to upload
  * @returns IPFS hash (CID) or null if upload fails
  */
 export async function uploadImageToIPFS(
-  client: ThirdwebClient,
   url: string,
 ): Promise<string | null> {
   try {
@@ -54,18 +51,8 @@ export async function uploadImageToIPFS(
     const fileName = `image-${Date.now()}.${blob.type.split("/")[1] || "png"}`;
     const file = new File([blob], fileName, { type: blob.type });
 
-    // Upload to IPFS using thirdweb
-    const uris = await upload({
-      client,
-      files: [file],
-    });
-
-    if (!uris) {
-      throw new Error("Failed to upload image to IPFS");
-    }
-
-    // Extract CID from IPFS URI
-    const cid = uris.replace("ipfs://", "");
+    // Upload to IPFS using Pinata
+    const cid = await uploadFileToPinata(file, fileName);
 
     return cid;
   } catch (error) {
@@ -76,12 +63,10 @@ export async function uploadImageToIPFS(
 
 /**
  * Process an image URL - upload to IPFS if needed, otherwise return as-is
- * @param client - Thirdweb client
  * @param url - The image URL to process
  * @returns IPFS URI (ipfs://...) if uploaded, original URL if already hosted, or null
  */
 export async function processImageForIPFS(
-  client: ThirdwebClient,
   url: string | undefined | null,
 ): Promise<string | null> {
   if (!url) return null;
@@ -106,11 +91,11 @@ export async function processImageForIPFS(
   if (needsIPFSUpload(url)) {
     const urlPreview = url.length > 100 ? url.substring(0, 100) + "..." : url;
     console.log("🔄 Uploading local file to IPFS...");
-    const cid = await uploadImageToIPFS(client, url);
+    const cid = await uploadImageToIPFS(url);
     if (cid) {
       console.log(`✅ Image uploaded to IPFS successfully!`);
       console.log(`   IPFS URI: ipfs://${cid}`);
-      console.log(`   Gateway URL: https://dweb.link/ipfs/${cid}`);
+      console.log(`   Gateway URL: ${getPinataGatewayUrl(cid)}`);
       return `ipfs://${cid}`;
     } else {
       console.warn("⚠️ Failed to upload image to IPFS");

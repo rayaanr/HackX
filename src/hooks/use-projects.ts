@@ -20,6 +20,7 @@ import {
   getProjectById,
   getProjectTeamMembers,
 } from "@/lib/helpers/blockchain";
+import { getPinataGatewayUrl } from "@/lib/helpers/pinata";
 import { toast } from "sonner";
 
 /**
@@ -129,8 +130,7 @@ export function useBlockchainProjects() {
         action: {
           label: "View on IPFS",
           onClick: () => {
-            const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
-            window.open(gatewayUrl, "_blank");
+            window.open(getPinataGatewayUrl(cid), "_blank");
           },
         },
       });

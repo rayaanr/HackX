@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Hash } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { getPinataGatewayUrl } from "@/lib/helpers/pinata";
 
 interface IPFSHashDisplayProps {
   ipfsHash: string;
@@ -11,6 +11,7 @@ interface IPFSHashDisplayProps {
 
 /**
  * Component to display IPFS hash with click functionality to open in new window
+ * Uses Pinata custom gateway for reliable access
  */
 export function IPFSHashDisplay({
   ipfsHash,
@@ -20,7 +21,7 @@ export function IPFSHashDisplay({
   return (
     <Link
       className={`flex justify-between items-center ${className}`}
-      href={`https://ipfs.io/ipfs/${ipfsHash}`}
+      href={getPinataGatewayUrl(ipfsHash)}
       target="_blank"
       rel="noopener noreferrer"
     >
