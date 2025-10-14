@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
         hostname: "dweb.link",
         pathname: "/ipfs/**",
       },
+      {
+        protocol: "https",
+        hostname: "rose-magnificent-capybara-641.mypinata.cloud",
+        pathname: "/ipfs/**",
+      }
     ],
   },
 };

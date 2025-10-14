@@ -107,7 +107,7 @@ export async function downloadJSONFromPinata(cid: string): Promise<any> {
     return data.data;
   } catch (error) {
     console.error("❌ Failed to download from Pinata:", error);
-    throw error;
+    // throw error;
   }
 }
 
