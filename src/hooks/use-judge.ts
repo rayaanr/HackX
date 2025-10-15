@@ -9,8 +9,8 @@ import {
   getProjectScore,
   prepareSubmitScoreTransaction,
 } from "@/lib/helpers/blockchain";
+import { uploadJSONToPinata, getPinataGatewayUrl } from "@/lib/helpers/pinata";
 import type { JudgeRatingFormData } from "@/lib/schemas/judge-schema";
-import { upload } from "thirdweb/storage";
 
 interface SubmitEvaluationResult {
   success: boolean;
@@ -96,28 +96,14 @@ export function useJudgeEvaluationSubmission() {
         submittedAt: new Date().toISOString(),
       };
 
-      // Upload feedback to IPFS
+      // Upload feedback to IPFS using Pinata
       console.log("Uploading feedback to IPFS...");
 
       const fileName = `judge-feedback-${projectId}-${
         activeAccount.address
       }-${Date.now()}.json`;
 
-      const uris = await upload({
-        client,
-        files: [
-          {
-            name: fileName,
-            data: JSON.stringify(feedbackData),
-          },
-        ],
-      });
-
-      if (!uris || uris.length === 0) {
-        throw new Error("Failed to upload metadata to IPFS.");
-      }
-
-      const cid = uris.replace("ipfs://", "");
+      const cid = await uploadJSONToPinata(feedbackData, fileName);
 
       console.log("Feedback uploaded to IPFS:", cid);
 
@@ -129,8 +115,7 @@ export function useJudgeEvaluationSubmission() {
           action: {
             label: "View on IPFS",
             onClick: () => {
-              const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
-              window.open(gatewayUrl, "_blank");
+              window.open(getPinataGatewayUrl(cid), "_blank");
             },
           },
         });

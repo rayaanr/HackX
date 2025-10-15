@@ -12,8 +12,8 @@ export const client = createThirdwebClient({
   clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
 });
 
-// Define your chain (Base Sepolia testnet)
-export const chain = defineChain(84532);
+// Define your chain (Monad Testnet)
+export const chain = defineChain(10143);
 
 // Contract configuration
 export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;

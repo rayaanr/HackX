@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useActiveAccount, useSendTransaction } from "thirdweb/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { upload } from "thirdweb/storage";
+import { uploadJSONToPinata, getPinataGatewayUrl } from "@/lib/helpers/pinata";
 import { useWeb3 } from "@/providers/web3-provider";
 import { prepareCreateHackathonTransaction } from "@/lib/helpers/blockchain";
 import type { HackathonFormData } from "@/types/hackathon";
@@ -63,8 +63,8 @@ export function useCreateHackathon() {
 
       let visualUri: string | null = null;
       if (formData.visual) {
-        console.log("   Calling processImageForIPFS with client:", !!client);
-        visualUri = await processImageForIPFS(client, formData.visual);
+        console.log("   Calling processImageForIPFS...");
+        visualUri = await processImageForIPFS(formData.visual);
         console.log(`✅ Visual processed: ${visualUri}`);
       } else {
         console.log("⚠️ No visual provided in formData");
@@ -137,23 +137,7 @@ export function useCreateHackathon() {
         .toLowerCase()
         .replace(/\s+/g, "-")}-${Date.now()}.json`;
 
-      const uris = await upload({
-        client, // thirdweb client
-        files: [
-          {
-            name: fileName,
-            data: metadata,
-          },
-        ],
-      });
-
-      if (!uris || uris.length === 0) {
-        toast.dismiss(uploadToastId);
-        toast.error("❌ Failed to upload metadata to IPFS");
-        throw new Error("Failed to upload metadata to IPFS.");
-      }
-
-      const cid = uris.replace("ipfs://", "");
+      const cid = await uploadJSONToPinata(metadata, fileName);
 
       // Show upload success notification
       toast.dismiss(uploadToastId);
@@ -162,8 +146,7 @@ export function useCreateHackathon() {
         action: {
           label: "View on IPFS",
           onClick: () => {
-            const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
-            window.open(gatewayUrl, "_blank");
+            window.open(getPinataGatewayUrl(cid), "_blank");
           },
         },
       });
